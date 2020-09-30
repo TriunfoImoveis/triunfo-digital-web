@@ -44,12 +44,18 @@ export const NavItemContent = styled.div`
       fill: #c32925;
     }
   }
-  > a {
+  > a,
+  button {
     margin-left: 0.8rem;
     font-family: Roboto;
     font-style: normal;
     font-size: 1.6rem;
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
+  }
+
+  > button {
+    background: none;
+    border: 0;
   }
 `;
