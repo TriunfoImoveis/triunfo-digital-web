@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { IoIosLogOut } from 'react-icons/io';
+import { useAuth } from '../../context/AuthContext';
 import {
   LogoHeader,
   RankingIcon,
@@ -13,6 +14,7 @@ import MenuResponsive from '../MenuResponsive';
 import { Container, NavBarContainer, NavItemContent } from './styles';
 
 const Header: React.FC = () => {
+  const { signOut } = useAuth();
   return (
     <Container>
       <LogoHeader />
@@ -31,7 +33,9 @@ const Header: React.FC = () => {
         </NavItemContent>
         <NavItemContent>
           <IoIosLogOut size={40} color="#fff" />
-          <a href="#top">Sair</a>
+          <button type="button" onClick={signOut}>
+            Sair
+          </button>
         </NavItemContent>
       </NavBarContainer>
       <MenuResponsive />

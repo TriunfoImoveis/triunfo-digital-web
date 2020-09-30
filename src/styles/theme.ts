@@ -7,7 +7,7 @@ const theme: DefaultTheme = {
     secondary: '#FCF9F9',
     danger: '#DC3545',
     success: '#40B236',
-    background: '#c4c4c4',
+    background: '#f8f8f8',
     borderColor: '#818181',
   },
   fontSize: {

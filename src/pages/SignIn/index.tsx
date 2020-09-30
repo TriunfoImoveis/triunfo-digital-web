@@ -39,7 +39,6 @@ const SignIn: React.FC = () => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
-        console.log('------');
         const schema = Yup.object().shape({
           email: Yup.string()
             .required('E-mail obrigatório')
@@ -58,13 +57,16 @@ const SignIn: React.FC = () => {
         });
         setLoading(false);
       } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const erros = getValidationErros(err);
+          formRef.current?.setErrors(erros);
+        }
+
         toast.error('ERROR!, verifique suas credenciais');
         setLoading(false);
-        const erros = getValidationErros(err);
-        formRef.current?.setErrors(erros);
       }
     },
-    [signIn, loading],
+    [signIn],
   );
   return (
     <Container>

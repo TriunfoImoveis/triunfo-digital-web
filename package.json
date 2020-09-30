@@ -26,6 +26,7 @@
     "react-spinners-css": "^1.2.2",
     "react-toastify": "^6.0.8",
     "styled-components": "^5.2.0",
+    "styled-media-query": "^2.1.2",
     "typescript": "~3.7.2",
     "yup": "^0.29.3"
   },
