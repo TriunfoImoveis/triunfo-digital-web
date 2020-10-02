@@ -4,3 +4,5 @@ export { ReactComponent as ArrowDown } from './arrow.svg';
 export { ReactComponent as RankingIcon } from './ranking-geral.svg';
 export { ReactComponent as RegisterSellIcon } from './cadastrar-venda.svg';
 export { ReactComponent as DashboardIcon } from './dashboard.svg';
+export { ReactComponent as BackgroundImage } from './background-ranking.svg';
+export { ReactComponent as Crown } from './coroa.svg';

@@ -24,6 +24,7 @@ declare module 'styled-components' {
       borderColor?: string;
 
       background: string;
+      textColor?: string;
     };
     fontSize: {
       tiny?: string;

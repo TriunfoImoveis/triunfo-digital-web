@@ -9,6 +9,7 @@ const theme: DefaultTheme = {
     success: '#40B236',
     background: '#f8f8f8',
     borderColor: '#818181',
+    textColor: '#797777',
   },
   fontSize: {
     tiny: '1.2rem',
