@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Form } from '@unform/web';
 import Loader from 'react-loader-spinner';
 
@@ -17,22 +17,36 @@ import Button from '../../components/Button';
 import { Logo } from '../../assets/images';
 import { Container, Content } from './styles';
 import Select from '../../components/Select';
+import api from '../../services/api';
 
 interface ISignData {
   email: string;
   password: string;
   office: string;
 }
+
+interface IOfficeData {
+  id: string;
+  name: string;
+}
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const [officies, setOfficies] = useState<IOfficeData[]>([]);
   const { signIn } = useAuth();
 
-  const options = [
-    { value: 'b57e7fd8-3d35-4aa1-a117-5a0d2aa829cf', label: 'Marketing' },
-    { value: '0a78703f-872f-4c95-8885-3596e9dc0bf0', label: 'Corretor' },
-    { value: '55112da1-48a6-48be-af51-27e6cf24c97f', label: 'MQL' },
-  ];
+  useEffect(() => {
+    const loadOffices = async () => {
+      const response = await api.get('/office');
+      setOfficies(response.data);
+    };
+    loadOffices();
+  }, []);
+
+  const options = officies.map(office => ({
+    value: office.id,
+    label: office.name,
+  }));
 
   const handleSubmit = useCallback(
     async (data: ISignData) => {

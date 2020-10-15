@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -21,11 +22,11 @@ const Header: React.FC = () => {
       <NavBarContainer>
         <NavItemContent>
           <RankingIcon />
-          <a href="#top">Ranking</a>
+          <Link to="/ranking">Ranking</Link>
         </NavItemContent>
         <NavItemContent>
           <RegisterSellIcon />
-          <a href="#top">Vendas</a>
+          <a href="/actions">Vendas</a>
         </NavItemContent>
         <NavItemContent>
           <DashboardIcon />
