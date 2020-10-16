@@ -4,12 +4,13 @@ interface ContainerProps {
   isFocused: boolean;
   isFilled: boolean;
   isErrored: boolean;
+  nameLabel: string | undefined;
 }
 
 export const Container = styled.div<ContainerProps>`
   background: ${({ theme }) => theme.colors.secondary};
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: 0.1rem solid ${({ theme }) => theme.colors.borderColor};
+  border: 0.1rem solid ${({ theme }) => theme.colors.textColorAlpha};
   width: 100%;
   height: 4.5rem;
   display: flex;
@@ -31,17 +32,22 @@ export const Container = styled.div<ContainerProps>`
     css`
       color: ${({ theme }) => theme.colors.primary};
     `}
+
   > select {
     background: transparent;
     height: 100%;
     flex: 1;
     border: 0;
-    color: #666360;
+    color: ${({ theme }) => theme.colors.textColor};
     font-size: ${({ theme }) => theme.fontSize.small};
     -webkit-appearance: none;
     -moz-appearance: none;
     text-indent: 1px;
     text-overflow: '';
+
+    option {
+      color: ${({ theme }) => theme.colors.textColor};
+    }
   }
 `;
 

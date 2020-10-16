@@ -48,7 +48,12 @@ const Select: React.FC<SelectProps> = ({
     });
   }, [fieldName, registerField]);
   return (
-    <Container isErrored={!!error} isFilled={isFilled} isFocused={isFocused}>
+    <Container
+      isErrored={!!error}
+      isFilled={isFilled}
+      isFocused={isFocused}
+      nameLabel={nameLabel}
+    >
       {Icon && (
         <IconContainer>
           <Icon size={22} />

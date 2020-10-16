@@ -56,10 +56,10 @@ export const Content = styled.div`
 `;
 
 export const FormContainer = styled.div`
-  max-width: 110rem;
+  max-width: 80rem;
   width: 100%;
 
-  margin-top: 1.6rem;
+  margin-top: 0.8rem;
 
   > form {
     padding: 0 9rem;
@@ -68,6 +68,9 @@ export const FormContainer = styled.div`
       margin-bottom: 0.8rem;
       > input {
         padding: 0 1.6rem;
+        &::placeholder {
+          color: ${({ theme }) => theme.colors.textColorAlpha};
+        }
       }
     }
   }
@@ -81,7 +84,7 @@ export const FormContainer = styled.div`
 
 export const TabNavigator = styled.div`
   height: 3.2rem;
-  background-color: #818181;
+  background-color: rgba(129, 129, 129, 0.3);
   margin-bottom: 5rem;
   @media (max-width: 425px) {
     margin-bottom: 1.6rem;
@@ -112,5 +115,30 @@ export const ButtonGroup = styled.div`
 
   button + button {
     margin-left: 0.8rem;
+  }
+
+  .cancel,
+  .next {
+    height: 4.5rem;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 1.6rem;
+    line-height: 1.9rem;
+
+    color: #ffffff;
+  }
+
+  .cancel {
+    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.primary};
+    border: 0.1rem solid ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 425px) {
+    .cancel,
+    .next {
+      height: 3.6rem;
+    }
   }
 `;
