@@ -25,6 +25,7 @@ declare module 'styled-components' {
 
       background: string;
       textColor?: string;
+      textColorAlpha?: string;
     };
     fontSize: {
       tiny?: string;

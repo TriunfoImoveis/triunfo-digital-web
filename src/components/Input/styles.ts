@@ -9,7 +9,7 @@ interface ContainerProps {
 export const Container = styled.div<ContainerProps>`
   background: ${({ theme }) => theme.colors.secondary};
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: 0.1rem solid ${({ theme }) => theme.colors.borderColor};
+  border: 0.1rem solid ${({ theme }) => theme.colors.textColorAlpha};
   width: 100%;
   height: 4.5rem;
   display: flex;
@@ -37,9 +37,9 @@ export const Container = styled.div<ContainerProps>`
     height: 100%;
     flex: 1;
     border: 0;
-    color: #666360;
+    color: ${({ theme }) => theme.colors.textColor};
     &::placeholder {
-      color: #666360;
+      color: ${({ theme }) => theme.colors.textColor};
     }
   }
   > svg {

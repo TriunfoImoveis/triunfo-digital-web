@@ -17,12 +17,14 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     label: string;
   }[];
   icon?: React.ComponentType<IconBaseProps>;
+  nameLabel?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
   name,
   icon: Icon,
   options,
+  nameLabel,
   ...rest
 }) => {
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -46,7 +48,12 @@ const Select: React.FC<SelectProps> = ({
     });
   }, [fieldName, registerField]);
   return (
-    <Container isErrored={!!error} isFilled={isFilled} isFocused={isFocused}>
+    <Container
+      isErrored={!!error}
+      isFilled={isFilled}
+      isFocused={isFocused}
+      nameLabel={nameLabel}
+    >
       {Icon && (
         <IconContainer>
           <Icon size={22} />
@@ -59,7 +66,11 @@ const Select: React.FC<SelectProps> = ({
         defaultValue={defaultValue}
         {...rest}
       >
-        <option value="">Selecione o Cargo</option>
+        {nameLabel && (
+          <option value="" selected disabled>
+            {`Selecione ${nameLabel}`}
+          </option>
+        )}
         {options.map(option => (
           <option key={option.value} value={option.value}>
             {option.label}
