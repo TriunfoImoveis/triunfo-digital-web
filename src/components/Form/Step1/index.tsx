@@ -14,11 +14,10 @@ import { toast } from 'react-toastify';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 
-import Input from '../../Input';
 import Select from '../../Select';
 import Button from '../../Button';
 
-import { Container, InputGroup, ButtonGroup } from './styles';
+import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
 
 interface IBGEUFResponse {
   sigla: string;
@@ -33,7 +32,12 @@ interface IPropertyTypeData {
   name: string;
 }
 
-const Step1: React.FC = () => {
+interface ISaleNewData {
+  SaleNewData(data: object): void;
+  nextStep: () => void;
+}
+
+const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [ufs, setUfs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -96,33 +100,38 @@ const Step1: React.FC = () => {
     [],
   );
 
-  const handleSubmit = useCallback(async data => {
-    formRef.current?.setErrors({});
-    try {
-      setLoading(true);
-      const schema = Yup.object().shape({
-        enterprise: Yup.string().required('Campo Obrigatório'),
-        state: Yup.string().required('Campo Obrigatório'),
-        city: Yup.string().required('Campo Obrigatório'),
-        neighborhood: Yup.string().required('Campo Obrigatório'),
-        property: Yup.string().required('Campo Obrigatório'),
-        unit: Yup.string().required('Campo Obrigatório'),
-      });
-      await schema.validate(data, {
-        abortEarly: false,
-      });
+  const handleSubmit = useCallback(
+    async data => {
+      formRef.current?.setErrors({});
+      try {
+        setLoading(true);
+        const schema = Yup.object().shape({
+          enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+          state: Yup.string().required('Informe o Estado'),
+          city: Yup.string().required('Informe o Cidade'),
+          neighborhood: Yup.string().required('Informe o bairrro'),
+          property: Yup.string().required('Selecione o tipo do imóvel'),
+          unit: Yup.string().required('Infome a unidade'),
+        });
+        await schema.validate(data, {
+          abortEarly: false,
+        });
 
-      setLoading(false);
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const erros = getValidationErros(err);
-        formRef.current?.setErrors(erros);
+        SaleNewData(data);
+        nextStep();
+        setLoading(false);
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const erros = getValidationErros(err);
+          formRef.current?.setErrors(erros);
+        }
+
+        toast.error('ERROR!, verifique as informações e tente novamente');
+        setLoading(false);
       }
-
-      toast.error('ERROR!, verifique suas credenciais');
-      setLoading(false);
-    }
-  }, []);
+    },
+    [SaleNewData, nextStep],
+  );
 
   const handleSelectCity = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -134,7 +143,7 @@ const Step1: React.FC = () => {
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <Input name="enterprise" placeholder="Empreendimento" />
+        <InputForm name="enterprise" placeholder="Empreendimento" />
         <InputGroup>
           <Select
             name="state"
@@ -155,7 +164,7 @@ const Step1: React.FC = () => {
             nameLabel="a cidade"
           />
         </InputGroup>
-        <Input name="neighborhood" placeholder="Bairro" />
+        <InputForm name="neighborhood" placeholder="Bairro" />
         <Select
           name="property"
           placeholder="Tipo do Imovel"
@@ -163,7 +172,7 @@ const Step1: React.FC = () => {
           icon={IoMdArrowDropdown}
           nameLabel="o Tipo do Imóvel"
         />
-        <Input name="unit" placeholder="Unidade" />
+        <InputForm name="unit" placeholder="Unidade" />
         <ButtonGroup>
           <Button type="reset" className="cancel">
             Cancelar

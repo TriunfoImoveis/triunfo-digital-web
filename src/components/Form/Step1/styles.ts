@@ -1,15 +1,19 @@
 import styled from 'styled-components';
+import Input from '../../Input';
 
 export const Container = styled.div``;
+export const InputForm = styled(Input)`
+  padding: 0 0.8rem;
+`;
 
 export const InputGroup = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.8rem;
 
   > div,
   select {
     width: 50%;
+    margin-top: 0;
   }
   div + div {
     margin-left: 0.8rem;

@@ -30,9 +30,16 @@ const Select: React.FC<SelectProps> = ({
   const selectRef = useRef<HTMLSelectElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
+  const [errorField, setErrorField] = useState(false);
   const { fieldName, defaultValue, error, registerField } = useField(name);
 
+  useEffect(() => {
+    if (error !== undefined) {
+      setErrorField(true);
+    }
+  }, [error]);
   const handleInputFocus = useCallback(() => {
+    setErrorField(false);
     setIsFocused(true);
   }, []);
   const handleInputBlur = useCallback(() => {
@@ -49,7 +56,7 @@ const Select: React.FC<SelectProps> = ({
   }, [fieldName, registerField]);
   return (
     <Container
-      isErrored={!!error}
+      isErrored={errorField}
       isFilled={isFilled}
       isFocused={isFocused}
       nameLabel={nameLabel}
@@ -64,6 +71,7 @@ const Select: React.FC<SelectProps> = ({
         onBlur={handleInputBlur}
         ref={selectRef}
         defaultValue={defaultValue}
+        value={defaultValue}
         {...rest}
       >
         {nameLabel && (
@@ -77,7 +85,7 @@ const Select: React.FC<SelectProps> = ({
           </option>
         ))}
       </select>
-      {error && <Error>{error}</Error>}
+      {errorField && <Error>{error}</Error>}
     </Container>
   );
 };

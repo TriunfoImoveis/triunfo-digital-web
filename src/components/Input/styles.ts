@@ -15,7 +15,7 @@ export const Container = styled.div<ContainerProps>`
   display: flex;
   align-items: center;
 
-  margin-bottom: 1.6rem;
+  margin: 1.6rem 0;
   ${props =>
     props.isErrored &&
     css`
