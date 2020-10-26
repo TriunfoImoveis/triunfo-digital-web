@@ -85,10 +85,6 @@ export const FormContainer = styled.div`
 export const TabNavigator = styled.div`
   height: 3.2rem;
   background-color: rgba(129, 129, 129, 0.3);
-  margin-bottom: 5rem;
-  @media (max-width: 425px) {
-    margin-bottom: 1.6rem;
-  }
 `;
 
 export const InputGroup = styled.div`
