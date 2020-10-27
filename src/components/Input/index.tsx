@@ -63,8 +63,8 @@ const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
           defaultValue={defaultValue}
           {...rest}
         />
-        {errorField && <Error>{error}</Error>}
       </Container>
+      {errorField && <Error>{error}</Error>}
     </>
   );
 };

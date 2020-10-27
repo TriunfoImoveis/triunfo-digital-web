@@ -8,7 +8,7 @@ import React, {
 import { useField } from '@unform/core';
 
 import { IconBaseProps } from 'react-icons';
-import { Container, IconContainer, Error } from './styles';
+import { ContainerWrapper, Container, IconContainer, Error } from './styles';
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   name: string;
@@ -55,38 +55,40 @@ const Select: React.FC<SelectProps> = ({
     });
   }, [fieldName, registerField]);
   return (
-    <Container
-      isErrored={errorField}
-      isFilled={isFilled}
-      isFocused={isFocused}
-      nameLabel={nameLabel}
-    >
-      {Icon && (
-        <IconContainer>
-          <Icon size={22} />
-        </IconContainer>
-      )}
-      <select
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-        ref={selectRef}
-        defaultValue={defaultValue}
-        value={defaultValue}
-        {...rest}
+    <ContainerWrapper>
+      <Container
+        isErrored={errorField}
+        isFilled={isFilled}
+        isFocused={isFocused}
+        nameLabel={nameLabel}
       >
-        {nameLabel && (
-          <option value="" selected disabled>
-            {`Selecione ${nameLabel}`}
-          </option>
+        {Icon && (
+          <IconContainer>
+            <Icon size={22} />
+          </IconContainer>
         )}
-        {options.map(option => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+        <select
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          ref={selectRef}
+          defaultValue={defaultValue}
+          value={defaultValue}
+          {...rest}
+        >
+          {nameLabel && (
+            <option value="" selected disabled>
+              {`Selecione ${nameLabel}`}
+            </option>
+          )}
+          {options.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </Container>
       {errorField && <Error>{error}</Error>}
-    </Container>
+    </ContainerWrapper>
   );
 };
 

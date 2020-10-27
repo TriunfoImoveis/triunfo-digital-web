@@ -112,6 +112,7 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
           neighborhood: Yup.string().required('Informe o bairrro'),
           property: Yup.string().required('Selecione o tipo do imóvel'),
           unit: Yup.string().required('Infome a unidade'),
+          builder: Yup.string().required('Selecione uma construtora'),
         });
         await schema.validate(data, {
           abortEarly: false,
@@ -173,6 +174,12 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
           nameLabel="o Tipo do Imóvel"
         />
         <InputForm name="unit" placeholder="Unidade" />
+        <Select
+          name="builder"
+          options={optionsTypeImobille}
+          icon={IoMdArrowDropdown}
+          nameLabel="a contrutora"
+        />
         <ButtonGroup>
           <Button type="reset" className="cancel">
             Cancelar

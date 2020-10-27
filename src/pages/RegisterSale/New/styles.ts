@@ -12,7 +12,7 @@ export const Content = styled.div`
   align-items: center;
   justify-content: center;
   header {
-    margin-top: 3rem;
+    margin-top: 0.8rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -39,8 +39,6 @@ export const Content = styled.div`
 
   @media (max-width: 425px) {
     header {
-      margin-top: 1.6rem;
-
       > h1 {
         font-size: 2rem;
         line-height: 2.3rem;

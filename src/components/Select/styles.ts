@@ -7,6 +7,10 @@ interface ContainerProps {
   nameLabel: string | undefined;
 }
 
+export const ContainerWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 export const Container = styled.div<ContainerProps>`
   background: ${({ theme }) => theme.colors.secondary};
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -65,6 +69,8 @@ export const IconContainer = styled.div`
 `;
 
 export const Error = styled.span`
+  display: block;
   font-size: ${({ theme }) => theme.fontSize.tiny};
   color: ${({ theme }) => theme.colors.danger};
+  margin-top: 0.4rem;
 `;

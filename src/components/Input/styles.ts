@@ -15,7 +15,7 @@ export const Container = styled.div<ContainerProps>`
   display: flex;
   align-items: center;
 
-  margin: 1.6rem 0;
+  margin: 0.8rem 0;
   ${props =>
     props.isErrored &&
     css`
@@ -61,6 +61,8 @@ export const IconContainer = styled.div`
 `;
 
 export const Error = styled.span`
+  display: block;
   font-size: ${({ theme }) => theme.fontSize.tiny};
   color: ${({ theme }) => theme.colors.danger};
+  margin: 0.4rem;
 `;
