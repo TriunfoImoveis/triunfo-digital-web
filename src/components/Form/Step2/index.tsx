@@ -10,7 +10,13 @@ import getValidationErros from '../../../utils/getValidationErros';
 import Select from '../../Select';
 import Button from '../../Button';
 
-import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
+import {
+  Container,
+  InputGroup,
+  ButtonGroup,
+  InputForm,
+  InputFormMask,
+} from './styles';
 
 interface ISaleNewData {
   SaleNewData(data: object): void;
@@ -48,7 +54,24 @@ const Step2: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
-        const schema = Yup.object().shape({});
+        const schema = Yup.object().shape({
+          name_client: Yup.string().required('Nome Obrigatório'),
+          cpf: Yup.string()
+            .max(14, 'Informe o cpf corretamente')
+            .required('CPF obrigatório'),
+          data_nasc: Yup.string().required('Data Obrigatória'),
+          estado_civil: Yup.string().required('Estado Civil Obrigatório'),
+          genero: Yup.string().required('Genero Obrigatório'),
+          quant_filhos: Yup.string().required(
+            'Quantidade de filhos Obrigatória',
+          ),
+          profissao: Yup.string().required('Profissão Obrigatória'),
+          telefone: Yup.string().required('Telefone obrigatório'),
+          whatsapp: Yup.string().required('Whatsapp obrigatório'),
+          email: Yup.string()
+            .email('informe um email Válido')
+            .required('E-mail Obrigatório'),
+        });
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -74,14 +97,9 @@ const Step2: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         <InputForm name="name_client" placeholder="Nome" />
         <InputGroup>
-          <InputForm
-            id="cpf"
-            type="tel"
-            name="cpf"
-            placeholder="CPF"
-            pattern="[0-9]{11}"
-          />
-          <InputForm
+          <InputFormMask mask="999.999.999-99" name="cpf" placeholder="CPF" />
+          <InputFormMask
+            mask="99/99/9999"
             icon={SiGooglecalendar}
             name="data_nasc"
             placeholder="Data Nasc."
@@ -111,8 +129,18 @@ const Step2: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
           <InputForm name="profissao" type="text" placeholder="Profissão" />
         </InputGroup>
         <InputGroup>
-          <InputForm name="telefone" type="text" placeholder="Telefone" />
-          <InputForm name="whatsapp" type="text" placeholder="Whatsapp" />
+          <InputFormMask
+            mask="(99) 99999-9999"
+            name="telefone"
+            type="text"
+            placeholder="Telefone"
+          />
+          <InputFormMask
+            mask="+55 (99) 99999-9999"
+            name="whatsapp"
+            type="text"
+            placeholder="Whatsapp"
+          />
         </InputGroup>
         <InputForm name="email" type="email" placeholder="E-mail" />
         <ButtonGroup>

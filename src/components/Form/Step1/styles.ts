@@ -1,7 +1,14 @@
 import styled from 'styled-components';
 import Input from '../../Input';
 
-export const Container = styled.div``;
+export const Container = styled.div`
+  form {
+    margin-top: 1.2rem;
+    div {
+      margin: 0.2rem 0;
+    }
+  }
+`;
 export const InputForm = styled(Input)`
   padding: 0 0.8rem;
 `;

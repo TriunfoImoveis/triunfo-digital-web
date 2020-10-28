@@ -61,18 +61,7 @@ export const FormContainer = styled.div`
 
   > form {
     padding: 0 9rem;
-    > div {
-      height: 4.8rem;
-      margin-bottom: 0.8rem;
-      > input {
-        padding: 0 1.6rem;
-        &::placeholder {
-          color: ${({ theme }) => theme.colors.textColorAlpha};
-        }
-      }
-    }
   }
-
   @media (max-width: 425px) {
     > form {
       padding: 0;
@@ -88,13 +77,13 @@ export const TabNavigator = styled.div`
 export const InputGroup = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.8rem;
 
   > div,
-  select {
+  select,
+  input {
     width: 50%;
   }
-  div + div {
+  > div + div {
     margin-left: 0.8rem;
   }
 `;

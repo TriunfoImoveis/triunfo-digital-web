@@ -92,6 +92,11 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
     label: property.name,
   }));
 
+  const optionBuilder = [
+    { label: 'Dimensão Engenharia', value: 'Dimensão Engenharia' },
+    { label: 'Sá Cavalcante', value: 'Sá Cavalcante' },
+    { label: 'Delman', value: 'Delman' },
+  ];
   const handleSelectedUF = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const uf = event.target.value;
@@ -176,7 +181,7 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
         <InputForm name="unit" placeholder="Unidade" />
         <Select
           name="builder"
-          options={optionsTypeImobille}
+          options={optionBuilder}
           icon={IoMdArrowDropdown}
           nameLabel="a contrutora"
         />

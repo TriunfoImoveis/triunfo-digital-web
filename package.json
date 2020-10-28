@@ -19,6 +19,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.11.0",
+    "react-input-mask": "^3.0.0-alpha.2",
     "react-loader-spinner": "^3.1.14",
     "react-multistep": "^5.1.0",
     "react-router-dom": "^5.2.0",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@types/halogen": "^0.2.6",
+    "@types/react-input-mask": "^2.0.5",
     "@types/react-loader-spinner": "^3.1.0",
     "@types/react-router-dom": "^5.1.5",
     "@types/react-select": "^3.0.20",
