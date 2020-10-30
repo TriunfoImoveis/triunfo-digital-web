@@ -6,6 +6,7 @@ import { IoMdArrowDropdown } from 'react-icons/io';
 import { SiGooglecalendar } from 'react-icons/si';
 import { toast } from 'react-toastify';
 import getValidationErros from '../../../utils/getValidationErros';
+import { useForm } from '../../../context/FormContext';
 
 import Select from '../../Select';
 import Button from '../../Button';
@@ -19,14 +20,14 @@ import {
 } from './styles';
 
 interface ISaleNewData {
-  SaleNewData(data: object): void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-const Step2: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
+const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const { updateFormData, formData } = useForm();
 
   const optionsEstadoCivil = [
     { label: 'Casado', value: 'Casado' },
@@ -76,7 +77,7 @@ const Step2: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
           abortEarly: false,
         });
 
-        SaleNewData(data);
+        updateFormData(data);
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -89,11 +90,12 @@ const Step2: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
         setLoading(false);
       }
     },
-    [SaleNewData, nextStep],
+    [updateFormData, nextStep],
   );
 
   return (
     <Container>
+      {console.log(formData)}
       <Form ref={formRef} onSubmit={handleSubmit}>
         <InputForm name="name_client" placeholder="Nome" />
         <InputGroup>

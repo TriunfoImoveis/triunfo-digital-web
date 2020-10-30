@@ -11,6 +11,7 @@ import { FormHandles } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 
@@ -33,11 +34,10 @@ interface IPropertyTypeData {
 }
 
 interface ISaleNewData {
-  SaleNewData(data: object): void;
   nextStep: () => void;
 }
 
-const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
+const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [ufs, setUfs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,6 +45,7 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
   const [propertyType, setPropertyType] = useState<IPropertyTypeData[]>([]);
   const [selectedUf, setSelectedUf] = useState('0');
   const [selectedCity, setSelectedCity] = useState('0');
+  const { updateFormData } = useForm();
 
   useEffect(() => {
     axios
@@ -123,7 +124,7 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
           abortEarly: false,
         });
 
-        SaleNewData(data);
+        updateFormData(data);
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -136,7 +137,7 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
         setLoading(false);
       }
     },
-    [SaleNewData, nextStep],
+    [updateFormData, nextStep],
   );
 
   const handleSelectCity = useCallback(

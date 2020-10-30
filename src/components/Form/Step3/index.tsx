@@ -4,6 +4,7 @@ import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { toast } from 'react-toastify';
+import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 
 import Select from '../../Select';
@@ -12,14 +13,14 @@ import Button from '../../Button';
 import { Container, InputGroup, ButtonGroup } from './styles';
 
 interface ISaleNewData {
-  SaleNewData(data: object): void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-const Step3: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
+const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const { updateFormData } = useForm();
 
   const optionsRealtors = [
     { label: 'Rafael Serejo', value: 'Rafael Serejo' },
@@ -51,7 +52,7 @@ const Step3: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
           abortEarly: false,
         });
 
-        SaleNewData(data);
+        updateFormData(data);
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -64,7 +65,7 @@ const Step3: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
         setLoading(false);
       }
     },
-    [SaleNewData, nextStep],
+    [updateFormData, nextStep],
   );
 
   return (

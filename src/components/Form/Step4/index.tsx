@@ -5,6 +5,7 @@ import { FormHandles } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { SiGooglecalendar } from 'react-icons/si';
 import { toast } from 'react-toastify';
+import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 
 import Select from '../../Select';
@@ -19,14 +20,14 @@ import {
 } from './styles';
 
 interface ISaleNewData {
-  SaleNewData(data: object): void;
-  nextStep: () => void;
   prevStep: () => void;
+  finished: () => void;
 }
 
-const Step4: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
+const Step4: React.FC<ISaleNewData> = ({ prevStep, finished }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const { updateFormData } = useForm();
 
   const optionsEmpresa = [
     { label: 'DC Reis - 18%', value: 'DC Reis' },
@@ -52,8 +53,8 @@ const Step4: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
           abortEarly: false,
         });
 
-        SaleNewData(data);
-        nextStep();
+        updateFormData(data);
+        finished();
         setLoading(false);
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
@@ -65,7 +66,7 @@ const Step4: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
         setLoading(false);
       }
     },
-    [SaleNewData, nextStep],
+    [updateFormData, finished],
   );
 
   return (
@@ -111,7 +112,7 @@ const Step4: React.FC<ISaleNewData> = ({ SaleNewData, nextStep, prevStep }) => {
           <Button type="button" className="cancel" onClick={() => prevStep()}>
             Voltar
           </Button>
-          <Button type="submit" className="next">
+          <Button type="button" className="next" onClick={() => finished()}>
             {loading ? '...' : 'Concluir cadastro'}
           </Button>
         </ButtonGroup>
