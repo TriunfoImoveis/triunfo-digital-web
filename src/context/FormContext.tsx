@@ -10,12 +10,10 @@ const FormContext = createContext({} as FormContextData);
 
 const FormProvider: React.FC = ({ children }) => {
   const [formData, setFormData] = useState({});
-  const [dataSteps, setDataSteps] = useState({});
 
   const updateFormData = (data: Object) => {
-    setDataSteps(data);
-
-    Object.assign(formData, dataSteps);
+    const newData = Object.assign(formData, data);
+    setFormData(newData);
   };
 
   const submitForm = () => {

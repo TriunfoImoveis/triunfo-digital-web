@@ -21,10 +21,10 @@ import {
 
 interface ISaleNewData {
   prevStep: () => void;
-  finished: () => void;
+  nextStep: () => void;
 }
 
-const Step4: React.FC<ISaleNewData> = ({ prevStep, finished }) => {
+const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const { updateFormData } = useForm();
@@ -45,16 +45,19 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, finished }) => {
       try {
         setLoading(true);
         const schema = Yup.object().shape({
-          realtor_sell: Yup.string().required('Corretor Vendedor Obrigatório'),
-          coordenador: Yup.string().required('Coordenador Obrigatório'),
-          director: Yup.string().required('Diretor Obrigatório'),
+          date_sale: Yup.string().required('Data da Venda Obrigatória'),
+          empresa: Yup.string().required('Taxa de imposto Obrigatório'),
+          forma_pag: Yup.string().required('Forma de Pagamento Obrigatório'),
+          porcentagem: Yup.string().required(
+            'Porcetagem Total da venda Obrigatória',
+          ),
+          comissao: Yup.string().required('Comissão Obrigatória'),
         });
         await schema.validate(data, {
           abortEarly: false,
         });
-
         updateFormData(data);
-        finished();
+        nextStep();
         setLoading(false);
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
@@ -66,7 +69,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, finished }) => {
         setLoading(false);
       }
     },
-    [updateFormData, finished],
+    [updateFormData, nextStep],
   );
 
   return (
@@ -112,7 +115,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, finished }) => {
           <Button type="button" className="cancel" onClick={() => prevStep()}>
             Voltar
           </Button>
-          <Button type="button" className="next" onClick={() => finished()}>
+          <Button type="submit" className="next">
             {loading ? '...' : 'Concluir cadastro'}
           </Button>
         </ButtonGroup>

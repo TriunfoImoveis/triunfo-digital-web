@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from 'react';
-import { useForm } from '../../../context/FormContext';
 
 import Header from '../../../components/Header';
 import Step1 from '../../../components/Form/Step1';
@@ -10,15 +9,7 @@ import SuccessForm from '../../../components/Form/Success';
 import { Container, Content, FormContainer, TabNavigator } from './styles';
 
 const RegisterSaleNew: React.FC = () => {
-  const [step, setStep] = useState(5);
-  const { formData } = useForm();
-  // const [formData, setFormData] = useState({});
-
-  // const SaleNewData = useCallback((data: object) => {
-  //   setFormData(state => {
-  //     return { ...state, data };
-  //   });
-  // }, []);
+  const [step, setStep] = useState(1);
 
   const nextSpeps = useCallback(() => {
     setStep(step + 1);
@@ -27,11 +18,6 @@ const RegisterSaleNew: React.FC = () => {
   const prevSpeps = useCallback(() => {
     setStep(step - 1);
   }, [step]);
-
-  const finished = useCallback(() => {
-    nextSpeps();
-    console.log(formData);
-  }, [formData, nextSpeps]);
 
   function SwitchSteps(stepParm: number) {
     switch (stepParm) {
@@ -42,7 +28,7 @@ const RegisterSaleNew: React.FC = () => {
       case 3:
         return <Step3 nextStep={nextSpeps} prevStep={prevSpeps} />;
       case 4:
-        return <Step4 finished={finished} prevStep={prevSpeps} />;
+        return <Step4 nextStep={nextSpeps} prevStep={prevSpeps} />;
       case 5:
         return <SuccessForm />;
       default:

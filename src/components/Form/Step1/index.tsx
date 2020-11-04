@@ -37,6 +37,18 @@ interface ISaleNewData {
   nextStep: () => void;
 }
 
+interface IStep1FormData {
+  realty: {
+    enterprise: string;
+    unity: string;
+    state: string;
+    city: string;
+    neighborhood: string;
+    property: string;
+  };
+  builder: string;
+}
+
 const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [ufs, setUfs] = useState<string[]>([]);
@@ -107,17 +119,19 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
   );
 
   const handleSubmit = useCallback(
-    async data => {
+    async (data: IStep1FormData) => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
         const schema = Yup.object().shape({
-          enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
-          state: Yup.string().required('Informe o Estado'),
-          city: Yup.string().required('Informe o Cidade'),
-          neighborhood: Yup.string().required('Informe o bairrro'),
-          property: Yup.string().required('Selecione o tipo do imóvel'),
-          unit: Yup.string().required('Infome a unidade'),
+          realty: Yup.object().shape({
+            enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+            state: Yup.string().required('Informe o Estado'),
+            city: Yup.string().required('Informe o Cidade'),
+            neighborhood: Yup.string().required('Informe o bairrro'),
+            property: Yup.string().required('Selecione o tipo do imóvel'),
+            unit: Yup.string().required('Infome a unidade'),
+          }),
           builder: Yup.string().required('Selecione uma construtora'),
         });
         await schema.validate(data, {
@@ -137,7 +151,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
         setLoading(false);
       }
     },
-    [updateFormData, nextStep],
+    [nextStep, updateFormData],
   );
 
   const handleSelectCity = useCallback(
@@ -150,10 +164,10 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <InputForm name="enterprise" placeholder="Empreendimento" />
+        <InputForm name="realty.enterprise" placeholder="Empreendimento" />
         <InputGroup>
           <Select
-            name="state"
+            name="realty.state"
             placeholder="Selecione um estado"
             options={optionsUFs}
             icon={IoMdArrowDropdown}
@@ -162,7 +176,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
             nameLabel="o Estado"
           />
           <Select
-            name="city"
+            name="realty.city"
             placeholder="Cidade"
             options={optionsCities}
             icon={IoMdArrowDropdown}
@@ -171,15 +185,15 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
             nameLabel="a cidade"
           />
         </InputGroup>
-        <InputForm name="neighborhood" placeholder="Bairro" />
+        <InputForm name="realty.neighborhood" placeholder="Bairro" />
         <Select
-          name="property"
+          name="realty.property"
           placeholder="Tipo do Imovel"
           options={optionsTypeImobille}
           icon={IoMdArrowDropdown}
           nameLabel="o Tipo do Imóvel"
         />
-        <InputForm name="unit" placeholder="Unidade" />
+        <InputForm name="realty.unit" placeholder="Unidade" />
         <Select
           name="builder"
           options={optionBuilder}

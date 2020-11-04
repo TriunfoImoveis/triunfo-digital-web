@@ -17,6 +17,12 @@ interface ISaleNewData {
   prevStep: () => void;
 }
 
+interface formData {
+  realtor_sell: string;
+  coordenador: string;
+  director: string;
+}
+
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
@@ -39,7 +45,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   ];
 
   const handleSubmit = useCallback(
-    async data => {
+    async (data: formData) => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
@@ -51,7 +57,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
         await schema.validate(data, {
           abortEarly: false,
         });
-
         updateFormData(data);
         nextStep();
         setLoading(false);

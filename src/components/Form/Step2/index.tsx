@@ -1,9 +1,8 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
-import { SiGooglecalendar } from 'react-icons/si';
 import { toast } from 'react-toastify';
 import getValidationErros from '../../../utils/getValidationErros';
 import { useForm } from '../../../context/FormContext';
@@ -27,13 +26,14 @@ interface ISaleNewData {
 const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
-  const { updateFormData, formData } = useForm();
+  const [numberInput, setNumberInputs] = useState({});
+  const { updateFormData } = useForm();
 
   const optionsEstadoCivil = [
-    { label: 'Casado', value: 'Casado' },
-    { label: 'Solteiro', value: 'Solteiro' },
-    { label: 'Divorciado', value: 'divorciado' },
-    { label: 'Viuvo', value: 'viuvo' },
+    { label: 'Casado(a)', value: 'CASADO(A)' },
+    { label: 'Solteiro(a)', value: 'SOLTEIRO(A)' },
+    { label: 'Divorciado(a)', value: 'DIVORCIADO(A)' },
+    { label: 'Viúvo(a)', value: 'VIUVO(A)' },
   ];
 
   const optionsGenero = [
@@ -55,12 +55,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
+        // mudar os nomes da validação
         const schema = Yup.object().shape({
           name_client: Yup.string().required('Nome Obrigatório'),
           cpf: Yup.string()
             .max(14, 'Informe o cpf corretamente')
             .required('CPF obrigatório'),
-          data_nasc: Yup.string().required('Data Obrigatória'),
+          data_nasc: Yup.string().required('Data de nascimento obrigatória'),
           estado_civil: Yup.string().required('Estado Civil Obrigatório'),
           genero: Yup.string().required('Genero Obrigatório'),
           quant_filhos: Yup.string().required(
@@ -72,12 +73,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
           email: Yup.string()
             .email('informe um email Válido')
             .required('E-mail Obrigatório'),
+          origin: Yup.string().required('Origem do cliente obrigatório'),
         });
         await schema.validate(data, {
           abortEarly: false,
         });
-
-        updateFormData(data);
+        const newData = Object.assign(data, numberInput);
+        updateFormData(newData);
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -90,32 +92,44 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
         setLoading(false);
       }
     },
-    [updateFormData, nextStep],
+    [updateFormData, nextStep, numberInput],
   );
 
+  const handleNumberInput = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { id, value } = event.target;
+      const valueFormated = value.replace(/([^\d+,])+/gim, '');
+      setNumberInputs({ ...numberInput, [id]: valueFormated });
+    },
+    [numberInput],
+  );
   return (
     <Container>
-      {console.log(formData)}
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <InputForm name="name_client" placeholder="Nome" />
         <InputGroup>
-          <InputFormMask mask="999.999.999-99" name="cpf" placeholder="CPF" />
           <InputFormMask
-            mask="99/99/9999"
-            icon={SiGooglecalendar}
-            name="data_nasc"
+            id="cpf"
+            mask="999.999.999-99"
+            name="client_buyer.cpf"
+            placeholder="CPF"
+            onChange={handleNumberInput}
+          />
+          <InputForm
+            type="date"
+            name="client_buyer.date_birth"
             placeholder="Data Nasc."
           />
         </InputGroup>
+        <InputForm name="client_buyer.name" placeholder="Nome" />
         <InputGroup>
           <Select
-            name="estado_civil"
+            name="client_buyer.civil_status"
             options={optionsEstadoCivil}
             icon={IoMdArrowDropdown}
             nameLabel="o Estado Civíl"
           />
           <Select
-            name="genero"
+            name="client_buyer.gender"
             options={optionsGenero}
             icon={IoMdArrowDropdown}
             nameLabel="o genero"
@@ -123,28 +137,46 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
         </InputGroup>
         <InputGroup>
           <Select
-            name="quant_filhos"
+            name="client_buyer.number_children"
             options={optionsQuantFilhos}
             icon={IoMdArrowDropdown}
             nameLabel="a Quantidade de Filhos"
           />
-          <InputForm name="profissao" type="text" placeholder="Profissão" />
+          <InputForm
+            name="client_buyer.occupation"
+            type="text"
+            placeholder="Profissão"
+          />
         </InputGroup>
         <InputGroup>
           <InputFormMask
+            id="telefone"
             mask="(99) 99999-9999"
-            name="telefone"
+            name="client_buyer.phone"
             type="text"
             placeholder="Telefone"
+            onChange={handleNumberInput}
           />
           <InputFormMask
+            id="whatsapp"
             mask="+55 (99) 99999-9999"
-            name="whatsapp"
+            name="client_buyer.whatsapp"
             type="text"
             placeholder="Whatsapp"
+            onChange={handleNumberInput}
           />
         </InputGroup>
-        <InputForm name="email" type="email" placeholder="E-mail" />
+        <InputForm
+          name="client_buyer.email"
+          type="email"
+          placeholder="E-mail"
+        />
+        <Select
+          name="origin"
+          options={[{ label: 'OLX', value: 'OLX' }]}
+          icon={IoMdArrowDropdown}
+          nameLabel="a Origem"
+        />
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>
             Voltar

@@ -46,6 +46,19 @@ export const Container = styled.div<ContainerProps>`
       color: ${({ theme }) => theme.colors.textColor};
     }
   }
+
+  input[type='date'] {
+    background: transparent;
+    height: 100%;
+    flex: 1;
+    border: 0;
+    font-family: 'Roboto';
+    font-size: 16px;
+    color: ${({ theme }) => theme.colors.textColor};
+    &::placeholder {
+      color: ${({ theme }) => theme.colors.textColor};
+    }
+  }
   > svg {
     margin-right: 16px;
   }

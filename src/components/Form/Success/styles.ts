@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { shade } from 'polished';
 
 export const SuccessContainer = styled.div`
   display: flex;
@@ -23,11 +24,32 @@ export const ButtonGroup = styled.div`
   justify-content: space-between;
   width: 100%;
 
-  > button {
-    width: 50%;
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: ${({ theme }) => theme.colors.primary};
+    border-radius: 0.5rem;
+    border: 0;
+    color: ${({ theme }) => theme.colors.secondary};
+    height: 5rem;
+    width: 100%;
+    margin-top: 16px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.2s;
+
+    font-weight: bold;
+    font-size: 2rem;
+    line-height: 2.3rem;
+
+    color: ${({ theme }) => theme.colors.secondary};
+    text-decoration: none;
+    &:hover {
+      background: ${shade(0.2, '#C32925')};
+    }
   }
 
-  button + button {
+  a + a {
     margin-left: 0.8rem;
   }
 
@@ -47,10 +69,15 @@ export const ButtonGroup = styled.div`
     background: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.primary};
     border: 0.1rem solid ${({ theme }) => theme.colors.primary};
+    transition: background-color 0.2s;
+  }
+
+  .cancel:hover {
+    background: ${({ theme }) => theme.colors.primaryAlpha};
   }
 
   @media (max-width: 425px) {
-    > button {
+    > a {
       width: 16.5rem;
     }
     .cancel,
