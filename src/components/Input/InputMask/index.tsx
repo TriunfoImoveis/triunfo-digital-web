@@ -60,6 +60,7 @@ const InputMask: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
           </IconContainer>
         )}
         <ReactInputMask
+          name={fieldName}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           ref={inputRef}

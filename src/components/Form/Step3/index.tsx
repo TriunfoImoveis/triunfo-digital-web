@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
+import { FormHandles, Scope } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
@@ -50,9 +50,9 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
       try {
         setLoading(true);
         const schema = Yup.object().shape({
-          realtor_sell: Yup.string().required('Corretor Vendedor Obrigatório'),
-          coordenador: Yup.string().required('Coordenador Obrigatório'),
-          director: Yup.string().required('Diretor Obrigatório'),
+          users_sellers: Yup.array().required('Corretor Vendedor Obrigatório'),
+          user_coordinator: Yup.string().required('Coordenador Obrigatório'),
+          user_director: Yup.string().required('Diretor Obrigatório'),
         });
         await schema.validate(data, {
           abortEarly: false,
@@ -76,22 +76,23 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <Select
-          name="realtor_sell"
-          options={optionsRealtors}
-          icon={IoMdArrowDropdown}
-          nameLabel="o Corretor Vendedor"
-        />
-
+        <Scope path="users_sellers[0]">
+          <Select
+            name="id"
+            options={optionsRealtors}
+            icon={IoMdArrowDropdown}
+            nameLabel="o Corretor Vendedor"
+          />
+        </Scope>
         <InputGroup>
           <Select
-            name="coordenador"
+            name="user_coordinator"
             options={optionsCoordenador}
             icon={IoMdArrowDropdown}
             nameLabel="o Coordenador"
           />
           <Select
-            name="director"
+            name="user_director"
             options={optionsDirector}
             icon={IoMdArrowDropdown}
             nameLabel="o diretor"

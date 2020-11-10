@@ -9,7 +9,7 @@ import SuccessForm from '../../../components/Form/Success';
 import { Container, Content, FormContainer, TabNavigator } from './styles';
 
 const RegisterSaleNew: React.FC = () => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
 
   const nextSpeps = useCallback(() => {
     setStep(step + 1);
