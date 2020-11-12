@@ -28,13 +28,14 @@ interface IBGECityResponse {
   nome: string;
 }
 
-interface IPropertyTypeData {
+interface IOptionsData {
   id: string;
   name: string;
 }
 
 interface ISaleNewData {
   nextStep: () => void;
+  typeSale: 'new' | 'used';
 }
 
 interface IStep1FormData {
@@ -49,12 +50,13 @@ interface IStep1FormData {
   builder: string;
 }
 
-const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
+const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [ufs, setUfs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
-  const [propertyType, setPropertyType] = useState<IPropertyTypeData[]>([]);
+  const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
+  const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [selectedUf, setSelectedUf] = useState('0');
   const [selectedCity, setSelectedCity] = useState('0');
   const { updateFormData } = useForm();
@@ -93,6 +95,16 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
     loadPropertyType();
   }, []);
 
+  useEffect(() => {
+    if (typeSale === 'used') {
+      return;
+    }
+    const loadBuilders = async () => {
+      const response = await api.get('/builder');
+      setBuilders(response.data);
+    };
+    loadBuilders();
+  }, [typeSale]);
   const optionsUFs = ufs.map(uf => ({
     value: uf,
     label: uf,
@@ -105,11 +117,11 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
     label: property.name,
   }));
 
-  const optionBuilder = [
-    { label: 'Dimensão Engenharia', value: 'Dimensão Engenharia' },
-    { label: 'Sá Cavalcante', value: 'Sá Cavalcante' },
-    { label: 'Delman', value: 'Delman' },
-  ];
+  const optionBuilder = builders.map(builder => ({
+    label: builder.name,
+    value: builder.id,
+  }));
+
   const handleSelectedUF = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const uf = event.target.value;
@@ -194,12 +206,14 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep }) => {
           nameLabel="o Tipo do Imóvel"
         />
         <InputForm name="realty.unit" placeholder="Unidade" />
-        <Select
-          name="builder"
-          options={optionBuilder}
-          icon={IoMdArrowDropdown}
-          nameLabel="a contrutora"
-        />
+        {typeSale === 'new' && (
+          <Select
+            name="builder"
+            options={optionBuilder}
+            icon={IoMdArrowDropdown}
+            nameLabel="a contrutora"
+          />
+        )}
         <ButtonGroup>
           <Button type="reset" className="cancel">
             Cancelar

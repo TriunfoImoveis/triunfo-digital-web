@@ -15,9 +15,16 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   icon?: React.ComponentType<IconBaseProps>;
   mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats';
+  maxlength?: number;
 }
 
-const Input: React.FC<InputProps> = ({ name, mask, icon: Icon, ...rest }) => {
+const Input: React.FC<InputProps> = ({
+  name,
+  mask,
+  maxlength,
+  icon: Icon,
+  ...rest
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
@@ -94,6 +101,7 @@ const Input: React.FC<InputProps> = ({ name, mask, icon: Icon, ...rest }) => {
             ref={inputRef}
             defaultValue={defaultValue}
             onKeyUp={e => masked(e)}
+            maxLength={maxlength}
             {...rest}
           />
         ) : (
@@ -102,6 +110,7 @@ const Input: React.FC<InputProps> = ({ name, mask, icon: Icon, ...rest }) => {
             onBlur={handleInputBlur}
             ref={inputRef}
             defaultValue={defaultValue}
+            maxLength={maxlength}
             {...rest}
           />
         )}

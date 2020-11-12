@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles, Scope } from '@unform/core';
@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import getValidationErros from '../../../utils/getValidationErros';
 import { unMaked } from '../../../utils/unMasked';
 import { useForm } from '../../../context/FormContext';
+import api from '../../../services/api';
 
 import Select from '../../Select';
 import Button from '../../Button';
@@ -16,12 +17,27 @@ import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
 interface ISaleNewData {
   nextStep: () => void;
   prevStep: () => void;
+  typeClient: 'buyer' | 'salesman';
 }
 
-const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
+interface IOptionsData {
+  id: string;
+  name: string;
+}
+
+const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const [origins, setOrigins] = useState<IOptionsData[]>([]);
   const { updateFormData } = useForm();
+
+  useEffect(() => {
+    const loadOrigins = async () => {
+      const response = await api.get('/origin-sale');
+      setOrigins(response.data);
+    };
+    loadOrigins();
+  }, []);
 
   const optionsEstadoCivil = [
     { label: 'Casado(a)', value: 'CASADO(A)' },
@@ -33,16 +49,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   const optionsGenero = [
     { label: 'Masculino', value: 'M' },
     { label: 'Femenino', value: 'F' },
-    { label: 'Outros', value: 'outro' },
+    { label: 'Outros', value: 'OUTRO' },
   ];
 
-  const optionsQuantFilhos = [
-    { label: '0', value: '0' },
-    { label: '1', value: '1' },
-    { label: '2', value: '2' },
-    { label: '3', value: '3' },
-    { label: '4', value: '4 ' },
-  ];
+  const optionsOptions = origins.map(origin => ({
+    label: origin.name,
+    value: origin.id,
+  }));
 
   const unMaskValue = useCallback(() => {
     const cpf = unMaked(formRef.current?.getFieldValue('client_buyer.cpf'));
@@ -53,6 +66,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
       formRef.current?.getFieldValue('client_buyer.whatsapp'),
     );
     formRef.current?.setFieldValue('client_buyer.whatsapp', whatsapp);
+    const numberChildren = Number(
+      formRef.current?.getFieldValue('client_buyer.number_children'),
+    );
+    formRef.current?.setFieldValue(
+      'client_buyer.number_children',
+      numberChildren,
+    );
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -105,7 +125,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         <Scope path="client_buyer">
           <InputGroup>
-            <InputForm mask="cpf" name="cpf" placeholder="CPF" />
+            <InputForm mask="cpf" name="cpf" placeholder="CPF" maxlength={11} />
             <InputForm type="date" name="date_birth" placeholder="Data Nasc." />
           </InputGroup>
           <InputForm name="name" placeholder="Nome" />
@@ -124,11 +144,11 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
             />
           </InputGroup>
           <InputGroup>
-            <Select
+            <InputForm
               name="number_children"
-              options={optionsQuantFilhos}
-              icon={IoMdArrowDropdown}
-              nameLabel="a Quantidade de Filhos"
+              type="number"
+              placeholder="Quantidade de Filhos"
+              maxlength={2}
             />
             <InputForm name="occupation" type="text" placeholder="Profissão" />
           </InputGroup>
@@ -139,6 +159,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
               name="phone"
               type="text"
               placeholder="Telefone"
+              maxlength={9}
             />
             <InputForm
               id="whatsapp"
@@ -146,16 +167,20 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
               name="whatsapp"
               type="text"
               placeholder="Whatsapp"
+              maxlength={9}
             />
           </InputGroup>
           <InputForm name="email" type="email" placeholder="E-mail" />
         </Scope>
-        <Select
-          name="origin"
-          options={[{ label: 'OLX', value: 'OLX' }]}
-          icon={IoMdArrowDropdown}
-          nameLabel="a Origem"
-        />
+        {typeClient === 'salesman' && (
+          <Select
+            name="origin"
+            options={optionsOptions}
+            icon={IoMdArrowDropdown}
+            nameLabel="a Origem"
+          />
+        )}
+
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>
             Voltar

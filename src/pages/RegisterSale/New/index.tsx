@@ -6,10 +6,11 @@ import Step2 from '../../../components/Form/Step2';
 import Step3 from '../../../components/Form/Step3';
 import Step4 from '../../../components/Form/Step4';
 import SuccessForm from '../../../components/Form/Success';
-import { Container, Content, FormContainer, TabNavigator } from './styles';
+import TabNavigator from '../../../components/TabNavigator';
+import { Container, Content, FormContainer } from './styles';
 
 const RegisterSaleNew: React.FC = () => {
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
 
   const nextSpeps = useCallback(() => {
     setStep(step + 1);
@@ -22,9 +23,11 @@ const RegisterSaleNew: React.FC = () => {
   function SwitchSteps(stepParm: number) {
     switch (stepParm) {
       case 1:
-        return <Step1 nextStep={nextSpeps} />;
+        return <Step1 nextStep={nextSpeps} typeSale="used" />;
       case 2:
-        return <Step2 nextStep={nextSpeps} prevStep={prevSpeps} />;
+        return (
+          <Step2 nextStep={nextSpeps} prevStep={prevSpeps} typeClient="buyer" />
+        );
       case 3:
         return <Step3 nextStep={nextSpeps} prevStep={prevSpeps} />;
       case 4:
@@ -42,10 +45,9 @@ const RegisterSaleNew: React.FC = () => {
       <Content>
         <header>
           <h1>Cadastrar Vendas</h1>
-          <span>VENDA</span>
         </header>
         <FormContainer>
-          <TabNavigator />
+          <TabNavigator step={step} typeSale="used" />
           {SwitchSteps(step)}
         </FormContainer>
       </Content>
