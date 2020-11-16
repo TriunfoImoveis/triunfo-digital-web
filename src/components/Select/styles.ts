@@ -48,6 +48,7 @@ export const Container = styled.div<ContainerProps>`
     -moz-appearance: none;
     text-indent: 1px;
     text-overflow: '';
+    margin-left: 0.8rem;
 
     option {
       color: ${({ theme }) => theme.colors.textColor};
@@ -73,4 +74,15 @@ export const Error = styled.span`
   font-size: ${({ theme }) => theme.fontSize.tiny};
   color: ${({ theme }) => theme.colors.danger};
   margin-top: 0.4rem;
+`;
+
+export const AddButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.9rem;
+  height: 100%;
+  border: 0;
+  border-radius: 0.4rem 0 0 0.4rem;
+  background: ${({ theme }) => theme.colors.primaryAlpha};
 `;

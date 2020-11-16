@@ -3,7 +3,8 @@ import React, { createContext, useContext, useState } from 'react';
 interface FormContextData {
   formData: Object;
   updateFormData(data: Object): void;
-  submitForm(): void;
+  submitFormNew(): void;
+  submitFormUsed(): void;
 }
 
 const FormContext = createContext({} as FormContextData);
@@ -16,12 +17,18 @@ const FormProvider: React.FC = ({ children }) => {
     setFormData(newData);
   };
 
-  const submitForm = () => {
+  const submitFormNew = () => {
+    console.log(formData);
+  };
+
+  const submitFormUsed = () => {
     console.log(formData);
   };
 
   return (
-    <FormContext.Provider value={{ formData, updateFormData, submitForm }}>
+    <FormContext.Provider
+      value={{ formData, updateFormData, submitFormNew, submitFormUsed }}
+    >
       {children}
     </FormContext.Provider>
   );

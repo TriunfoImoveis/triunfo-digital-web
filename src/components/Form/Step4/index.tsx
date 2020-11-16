@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
@@ -8,27 +8,60 @@ import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 import { currency } from '../../../utils/unMasked';
 import { money } from '../../../utils/masked';
+import api from '../../../services/api';
 
 import Select from '../../Select';
 import Button from '../../Button';
+import CheckBox from '../../CheckBox';
 
-import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
+import {
+  Container,
+  InputGroup,
+  ButtonGroup,
+  InputForm,
+  BonusConatainer,
+} from './styles';
 
 interface ISaleNewData {
   prevStep: () => void;
   nextStep: () => void;
 }
 
+interface IOptionsData {
+  id: string;
+  name: string;
+}
+
 const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const [origins, setOrigins] = useState<IOptionsData[]>([]);
   const [comissionValue, setcomissionValue] = useState('');
+  const [isExistBonus, setisExistBonus] = useState(false);
   const { updateFormData } = useForm();
+
+  useEffect(() => {
+    const loadOrigins = async () => {
+      const response = await api.get('/origin-sale');
+      setOrigins(response.data);
+    };
+    loadOrigins();
+  }, []);
+
+  const optionsOptions = origins.map(origin => ({
+    label: origin.name,
+    value: origin.id,
+  }));
 
   const optionsEmpresa = [
     { label: 'DC Reis - 18%', value: 'DC Reis' },
     { label: 'Francistelmo - 10%', value: 'Francistelmo' },
     { label: 'Raunin - 22%', value: 'Raunin' },
+  ];
+
+  const optionsBonus = [
+    { id: '1', label: 'Sim', value: 'Y' },
+    { id: '2', label: 'Não', value: 'N' },
   ];
 
   const optionsFormaPagamento = [
@@ -74,6 +107,8 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
           'Porcetagem Total da venda Obrigatória',
         ),
         commission: Yup.string().required('Comissão Obrigatória'),
+        origin: Yup.string().required('Origem da venda obrigatória'),
+        bonus: Yup.string(),
       });
       await schema.validate(data, {
         abortEarly: false,
@@ -91,6 +126,22 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
       setLoading(false);
     }
   }, [unMaskValue, updateFormData, nextStep]);
+
+  const handleValue = useCallback((value: string) => {
+    switch (value) {
+      case 'Y':
+        setisExistBonus(true);
+        break;
+      case 'N':
+        setisExistBonus(false);
+        break;
+      case '':
+        setisExistBonus(false);
+        break;
+      default:
+        break;
+    }
+  }, []);
 
   return (
     <Container>
@@ -131,7 +182,19 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
             value={comissionValue}
           />
         </InputGroup>
-
+        <Select
+          name="origin"
+          options={optionsOptions}
+          icon={IoMdArrowDropdown}
+          nameLabel="a Origem"
+        />
+        <BonusConatainer>
+          <span>Bonus da Venda ?</span>
+          <CheckBox options={optionsBonus} handleValue={handleValue} />
+        </BonusConatainer>
+        {isExistBonus && (
+          <InputForm name="bonus" mask="currency" placeholder="Bônus" />
+        )}
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>
             Voltar

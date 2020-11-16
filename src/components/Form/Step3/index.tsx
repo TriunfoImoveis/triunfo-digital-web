@@ -15,6 +15,7 @@ import { Container, InputGroup, ButtonGroup } from './styles';
 interface ISaleNewData {
   nextStep: () => void;
   prevStep: () => void;
+  typeSale: 'new' | 'used';
 }
 
 interface formData {
@@ -23,7 +24,7 @@ interface formData {
   director: string;
 }
 
-const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
+const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const { updateFormData } = useForm();
@@ -76,28 +77,63 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <Scope path="users_sellers[0]">
-          <Select
-            name="id"
-            options={optionsRealtors}
-            icon={IoMdArrowDropdown}
-            nameLabel="o Corretor Vendedor"
-          />
-        </Scope>
-        <InputGroup>
-          <Select
-            name="user_coordinator"
-            options={optionsCoordenador}
-            icon={IoMdArrowDropdown}
-            nameLabel="o Coordenador"
-          />
-          <Select
-            name="user_director"
-            options={optionsDirector}
-            icon={IoMdArrowDropdown}
-            nameLabel="o diretor"
-          />
-        </InputGroup>
+        {typeSale === 'new' && (
+          <>
+            <Scope path="users_sellers[0]">
+              <Select
+                name="id"
+                options={optionsRealtors}
+                icon={IoMdArrowDropdown}
+                nameLabel="o Corretor Vendedor"
+                add
+              />
+            </Scope>
+            <InputGroup>
+              <Select
+                name="user_coordinator"
+                options={optionsCoordenador}
+                icon={IoMdArrowDropdown}
+                nameLabel="o Coordenador"
+              />
+              <Select
+                name="user_director"
+                options={optionsDirector}
+                icon={IoMdArrowDropdown}
+                nameLabel="o diretor"
+              />
+            </InputGroup>
+          </>
+        )}
+        {typeSale === 'used' && (
+          <>
+            <InputGroup>
+              <Scope path="users_sellers[0]">
+                <Select
+                  name="id"
+                  options={optionsRealtors}
+                  icon={IoMdArrowDropdown}
+                  nameLabel="o Corretor Vendedor"
+                  add
+                />
+              </Scope>
+              <Scope path="users_captivators">
+                <Select
+                  name="id"
+                  options={optionsRealtors}
+                  icon={IoMdArrowDropdown}
+                  nameLabel="o Corretor Captador"
+                  add
+                />
+              </Scope>
+            </InputGroup>
+            <Select
+              name="user_director"
+              options={optionsDirector}
+              icon={IoMdArrowDropdown}
+              nameLabel="o diretor"
+            />
+          </>
+        )}
 
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>

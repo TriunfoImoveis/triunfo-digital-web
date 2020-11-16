@@ -11,6 +11,9 @@ const Action: React.FC = () => {
   const handleNavigateToRegisterSaleNew = useCallback(() => {
     history.push('/vendas-novo');
   }, [history]);
+  const handleNavigateToRegisterSaleUsed = useCallback(() => {
+    history.push('/vendas-usado');
+  }, [history]);
   return (
     <Container>
       <Header />
@@ -21,7 +24,9 @@ const Action: React.FC = () => {
           <Button type="button" onClick={handleNavigateToRegisterSaleNew}>
             Novos
           </Button>
-          <Button type="button">Usados</Button>
+          <Button type="button" onClick={handleNavigateToRegisterSaleUsed}>
+            Usados
+          </Button>
         </ButtonGroup>
       </Content>
     </Container>

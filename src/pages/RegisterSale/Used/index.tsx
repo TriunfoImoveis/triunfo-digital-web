@@ -9,8 +9,8 @@ import SuccessForm from '../../../components/Form/Success';
 import TabNavigator from '../../../components/TabNavigator';
 import { Container, Content, FormContainer } from './styles';
 
-const RegisterSaleNew: React.FC = () => {
-  const [step, setStep] = useState(3);
+const RegisterSaleUsed: React.FC = () => {
+  const [step, setStep] = useState(4);
 
   const nextSpeps = useCallback(() => {
     setStep(step + 1);
@@ -30,12 +30,20 @@ const RegisterSaleNew: React.FC = () => {
         );
       case 3:
         return (
-          <Step3 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="used" />
+          <Step2
+            nextStep={nextSpeps}
+            prevStep={prevSpeps}
+            typeClient="salesman"
+          />
         );
       case 4:
-        return <Step4 nextStep={nextSpeps} prevStep={prevSpeps} />;
+        return (
+          <Step3 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="used" />
+        );
       case 5:
-        return <SuccessForm typeSale="new" />;
+        return <Step4 nextStep={nextSpeps} prevStep={prevSpeps} />;
+      case 6:
+        return <SuccessForm typeSale="used" />;
       default:
         break;
     }
@@ -49,7 +57,7 @@ const RegisterSaleNew: React.FC = () => {
           <h1>Cadastrar Vendas</h1>
         </header>
         <FormContainer>
-          <TabNavigator step={step} typeSale="new" />
+          <TabNavigator step={step} typeSale="used" />
           {SwitchSteps(step)}
         </FormContainer>
       </Content>
@@ -57,4 +65,4 @@ const RegisterSaleNew: React.FC = () => {
   );
 };
 
-export default RegisterSaleNew;
+export default RegisterSaleUsed;

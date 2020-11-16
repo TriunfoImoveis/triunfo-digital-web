@@ -6,11 +6,24 @@ import { useForm } from '../../../context/FormContext';
 import { SuccesImage } from '../../../assets/images';
 import { SuccessContainer, ButtonGroup } from './styles';
 
-const SuccesForm: React.FC = () => {
-  const { submitForm } = useForm();
+interface ISuccessProps {
+  typeSale: 'new' | 'used';
+}
+
+const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
+  const { submitFormNew, submitFormUsed } = useForm();
   useEffect(() => {
-    submitForm();
-  }, [submitForm]);
+    switch (typeSale) {
+      case 'new':
+        submitFormNew();
+        break;
+      case 'used':
+        submitFormUsed();
+        break;
+      default:
+        break;
+    }
+  }, [submitFormNew, submitFormUsed, typeSale]);
   return (
     <SuccessContainer>
       <h1>Cadastro concluído</h1>

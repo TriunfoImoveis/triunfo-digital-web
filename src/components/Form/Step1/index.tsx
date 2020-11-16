@@ -47,7 +47,7 @@ interface IStep1FormData {
     neighborhood: string;
     property: string;
   };
-  builder: string;
+  builder?: string;
 }
 
 const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
@@ -135,20 +135,38 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
-        const schema = Yup.object().shape({
-          realty: Yup.object().shape({
-            enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
-            state: Yup.string().required('Informe o Estado'),
-            city: Yup.string().required('Informe o Cidade'),
-            neighborhood: Yup.string().required('Informe o bairrro'),
-            property: Yup.string().required('Selecione o tipo do imóvel'),
-            unit: Yup.string().required('Infome a unidade'),
-          }),
-          builder: Yup.string().required('Selecione uma construtora'),
-        });
-        await schema.validate(data, {
-          abortEarly: false,
-        });
+        if (typeSale === 'new') {
+          const schema = Yup.object().shape({
+            realty: Yup.object().shape({
+              enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+              state: Yup.string().required('Informe o Estado'),
+              city: Yup.string().required('Informe o Cidade'),
+              neighborhood: Yup.string().required('Informe o bairrro'),
+              property: Yup.string().required('Selecione o tipo do imóvel'),
+              unit: Yup.string().required('Infome a unidade'),
+            }),
+            builder: Yup.string().required('Selecione um construtora'),
+          });
+
+          await schema.validate(data, {
+            abortEarly: false,
+          });
+        } else {
+          const schema = Yup.object().shape({
+            realty: Yup.object().shape({
+              enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+              state: Yup.string().required('Informe o Estado'),
+              city: Yup.string().required('Informe o Cidade'),
+              neighborhood: Yup.string().required('Informe o bairrro'),
+              property: Yup.string().required('Selecione o tipo do imóvel'),
+              unit: Yup.string().required('Infome a unidade'),
+            }),
+          });
+
+          await schema.validate(data, {
+            abortEarly: false,
+          });
+        }
 
         updateFormData(data);
         nextStep();
@@ -163,7 +181,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [nextStep, updateFormData],
+    [nextStep, updateFormData, typeSale],
   );
 
   const handleSelectCity = useCallback(
