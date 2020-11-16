@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles, Scope } from '@unform/core';
@@ -9,8 +9,15 @@ import getValidationErros from '../../../utils/getValidationErros';
 
 import Select from '../../Select';
 import Button from '../../Button';
+import Checkbox from '../../CheckBox';
 
-import { Container, InputGroup, ButtonGroup } from './styles';
+import {
+  Container,
+  InputGroup,
+  ButtonGroup,
+  FifityContainer,
+  InputForm,
+} from './styles';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -27,6 +34,9 @@ interface formData {
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const [isFifiyty, setIsFifity] = useState(false);
+  const [quantSalers, setQuantSalles] = useState(1);
+  const [quantBuilders, setQuantBuilders] = useState(1);
   const { updateFormData } = useForm();
 
   const optionsRealtors = [
@@ -44,6 +54,34 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const optionsDirector = [
     { label: 'Raunin/Cristiane', value: 'Raunin/Cristiane' },
   ];
+
+  const handleValue = useCallback((value: string) => {
+    switch (value) {
+      case 'Y':
+        setIsFifity(true);
+        break;
+      case 'N':
+        setIsFifity(false);
+        break;
+      case '':
+        setIsFifity(false);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
+  const handleQuantSales = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setQuantSalles(Number(value));
+  }, []);
+  const handleQuantBuilders = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      setQuantBuilders(Number(value));
+    },
+    [],
+  );
 
   const handleSubmit = useCallback(
     async (data: formData) => {
@@ -74,20 +112,70 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     [updateFormData, nextStep],
   );
 
+  const renderFifity = (isFifity: boolean, typeSales: string) => {
+    if (isFifity && typeSales === 'new') {
+      return (
+        <InputForm
+          name="quantSaller"
+          placeholder="Quant. de Vendedores"
+          onChange={e => handleQuantSales(e)}
+        />
+      );
+    }
+    if (isFifity && typeSales === 'used') {
+      return (
+        <InputGroup>
+          <InputForm
+            name="quantSaller"
+            placeholder="Quant. de Vendedores"
+            onChange={e => handleQuantSales(e)}
+          />
+          <InputForm
+            name="quantSaller"
+            placeholder="Quant. de Captadores"
+            onChange={e => handleQuantBuilders(e)}
+          />
+        </InputGroup>
+      );
+    }
+    if (!isFifity) {
+      return null;
+    }
+    return null;
+  };
+
+  const renderSallers = (quant: number) => {
+    for (let i = 0; i < quant; i + 1) {
+      return (
+        <Select
+          name="id"
+          options={optionsRealtors}
+          icon={IoMdArrowDropdown}
+          nameLabel="o Corretor Vendedor"
+          add
+        />
+      );
+    }
+    return;
+  };
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
+        <FifityContainer>
+          <span>Venda Compartilhada</span>
+          <Checkbox
+            options={[
+              { id: '1', label: 'Sim', value: 'Y' },
+              { id: '2', label: 'Não', value: 'N' },
+            ]}
+            handleValue={handleValue}
+          />
+
+          {renderFifity(isFifiyty, typeSale)}
+        </FifityContainer>
         {typeSale === 'new' && (
           <>
-            <Scope path="users_sellers[0]">
-              <Select
-                name="id"
-                options={optionsRealtors}
-                icon={IoMdArrowDropdown}
-                nameLabel="o Corretor Vendedor"
-                add
-              />
-            </Scope>
+            <Scope path="users_sellers[0]">{renderSallers(quantSalers)}</Scope>
             <InputGroup>
               <Select
                 name="user_coordinator"

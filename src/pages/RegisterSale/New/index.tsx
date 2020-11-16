@@ -23,14 +23,14 @@ const RegisterSaleNew: React.FC = () => {
   function SwitchSteps(stepParm: number) {
     switch (stepParm) {
       case 1:
-        return <Step1 nextStep={nextSpeps} typeSale="used" />;
+        return <Step1 nextStep={nextSpeps} typeSale="new" />;
       case 2:
         return (
           <Step2 nextStep={nextSpeps} prevStep={prevSpeps} typeClient="buyer" />
         );
       case 3:
         return (
-          <Step3 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="used" />
+          <Step3 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="new" />
         );
       case 4:
         return <Step4 nextStep={nextSpeps} prevStep={prevSpeps} />;

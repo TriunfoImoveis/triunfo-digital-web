@@ -70,3 +70,15 @@ export const ButtonGroup = styled.div`
     }
   }
 `;
+
+export const FifityContainer = styled.div`
+  display: flex;
+  align-items: center;
+
+  span {
+    font-size: 1.6rem;
+    color: ${({ theme }) => theme.colors.textColor};
+
+    margin-right: 0.8rem;
+  }
+`;

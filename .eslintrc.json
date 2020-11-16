@@ -30,6 +30,8 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "consistent-return": "off",
+    "no-useless-return": "off",
     "no-unused-expressions": "off",
     "no-param-reassign": "off",
     "camelcase": "off",
