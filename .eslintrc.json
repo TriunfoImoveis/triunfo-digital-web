@@ -30,6 +30,7 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "react/jsx-curly-newline": "off",
     "consistent-return": "off",
     "no-useless-return": "off",
     "no-unused-expressions": "off",

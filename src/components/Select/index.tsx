@@ -8,7 +8,14 @@ import React, {
 import { useField } from '@unform/core';
 
 import { IconBaseProps } from 'react-icons';
-import { ContainerWrapper, Container, IconContainer, Error } from './styles';
+import { FaMinus, FaPlus } from 'react-icons/fa';
+import {
+  ContainerWrapper,
+  Container,
+  IconContainer,
+  Error,
+  AddButton,
+} from './styles';
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   name: string;
@@ -19,6 +26,9 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   icon?: React.ComponentType<IconBaseProps>;
   nameLabel?: string;
   add?: boolean;
+  remove?: boolean;
+  addRealtors?(): void;
+  removeRealtors?(): void;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -26,6 +36,10 @@ const Select: React.FC<SelectProps> = ({
   icon: Icon,
   options,
   nameLabel,
+  add,
+  remove,
+  addRealtors,
+  removeRealtors,
   ...rest
 }) => {
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -89,6 +103,16 @@ const Select: React.FC<SelectProps> = ({
             </option>
           ))}
         </select>
+        {add && (
+          <AddButton type="button" onClick={addRealtors}>
+            <FaPlus size={20} color="#C32925" />
+          </AddButton>
+        )}
+        {remove && (
+          <AddButton type="button" onClick={removeRealtors}>
+            <FaMinus size={20} color="#C32925" />
+          </AddButton>
+        )}
       </Container>
       {errorField && <Error>{error}</Error>}
     </ContainerWrapper>

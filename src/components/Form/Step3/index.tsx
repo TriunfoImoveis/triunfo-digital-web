@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
-import { FormHandles, Scope } from '@unform/core';
+import { FormHandles } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
@@ -9,15 +9,15 @@ import getValidationErros from '../../../utils/getValidationErros';
 
 import Select from '../../Select';
 import Button from '../../Button';
-import Checkbox from '../../CheckBox';
 
 import {
   Container,
   InputGroup,
   ButtonGroup,
-  FifityContainer,
-  InputForm,
+  UserSallersContainer,
+  UserCaptivators,
 } from './styles';
+import deleteItem from '../../../utils/deleteItem';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -25,18 +25,15 @@ interface ISaleNewData {
   typeSale: 'new' | 'used';
 }
 
-interface formData {
-  realtor_sell: string;
-  coordenador: string;
-  director: string;
+interface ISallers {
+  name: string;
 }
 
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
-  const [isFifiyty, setIsFifity] = useState(false);
-  const [quantSalers, setQuantSalles] = useState(1);
-  const [quantBuilders, setQuantBuilders] = useState(1);
+  const [sallers, setSalers] = useState([{ name: 'id' }]);
+  const [captavitors, setCaptvators] = useState([{ name: 'id' }]);
   const { updateFormData } = useForm();
 
   const optionsRealtors = [
@@ -55,47 +52,43 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     { label: 'Raunin/Cristiane', value: 'Raunin/Cristiane' },
   ];
 
-  const handleValue = useCallback((value: string) => {
-    switch (value) {
-      case 'Y':
-        setIsFifity(true);
-        break;
-      case 'N':
-        setIsFifity(false);
-        break;
-      case '':
-        setIsFifity(false);
-        break;
-      default:
-        break;
-    }
-  }, []);
-
-  const handleQuantSales = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setQuantSalles(Number(value));
-  }, []);
-  const handleQuantBuilders = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const { value } = e.target;
-      setQuantBuilders(Number(value));
-    },
-    [],
-  );
-
   const handleSubmit = useCallback(
-    async (data: formData) => {
+    async data => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
-        const schema = Yup.object().shape({
-          users_sellers: Yup.array().required('Corretor Vendedor Obrigatório'),
-          user_coordinator: Yup.string().required('Coordenador Obrigatório'),
-          user_director: Yup.string().required('Diretor Obrigatório'),
-        });
-        await schema.validate(data, {
-          abortEarly: false,
-        });
+        if (typeSale === 'new') {
+          const schema = Yup.object().shape({
+            users_sellers: Yup.array().of(
+              Yup.object().shape({
+                id: Yup.string().required('Vendedor Obrigatório'),
+              }),
+            ),
+            user_coordinator: Yup.string().required('Coordenador Obrigatório'),
+            user_director: Yup.string().required('Diretor Obrigatório'),
+          });
+          await schema.validate(data, {
+            abortEarly: false,
+          });
+        } else if (typeSale === 'used') {
+          const schema = Yup.object().shape({
+            users_sellers: Yup.array().of(
+              Yup.object().shape({
+                id: Yup.string().required('Vendedor Obrigatório'),
+              }),
+            ),
+            users_captivators: Yup.array().of(
+              Yup.object().shape({
+                id: Yup.string().required('Captador Obrigatório'),
+              }),
+            ),
+            user_director: Yup.string().required('Diretor Obrigatório'),
+          });
+          await schema.validate(data, {
+            abortEarly: false,
+          });
+        }
+
         updateFormData(data);
         nextStep();
         setLoading(false);
@@ -109,73 +102,53 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [updateFormData, nextStep],
+    [nextStep, typeSale, updateFormData],
   );
 
-  const renderFifity = (isFifity: boolean, typeSales: string) => {
-    if (isFifity && typeSales === 'new') {
-      return (
-        <InputForm
-          name="quantSaller"
-          placeholder="Quant. de Vendedores"
-          onChange={e => handleQuantSales(e)}
-        />
-      );
-    }
-    if (isFifity && typeSales === 'used') {
-      return (
-        <InputGroup>
-          <InputForm
-            name="quantSaller"
-            placeholder="Quant. de Vendedores"
-            onChange={e => handleQuantSales(e)}
-          />
-          <InputForm
-            name="quantSaller"
-            placeholder="Quant. de Captadores"
-            onChange={e => handleQuantBuilders(e)}
-          />
-        </InputGroup>
-      );
-    }
-    if (!isFifity) {
-      return null;
-    }
-    return null;
-  };
+  const handleAddSallers = useCallback(() => {
+    setSalers([...sallers, { name: 'id' }]);
+  }, [sallers]);
+  const handleAddCaptivators = useCallback(() => {
+    setCaptvators([...captavitors, { name: 'id' }]);
+  }, [captavitors]);
 
-  const renderSallers = (quant: number) => {
-    for (let i = 0; i < quant; i + 1) {
-      return (
-        <Select
-          name="id"
-          options={optionsRealtors}
-          icon={IoMdArrowDropdown}
-          nameLabel="o Corretor Vendedor"
-          add
-        />
-      );
-    }
-    return;
-  };
+  const handleRemoveRealtors = useCallback((array: ISallers[], id: number) => {
+    const newArray = deleteItem(array, id);
+    setSalers(newArray);
+  }, []);
+  const handleRemoveCaptvators = useCallback(
+    (array: ISallers[], id: number) => {
+      const newArray = deleteItem(array, id);
+      setCaptvators(newArray);
+    },
+    [],
+  );
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <FifityContainer>
-          <span>Venda Compartilhada</span>
-          <Checkbox
-            options={[
-              { id: '1', label: 'Sim', value: 'Y' },
-              { id: '2', label: 'Não', value: 'N' },
-            ]}
-            handleValue={handleValue}
-          />
-
-          {renderFifity(isFifiyty, typeSale)}
-        </FifityContainer>
         {typeSale === 'new' && (
           <>
-            <Scope path="users_sellers[0]">{renderSallers(quantSalers)}</Scope>
+            {sallers.map((saller, index) =>
+              index > 0 ? (
+                <Select
+                  name={`users_sellers[${index}].${saller.name}`}
+                  options={optionsRealtors}
+                  icon={IoMdArrowDropdown}
+                  nameLabel="o Corretor Vendedor"
+                  remove
+                  removeRealtors={() => handleRemoveRealtors(sallers, index)}
+                />
+              ) : (
+                <Select
+                  name={`users_sellers[${index}].${saller.name}`}
+                  options={optionsRealtors}
+                  icon={IoMdArrowDropdown}
+                  nameLabel="o Corretor Vendedor"
+                  add
+                  addRealtors={handleAddSallers}
+                />
+              ),
+            )}
             <InputGroup>
               <Select
                 name="user_coordinator"
@@ -195,24 +168,57 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         {typeSale === 'used' && (
           <>
             <InputGroup>
-              <Scope path="users_sellers[0]">
-                <Select
-                  name="id"
-                  options={optionsRealtors}
-                  icon={IoMdArrowDropdown}
-                  nameLabel="o Corretor Vendedor"
-                  add
-                />
-              </Scope>
-              <Scope path="users_captivators">
-                <Select
-                  name="id"
-                  options={optionsRealtors}
-                  icon={IoMdArrowDropdown}
-                  nameLabel="o Corretor Captador"
-                  add
-                />
-              </Scope>
+              <UserSallersContainer>
+                {sallers.map((saller, index) =>
+                  index > 0 ? (
+                    <Select
+                      name={`users_sellers[${index}].${saller.name}`}
+                      options={optionsRealtors}
+                      icon={IoMdArrowDropdown}
+                      nameLabel="o Corretor Vendedor"
+                      remove
+                      removeRealtors={() =>
+                        handleRemoveRealtors(captavitors, index)
+                      }
+                    />
+                  ) : (
+                    <Select
+                      name={`users_sellers[${index}].${saller.name}`}
+                      options={optionsRealtors}
+                      icon={IoMdArrowDropdown}
+                      nameLabel="o Corretor Vendedor"
+                      add
+                      addRealtors={handleAddSallers}
+                    />
+                  ),
+                )}
+              </UserSallersContainer>
+
+              <UserCaptivators>
+                {captavitors.map((cap, index) =>
+                  index > 0 ? (
+                    <Select
+                      name={`users_captivators[${index}].${cap.name}`}
+                      options={optionsRealtors}
+                      icon={IoMdArrowDropdown}
+                      nameLabel="o Corretor Captador"
+                      remove
+                      removeRealtors={() =>
+                        handleRemoveCaptvators(captavitors, index)
+                      }
+                    />
+                  ) : (
+                    <Select
+                      name={`users_captivators[${index}].${cap.name}`}
+                      options={optionsRealtors}
+                      icon={IoMdArrowDropdown}
+                      nameLabel="o Corretor Captador"
+                      add
+                      addRealtors={handleAddCaptivators}
+                    />
+                  ),
+                )}
+              </UserCaptivators>
             </InputGroup>
             <Select
               name="user_director"

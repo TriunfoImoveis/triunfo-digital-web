@@ -37,10 +37,10 @@ export const Container = styled.div<ContainerProps>`
       color: ${({ theme }) => theme.colors.primary};
     `}
 
-  > select {
+  select {
     background: transparent;
     height: 100%;
-    flex: 1;
+    flex-grow: 2;
     border: 0;
     color: ${({ theme }) => theme.colors.textColor};
     font-size: ${({ theme }) => theme.fontSize.small};
@@ -83,6 +83,6 @@ export const AddButton = styled.button`
   width: 2.9rem;
   height: 100%;
   border: 0;
-  border-radius: 0.4rem 0 0 0.4rem;
+  border-radius: 0 0.4rem 0.4rem 0;
   background: ${({ theme }) => theme.colors.primaryAlpha};
 `;

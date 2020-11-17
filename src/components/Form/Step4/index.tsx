@@ -90,42 +90,45 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
     );
   }, []);
 
-  const handleSubmit = useCallback(async () => {
-    formRef.current?.setErrors({});
-    unMaskValue();
-    const data = formRef.current?.getData();
+  const handleSubmit = useCallback(
+    async data => {
+      formRef.current?.setErrors({});
+      try {
+        setLoading(true);
+        const schema = Yup.object().shape({
+          realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
+          sale_date: Yup.string().required('Data da Venda Obrigatória'),
+          percentage_company: Yup.string().required(
+            'Taxa de imposto Obrigatório',
+          ),
+          payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
+          percentage_sale: Yup.string().required(
+            'Porcetagem Total da venda Obrigatória',
+          ),
+          commission: Yup.string().required('Comissão Obrigatória'),
+          origin: Yup.string().required('Origem da venda obrigatória'),
+          bonus: Yup.string(),
+        });
+        await schema.validate(data, {
+          abortEarly: false,
+        });
+        unMaskValue();
+        const newdata = formRef.current?.getData();
+        updateFormData(newdata || {});
+        nextStep();
+        setLoading(false);
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const erros = getValidationErros(err);
+          formRef.current?.setErrors(erros);
+        }
 
-    try {
-      setLoading(true);
-      const schema = Yup.object().shape({
-        realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
-        percentage_company: Yup.string().required(
-          'Taxa de imposto Obrigatório',
-        ),
-        payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
-        percentage_sale: Yup.string().required(
-          'Porcetagem Total da venda Obrigatória',
-        ),
-        commission: Yup.string().required('Comissão Obrigatória'),
-        origin: Yup.string().required('Origem da venda obrigatória'),
-        bonus: Yup.string(),
-      });
-      await schema.validate(data, {
-        abortEarly: false,
-      });
-      updateFormData(data || {});
-      nextStep();
-      setLoading(false);
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const erros = getValidationErros(err);
-        formRef.current?.setErrors(erros);
+        toast.error('ERROR!, verifique as informações e tente novamente');
+        setLoading(false);
       }
-
-      toast.error('ERROR!, verifique as informações e tente novamente');
-      setLoading(false);
-    }
-  }, [unMaskValue, updateFormData, nextStep]);
+    },
+    [unMaskValue, updateFormData, nextStep],
+  );
 
   const handleValue = useCallback((value: string) => {
     switch (value) {

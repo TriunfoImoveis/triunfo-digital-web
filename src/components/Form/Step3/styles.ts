@@ -6,7 +6,7 @@ export const Container = styled.div`
   form {
     margin-top: 1.2rem;
     div {
-      margin: 0.2rem 0;
+      margin-bottom: 0.2rem;
     }
   }
 `;
@@ -71,14 +71,19 @@ export const ButtonGroup = styled.div`
   }
 `;
 
-export const FifityContainer = styled.div`
+export const UserSallersContainer = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column;
 
-  span {
-    font-size: 1.6rem;
-    color: ${({ theme }) => theme.colors.textColor};
+  div + div {
+    margin-left: 0;
+  }
+`;
+export const UserCaptivators = styled.div`
+  display: flex;
+  flex-direction: column;
 
-    margin-right: 0.8rem;
+  div + div {
+    margin-left: 0;
   }
 `;
