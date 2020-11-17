@@ -11,6 +11,7 @@ import { FormHandles } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 
@@ -27,24 +28,38 @@ interface IBGECityResponse {
   nome: string;
 }
 
-interface IPropertyTypeData {
+interface IOptionsData {
   id: string;
   name: string;
 }
 
 interface ISaleNewData {
-  SaleNewData(data: object): void;
   nextStep: () => void;
+  typeSale: 'new' | 'used';
 }
 
-const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
+interface IStep1FormData {
+  realty: {
+    enterprise: string;
+    unity: string;
+    state: string;
+    city: string;
+    neighborhood: string;
+    property: string;
+  };
+  builder?: string;
+}
+
+const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [ufs, setUfs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
-  const [propertyType, setPropertyType] = useState<IPropertyTypeData[]>([]);
+  const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
+  const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [selectedUf, setSelectedUf] = useState('0');
   const [selectedCity, setSelectedCity] = useState('0');
+  const { updateFormData } = useForm();
 
   useEffect(() => {
     axios
@@ -80,6 +95,16 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
     loadPropertyType();
   }, []);
 
+  useEffect(() => {
+    if (typeSale === 'used') {
+      return;
+    }
+    const loadBuilders = async () => {
+      const response = await api.get('/builder');
+      setBuilders(response.data);
+    };
+    loadBuilders();
+  }, [typeSale]);
   const optionsUFs = ufs.map(uf => ({
     value: uf,
     label: uf,
@@ -92,6 +117,11 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
     label: property.name,
   }));
 
+  const optionBuilder = builders.map(builder => ({
+    label: builder.name,
+    value: builder.id,
+  }));
+
   const handleSelectedUF = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const uf = event.target.value;
@@ -101,23 +131,44 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
   );
 
   const handleSubmit = useCallback(
-    async data => {
+    async (data: IStep1FormData) => {
       formRef.current?.setErrors({});
       try {
         setLoading(true);
-        const schema = Yup.object().shape({
-          enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
-          state: Yup.string().required('Informe o Estado'),
-          city: Yup.string().required('Informe o Cidade'),
-          neighborhood: Yup.string().required('Informe o bairrro'),
-          property: Yup.string().required('Selecione o tipo do imóvel'),
-          unit: Yup.string().required('Infome a unidade'),
-        });
-        await schema.validate(data, {
-          abortEarly: false,
-        });
+        if (typeSale === 'new') {
+          const schema = Yup.object().shape({
+            realty: Yup.object().shape({
+              enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+              state: Yup.string().required('Informe o Estado'),
+              city: Yup.string().required('Informe o Cidade'),
+              neighborhood: Yup.string().required('Informe o bairrro'),
+              property: Yup.string().required('Selecione o tipo do imóvel'),
+              unit: Yup.string().required('Infome a unidade'),
+            }),
+            builder: Yup.string().required('Selecione um construtora'),
+          });
 
-        SaleNewData(data);
+          await schema.validate(data, {
+            abortEarly: false,
+          });
+        } else {
+          const schema = Yup.object().shape({
+            realty: Yup.object().shape({
+              enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+              state: Yup.string().required('Informe o Estado'),
+              city: Yup.string().required('Informe o Cidade'),
+              neighborhood: Yup.string().required('Informe o bairrro'),
+              property: Yup.string().required('Selecione o tipo do imóvel'),
+              unit: Yup.string().required('Infome a unidade'),
+            }),
+          });
+
+          await schema.validate(data, {
+            abortEarly: false,
+          });
+        }
+
+        updateFormData(data);
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -130,7 +181,7 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
         setLoading(false);
       }
     },
-    [SaleNewData, nextStep],
+    [nextStep, updateFormData, typeSale],
   );
 
   const handleSelectCity = useCallback(
@@ -143,10 +194,10 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <InputForm name="enterprise" placeholder="Empreendimento" />
+        <InputForm name="realty.enterprise" placeholder="Empreendimento" />
         <InputGroup>
           <Select
-            name="state"
+            name="realty.state"
             placeholder="Selecione um estado"
             options={optionsUFs}
             icon={IoMdArrowDropdown}
@@ -155,7 +206,7 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
             nameLabel="o Estado"
           />
           <Select
-            name="city"
+            name="realty.city"
             placeholder="Cidade"
             options={optionsCities}
             icon={IoMdArrowDropdown}
@@ -164,15 +215,23 @@ const Step1: React.FC<ISaleNewData> = ({ SaleNewData, nextStep }) => {
             nameLabel="a cidade"
           />
         </InputGroup>
-        <InputForm name="neighborhood" placeholder="Bairro" />
+        <InputForm name="realty.neighborhood" placeholder="Bairro" />
         <Select
-          name="property"
+          name="realty.property"
           placeholder="Tipo do Imovel"
           options={optionsTypeImobille}
           icon={IoMdArrowDropdown}
           nameLabel="o Tipo do Imóvel"
         />
-        <InputForm name="unit" placeholder="Unidade" />
+        <InputForm name="realty.unit" placeholder="Unidade" />
+        {typeSale === 'new' && (
+          <Select
+            name="builder"
+            options={optionBuilder}
+            icon={IoMdArrowDropdown}
+            nameLabel="a contrutora"
+          />
+        )}
         <ButtonGroup>
           <Button type="reset" className="cancel">
             Cancelar

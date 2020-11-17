@@ -30,6 +30,9 @@ export const Content = styled.div`
 
   form {
     width: 37rem;
+    > div {
+      margin-bottom: 0.8rem;
+    }
   }
 
   @media (max-width: 375px) {

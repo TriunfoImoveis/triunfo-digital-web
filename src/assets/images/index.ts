@@ -6,3 +6,4 @@ export { ReactComponent as RegisterSellIcon } from './cadastrar-venda.svg';
 export { ReactComponent as DashboardIcon } from './dashboard.svg';
 export { ReactComponent as BackgroundImage } from './background-ranking.svg';
 export { ReactComponent as Crown } from './coroa.svg';
+export { ReactComponent as SuccesImage } from './success-form.svg';

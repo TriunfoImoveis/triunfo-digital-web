@@ -4,13 +4,13 @@ interface ContainerProps {
   isFocused: boolean;
   isFilled: boolean;
   isErrored: boolean;
-  nameLabel: string | undefined;
 }
 
 export const ContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
 export const Container = styled.div<ContainerProps>`
   background: ${({ theme }) => theme.colors.secondary};
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -36,23 +36,18 @@ export const Container = styled.div<ContainerProps>`
     css`
       color: ${({ theme }) => theme.colors.primary};
     `}
-
-  select {
+  > input {
     background: transparent;
     height: 100%;
-    flex-grow: 2;
+    flex: 1;
     border: 0;
     color: ${({ theme }) => theme.colors.textColor};
-    font-size: ${({ theme }) => theme.fontSize.small};
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    text-indent: 1px;
-    text-overflow: '';
-    margin-left: 0.8rem;
-
-    option {
+    &::placeholder {
       color: ${({ theme }) => theme.colors.textColor};
     }
+  }
+  > svg {
+    margin-right: 16px;
   }
 `;
 
@@ -73,16 +68,4 @@ export const Error = styled.span`
   display: block;
   font-size: ${({ theme }) => theme.fontSize.tiny};
   color: ${({ theme }) => theme.colors.danger};
-  margin-top: 0.4rem;
-`;
-
-export const AddButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.9rem;
-  height: 100%;
-  border: 0;
-  border-radius: 0 0.4rem 0.4rem 0;
-  background: ${({ theme }) => theme.colors.primaryAlpha};
 `;

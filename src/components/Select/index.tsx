@@ -8,7 +8,14 @@ import React, {
 import { useField } from '@unform/core';
 
 import { IconBaseProps } from 'react-icons';
-import { Container, IconContainer, Error } from './styles';
+import { FaMinus, FaPlus } from 'react-icons/fa';
+import {
+  ContainerWrapper,
+  Container,
+  IconContainer,
+  Error,
+  AddButton,
+} from './styles';
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   name: string;
@@ -18,6 +25,10 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   }[];
   icon?: React.ComponentType<IconBaseProps>;
   nameLabel?: string;
+  add?: boolean;
+  remove?: boolean;
+  addRealtors?(): void;
+  removeRealtors?(): void;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -25,12 +36,17 @@ const Select: React.FC<SelectProps> = ({
   icon: Icon,
   options,
   nameLabel,
+  add,
+  remove,
+  addRealtors,
+  removeRealtors,
   ...rest
 }) => {
   const selectRef = useRef<HTMLSelectElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
   const [errorField, setErrorField] = useState(false);
+
   const { fieldName, defaultValue, error, registerField } = useField(name);
 
   useEffect(() => {
@@ -42,6 +58,7 @@ const Select: React.FC<SelectProps> = ({
     setErrorField(false);
     setIsFocused(true);
   }, []);
+
   const handleInputBlur = useCallback(() => {
     setIsFocused(false);
     setIsFilled(!!selectRef.current?.value);
@@ -55,38 +72,50 @@ const Select: React.FC<SelectProps> = ({
     });
   }, [fieldName, registerField]);
   return (
-    <Container
-      isErrored={errorField}
-      isFilled={isFilled}
-      isFocused={isFocused}
-      nameLabel={nameLabel}
-    >
-      {Icon && (
-        <IconContainer>
-          <Icon size={22} />
-        </IconContainer>
-      )}
-      <select
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-        ref={selectRef}
-        defaultValue={defaultValue}
-        value={defaultValue}
-        {...rest}
+    <ContainerWrapper>
+      <Container
+        isErrored={errorField}
+        isFilled={isFilled}
+        isFocused={isFocused}
+        nameLabel={nameLabel}
       >
-        {nameLabel && (
-          <option value="" selected disabled>
-            {`Selecione ${nameLabel}`}
-          </option>
+        {Icon && (
+          <IconContainer>
+            <Icon size={22} />
+          </IconContainer>
         )}
-        {options.map(option => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+        <select
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          ref={selectRef}
+          defaultValue={defaultValue}
+          value={defaultValue}
+          {...rest}
+        >
+          {nameLabel && (
+            <option value="" selected disabled>
+              {`Selecione ${nameLabel}`}
+            </option>
+          )}
+          {options.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        {add && (
+          <AddButton type="button" onClick={addRealtors}>
+            <FaPlus size={20} color="#C32925" />
+          </AddButton>
+        )}
+        {remove && (
+          <AddButton type="button" onClick={removeRealtors}>
+            <FaMinus size={20} color="#C32925" />
+          </AddButton>
+        )}
+      </Container>
       {errorField && <Error>{error}</Error>}
-    </Container>
+    </ContainerWrapper>
   );
 };
 

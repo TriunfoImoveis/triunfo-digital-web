@@ -6,6 +6,11 @@ interface ContainerProps {
   isErrored: boolean;
 }
 
+export const ContainerWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 export const Container = styled.div<ContainerProps>`
   background: ${({ theme }) => theme.colors.secondary};
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -15,7 +20,6 @@ export const Container = styled.div<ContainerProps>`
   display: flex;
   align-items: center;
 
-  margin: 1.6rem 0;
   ${props =>
     props.isErrored &&
     css`
@@ -42,6 +46,19 @@ export const Container = styled.div<ContainerProps>`
       color: ${({ theme }) => theme.colors.textColor};
     }
   }
+
+  input[type='date'] {
+    background: transparent;
+    height: 100%;
+    flex: 1;
+    border: 0;
+    font-family: 'Roboto';
+    font-size: 16px;
+    color: ${({ theme }) => theme.colors.textColor};
+    &::placeholder {
+      color: ${({ theme }) => theme.colors.textColor};
+    }
+  }
   > svg {
     margin-right: 16px;
   }
@@ -61,6 +78,7 @@ export const IconContainer = styled.div`
 `;
 
 export const Error = styled.span`
+  display: block;
   font-size: ${({ theme }) => theme.fontSize.tiny};
   color: ${({ theme }) => theme.colors.danger};
 `;

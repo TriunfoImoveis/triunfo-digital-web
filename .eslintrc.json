@@ -30,7 +30,12 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "react/jsx-curly-newline": "off",
+    "consistent-return": "off",
+    "no-useless-return": "off",
     "no-unused-expressions": "off",
+    "no-param-reassign": "off",
+    "camelcase": "off",
     "@typescript-eslint/ban-types": "off",
     "react/prop-types": "off",
     "react/jsx-props-no-spreading": "off",

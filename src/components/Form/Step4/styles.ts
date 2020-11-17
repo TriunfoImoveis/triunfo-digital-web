@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import Input from '../../Input';
+import InputMask from '../../Input/InputMask';
 
 export const Container = styled.div`
   form {
@@ -13,12 +14,17 @@ export const InputForm = styled(Input)`
   padding: 0 0.8rem;
 `;
 
+export const InputFormMask = styled(InputMask)`
+  padding: 0 0.8rem;
+`;
+
 export const InputGroup = styled.div`
   display: flex;
   justify-content: space-between;
 
   > div,
-  select {
+  select,
+  input {
     width: 50%;
     margin-top: 0;
   }
@@ -62,5 +68,17 @@ export const ButtonGroup = styled.div`
     .next {
       height: 3.6rem;
     }
+  }
+`;
+
+export const BonusConatainer = styled.div`
+  display: flex;
+  align-items: center;
+
+  span {
+    font-size: 1.6rem;
+    color: ${({ theme }) => theme.colors.textColor};
+
+    margin-right: 0.8rem;
   }
 `;

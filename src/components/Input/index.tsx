@@ -7,15 +7,24 @@ import React, {
 } from 'react';
 import { useField } from '@unform/core';
 import { IconBaseProps } from 'react-icons';
+import { CEP, CPF, porcent, currency, Fone, Whats } from '../../utils/masked';
 
-import { Container, IconContainer, Error } from './styles';
+import { ContainerWrapper, Container, IconContainer, Error } from './styles';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   icon?: React.ComponentType<IconBaseProps>;
+  mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats';
+  maxlength?: number;
 }
 
-const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
+const Input: React.FC<InputProps> = ({
+  name,
+  mask,
+  maxlength,
+  icon: Icon,
+  ...rest
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
@@ -44,8 +53,37 @@ const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
       path: 'value',
     });
   }, [fieldName, registerField]);
+
+  const masked = useCallback(
+    e => {
+      switch (mask) {
+        case 'currency':
+          currency(e);
+          break;
+        case 'porcent':
+          porcent(e);
+          break;
+        case 'cep':
+          CEP(e);
+          break;
+        case 'cpf':
+          CPF(e);
+          break;
+        case 'fone':
+          Fone(e);
+          break;
+        case 'whats':
+          Whats(e);
+          break;
+        default:
+          break;
+      }
+    },
+    [mask],
+  );
+
   return (
-    <>
+    <ContainerWrapper>
       <Container
         isErrored={errorField}
         isFilled={isFilled}
@@ -56,16 +94,29 @@ const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
             <Icon size={12} />
           </IconContainer>
         )}
-        <input
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          ref={inputRef}
-          defaultValue={defaultValue}
-          {...rest}
-        />
-        {errorField && <Error>{error}</Error>}
+        {mask ? (
+          <input
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            ref={inputRef}
+            defaultValue={defaultValue}
+            onKeyUp={e => masked(e)}
+            maxLength={maxlength}
+            {...rest}
+          />
+        ) : (
+          <input
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            ref={inputRef}
+            defaultValue={defaultValue}
+            maxLength={maxlength}
+            {...rest}
+          />
+        )}
       </Container>
-    </>
+      {errorField && <Error>{error}</Error>}
+    </ContainerWrapper>
   );
 };
 
