@@ -34,4 +34,8 @@ export const ItemsMenu = styled.div`
   span {
     color: ${({ theme }) => theme.colors.primary};
   }
+  a {
+    color: ${({ theme }) => theme.colors.primary};
+    text-decoration: none;
+  }
 `;
