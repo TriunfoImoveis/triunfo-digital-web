@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
@@ -18,6 +18,7 @@ import {
   UserCaptivators,
 } from './styles';
 import deleteItem from '../../../utils/deleteItem';
+import api from '../../../services/api';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -29,28 +30,59 @@ interface ISallers {
   name: string;
 }
 
+interface IOptions {
+  id: string;
+  name: string;
+}
+
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const [realtors, setRealtors] = useState<IOptions[]>([]);
+  const [cordinators, setCoordinators] = useState<IOptions[]>([]);
+  const [directors, setDirectors] = useState<IOptions[]>([]);
   const [sallers, setSalers] = useState([{ name: 'id' }]);
   const [captavitors, setCaptvators] = useState([{ name: 'id' }]);
   const { updateFormData } = useForm();
 
-  const optionsRealtors = [
-    { label: 'Rafael Serejo', value: 'Rafael Serejo' },
-    { label: 'Alberto Madeira', value: 'Alberto' },
-    { label: 'Robson', value: 'Robson Fernandes' },
-    { label: 'Rosana', value: 'Rosana Porto' },
-  ];
+  const city = 'São Luís';
+  useEffect(() => {
+    const loadRealtos = async () => {
+      const response = await api.get(`/users?city=${city}&office=Corretor`);
+      setRealtors(response.data);
+    };
+    loadRealtos();
+  }, []);
+  useEffect(() => {
+    const loadCoordinator = async () => {
+      const response = await api.get(`/users?city=${city}&office=Coordenador`);
+      setCoordinators(response.data);
+    };
+    loadCoordinator();
+  }, []);
 
-  const optionsCoordenador = [
-    { label: 'Gregory Mike', value: 'Gregory Mike' },
-    { label: 'Rossilene Sampaio', value: 'Rossilene Sampaio' },
-  ];
+  useEffect(() => {
+    const loadDirector = async () => {
+      const response = await api.get(`/users?city=${city}&office=Diretor`);
+      setDirectors(response.data);
+    };
+    loadDirector();
+  }, []);
 
-  const optionsDirector = [
-    { label: 'Raunin/Cristiane', value: 'Raunin/Cristiane' },
-  ];
+  const optionsRealtors = realtors.map(realtor => ({
+    label: realtor.name,
+    value: realtor.id,
+  }));
+
+  const optionsCoordenador = cordinators.map(coordinator => ({
+    label: coordinator.name,
+    value: coordinator.id,
+  }));
+
+  const optionsDirector = directors.map(director => ({
+    label: director.name,
+    value: director.id,
+  }));
 
   const handleSubmit = useCallback(
     async data => {

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import api from '../services/api';
 
 interface FormContextData {
   formData: Object;
@@ -11,18 +12,37 @@ const FormContext = createContext({} as FormContextData);
 
 const FormProvider: React.FC = ({ children }) => {
   const [formData, setFormData] = useState({});
+  const token = localStorage.getItem('@TriunfoDigital:token');
 
   const updateFormData = (data: Object) => {
     const newData = Object.assign(formData, data);
     setFormData(newData);
   };
 
-  const submitFormNew = () => {
-    console.log(formData);
-  };
+  const submitFormNew = useCallback(async () => {
+    try {
+      await api.post('/sale/new', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('deu certo');
+    } catch (err) {
+      console.log(err);
+    }
+  }, [formData, token]);
 
-  const submitFormUsed = () => {
-    console.log(formData);
+  const submitFormUsed = async () => {
+    try {
+      await api.post('/sale/used', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('deu certo');
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (

@@ -33,7 +33,9 @@ const RegisterSaleNew: React.FC = () => {
           <Step3 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="new" />
         );
       case 4:
-        return <Step4 nextStep={nextSpeps} prevStep={prevSpeps} />;
+        return (
+          <Step4 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="new" />
+        );
       case 5:
         return <SuccessForm typeSale="new" />;
       default:
