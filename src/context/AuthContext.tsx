@@ -2,25 +2,29 @@ import React, { createContext, useCallback, useContext, useState } from 'react';
 import api from '../services/api';
 
 interface UserAuth {
-  active: boolean;
-  admission_date: string;
-  avatar: string | null;
-  avatar_url: string | null;
-  created_at: string;
-  email: string;
-  goal: string;
   id: string;
   name: string;
+  avatar: string | null;
+  email: string;
+  phone: string;
+  admission_date: string;
+  goal: string;
+  subsidiary: {
+    id: string;
+    name: string;
+    city: string;
+    state: string;
+    country: string;
+    active: true;
+  };
   office: {
     id: string;
     name: string;
-    active: boolean;
-    created_at: string;
-    updated_at: string;
+    active: true;
   };
-  phone: string;
-  updated_at: string;
+  avatar_url: string | null;
 }
+
 interface AuthState {
   token: string;
   userAuth: UserAuth;

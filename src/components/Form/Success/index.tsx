@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
 
 import { SuccesImage } from '../../../assets/images';
@@ -13,16 +14,27 @@ interface ISuccessProps {
 const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
   const { submitFormNew, submitFormUsed } = useForm();
   useEffect(() => {
-    switch (typeSale) {
-      case 'new':
-        submitFormNew();
-        break;
-      case 'used':
-        submitFormUsed();
-        break;
-      default:
-        break;
-    }
+    const submitFom = async () => {
+      if (typeSale === 'new') {
+        try {
+          submitFormNew();
+          toast.success('Venda cadastrada');
+        } catch (err) {
+          console.log(err);
+          toast.error('Problema  ao cadastar');
+        }
+      }
+      if (typeSale === 'used') {
+        try {
+          submitFormUsed();
+          toast.success('Venda cadastrada');
+        } catch (err) {
+          console.log(err);
+          toast.error('Problema  ao cadastar');
+        }
+      }
+    };
+    submitFom();
   }, [submitFormNew, submitFormUsed, typeSale]);
   return (
     <SuccessContainer>

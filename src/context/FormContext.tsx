@@ -12,7 +12,7 @@ const FormContext = createContext({} as FormContextData);
 
 const FormProvider: React.FC = ({ children }) => {
   const [formData, setFormData] = useState({});
-  const token = localStorage.getItem('@triunfoDigital:token');
+  const token = localStorage.getItem('@TriunfoDigital:token');
 
   const updateFormData = (data: Object) => {
     const newData = Object.assign(formData, data);
@@ -23,16 +23,26 @@ const FormProvider: React.FC = ({ children }) => {
     try {
       await api.post('/sale/new', formData, {
         headers: {
-          Authorization: `Barear ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+      console.log('deu certo');
     } catch (err) {
       console.log(err);
     }
   }, [formData, token]);
 
-  const submitFormUsed = () => {
-    console.log(formData);
+  const submitFormUsed = async () => {
+    try {
+      await api.post('/sale/used', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('deu certo');
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (

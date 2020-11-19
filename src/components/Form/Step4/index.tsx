@@ -25,17 +25,21 @@ import {
 interface ISaleNewData {
   prevStep: () => void;
   nextStep: () => void;
+  typeSale?: string;
 }
 
 interface IOptionsData {
   id: string;
   name: string;
+  percentage?: number;
 }
 
-const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
+const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const [origins, setOrigins] = useState<IOptionsData[]>([]);
+  const [companies, setCompanies] = useState<IOptionsData[]>([]);
+  const [paymentTypes, setpaymentTypes] = useState<IOptionsData[]>([]);
   const [comissionValue, setcomissionValue] = useState('');
   const [isExistBonus, setisExistBonus] = useState(false);
   const { updateFormData } = useForm();
@@ -48,25 +52,48 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
     loadOrigins();
   }, []);
 
+  useEffect(() => {
+    const loadCompany = async () => {
+      const response = await api.get('/company');
+      setCompanies(response.data);
+    };
+    loadCompany();
+  }, []);
+  useEffect(() => {
+    const loadPaymentType = async () => {
+      if (typeSale === 'new') {
+        const response = await api.get('/payment-type?type=NOVO');
+        setpaymentTypes(response.data);
+      }
+      if (typeSale === 'used') {
+        const response = await api.get('/payment-type?type=USADO');
+        setpaymentTypes(response.data);
+      }
+      const response = await api.get('/company');
+      setCompanies(response.data);
+    };
+    loadPaymentType();
+  }, [typeSale]);
+
   const optionsOptions = origins.map(origin => ({
     label: origin.name,
     value: origin.id,
   }));
 
-  const optionsEmpresa = [
-    { label: 'DC Reis - 18%', value: 'DC Reis' },
-    { label: 'Francistelmo - 10%', value: 'Francistelmo' },
-    { label: 'Raunin - 22%', value: 'Raunin' },
-  ];
+  const optionsEmpresa = companies.map(company => ({
+    label: `${company.name} - ${company.percentage}%`,
+    value: company.id,
+  }));
 
   const optionsBonus = [
     { id: '1', label: 'Sim', value: 'Y' },
     { id: '2', label: 'Não', value: 'N' },
   ];
 
-  const optionsFormaPagamento = [
-    { label: 'Paga integral e pede NF', value: 'Paga integral e pede NF' },
-  ];
+  const optionsFormaPagamento = paymentTypes.map(pt => ({
+    label: pt.name,
+    value: pt.id,
+  }));
 
   const calcComission = useCallback(() => {
     const valueSale = formRef.current?.getFieldValue('realty_ammount');
@@ -98,9 +125,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
         const schema = Yup.object().shape({
           realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
           sale_date: Yup.string().required('Data da Venda Obrigatória'),
-          percentage_company: Yup.string().required(
-            'Taxa de imposto Obrigatório',
-          ),
+          company: Yup.string().required('Taxa de imposto Obrigatório'),
           payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
           percentage_sale: Yup.string().required(
             'Porcetagem Total da venda Obrigatória',
@@ -159,7 +184,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep }) => {
         </InputGroup>
         <InputGroup>
           <Select
-            name="percentage_company"
+            name="company"
             options={optionsEmpresa}
             icon={IoMdArrowDropdown}
             nameLabel="a empresa (% porcentagem)"
