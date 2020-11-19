@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { toast } from 'react-toastify';
@@ -13,23 +13,25 @@ interface ISuccessProps {
 
 const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
   const { submitFormNew, submitFormUsed } = useForm();
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const submitFom = async () => {
+      setLoading(true);
       if (typeSale === 'new') {
         try {
-          submitFormNew();
+          await submitFormNew();
+          setLoading(false);
           toast.success('Venda cadastrada');
         } catch (err) {
-          console.log(err);
+          setLoading(false);
           toast.error('Problema  ao cadastar');
         }
       }
       if (typeSale === 'used') {
         try {
-          submitFormUsed();
+          await submitFormUsed();
           toast.success('Venda cadastrada');
         } catch (err) {
-          console.log(err);
           toast.error('Problema  ao cadastar');
         }
       }
@@ -38,16 +40,22 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
   }, [submitFormNew, submitFormUsed, typeSale]);
   return (
     <SuccessContainer>
-      <h1>Cadastro concluído</h1>
-      <SuccesImage />
-      <ButtonGroup>
-        <Link to="/ranking" className="cancel">
-          Ver o Ranking
-        </Link>
-        <Link to="/actions" className="next">
-          Sair
-        </Link>
-      </ButtonGroup>
+      {loading ? (
+        <h1>Cadastrando a venda</h1>
+      ) : (
+        <>
+          <h1>Cadastro concluído</h1>
+          <SuccesImage />
+          <ButtonGroup>
+            <Link to="/ranking" className="cancel">
+              Ver o Ranking
+            </Link>
+            <Link to="/actions" className="next">
+              Sair
+            </Link>
+          </ButtonGroup>
+        </>
+      )}
     </SuccessContainer>
   );
 };

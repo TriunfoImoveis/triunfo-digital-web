@@ -49,6 +49,7 @@ const AuthProvider: React.FC = ({ children }) => {
     const userAuth = localStorage.getItem('@TriunfoDigital:user');
 
     if (token && userAuth) {
+      api.defaults.headers.authorization = `Bearer ${token}`;
       return { token, userAuth: JSON.parse(userAuth) };
     }
 
@@ -65,6 +66,8 @@ const AuthProvider: React.FC = ({ children }) => {
 
     localStorage.setItem('@TriunfoDigital:token', token);
     localStorage.setItem('@TriunfoDigital:user', JSON.stringify(userAuth));
+
+    api.defaults.headers.authorization = `Bearer ${token}`;
 
     setData({ token, userAuth });
   }, []);
