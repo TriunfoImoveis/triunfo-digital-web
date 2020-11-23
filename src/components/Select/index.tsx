@@ -70,7 +70,7 @@ const Select: React.FC<SelectProps> = ({
       ref: selectRef.current,
       path: 'value',
     });
-  }, [fieldName, registerField]);
+  }, [fieldName, registerField, name]);
   return (
     <ContainerWrapper>
       <Container
