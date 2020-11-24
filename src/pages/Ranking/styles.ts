@@ -371,3 +371,26 @@ export const VGV = styled.div<RealtorProps>`
     }
   }
 `;
+
+export const ButtonGroup = styled.div`
+  margin-left: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  width: 9.6rem;
+  height: 1.7rem;
+  border: 0.1rem solid #c32925;
+  border-radius: 1rem;
+
+  button {
+    background: transparent;
+    border: 0;
+    font-size: 1.2rem;
+    text-align: center;
+    border-radius: 1rem;
+
+    &.selected {
+      background: #c32925;
+      color: #fff;
+    }
+  }
+`;
