@@ -126,7 +126,7 @@ export const FiltersBottonItems = styled.div`
     width: 17.1rem;
     height: 4.8rem;
 
-    background: #2d9cdb;
+    background: #f2c94c;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 4px;
     border: 0;
@@ -134,7 +134,7 @@ export const FiltersBottonItems = styled.div`
     transition: background 0.2s;
 
     &:hover {
-      background: ${darken(0.05, '#2d9cdb')};
+      background: ${darken(0.05, '#F2C94C')};
     }
   }
 `;

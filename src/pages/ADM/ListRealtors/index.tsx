@@ -1,17 +1,16 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus } from 'react-icons/fa';
+import { BsPencil } from 'react-icons/bs';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import AdmLayout from '../../Layouts/Adm';
-import { Search, Filter } from '../../../assets/images';
+import { Search } from '../../../assets/images';
 import {
   FiltersContainer,
   FiltersTop,
   FiltersBotton,
   FiltersBottonItems,
   Input,
-  FilterDiv,
   Content,
   SaleTableContainer,
   HeaderItem,
@@ -20,7 +19,7 @@ import {
   SaleItem,
 } from './styles';
 
-const ListSales: React.FC = () => {
+const ListRealtors: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   return (
     <AdmLayout>
@@ -36,20 +35,6 @@ const ListSales: React.FC = () => {
               <Search />
               <input type="text" placeholder="Buscar por corretor" />
             </Input>
-            <FilterDiv>
-              <Filter />
-              <select>
-                <option selected disabled>
-                  Filtar por
-                </option>
-                <option>Construtora</option>
-              </select>
-            </FilterDiv>
-            <FilterDiv>
-              <select>
-                <option>Dimensão</option>
-              </select>
-            </FilterDiv>
           </FiltersTop>
           <FiltersBotton>
             <FiltersBottonItems>
@@ -60,14 +45,7 @@ const ListSales: React.FC = () => {
                 <option>Teresina</option>
               </select>
             </FiltersBottonItems>
-            <FiltersBottonItems>
-              <span>Vendas: </span>
-              <select name="" id="">
-                <option>PENDENTE</option>
-                <option>PAGO</option>
-                <option>EM PARTE</option>
-              </select>
-            </FiltersBottonItems>
+
             <FiltersBottonItems>
               <span>Corretores: </span>
               <select name="" id="">
@@ -77,7 +55,7 @@ const ListSales: React.FC = () => {
               </select>
             </FiltersBottonItems>
             <FiltersBottonItems>
-              <button type="button">Adicionar ao relatório</button>
+              <button type="button">Novo Corretor</button>
             </FiltersBottonItems>
           </FiltersBotton>
         </FiltersContainer>
@@ -87,7 +65,7 @@ const ListSales: React.FC = () => {
           <SaleHeader>
             <HeaderItem />
             <HeaderItem>Nome</HeaderItem>
-            <HeaderItem>Valor</HeaderItem>
+            <HeaderItem>VGV</HeaderItem>
           </SaleHeader>
           <SaleBody>
             <SaleItem>
@@ -95,11 +73,10 @@ const ListSales: React.FC = () => {
             </SaleItem>
             <SaleItem>José Corretor</SaleItem>
             <SaleItem>R$ 58.000.000,00</SaleItem>
-            <SaleItem>20/11/2020</SaleItem>
             <SaleItem>
               <Link to="#top">
-                <FaPlus size={15} color="#c32925" />
-                Detalhes
+                <BsPencil size={15} color="#c32925" />
+                Editar
               </Link>
             </SaleItem>
           </SaleBody>
@@ -109,11 +86,10 @@ const ListSales: React.FC = () => {
             </SaleItem>
             <SaleItem>José Corretor</SaleItem>
             <SaleItem>R$ 58.000.000,00</SaleItem>
-            <SaleItem>20/11/2020</SaleItem>
             <SaleItem>
               <Link to="#top">
-                <FaPlus size={15} color="#c32925" />
-                Detalhes
+                <BsPencil size={15} color="#c32925" />
+                Editar
               </Link>
             </SaleItem>
           </SaleBody>
@@ -123,11 +99,10 @@ const ListSales: React.FC = () => {
             </SaleItem>
             <SaleItem>José Corretor</SaleItem>
             <SaleItem>R$ 58.000.000,00</SaleItem>
-            <SaleItem>20/11/2020</SaleItem>
             <SaleItem>
               <Link to="#top">
-                <FaPlus size={15} color="#c32925" />
-                Detalhes
+                <BsPencil size={15} color="#c32925" />
+                Editar
               </Link>
             </SaleItem>
           </SaleBody>
@@ -137,11 +112,10 @@ const ListSales: React.FC = () => {
             </SaleItem>
             <SaleItem>José Corretor</SaleItem>
             <SaleItem>R$ 58.000.000,00</SaleItem>
-            <SaleItem>20/11/2020</SaleItem>
             <SaleItem>
               <Link to="#top">
-                <FaPlus size={15} color="#c32925" />
-                Detalhes
+                <BsPencil size={15} color="#c32925" />
+                Editar
               </Link>
             </SaleItem>
           </SaleBody>
@@ -151,4 +125,4 @@ const ListSales: React.FC = () => {
   );
 };
 
-export default ListSales;
+export default ListRealtors;

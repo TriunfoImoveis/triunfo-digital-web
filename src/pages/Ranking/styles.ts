@@ -52,7 +52,7 @@ export const Content = styled.div`
 export const Title = styled.h1`
   color: ${({ theme }) => theme.colors.primary};
   font-size: 3rem;
-  font-weight: normal;
+  font-weight: bold;
   margin-bottom: 2rem;
   z-index: 10;
   @media (max-width: 500px) {
@@ -134,7 +134,7 @@ export const LabelItems = styled.div`
     }
 
     .vgvTitle {
-      margin-left: 16rem;
+      margin-left: 12rem;
     }
 
     .nameTitle,
@@ -154,11 +154,35 @@ export const LabelItems = styled.div`
     }
 
     .nameTitle {
-      margin-left: 3rem;
+      margin-left: 2rem;
     }
 
     .vgvTitle {
-      margin-left: 8rem;
+      margin-left: 10rem;
+    }
+
+    .nameTitle,
+    .vgvTitle {
+      font-family: Roboto;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 1.2rem;
+
+      color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+  @media (max-width: 320px) {
+    > img {
+      width: 2rem;
+      margin-bottom: 0;
+    }
+
+    .nameTitle {
+      margin-left: 2rem;
+    }
+
+    .vgvTitle {
+      margin-left: 5rem;
     }
 
     .nameTitle,
@@ -370,4 +394,41 @@ export const VGV = styled.div<RealtorProps>`
       margin-right: 0;
     }
   }
+`;
+
+export const ButtonGroup = styled.div`
+  margin-left: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  width: 9.6rem;
+  height: 1.7rem;
+  border: 0.1rem solid #c32925;
+  border-radius: 1rem;
+
+  button {
+    background: transparent;
+    border: 0;
+    font-size: 1.2rem;
+    text-align: center;
+    border-radius: 1rem;
+    color: #c32925;
+    &.selected {
+      background: #c32925;
+      color: #fff;
+    }
+  }
+
+  @media (max-width: 500px) {
+    width: 7rem;
+  }
+  @media (max-width: 375px) {
+    width: 7rem;
+  }
+`;
+
+export const LoadingContainer = styled.div`
+  margin-top: 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;

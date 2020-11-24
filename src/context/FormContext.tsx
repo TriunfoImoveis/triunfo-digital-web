@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { toast } from 'react-toastify';
 import api from '../services/api';
 
 interface FormContextData {
   formData: Object;
   updateFormData(data: Object): void;
-  submitFormNew(): void;
-  submitFormUsed(): void;
+  submitFormNew(): Promise<void>;
+  submitFormUsed(): Promise<void>;
 }
 
 const FormContext = createContext({} as FormContextData);
@@ -23,12 +24,11 @@ const FormProvider: React.FC = ({ children }) => {
     try {
       await api.post('/sale/new', formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token}`,
         },
       });
-      console.log('deu certo');
     } catch (err) {
-      console.log(err);
+      toast.error(`ERROR ${err}`);
     }
   }, [formData, token]);
 
@@ -36,12 +36,11 @@ const FormProvider: React.FC = ({ children }) => {
     try {
       await api.post('/sale/used', formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token}`,
         },
       });
-      console.log('deu certo');
     } catch (err) {
-      console.log(err);
+      toast.error(`ERROR ${err}`);
     }
   };
 

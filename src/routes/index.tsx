@@ -9,6 +9,8 @@ import Ranking from '../pages/Ranking';
 import RegisterSaleNew from '../pages/RegisterSale/New';
 import RegisterSaleUsed from '../pages/RegisterSale/Used';
 import ListSale from '../pages/ADM/ListSales';
+import ListRealtors from '../pages/ADM/ListRealtors';
+import ListColab from '../pages/ADM/ListColab';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -18,6 +20,8 @@ const Routes: React.FC = () => (
     <Route path="/vendas-novo" component={RegisterSaleNew} isPrivate />
     <Route path="/vendas-usado" component={RegisterSaleUsed} isPrivate />
     <Route path="/adm/lista-vendas" component={ListSale} isPrivate />
+    <Route path="/adm/lista-corretores" component={ListRealtors} isPrivate />
+    <Route path="/adm/lista-colaboradores" component={ListColab} isPrivate />
   </Switch>
 );
 

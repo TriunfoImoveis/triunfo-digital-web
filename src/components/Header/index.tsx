@@ -31,15 +31,15 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
         <NavBarContainer>
           <NavItemContent>
             <Realter />
-            <Link to="#top">Corretores</Link>
+            <Link to="/adm/lista-corretores">Corretores</Link>
           </NavItemContent>
           <NavItemContent>
             <Sale />
-            <Link to="#top">Vendas</Link>
+            <Link to="/adm/lista-vendas">Vendas</Link>
           </NavItemContent>
           <NavItemContent>
             <Collaborators />
-            <Link to="#top">Colaboradores</Link>
+            <Link to="/adm/lista-colaboradores">Colaboradores</Link>
           </NavItemContent>
           <NavItemContent>
             <IoIosLogOut size={30} color="#fff" />
