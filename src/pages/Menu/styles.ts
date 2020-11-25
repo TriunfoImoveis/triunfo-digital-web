@@ -8,12 +8,21 @@ export const Container = styled.div`
 `;
 
 export const Header = styled.div`
-  padding: 3rem 0;
+  padding: 1rem 0;
   margin: 0 auto;
   max-width: 1120px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  @media (max-width: 768px) {
+    padding: 1rem 0;
+    a {
+      > svg {
+        width: 8rem;
+      }
+    }
+  }
 `;
 export const NavBarContainer = styled.nav`
   display: flex;
@@ -33,6 +42,9 @@ export const NavItemContent = styled.div`
   }
   > a,
   button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: 0;
     margin-left: 0.8rem;
@@ -41,23 +53,46 @@ export const NavItemContent = styled.div`
     font-size: 1.6rem;
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
+    > span {
+      padding-left: 0.8rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    button {
+      > span {
+        display: none;
+      }
+    }
   }
 `;
 
 export const Content = styled.div`
   max-width: 90rem;
   width: 100%;
-  padding: 0 10rem;
+  padding: 1rem 10rem;
   margin: 0 auto;
+
+  @media (max-width: 500px) {
+    padding: 1rem 0;
+  }
 `;
 export const UserContainer = styled.div`
   display: flex;
+  width: 100%;
 
   img {
     width: 11rem;
     height: 11rem;
     border-radius: 50%;
     border: 0.3rem solid ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 500px) {
+    > img {
+      width: 8rem;
+      height: 8rem;
+    }
   }
 `;
 export const InfoContainer = styled.div`
@@ -79,6 +114,16 @@ export const InfoContainer = styled.div`
       font-size: 2rem;
     }
   }
+
+  @media (max-width: 500px) {
+    > span {
+      font-size: 2rem;
+
+      &.office {
+        font-size: 1.6rem;
+      }
+    }
+  }
 `;
 
 export const OptionsContainer = styled.div`
@@ -88,6 +133,13 @@ export const OptionsContainer = styled.div`
   grid-template-rows: auto;
   gap: 2rem;
   margin-top: 1.5rem;
+
+  @media (max-width: 375px) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 `;
 export const Option = styled(Link)`
   width: 100%;
@@ -100,6 +152,8 @@ export const Option = styled(Link)`
   border-radius: 1.5rem;
   text-decoration: none;
   transition: background 0.2s;
+  padding: 1.8rem 0;
+  box-shadow: ${({ theme }) => theme.boxShadow};
   > svg {
     width: 10rem;
     height: 10rem;
@@ -109,6 +163,7 @@ export const Option = styled(Link)`
   }
 
   > span {
+    padding: 1.8rem 0;
     font-weight: 500;
     font-size: 3.2rem;
     line-height: 3.7rem;
@@ -128,6 +183,30 @@ export const Option = styled(Link)`
 
     span {
       color: #fff;
+    }
+  }
+
+  @media (max-width: 768px) {
+    > span {
+      font-size: 20px;
+      line-height: 23px;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 375px) {
+    width: 20rem;
+    height: 20rem;
+
+    > svg {
+      width: 5rem;
+      height: 5rem;
+    }
+
+    > span {
+      font-size: 20px;
+      line-height: 23px;
+      text-align: center;
     }
   }
 `;

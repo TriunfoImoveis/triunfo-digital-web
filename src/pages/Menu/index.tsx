@@ -31,9 +31,9 @@ const Menu: React.FC = () => {
         </Link>
         <NavBarContainer>
           <NavItemContent>
-            <IoIosLogOut size={30} color="#fff" />
             <button type="button" onClick={signOut}>
-              Sair
+              <IoIosLogOut size={30} color="#C32925" />
+              <span>Sair</span>
             </button>
           </NavItemContent>
         </NavBarContainer>
@@ -50,11 +50,11 @@ const Menu: React.FC = () => {
           </InfoContainer>
         </UserContainer>
         <OptionsContainer>
-          <Option to="/#top">
+          <Option to="/actions">
             <RegisterSellIcon />
             <span>Cadastar Vendas</span>
           </Option>
-          <Option to="/#top">
+          <Option to="/ranking">
             <RankingIcon />
             <span>Ranking</span>
           </Option>
