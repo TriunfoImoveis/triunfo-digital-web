@@ -62,7 +62,7 @@ const Menu: React.FC = () => {
             <DashboardIcon />
             <span>Dashboard</span>
           </Option>
-          <Option to="/#top">
+          <Option to="/perfil">
             <Perfil />
             <span>Perfil</span>
           </Option>
