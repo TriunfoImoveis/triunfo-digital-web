@@ -14,8 +14,10 @@ export const Container = styled.div`
 
   @media (max-width: 768px) {
     padding: 1rem 0;
-    > svg {
-      width: 8rem;
+    > a {
+      svg {
+        width: 8rem;
+      }
     }
 
     > div {
