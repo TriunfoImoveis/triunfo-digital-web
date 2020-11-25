@@ -26,7 +26,9 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
   const { signOut, userAuth } = useAuth();
   return (
     <Container>
-      <LogoHeader />
+      <Link to="/menu">
+        <LogoHeader />
+      </Link>
       {type === 'adm' ? (
         <NavBarContainer>
           <NavItemContent>
