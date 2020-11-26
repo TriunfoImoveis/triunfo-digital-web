@@ -64,13 +64,10 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       if (typeSale === 'new') {
         const response = await api.get('/payment-type?type=NOVO');
         setpaymentTypes(response.data);
-      }
-      if (typeSale === 'used') {
+      } else if (typeSale === 'used') {
         const response = await api.get('/payment-type?type=USADO');
         setpaymentTypes(response.data);
       }
-      const response = await api.get('/company');
-      setCompanies(response.data);
     };
     loadPaymentType();
   }, [typeSale]);

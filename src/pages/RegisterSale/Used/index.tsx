@@ -41,7 +41,9 @@ const RegisterSaleUsed: React.FC = () => {
           <Step3 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="used" />
         );
       case 5:
-        return <Step4 nextStep={nextSpeps} prevStep={prevSpeps} />;
+        return (
+          <Step4 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="used" />
+        );
       case 6:
         return <SuccessForm typeSale="used" />;
       default:
