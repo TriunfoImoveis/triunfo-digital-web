@@ -17,3 +17,4 @@ export { ReactComponent as Filter } from './Filtro.svg';
 export { ReactComponent as Perfil } from './perfil.svg';
 export { ReactComponent as AdmLogo } from './adm-logo.svg';
 export { ReactComponent as Camera } from './camera.svg';
+export { ReactComponent as Sync } from './atualizar.svg';
