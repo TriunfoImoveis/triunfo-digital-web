@@ -12,12 +12,14 @@ import RegisterSaleUsed from '../pages/RegisterSale/Used';
 import ListSale from '../pages/ADM/ListSales';
 import ListRealtors from '../pages/ADM/ListRealtors';
 import ListColab from '../pages/ADM/ListColab';
+import Perfil from '../pages/Perfil';
 
 const Routes: React.FC = () => (
   <Switch>
     <Route path="/" exact component={SignIn} />
     <Route path="/actions" component={Action} isPrivate />
     <Route path="/menu" component={Menu} isPrivate />
+    <Route path="/perfil" component={Perfil} isPrivate />
     <Route path="/ranking" component={Ranking} isPrivate />
     <Route path="/vendas-novo" component={RegisterSaleNew} isPrivate />
     <Route path="/vendas-usado" component={RegisterSaleUsed} isPrivate />
