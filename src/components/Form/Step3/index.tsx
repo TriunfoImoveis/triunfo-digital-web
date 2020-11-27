@@ -4,6 +4,7 @@ import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../../context/AuthContext';
 import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 
@@ -44,22 +45,23 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const [sallers, setSalers] = useState([{ name: 'id' }]);
   const [captavitors, setCaptvators] = useState([{ name: 'id' }]);
   const { updateFormData } = useForm();
+  const { userAuth } = useAuth();
 
-  const city = 'São Luís';
+  const { city } = userAuth.subsidiary;
   useEffect(() => {
     const loadRealtos = async () => {
       const response = await api.get(`/users?city=${city}&office=Corretor`);
       setRealtors(response.data);
     };
     loadRealtos();
-  }, []);
+  }, [city]);
   useEffect(() => {
     const loadCoordinator = async () => {
       const response = await api.get(`/users?city=${city}&office=Coordenador`);
       setCoordinators(response.data);
     };
     loadCoordinator();
-  }, []);
+  }, [city]);
 
   useEffect(() => {
     const loadDirector = async () => {
@@ -67,7 +69,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
       setDirectors(response.data);
     };
     loadDirector();
-  }, []);
+  }, [city]);
 
   const optionsRealtors = realtors.map(realtor => ({
     label: realtor.name,
