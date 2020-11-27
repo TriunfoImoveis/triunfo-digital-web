@@ -70,8 +70,8 @@ const Ranking: React.FC = () => {
   }, [token, userAuth.subsidiary.city]);
 
   const handleSwichVGVToYear = async (filter: string) => {
-    const month = new Date().getMonth().toLocaleString();
-    const monthSystem = Number(month) + 1;
+    const month = new Date().getMonth();
+    const monthSystem = month + 1;
     setSelected(!selected);
     switch (filter) {
       case 'month': {
@@ -83,7 +83,7 @@ const Ranking: React.FC = () => {
             },
             params: {
               city: userAuth.subsidiary.city,
-              month: String(monthSystem),
+              month: monthSystem.toString(),
             },
           });
           const ranking = response.data;

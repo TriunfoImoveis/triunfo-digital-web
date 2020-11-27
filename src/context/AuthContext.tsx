@@ -39,6 +39,7 @@ interface AuthContextData {
   userAuth: UserAuth;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
+  upadatedUser(user: UserAuth): void;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -77,8 +78,21 @@ const AuthProvider: React.FC = ({ children }) => {
 
     setData({} as AuthState);
   }, []);
+
+  const upadatedUser = useCallback(
+    (user: UserAuth) => {
+      localStorage.setItem('@TriunfoDigital:user', JSON.stringify(user));
+      setData({
+        token: data.token,
+        userAuth: user,
+      });
+    },
+    [data.token],
+  );
   return (
-    <AuthContext.Provider value={{ userAuth: data.userAuth, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{ userAuth: data.userAuth, signIn, signOut, upadatedUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

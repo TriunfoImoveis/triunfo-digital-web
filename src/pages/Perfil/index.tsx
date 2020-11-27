@@ -1,12 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
 
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
 import { toast } from 'react-toastify';
+import Loader from 'react-loader-spinner';
+
 import { useAuth } from '../../context/AuthContext';
 import InputForm from '../../components/Input';
 
@@ -39,9 +41,9 @@ interface FormData {
 }
 
 const Perfil: React.FC = () => {
+  const [loading, setLoading] = useState(false);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
-  const { userAuth, signOut } = useAuth();
-  const history = useHistory();
+  const { userAuth, signOut, upadatedUser } = useAuth();
 
   const formRef = useRef<FormHandles>(null);
   const handleSubmit = async (data: FormData) => {
@@ -81,12 +83,8 @@ const Perfil: React.FC = () => {
           authorization: `Bearer ${token}`,
         },
       });
-      localStorage.setItem(
-        '@TriunfoDigital:user',
-        JSON.stringify(response.data),
-      );
+      upadatedUser(response.data);
       toast.success('Dados atualizados');
-      history.push('/menu');
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
@@ -96,6 +94,31 @@ const Perfil: React.FC = () => {
     }
   };
 
+  const handleAvatarChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        setLoading(true);
+        try {
+          const data = new FormData();
+          data.append('avatar', e.target.files[0]);
+
+          const response = await api.patch('/users/avatar', data, {
+            headers: {
+              authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          upadatedUser(response.data);
+          toast.success('Foto de perfil atualizada');
+          setLoading(false);
+        } catch (err) {
+          toast.error('Não foi possível atualizar a foto de perfil');
+          setLoading(false);
+        }
+      }
+    },
+    [token, upadatedUser],
+  );
   return (
     <Container>
       <Header>
@@ -121,10 +144,20 @@ const Perfil: React.FC = () => {
                 src={userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'}
                 alt={userAuth.name || 'Corretor'}
               />
-              <button type="button">
-                <span>Mudar foto</span>
-                <Camera />
-              </button>
+
+              {loading ? (
+                <Loader type="Bars" color="#fff" height={30} width={30} />
+              ) : (
+                <label htmlFor="avatar">
+                  <input
+                    type="file"
+                    id="avatar"
+                    onChange={handleAvatarChange}
+                  />
+                  <span>Mudar a foto</span>
+                  <Camera />
+                </label>
+              )}
             </Avatar>
             <InforUser>
               <InfoItem>
@@ -166,8 +199,14 @@ const Perfil: React.FC = () => {
                 </Input>
               </FormContent>
               <button type="submit">
-                <span>Atualizar</span>
-                <Sync />
+                {loading ? (
+                  <Loader type="Bars" color="#fff" height={30} width={30} />
+                ) : (
+                  <>
+                    <span>Atualizar</span>
+                    <Sync />
+                  </>
+                )}
               </button>
             </Form>
           </LogonInfo>
