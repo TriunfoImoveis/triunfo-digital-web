@@ -79,15 +79,32 @@ export const Content = styled.div`
     font-size: 3.2rem;
     margin-bottom: 3.9rem;
   }
+
+  @media (max-width: 500px) {
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 2.3rem;
+    }
+  }
 `;
 
 export const ProfileContainer = styled.div`
   width: 70%;
+  @media (max-width: 500px) {
+    width: 100%;
+  }
 `;
 
 export const BasicInfo = styled.div`
   width: 100%;
   display: flex;
+
+  @media (max-width: 500px) {
+    display: flex;
+    flex-direction: column;
+    /* align-items: center;
+    justify-content: center; */
+  }
 `;
 export const Avatar = styled.div`
   display: flex;
@@ -120,14 +137,40 @@ export const Avatar = styled.div`
       color: ${({ theme }) => theme.colors.primary};
     }
   }
+
+  @media (max-width: 500px) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    img {
+      width: 10rem;
+      height: 10rem;
+    }
+
+    button {
+      width: 11.5rem;
+      height: 3.2rem;
+
+      > span {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+      }
+    }
+  }
 `;
 
 export const InforUser = styled.div`
   display: flex;
   flex-direction: column;
   margin: 1.8rem 0.8rem;
+
+  @media (max-width: 500px) {
+    margin: 1.8rem 0;
+  }
 `;
 export const InfoItem = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
   margin-bottom: 1.8rem;
@@ -145,6 +188,17 @@ export const InfoItem = styled.div`
     line-height: 1.9rem;
     color: #898989;
   }
+
+  @media (max-width: 500px) {
+    margin-right: 0;
+
+    font-size: 1.6rem;
+    line-height: 1.9rem;
+
+    .label {
+      font-size: 1.2rem;
+    }
+  }
 `;
 export const InfoGroup = styled.div`
   display: flex;
@@ -154,6 +208,11 @@ export const Separator = styled.div`
   z-index: 10;
   margin: 3.2rem 0;
   border-top: 0.3rem solid ${({ theme }) => theme.colors.primary};
+
+  @media (max-width: 500px) {
+    width: 100%;
+    margin: 1.8rem 0;
+  }
 `;
 
 export const LogonInfo = styled.div`
@@ -191,6 +250,13 @@ export const LogonInfo = styled.div`
       }
     }
   }
+
+  @media (max-width: 500px) {
+    width: 100%;
+    h2 {
+      font-size: 1.6rem;
+    }
+  }
 `;
 
 export const FormContent = styled.div`
@@ -200,6 +266,12 @@ export const FormContent = styled.div`
   gap: 3rem;
 
   margin-bottom: 5rem;
+
+  @media (max-width: 500px) {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 `;
 export const Input = styled.div`
   display: flex;
