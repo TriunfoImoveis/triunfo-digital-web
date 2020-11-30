@@ -12,6 +12,7 @@ import RegisterSaleUsed from '../pages/RegisterSale/Used';
 import ListSale from '../pages/ADM/ListSales';
 import ListRealtors from '../pages/ADM/ListRealtors';
 import ListColab from '../pages/ADM/ListColab';
+import NewColab from '../pages/ADM/NewColab';
 import Perfil from '../pages/Perfil';
 
 const Routes: React.FC = () => (
@@ -26,6 +27,7 @@ const Routes: React.FC = () => (
     <Route path="/adm/lista-vendas" component={ListSale} isPrivate />
     <Route path="/adm/lista-corretores" component={ListRealtors} isPrivate />
     <Route path="/adm/lista-colaboradores" component={ListColab} isPrivate />
+    <Route path="/adm/novo-colaborador" component={NewColab} isPrivate />
   </Switch>
 );
 

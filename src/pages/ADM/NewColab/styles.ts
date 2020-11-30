@@ -1,0 +1,150 @@
+import styled from 'styled-components';
+import { darken } from 'polished';
+
+export const Container = styled.div`
+  max-width: 770px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h1 {
+    margin-bottom: 3.5rem;
+    font-size: 3.2rem;
+    line-height: 3.7rem;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+`;
+
+export const InfoLogin = styled.div`
+  position: relative;
+  width: 100%;
+  padding-right: 0.8rem;
+  .login {
+    width: 70%;
+    border: 0;
+    padding: 0 0.8rem 0.8rem 0.8rem;
+
+    > legend {
+      font-weight: bold;
+      font-size: 20px;
+      line-height: 23px;
+      color: #c32925;
+      margin-bottom: 2.5rem;
+    }
+
+    > div {
+      padding-left: 2rem;
+      margin-bottom: 0.8rem;
+
+      > div {
+        padding-left: 1.2rem;
+      }
+    }
+
+    > div + div {
+      margin-bottom: 0.8rem;
+    }
+  }
+`;
+
+export const AdmissionsInfo = styled.div`
+  width: 100%;
+  padding-right: 0.8rem;
+  .login {
+    border: 0;
+    padding: 0 0.8rem 0.8rem 0.8rem;
+
+    > legend {
+      font-weight: bold;
+      font-size: 20px;
+      line-height: 23px;
+      color: #c32925;
+      margin-bottom: 2.5rem;
+    }
+
+    > div {
+      padding-left: 2rem;
+      margin-bottom: 0.8rem;
+    }
+
+    > div + div {
+      margin-bottom: 0.8rem;
+    }
+  }
+`;
+
+export const Avatar = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30%;
+
+  > img {
+    width: 124px;
+    height: 124px;
+    border-radius: 50%;
+    margin-bottom: 1.2rem;
+    border: 0.1rem solid ${({ theme }) => theme.colors.primary};
+  }
+
+  > button {
+    width: 90%;
+    height: 4.8rem;
+
+    background: #f2c94c;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    border: 0;
+    outline: 0;
+    transition: background 0.2s;
+    color: #fff;
+    font-size: 16px;
+    line-height: 19px;
+
+    &:hover {
+      background: ${darken(0.03, '#f2c94c')};
+    }
+  }
+`;
+
+export const InputGroup = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  > div {
+    flex: 1;
+    padding-left: 0.8rem;
+    > div {
+      padding-left: 1.2rem;
+    }
+  }
+`;
+
+export const ButtonGroup = styled.div`
+  width: 70%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  button {
+    flex: 1;
+    margin-right: 0.8rem;
+    height: 6rem;
+
+    background: none;
+    border: 0.1rem solid ${({ theme }) => theme.colors.primary};
+  }
+`;

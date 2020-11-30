@@ -64,7 +64,7 @@ const ListColab: React.FC = () => {
               </select>
             </FiltersBottonItems>
             <FiltersBottonItems>
-              <button type="button">Novo Colaborador</button>
+              <Link to="/adm/novo-colaborador">Novo Colaborador</Link>
             </FiltersBottonItems>
           </FiltersBotton>
         </FiltersContainer>

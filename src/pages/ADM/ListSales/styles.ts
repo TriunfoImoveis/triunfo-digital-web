@@ -182,8 +182,8 @@ export const SaleBody = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   height: 10rem;
+  box-shadow: ${({ theme }) => theme.boxShadow};
   border-radius: 10rem;
-  border: 0.1rem solid #707070;
   z-index: 10;
   background-color: ${({ theme }) => theme.colors.background};
 
