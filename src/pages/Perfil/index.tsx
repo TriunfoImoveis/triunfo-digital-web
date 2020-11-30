@@ -30,6 +30,7 @@ import {
   LogonInfo,
   FormContent,
   Input,
+  LoadingContainer,
 } from './styles';
 import getValidationErros from '../../utils/getValidationErros';
 
@@ -42,6 +43,7 @@ interface FormData {
 
 const Perfil: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [loadingImg, setLoadingImg] = useState(false);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { userAuth, signOut, upadatedUser } = useAuth();
 
@@ -49,7 +51,7 @@ const Perfil: React.FC = () => {
   const handleSubmit = async (data: FormData) => {
     try {
       formRef.current?.setErrors({});
-
+      setLoading(true);
       const schema = Yup.object().shape({
         email: Yup.string().email('Digite um e-mail válido'),
         oldPassword: Yup.string(),
@@ -84,12 +86,15 @@ const Perfil: React.FC = () => {
         },
       });
       upadatedUser(response.data);
+      setLoading(false);
       toast.success('Dados atualizados');
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
       }
+      toast.error('Erro ao atualizar');
+      setLoading(false);
       toast.error(err);
     }
   };
@@ -97,7 +102,7 @@ const Perfil: React.FC = () => {
   const handleAvatarChange = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
-        setLoading(true);
+        setLoadingImg(true);
         try {
           const data = new FormData();
           data.append('avatar', e.target.files[0]);
@@ -110,10 +115,13 @@ const Perfil: React.FC = () => {
           });
           upadatedUser(response.data);
           toast.success('Foto de perfil atualizada');
-          setLoading(false);
+          setLoadingImg(false);
         } catch (err) {
-          toast.error('Não foi possível atualizar a foto de perfil');
-          setLoading(false);
+          toast.error('Não foi possível atualizar a foto de perfil!');
+          toast.error('Imagem tem que ser png/jpeg');
+          toast.error('Imagem tem que ser de ate 1MB');
+          setLoadingImg(false);
+          console.log(err);
         }
       }
     },
@@ -145,8 +153,10 @@ const Perfil: React.FC = () => {
                 alt={userAuth.name || 'Corretor'}
               />
 
-              {loading ? (
-                <Loader type="Bars" color="#fff" height={30} width={30} />
+              {loadingImg ? (
+                <LoadingContainer>
+                  <Loader type="Bars" color="#c32925" height={50} width={50} />
+                </LoadingContainer>
               ) : (
                 <label htmlFor="avatar">
                   <input
@@ -200,7 +210,7 @@ const Perfil: React.FC = () => {
               </FormContent>
               <button type="submit">
                 {loading ? (
-                  <Loader type="Bars" color="#fff" height={30} width={30} />
+                  <Loader type="Bars" color="#C32925" height={30} width={30} />
                 ) : (
                   <>
                     <span>Atualizar</span>

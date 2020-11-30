@@ -8,6 +8,7 @@ import {
   RankingIcon,
   Perfil,
   LogoHeader,
+  AdmLogo,
 } from '../../assets/images';
 import {
   Container,
@@ -50,6 +51,12 @@ const Menu: React.FC = () => {
           </InfoContainer>
         </UserContainer>
         <OptionsContainer>
+          {userAuth.office.name === 'Administrador' && (
+            <Option to="/adm/lista-vendas">
+              <AdmLogo />
+              <span>Painel Administrativo</span>
+            </Option>
+          )}
           <Option to="/actions">
             <RegisterSellIcon />
             <span>Cadastar Vendas</span>
