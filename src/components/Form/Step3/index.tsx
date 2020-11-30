@@ -175,7 +175,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               ) : (
                 <Select
                   name={`users_sellers[${index}].${saller.name}`}
-                  options={optionsRealtors}
+                  options={[{ label: userAuth.name, value: userAuth.id }]}
                   icon={IoMdArrowDropdown}
                   nameLabel="o Corretor Vendedor"
                   add
@@ -218,7 +218,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                   ) : (
                     <Select
                       name={`users_sellers[${index}].${saller.name}`}
-                      options={optionsRealtors}
+                      options={[{ label: userAuth.name, value: userAuth.id }]}
                       icon={IoMdArrowDropdown}
                       nameLabel="o Corretor Vendedor"
                       add

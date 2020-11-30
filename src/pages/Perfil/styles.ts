@@ -102,8 +102,6 @@ export const BasicInfo = styled.div`
   @media (max-width: 500px) {
     display: flex;
     flex-direction: column;
-    /* align-items: center;
-    justify-content: center; */
   }
 `;
 export const Avatar = styled.div`
@@ -119,7 +117,7 @@ export const Avatar = styled.div`
     border: 0.1rem solid ${({ theme }) => theme.colors.primary};
   }
 
-  button {
+  label {
     width: 14.5rem;
     height: 4.5rem;
     display: flex;
@@ -129,6 +127,9 @@ export const Avatar = styled.div`
     border: 0.2rem solid ${({ theme }) => theme.colors.primary};
     border-radius: 0.5rem;
 
+    > input {
+      display: none;
+    }
     > span {
       margin-right: 0.5rem;
 
@@ -170,7 +171,6 @@ export const InforUser = styled.div`
   }
 `;
 export const InfoItem = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: column;
   margin-bottom: 1.8rem;
@@ -190,6 +190,7 @@ export const InfoItem = styled.div`
   }
 
   @media (max-width: 500px) {
+    width: 100%;
     margin-right: 0;
 
     font-size: 1.6rem;
@@ -202,6 +203,7 @@ export const InfoItem = styled.div`
 `;
 export const InfoGroup = styled.div`
   display: flex;
+  width: 100%;
 `;
 
 export const Separator = styled.div`
@@ -297,4 +299,10 @@ export const Input = styled.div`
       }
     }
   }
+`;
+
+export const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;

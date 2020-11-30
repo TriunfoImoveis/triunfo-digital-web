@@ -1,12 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
 
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
 import { toast } from 'react-toastify';
+import Loader from 'react-loader-spinner';
+
 import { useAuth } from '../../context/AuthContext';
 import InputForm from '../../components/Input';
 
@@ -28,6 +30,7 @@ import {
   LogonInfo,
   FormContent,
   Input,
+  LoadingContainer,
 } from './styles';
 import getValidationErros from '../../utils/getValidationErros';
 
@@ -39,15 +42,16 @@ interface FormData {
 }
 
 const Perfil: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [loadingImg, setLoadingImg] = useState(false);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
-  const { userAuth, signOut } = useAuth();
-  const history = useHistory();
+  const { userAuth, signOut, upadatedUser } = useAuth();
 
   const formRef = useRef<FormHandles>(null);
   const handleSubmit = async (data: FormData) => {
     try {
       formRef.current?.setErrors({});
-
+      setLoading(true);
       const schema = Yup.object().shape({
         email: Yup.string().email('Digite um e-mail válido'),
         oldPassword: Yup.string(),
@@ -81,21 +85,48 @@ const Perfil: React.FC = () => {
           authorization: `Bearer ${token}`,
         },
       });
-      localStorage.setItem(
-        '@TriunfoDigital:user',
-        JSON.stringify(response.data),
-      );
+      upadatedUser(response.data);
+      setLoading(false);
       toast.success('Dados atualizados');
-      history.push('/menu');
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
       }
+      toast.error('Erro ao atualizar');
+      setLoading(false);
       toast.error(err);
     }
   };
 
+  const handleAvatarChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        setLoadingImg(true);
+        try {
+          const data = new FormData();
+          data.append('avatar', e.target.files[0]);
+
+          const response = await api.patch('/users/avatar', data, {
+            headers: {
+              authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          upadatedUser(response.data);
+          toast.success('Foto de perfil atualizada');
+          setLoadingImg(false);
+        } catch (err) {
+          toast.error('Não foi possível atualizar a foto de perfil!');
+          toast.error('Imagem tem que ser png/jpeg');
+          toast.error('Imagem tem que ser de ate 1MB');
+          setLoadingImg(false);
+          console.log(err);
+        }
+      }
+    },
+    [token, upadatedUser],
+  );
   return (
     <Container>
       <Header>
@@ -121,10 +152,22 @@ const Perfil: React.FC = () => {
                 src={userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'}
                 alt={userAuth.name || 'Corretor'}
               />
-              <button type="button">
-                <span>Mudar foto</span>
-                <Camera />
-              </button>
+
+              {loadingImg ? (
+                <LoadingContainer>
+                  <Loader type="Bars" color="#c32925" height={50} width={50} />
+                </LoadingContainer>
+              ) : (
+                <label htmlFor="avatar">
+                  <input
+                    type="file"
+                    id="avatar"
+                    onChange={handleAvatarChange}
+                  />
+                  <span>Mudar a foto</span>
+                  <Camera />
+                </label>
+              )}
             </Avatar>
             <InforUser>
               <InfoItem>
@@ -166,8 +209,14 @@ const Perfil: React.FC = () => {
                 </Input>
               </FormContent>
               <button type="submit">
-                <span>Atualizar</span>
-                <Sync />
+                {loading ? (
+                  <Loader type="Bars" color="#C32925" height={30} width={30} />
+                ) : (
+                  <>
+                    <span>Atualizar</span>
+                    <Sync />
+                  </>
+                )}
               </button>
             </Form>
           </LogonInfo>
