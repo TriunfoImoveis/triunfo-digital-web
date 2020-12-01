@@ -21,6 +21,9 @@ import {
 
 const ListColab: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const user = {
+    id: '123456',
+  };
   return (
     <AdmLayout>
       <Form
@@ -85,7 +88,7 @@ const ListColab: React.FC = () => {
             <SaleItem>Comercial</SaleItem>
             <SaleItem>Corretor</SaleItem>
             <SaleItem>
-              <Link to="#top">
+              <Link to={`/adm/detalhes-colaborador/${user.id}`}>
                 <BsPencil size={15} color="#c32925" />
                 Editar
               </Link>

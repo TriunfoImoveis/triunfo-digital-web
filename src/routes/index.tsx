@@ -28,6 +28,11 @@ const Routes: React.FC = () => (
     <Route path="/adm/lista-corretores" component={ListRealtors} isPrivate />
     <Route path="/adm/lista-colaboradores" component={ListColab} isPrivate />
     <Route path="/adm/novo-colaborador" component={NewColab} isPrivate />
+    <Route
+      path="/adm/detalhes-colaborador/:id"
+      component={NewColab}
+      isPrivate
+    />
   </Switch>
 );
 

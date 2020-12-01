@@ -19,6 +19,21 @@ export const Container = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
+
+    .submit {
+      border: 0;
+      outline: 0;
+      height: 6.4rem;
+      background: #6fcf97;
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border-radius: 4px;
+      margin-bottom: 1.6rem;
+
+      font-size: 32px;
+      line-height: 37px;
+
+      color: #ffffff;
+    }
   }
 `;
 
@@ -59,7 +74,7 @@ export const AdmissionsInfo = styled.div`
   padding-right: 0.8rem;
   .login {
     border: 0;
-    padding: 0 0.8rem 0.8rem 0.8rem;
+    padding: 0 0 0.8rem 0.8rem;
 
     > legend {
       font-weight: bold;
@@ -131,20 +146,43 @@ export const InputGroup = styled.div`
       padding-left: 1.2rem;
     }
   }
+
+  > div + div {
+    margin-left: 3rem;
+  }
 `;
 
 export const ButtonGroup = styled.div`
-  width: 70%;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  padding-left: 3.2rem;
+  padding-bottom: 1.2rem;
 
   button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex: 1;
     margin-right: 0.8rem;
     height: 6rem;
 
     background: none;
     border: 0.1rem solid ${({ theme }) => theme.colors.primary};
+    /* Primary Triunfo */
+    box-sizing: border-box;
+    border-radius: 4px;
+
+    > span {
+      margin-left: 3.7rem;
+      font-size: 24px;
+      line-height: 28px;
+
+      color: #c32925;
+    }
+  }
+
+  > button + button {
+    margin-left: 3rem;
   }
 `;

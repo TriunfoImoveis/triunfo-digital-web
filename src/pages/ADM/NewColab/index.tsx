@@ -1,4 +1,5 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import AdmLayout from '../../Layouts/Adm';
@@ -12,12 +13,26 @@ import {
   InputGroup,
   ButtonGroup,
 } from './styles';
+import { Sync, Garb } from '../../../assets/images';
+
+interface IRoteparams {
+  id: string;
+}
 
 const NewColab: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const [pageDetails, setPageDetails] = useState(false);
   const handleSubmit = useCallback(() => {
     console.log('ok');
   }, []);
+
+  const { id } = useParams<IRoteparams>();
+
+  useEffect(() => {
+    if (id) {
+      setPageDetails(true);
+    }
+  }, [id]);
   return (
     <AdmLayout>
       <Container>
@@ -52,20 +67,32 @@ const NewColab: React.FC = () => {
                 />
               </InputGroup>
               <InputGroup>
+                <Input name="subsidiary" placeholder="Filial" />
                 <Input name="department" placeholder="Departamento" />
-                <Input name="office" placeholder="Cargo" />
               </InputGroup>
               <InputGroup>
-                <Input name="subsidiary" placeholder="Filial" />
+                <Input name="office" placeholder="Cargo" />
                 <Input name="admission_date" placeholder="Data de Admissão" />
               </InputGroup>
             </fieldset>
           </AdmissionsInfo>
 
-          <ButtonGroup>
-            <button type="button">Atualizar</button>
-            <button type="button">Remover</button>
-          </ButtonGroup>
+          {pageDetails && (
+            <ButtonGroup>
+              <button type="button">
+                <Sync />
+                <span>Atualizar</span>
+              </button>
+              <button type="button">
+                <Garb />
+                <span>Remover</span>
+              </button>
+            </ButtonGroup>
+          )}
+
+          <button type="submit" className="submit">
+            Cadastrar Colaborador
+          </button>
         </Form>
       </Container>
     </AdmLayout>
