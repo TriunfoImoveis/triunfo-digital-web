@@ -217,3 +217,9 @@ export const SaleItem = styled.div`
     }
   }
 `;
+export const LoadingContainer = styled.div`
+  margin-top: 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
