@@ -120,9 +120,14 @@ export const FiltersBottonItems = styled.div`
     padding: 0 0.5rem;
 
     font-size: 2rem;
+    margin-right: 1.6rem;
   }
 
-  button[type='button'] {
+  > a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
     width: 17.1rem;
     height: 4.8rem;
 
@@ -131,6 +136,7 @@ export const FiltersBottonItems = styled.div`
     border-radius: 4px;
     border: 0;
     color: #fff;
+    font-size: 1.4rem;
     transition: background 0.2s;
 
     &:hover {
@@ -183,7 +189,7 @@ export const SaleBody = styled.div`
   grid-template-columns: repeat(5, 1fr);
   height: 10rem;
   border-radius: 10rem;
-  border: 0.1rem solid #707070;
+  box-shadow: ${({ theme }) => theme.boxShadow};
   z-index: 10;
   background-color: ${({ theme }) => theme.colors.background};
 
@@ -204,7 +210,7 @@ export const SaleItem = styled.div`
   font-size: 2rem;
   color: ${({ theme }) => theme.colors.textColor};
 
-  a {
+  > a {
     text-decoration: none;
     color: ${({ theme }) => theme.colors.textColor};
     transition: color 0.2s;

@@ -18,3 +18,4 @@ export { ReactComponent as Perfil } from './perfil.svg';
 export { ReactComponent as AdmLogo } from './adm-logo.svg';
 export { ReactComponent as Camera } from './camera.svg';
 export { ReactComponent as Sync } from './atualizar.svg';
+export { ReactComponent as Garb } from './lixeira.svg';

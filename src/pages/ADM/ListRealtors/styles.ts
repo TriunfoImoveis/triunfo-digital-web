@@ -183,7 +183,7 @@ export const SaleBody = styled.div`
   grid-template-columns: repeat(4, 1fr);
   height: 10rem;
   border-radius: 10rem;
-  border: 0.1rem solid #707070;
+  box-shadow: ${({ theme }) => theme.boxShadow};
   z-index: 10;
   background-color: ${({ theme }) => theme.colors.background};
 
@@ -216,4 +216,10 @@ export const SaleItem = styled.div`
       color: ${({ theme }) => theme.colors.primary};
     }
   }
+`;
+export const LoadingContainer = styled.div`
+  margin-top: 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
