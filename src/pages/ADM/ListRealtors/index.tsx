@@ -1,14 +1,6 @@
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
-import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
 import Loader from 'react-loader-spinner';
 import AdmLayout from '../../Layouts/Adm';
 import { Search } from '../../../assets/images';
@@ -27,34 +19,46 @@ import {
   LoadingContainer,
 } from './styles';
 import api from '../../../services/api';
+import { formatPrice } from '../../../utils/format';
 
 interface IRealtorData {
   id: string;
   name: string;
   avatar_url: string;
+  vgv: string;
 }
 
 const ListRealtors: React.FC = () => {
-  const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [city, setCity] = useState<string>('São Luís');
   const [realtors, setRealtors] = useState<IRealtorData[]>([]);
+  const token = localStorage.getItem('@TriunfoDigital:token');
 
   useEffect(() => {
     const loadRealtors = async () => {
       setLoading(true);
-      const response = await api.get('/users', {
+      const year = new Date().getFullYear();
+      const response = await api.get('/ranking', {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
         params: {
           city,
-          office: 'Corretor',
+          year,
         },
       });
-
-      setRealtors(response.data);
+      const listRealtors = response.data;
+      const realtorsFormatted = listRealtors.map(realtor => ({
+        id: realtor.id,
+        name: realtor.name,
+        avatar_url: realtor.avatar_url,
+        vgv: formatPrice(realtor.vgv),
+      }));
+      setRealtors(realtorsFormatted);
       setLoading(false);
     };
     loadRealtors();
-  }, [city]);
+  }, [city, token]);
   const handleSelectCity = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       setCity(event.target.value);
@@ -90,12 +94,7 @@ const ListRealtors: React.FC = () => {
   );
   return (
     <AdmLayout>
-      <Form
-        ref={formRef}
-        onSubmit={() => {
-          console.log('');
-        }}
-      >
+      <form>
         <FiltersContainer>
           <FiltersTop>
             <Input>
@@ -122,7 +121,7 @@ const ListRealtors: React.FC = () => {
             </FiltersBottonItems>
           </FiltersBotton>
         </FiltersContainer>
-      </Form>
+      </form>
       <Content>
         <SaleTableContainer>
           <SaleHeader>
@@ -144,7 +143,7 @@ const ListRealtors: React.FC = () => {
                   />
                 </SaleItem>
                 <SaleItem>{realtor.name}</SaleItem>
-                <SaleItem>R$ 8.000.000,00</SaleItem>
+                <SaleItem>{realtor.vgv}</SaleItem>
                 <SaleItem>
                   <Link to="#top">
                     <BsPencil size={15} color="#c32925" />
