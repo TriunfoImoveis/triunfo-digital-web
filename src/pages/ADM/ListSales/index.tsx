@@ -178,7 +178,7 @@ const ListSales: React.FC = () => {
             </SaleHeader>
             {sales.map(sale => (
               <SaleBody key={sale.id}>
-                <SaleItem>
+                <SaleItem className="avatar">
                   <img
                     src={
                       sale.sallers.avatar_url || 'https://imgur.com/I80W1Q0.png'
@@ -190,7 +190,7 @@ const ListSales: React.FC = () => {
                 <SaleItem>{sale.vgv}</SaleItem>
                 <SaleItem>{sale.dateSale}</SaleItem>
                 <SaleItem>
-                  <Link to="#top">
+                  <Link to={`/adm/detalhes-vendas/${sale.id}`}>
                     <FaPlus size={15} color="#c32925" />
                     Detalhes
                   </Link>

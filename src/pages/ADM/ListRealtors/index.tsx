@@ -136,7 +136,7 @@ const ListRealtors: React.FC = () => {
               </LoadingContainer>
             ) : (
               <SaleBody key={realtor.id}>
-                <SaleItem>
+                <SaleItem className="avatar">
                   <img
                     src={realtor.avatar_url || 'https://imgur.com/I80W1Q0.png'}
                     alt={realtor.name}

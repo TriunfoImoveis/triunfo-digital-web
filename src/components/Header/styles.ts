@@ -38,6 +38,15 @@ export const NavItemContent = styled.div`
   display: flex;
   width: 100%;
   align-items: center;
+  padding-bottom: 1rem;
+
+  &.active {
+    border-bottom: 3px solid #c32925;
+  }
+  &:hover {
+    border-bottom: 3px solid #c32925;
+  }
+
   & + div {
     margin-left: 2.4rem;
   }

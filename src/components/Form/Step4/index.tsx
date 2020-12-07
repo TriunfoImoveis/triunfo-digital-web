@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { IoMdArrowDropdown } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
@@ -183,12 +182,10 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           <Select
             name="company"
             options={optionsEmpresa}
-            icon={IoMdArrowDropdown}
             nameLabel="a empresa (% porcentagem)"
           />
           <Select
             name="payment_type"
-            icon={IoMdArrowDropdown}
             options={optionsFormaPagamento}
             nameLabel="a forma de pagamento"
           />
@@ -207,12 +204,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             value={comissionValue}
           />
         </InputGroup>
-        <Select
-          name="origin"
-          options={optionsOptions}
-          icon={IoMdArrowDropdown}
-          nameLabel="a Origem"
-        />
+        <Select name="origin" options={optionsOptions} nameLabel="a Origem" />
         <BonusConatainer>
           <span>Bonus da Venda ?</span>
           <CheckBox options={optionsBonus} handleValue={handleValue} />

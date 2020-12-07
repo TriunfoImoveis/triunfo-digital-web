@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles, Scope } from '@unform/core';
-import { IoMdArrowDropdown } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import getValidationErros from '../../../utils/getValidationErros';
 import { unMaked } from '../../../utils/unMasked';
@@ -168,13 +167,11 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               <Select
                 name="civil_status"
                 options={optionsEstadoCivil}
-                icon={IoMdArrowDropdown}
                 nameLabel="o Estado Civíl"
               />
               <Select
                 name="gender"
                 options={optionsGenero}
-                icon={IoMdArrowDropdown}
                 nameLabel="o genero"
               />
             </InputGroup>
@@ -232,13 +229,11 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               <Select
                 name="civil_status"
                 options={optionsEstadoCivil}
-                icon={IoMdArrowDropdown}
                 nameLabel="o Estado Civíl"
               />
               <Select
                 name="gender"
                 options={optionsGenero}
-                icon={IoMdArrowDropdown}
                 nameLabel="o genero"
               />
             </InputGroup>

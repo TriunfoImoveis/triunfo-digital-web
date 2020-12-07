@@ -41,7 +41,7 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
           </NavItemContent>
           <NavItemContent>
             <Collaborators />
-            <Link to="/adm/lista-colaboradores">Colaboradores</Link>
+            <Link to="/adm/lista-colaboradores">RH</Link>
           </NavItemContent>
           <NavItemContent>
             <IoIosLogOut size={30} color="#fff" />

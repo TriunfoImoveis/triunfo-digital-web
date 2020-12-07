@@ -30,6 +30,7 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "no-shadow": "off",
     "react/jsx-curly-newline": "off",
     "jsx-a11y/label-has-associated-control": "off",
     "consistent-return": "off",

@@ -41,6 +41,16 @@ export const CPF = (
   return event;
 };
 
+export const CPFMask = (value: string): string => {
+  let valueMasked = value;
+  valueMasked = valueMasked.replace(/\D/g, '');
+  valueMasked = valueMasked.replace(
+    /(\d{3})(\d{3})(\d{3})(\d{2})/,
+    '$1.$2.$3-$4',
+  );
+  return valueMasked;
+};
+
 export const CEP = (
   event: ChangeEvent<HTMLInputElement>,
 ): ChangeEvent<HTMLInputElement> => {
@@ -59,6 +69,12 @@ export const Fone = (
   valueMasked = valueMasked.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   event.currentTarget.value = valueMasked;
   return event;
+};
+export const FoneMask = (value: string): string => {
+  let valueMasked = value;
+  valueMasked = valueMasked.replace(/\D/g, '');
+  valueMasked = valueMasked.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  return valueMasked;
 };
 export const Whats = (
   event: ChangeEvent<HTMLInputElement>,
