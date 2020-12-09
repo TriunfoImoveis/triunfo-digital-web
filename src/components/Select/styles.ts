@@ -10,6 +10,20 @@ interface ContainerProps {
 export const ContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
+
+  > span.label {
+    margin-top: 0.8rem;
+    padding-bottom: 0.6rem;
+    font-size: 1.6rem;
+    line-height: 1.9rem;
+    color: #898989;
+  }
+
+  @media (max-width: 500px) {
+    span.label {
+      font-size: 1.2rem;
+    }
+  }
 `;
 export const Container = styled.div<ContainerProps>`
   background: ${({ theme }) => theme.colors.secondary};
@@ -65,8 +79,6 @@ export const IconContainer = styled.div`
   border: 0;
   border-radius: 0.4rem 0 0 0.4rem;
   background: ${({ theme }) => theme.colors.primaryAlpha};
-
-  margin-right: 0.8rem;
 `;
 
 export const Error = styled.span`

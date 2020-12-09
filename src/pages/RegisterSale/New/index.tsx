@@ -10,7 +10,7 @@ import TabNavigator from '../../../components/TabNavigator';
 import { Container, Content, FormContainer } from './styles';
 
 const RegisterSaleNew: React.FC = () => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(4);
 
   const nextSpeps = useCallback(() => {
     setStep(step + 1);

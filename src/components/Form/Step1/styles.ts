@@ -25,6 +25,20 @@ export const InputGroup = styled.div`
   div + div {
     margin-left: 0.8rem;
   }
+
+  @media (max-width: 375px) {
+    flex: 1;
+    flex-direction: column;
+
+    > div,
+    select {
+      width: 100%;
+      margin-top: 0;
+    }
+    div + div {
+      margin-left: 0;
+    }
+  }
 `;
 
 export const ButtonGroup = styled.div`
@@ -61,6 +75,19 @@ export const ButtonGroup = styled.div`
     .cancel,
     .next {
       height: 3.6rem;
+    }
+  }
+
+  @media (max-width: 375px) {
+    flex: 1;
+    flex-direction: column;
+
+    > button {
+      width: 100%;
+    }
+
+    button + button {
+      margin-left: 0;
     }
   }
 `;

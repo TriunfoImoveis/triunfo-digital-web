@@ -71,6 +71,7 @@ const Select: React.FC<SelectProps> = ({
   }, [fieldName, registerField, name]);
   return (
     <ContainerWrapper>
+      <span className="label">{nameLabel}</span>
       <Container
         isErrored={errorField}
         isFilled={isFilled}
@@ -89,11 +90,6 @@ const Select: React.FC<SelectProps> = ({
           value={defaultValue}
           {...rest}
         >
-          {nameLabel && (
-            <option value="" selected disabled>
-              {`Selecione ${nameLabel}`}
-            </option>
-          )}
           {options.map(option => (
             <option key={option.value} value={option.value}>
               {option.label}

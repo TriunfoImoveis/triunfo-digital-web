@@ -16,6 +16,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ComponentType<IconBaseProps>;
   mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats';
   maxlength?: number;
+  label: string;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -23,6 +24,7 @@ const Input: React.FC<InputProps> = ({
   mask,
   maxlength,
   icon: Icon,
+  label,
   ...rest
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,6 +86,7 @@ const Input: React.FC<InputProps> = ({
 
   return (
     <ContainerWrapper>
+      <span className="label">{label}</span>
       <Container
         isErrored={errorField}
         isFilled={isFilled}

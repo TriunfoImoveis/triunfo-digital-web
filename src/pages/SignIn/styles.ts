@@ -10,11 +10,12 @@ export const Content = styled.div`
   flex-direction: column;
   align-items: center;
   height: 100%;
+  padding-bottom: 1.6rem;
 
   > svg {
     margin-top: 5.2rem;
     width: 30rem;
-    margin-bottom: 7.4rem;
+    margin-bottom: 5rem;
   }
 
   h1 {
@@ -31,7 +32,7 @@ export const Content = styled.div`
   form {
     width: 37rem;
     > div {
-      margin-bottom: 0.8rem;
+      margin-bottom: 1.6rem;
     }
   }
 
