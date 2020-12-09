@@ -150,125 +150,107 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
         {typeClient === 'buyer' && (
           <Scope path="client_buyer">
             <InputGroup>
+              <InputForm label="CPF" mask="cpf" name="cpf" maxlength={11} />
               <InputForm
-                mask="cpf"
-                name="cpf"
-                placeholder="CPF"
-                maxlength={11}
-              />
-              <InputForm
+                label="Data de Nascimento"
                 type="date"
                 name="date_birth"
-                placeholder="Data Nasc."
               />
             </InputGroup>
-            <InputForm name="name" placeholder="Nome" />
+            <InputForm label="Nome Completo" name="name" />
             <InputGroup>
               <Select
                 name="civil_status"
                 options={optionsEstadoCivil}
-                nameLabel="o Estado Civíl"
+                nameLabel="Estado Civíl"
               />
               <Select
                 name="gender"
                 options={optionsGenero}
-                nameLabel="o genero"
+                nameLabel="Gênero"
               />
             </InputGroup>
             <InputGroup>
               <InputForm
+                label="Números de Filhos"
                 name="number_children"
                 type="number"
-                placeholder="Quantidade de Filhos"
                 maxlength={2}
               />
-              <InputForm
-                name="occupation"
-                type="text"
-                placeholder="Profissão"
-              />
+              <InputForm label="Profissão" name="occupation" type="text" />
             </InputGroup>
             <InputGroup>
               <InputForm
+                label="Telefone"
                 id="phone"
                 mask="fone"
                 name="phone"
                 type="text"
-                placeholder="Telefone"
                 maxlength={11}
               />
               <InputForm
+                label="Whatsapp"
                 id="whatsapp"
                 mask="whats"
                 name="whatsapp"
                 type="text"
-                placeholder="Whatsapp"
                 maxlength={11}
               />
             </InputGroup>
-            <InputForm name="email" type="email" placeholder="E-mail" />
+            <InputForm label="E-mail" name="email" type="email" />
           </Scope>
         )}
         {typeClient === 'salesman' && (
           <Scope path="client_seller">
             <InputGroup>
+              <InputForm label="CPF" mask="cpf" name="cpf" maxlength={11} />
               <InputForm
-                mask="cpf"
-                name="cpf"
-                placeholder="CPF"
-                maxlength={11}
-              />
-              <InputForm
+                label="Data de Nascimento"
                 type="date"
                 name="date_birth"
-                placeholder="Data Nasc."
               />
             </InputGroup>
-            <InputForm name="name" placeholder="Nome" />
+            <InputForm label="Nome Completo" name="name" />
             <InputGroup>
               <Select
                 name="civil_status"
                 options={optionsEstadoCivil}
-                nameLabel="o Estado Civíl"
+                nameLabel="Estado Civíl"
               />
               <Select
                 name="gender"
                 options={optionsGenero}
-                nameLabel="o genero"
+                nameLabel="Gênero"
               />
             </InputGroup>
             <InputGroup>
               <InputForm
+                label="Número de Filhos"
                 name="number_children"
                 type="number"
-                placeholder="Quantidade de Filhos"
                 maxlength={2}
               />
-              <InputForm
-                name="occupation"
-                type="text"
-                placeholder="Profissão"
-              />
+              <InputForm label="Profissão" name="occupation" type="text" />
             </InputGroup>
             <InputGroup>
               <InputForm
+                label="Telefone"
                 id="phone"
                 mask="fone"
                 name="phone"
                 type="text"
-                placeholder="Telefone"
                 maxlength={11}
               />
               <InputForm
+                label="Whatsapp"
                 id="whatsapp"
                 mask="whats"
                 name="whatsapp"
                 type="text"
-                placeholder="Whatsapp"
                 maxlength={11}
               />
             </InputGroup>
-            <InputForm name="email" type="email" placeholder="E-mail" />
+            <InputForm label="E-mail" name="email" type="email" />
           </Scope>
         )}
         <ButtonGroup>

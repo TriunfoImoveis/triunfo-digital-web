@@ -172,45 +172,57 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         <InputGroup>
           <InputForm
+            label="Valor da Venda"
             name="realty_ammount"
             mask="currency"
-            placeholder="Valor da venda"
           />
-          <InputForm type="date" name="sale_date" placeholder="Data da Venda" />
+          <InputForm
+            label="Data da Venda"
+            type="date"
+            name="sale_date"
+            placeholder="Data da Venda"
+          />
         </InputGroup>
         <InputGroup>
           <Select
             name="company"
             options={optionsEmpresa}
-            nameLabel="a empresa (% porcentagem)"
+            nameLabel="Empresa (%)"
           />
           <Select
             name="payment_type"
             options={optionsFormaPagamento}
-            nameLabel="a forma de pagamento"
+            nameLabel="Forma de pagamento"
           />
         </InputGroup>
         <InputGroup>
           <InputForm
+            label="% da Venda"
             name="percentage_sale"
             mask="porcent"
-            placeholder="Porcentagem Total da Venda"
+            placeholder="5%"
             onChange={calcComission}
           />
           <InputForm
+            label="Comissão"
             name="commission"
             mask="currency"
             placeholder="Comissão"
             value={comissionValue}
           />
         </InputGroup>
-        <Select name="origin" options={optionsOptions} nameLabel="a Origem" />
+        <Select name="origin" options={optionsOptions} nameLabel="Origem" />
         <BonusConatainer>
           <span>Bonus da Venda ?</span>
           <CheckBox options={optionsBonus} handleValue={handleValue} />
         </BonusConatainer>
         {isExistBonus && (
-          <InputForm name="bonus" mask="currency" placeholder="Bônus" />
+          <InputForm
+            label="Bônus"
+            name="bonus"
+            mask="currency"
+            placeholder="Bônus"
+          />
         )}
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>

@@ -87,15 +87,22 @@ const SignIn: React.FC = () => {
         <Logo />
         <h1>Login</h1>
         <Form ref={formRef} onSubmit={handleSubmit}>
-          <Input type="email" name="email" icon={FaUser} placeholder="E-mail" />
           <Input
+            label="E-mail"
+            type="email"
+            name="email"
+            icon={FaUser}
+            placeholder="email@exmplo.com"
+          />
+          <Input
+            label="Senha"
             type="password"
             name="password"
             icon={RiLockPasswordFill}
-            placeholder="Senha"
+            placeholder="************"
           />
 
-          <Select name="office" options={options} />
+          <Select nameLabel="Cargo" name="office" options={options} />
           <Button type="submit">
             {loading ? (
               <Loader type="Bars" color="#fff" height={30} width={30} />

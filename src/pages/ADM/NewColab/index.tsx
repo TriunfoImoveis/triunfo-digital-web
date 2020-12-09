@@ -41,13 +41,13 @@ const NewColab: React.FC = () => {
           <InfoLogin>
             <fieldset className="login">
               <legend>INFORMAÇÕES DE LOGIN</legend>
-              <Input name="name" placeholder="Nome Completo" />
-              <Input name="email" type="email" placeholder="E-mail" />
-              <Input name="password" type="password" placeholder="Senha" />
+              <Input label="Nome Completo" name="name" />
+              <Input label="E-mail" name="email" type="email" />
+              <Input label="Senha" name="password" type="password" />
               <Input
+                label="Confirmar Senha"
                 name="confirmed_password"
                 type="password"
-                placeholder="Confirma Senha"
               />
             </fieldset>
             <Avatar>
@@ -59,20 +59,16 @@ const NewColab: React.FC = () => {
             <fieldset className="login">
               <legend>INFORMAÇÕES ADMISSIONAIS</legend>
               <InputGroup>
-                <Input name="phone" placeholder="Telefone" mask="fone" />
-                <Input
-                  name="goal"
-                  placeholder="Meta de Venda"
-                  mask="currency"
-                />
+                <Input label="Telefone" name="phone" mask="fone" />
+                <Input label="Meta de Venda" name="goal" mask="currency" />
               </InputGroup>
               <InputGroup>
-                <Input name="subsidiary" placeholder="Filial" />
-                <Input name="department" placeholder="Departamento" />
+                <Input label="Filial" name="subsidiary" />
+                <Input label="Departamento" name="department" />
               </InputGroup>
               <InputGroup>
-                <Input name="office" placeholder="Cargo" />
-                <Input name="admission_date" placeholder="Data de Admissão" />
+                <Input label="Cargo" name="office" placeholder="Cargo" />
+                <Input label="Data de Admissão" name="admission_date" />
               </InputGroup>
             </fieldset>
           </AdmissionsInfo>

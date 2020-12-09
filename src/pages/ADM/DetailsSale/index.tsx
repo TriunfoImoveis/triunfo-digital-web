@@ -133,7 +133,11 @@ const DetailsSale: React.FC = () => {
             <SaleData>
               <fieldset className="login">
                 <legend>IMÓVEL</legend>
-                <Input name="realty.enterprise" placeholder="Empreendimento" />
+                <Input
+                  label="Empreendimento"
+                  name="realty.enterprise"
+                  placeholder="Empreendimento"
+                />
                 <InputGroup>
                   <Select
                     name="realty.state"
@@ -146,30 +150,52 @@ const DetailsSale: React.FC = () => {
                     onChange={handleSelectCity}
                   />
                 </InputGroup>
-                <Input name="realty.neighborhood" placeholder="Bairro" />
+                <Input
+                  label="Bairro"
+                  name="realty.neighborhood"
+                  placeholder="Bairro"
+                />
                 <InputGroup>
                   <Select
                     name="realty.property"
                     options={optionsTypeImobille}
                   />
-                  <Input name="realty.unit" placeholder="Unidade" />
+                  <Input
+                    label="Unidade"
+                    name="realty.unit"
+                    placeholder="Unidade"
+                  />
                 </InputGroup>
               </fieldset>
             </SaleData>
             <SaleData>
               <fieldset className="login">
                 <legend>COMPRADOR</legend>
-                <Input name="client_buyer.name" placeholder="Nome Completo" />
+                <Input
+                  label="Nome Completo"
+                  name="client_buyer.name"
+                  placeholder="Nome Completo"
+                />
                 <InputGroup>
-                  <Input name="client_buyer.cpf" placeholder="CPF" />
                   <Input
+                    label="CPF"
+                    name="client_buyer.cpf"
+                    placeholder="CPF"
+                  />
+                  <Input
+                    label="Data de Nascimento"
                     name="client_buyer.date_birth"
                     placeholder="Data de Nascimento"
                   />
                 </InputGroup>
                 <InputGroup>
-                  <Input name="client_buyer.phone" placeholder="Telefone" />
                   <Input
+                    label="Telefone"
+                    name="client_buyer.phone"
+                    placeholder="Telefone"
+                  />
+                  <Input
+                    label="E-mail"
                     name="client_buyer.email"
                     type="email"
                     placeholder="E-mail"
@@ -177,11 +203,17 @@ const DetailsSale: React.FC = () => {
                 </InputGroup>
                 <InputGroup>
                   <Input
+                    label="Estado Civíl"
                     name="client_buyer.civil_status"
                     placeholder="Estado Civíl"
                   />
-                  <Input name="client_buyer.gender" placeholder="Gênero" />
                   <Input
+                    label="Gênero"
+                    name="client_buyer.gender"
+                    placeholder="Gênero"
+                  />
+                  <Input
+                    label="Numero de Filhos"
                     name="client_buyer.number_children"
                     placeholder="Número de filhos"
                   />

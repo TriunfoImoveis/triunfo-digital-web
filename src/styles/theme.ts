@@ -10,7 +10,7 @@ const theme: DefaultTheme = {
     background: '#f8f8f8',
     borderColor: '#818181',
     textColor: '#898989',
-    textColorAlpha: 'rgba(121,119,119,0.7)',
+    textColorAlpha: 'rgba(121,119,119,0.5)',
   },
   fontSize: {
     tiny: '1.2rem',

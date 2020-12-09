@@ -166,7 +166,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 <Select
                   name={`users_sellers[${index}].${saller.name}`}
                   options={optionsRealtors}
-                  nameLabel="o Corretor Vendedor"
+                  nameLabel="Corretor Vendedor"
                   remove
                   removeRealtors={() => handleRemoveRealtors(sallers, index)}
                 />
@@ -174,7 +174,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 <Select
                   name={`users_sellers[${index}].${saller.name}`}
                   options={[{ label: userAuth.name, value: userAuth.id }]}
-                  nameLabel="o Corretor Vendedor"
+                  nameLabel="Corretor Vendedor"
                   add
                   addRealtors={handleAddSallers}
                 />
@@ -184,12 +184,12 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               <Select
                 name="user_coordinator"
                 options={optionsCoordenador}
-                nameLabel="o Coordenador"
+                nameLabel="Coordenador"
               />
               <Select
                 name="user_director"
                 options={optionsDirector}
-                nameLabel="o diretor"
+                nameLabel="Diretor"
               />
             </InputGroup>
           </>
@@ -203,7 +203,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_sellers[${index}].${saller.name}`}
                       options={optionsRealtors}
-                      nameLabel="o Corretor Vendedor"
+                      nameLabel="Corretor Vendedor"
                       remove
                       removeRealtors={() =>
                         handleRemoveRealtors(captavitors, index)
@@ -213,7 +213,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_sellers[${index}].${saller.name}`}
                       options={[{ label: userAuth.name, value: userAuth.id }]}
-                      nameLabel="o Corretor Vendedor"
+                      nameLabel="Corretor Vendedor"
                       add
                       addRealtors={handleAddSallers}
                     />
@@ -227,7 +227,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_captivators[${index}].${cap.name}`}
                       options={optionsRealtors}
-                      nameLabel="o Corretor Captador"
+                      nameLabel="Corretor Captador"
                       remove
                       removeRealtors={() =>
                         handleRemoveCaptvators(captavitors, index)
@@ -237,7 +237,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_captivators[${index}].${cap.name}`}
                       options={optionsRealtors}
-                      nameLabel="o Corretor Captador"
+                      nameLabel="Corretor Captador"
                       add
                       addRealtors={handleAddCaptivators}
                     />
@@ -248,7 +248,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
             <Select
               name="user_director"
               options={optionsDirector}
-              nameLabel="o diretor"
+              nameLabel="Diretor"
             />
           </>
         )}

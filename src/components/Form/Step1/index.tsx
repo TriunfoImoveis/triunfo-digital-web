@@ -19,10 +19,6 @@ import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
 
-interface IBGEUFResponse {
-  sigla: string;
-}
-
 interface IBGECityResponse {
   nome: string;
 }
@@ -51,25 +47,13 @@ interface IStep1FormData {
 
 const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
-  const [ufs, setUfs] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
-  const [selectedUf, setSelectedUf] = useState('0');
+  const [selectedUf, setSelectedUf] = useState('MA');
   const [selectedCity, setSelectedCity] = useState('0');
   const { updateFormData } = useForm();
-
-  useEffect(() => {
-    axios
-      .get<IBGEUFResponse[]>(
-        'https://servicodados.ibge.gov.br/api/v1/localidades/estados',
-      )
-      .then(response => {
-        const ufInitials = response.data.map(uf => uf.sigla);
-        setUfs(ufInitials);
-      });
-  }, []);
 
   useEffect(() => {
     if (selectedUf === '0') {
@@ -104,10 +88,13 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     };
     loadBuilders();
   }, [typeSale]);
-  const optionsUFs = ufs.map(uf => ({
-    value: uf,
-    label: uf,
-  }));
+  const optionsUFs = [
+    { label: 'Maranhão', value: 'MA' },
+    { label: 'Ceará', value: 'CE' },
+    { label: 'Piauí', value: 'PI' },
+    { label: 'Paraíba', value: 'PB' },
+    { label: 'São Luís', value: 'SP' },
+  ];
 
   const optionsCities = cities.map(city => ({ value: city, label: city }));
 
@@ -194,15 +181,14 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <InputForm name="realty.enterprise" placeholder="Empreendimento" />
+        <InputForm label="Empreendimento" name="realty.enterprise" />
         <InputGroup>
           <Select
             name="realty.state"
-            placeholder="Selecione um estado"
             options={optionsUFs}
             defaultValue={selectedUf}
             onChange={handleSelectedUF}
-            nameLabel="o Estado"
+            nameLabel="Estado"
           />
           <Select
             name="realty.city"
@@ -210,22 +196,26 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
             options={optionsCities}
             defaultValue={selectedCity}
             onChange={handleSelectCity}
-            nameLabel="a cidade"
+            nameLabel="Cidade"
           />
         </InputGroup>
-        <InputForm name="realty.neighborhood" placeholder="Bairro" />
+        <InputForm
+          label="Bairro"
+          name="realty.neighborhood"
+          placeholder="Bairro"
+        />
         <Select
           name="realty.property"
           placeholder="Tipo do Imovel"
           options={optionsTypeImobille}
-          nameLabel="o Tipo do Imóvel"
+          nameLabel="Tipo do Imóvel"
         />
-        <InputForm name="realty.unit" placeholder="Unidade" />
+        <InputForm label="Unidade" name="realty.unit" placeholder="Unidade" />
         {typeSale === 'new' && (
           <Select
             name="builder"
             options={optionBuilder}
-            nameLabel="a contrutora"
+            nameLabel="Contrutora"
           />
         )}
         <ButtonGroup>

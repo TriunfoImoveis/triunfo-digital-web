@@ -192,20 +192,32 @@ const Perfil: React.FC = () => {
             <Form ref={formRef} onSubmit={handleSubmit}>
               <FormContent>
                 <Input>
-                  <span className="label">E-mail</span>
-                  <InputForm name="email" defaultValue={userAuth.email} />
+                  <InputForm
+                    label="Email"
+                    name="email"
+                    defaultValue={userAuth.email}
+                  />
                 </Input>
                 <Input>
-                  <span className="label">Senha</span>
-                  <InputForm name="oldPassword" type="password" />
+                  <InputForm
+                    label="Senha Antiga"
+                    name="oldPassword"
+                    type="password"
+                  />
                 </Input>
                 <Input>
-                  <span className="label">Nova Senha</span>
-                  <InputForm name="newPassword" type="password" />
+                  <InputForm
+                    label="Nova Senha"
+                    name="newPassword"
+                    type="password"
+                  />
                 </Input>
                 <Input>
-                  <span className="label">Repita Nova Senha</span>
-                  <InputForm name="confirmNewPassword" type="password" />
+                  <InputForm
+                    label="Repetetir Nova Senha"
+                    name="confirmNewPassword"
+                    type="password"
+                  />
                 </Input>
               </FormContent>
               <button type="submit">
