@@ -68,6 +68,10 @@ export const Container = styled.div<ContainerProps>`
       color: ${({ theme }) => theme.colors.textColor};
     }
   }
+
+  select:disabled {
+    background-color: rgba(129, 129, 129, 0.1);
+  }
 `;
 
 export const IconContainer = styled.div`

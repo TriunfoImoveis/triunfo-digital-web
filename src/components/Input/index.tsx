@@ -7,14 +7,22 @@ import React, {
 } from 'react';
 import { useField } from '@unform/core';
 import { IconBaseProps } from 'react-icons';
-import { CEP, CPF, porcent, currency, Fone, Whats } from '../../utils/masked';
+import {
+  CEP,
+  CPF,
+  porcent,
+  currency,
+  Fone,
+  Whats,
+  DateDMY,
+} from '../../utils/masked';
 
 import { ContainerWrapper, Container, IconContainer, Error } from './styles';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   icon?: React.ComponentType<IconBaseProps>;
-  mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats';
+  mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats' | 'date';
   maxlength?: number;
   label: string;
 }
@@ -76,6 +84,9 @@ const Input: React.FC<InputProps> = ({
           break;
         case 'whats':
           Whats(e);
+          break;
+        case 'date':
+          DateDMY(e);
           break;
         default:
           break;

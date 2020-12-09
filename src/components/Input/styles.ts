@@ -80,6 +80,10 @@ export const Container = styled.div<ContainerProps>`
   > svg {
     margin-right: 16px;
   }
+
+  input:read-only {
+    background-color: rgba(129, 129, 129, 0.1);
+  }
 `;
 
 export const IconContainer = styled.div`

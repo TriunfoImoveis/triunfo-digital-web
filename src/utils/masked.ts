@@ -85,3 +85,12 @@ export const Whats = (
   event.currentTarget.value = valueMasked;
   return event;
 };
+export const DateDMY = (
+  event: ChangeEvent<HTMLInputElement>,
+): ChangeEvent<HTMLInputElement> => {
+  let valueMasked = event.target.value;
+  valueMasked = valueMasked.replace(/\D/g, '');
+  valueMasked = valueMasked.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+  event.currentTarget.value = valueMasked;
+  return event;
+};

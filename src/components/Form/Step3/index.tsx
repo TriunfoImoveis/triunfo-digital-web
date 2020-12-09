@@ -8,6 +8,7 @@ import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 
 import Select from '../../Select';
+import Input from '../../Input';
 import Button from '../../Button';
 
 import {
@@ -40,7 +41,8 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const [loading, setLoading] = useState(false);
   const [realtors, setRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
-  const [directors, setDirectors] = useState<IOptions[]>([]);
+  const [director1, setDirector1] = useState<IOptions[]>([]);
+  const [director2, setDirector2] = useState<IOptions[]>([]);
   const [sallers, setSalers] = useState([{ name: 'id' }]);
   const [captavitors, setCaptvators] = useState([{ name: 'id' }]);
   const { updateFormData } = useForm();
@@ -65,7 +67,8 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   useEffect(() => {
     const loadDirector = async () => {
       const response = await api.get(`/users?city=${city}&office=Diretor`);
-      setDirectors(response.data);
+      setDirector1(response.data[0]);
+      setDirector2(response.data[1]);
     };
     loadDirector();
   }, [city]);
@@ -78,11 +81,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const optionsCoordenador = cordinators.map(coordinator => ({
     label: coordinator.name,
     value: coordinator.id,
-  }));
-
-  const optionsDirector = directors.map(director => ({
-    label: director.name,
-    value: director.id,
   }));
 
   const handleSubmit = useCallback(
@@ -186,10 +184,11 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 options={optionsCoordenador}
                 nameLabel="Coordenador"
               />
-              <Select
+              <Input
                 name="user_director"
-                options={optionsDirector}
-                nameLabel="Diretor"
+                label="Diretoria"
+                defaultValue="Cristiane/Raunin"
+                readOnly
               />
             </InputGroup>
           </>
@@ -245,10 +244,11 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 )}
               </UserCaptivators>
             </InputGroup>
-            <Select
+            <Input
               name="user_director"
-              options={optionsDirector}
-              nameLabel="Diretor"
+              label="Diretoria"
+              defaultValue="Cristiane/Raunin"
+              readOnly
             />
           </>
         )}

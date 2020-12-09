@@ -3,6 +3,7 @@ import Input from '../../Input';
 import InputMask from '../../Input/InputMask';
 
 export const Container = styled.div`
+  padding-bottom: 1.6rem;
   form {
     margin-top: 1.2rem;
     div {
