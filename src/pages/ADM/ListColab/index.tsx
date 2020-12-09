@@ -81,7 +81,7 @@ const ListColab: React.FC = () => {
             <HeaderItem>Cargo</HeaderItem>
           </SaleHeader>
           <SaleBody>
-            <SaleItem>
+            <SaleItem className="avatar">
               <img src="https://imgur.com/I80W1Q0.png" alt="Corretor" />
             </SaleItem>
             <SaleItem>José Corretor</SaleItem>

@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { useField } from '@unform/core';
 
-import { IconBaseProps } from 'react-icons';
+import { AiOutlineCaretDown } from 'react-icons/ai';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import {
   ContainerWrapper,
@@ -23,7 +23,6 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     value: string;
     label: string;
   }[];
-  icon?: React.ComponentType<IconBaseProps>;
   nameLabel?: string;
   add?: boolean;
   remove?: boolean;
@@ -33,7 +32,6 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 
 const Select: React.FC<SelectProps> = ({
   name,
-  icon: Icon,
   options,
   nameLabel,
   add,
@@ -79,11 +77,10 @@ const Select: React.FC<SelectProps> = ({
         isFocused={isFocused}
         nameLabel={nameLabel}
       >
-        {Icon && (
-          <IconContainer>
-            <Icon size={22} />
-          </IconContainer>
-        )}
+        <IconContainer>
+          <AiOutlineCaretDown size={18} />
+        </IconContainer>
+
         <select
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}

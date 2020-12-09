@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { IoMdArrowDropdown } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../../context/AuthContext';
 import { useForm } from '../../../context/FormContext';
@@ -167,7 +166,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 <Select
                   name={`users_sellers[${index}].${saller.name}`}
                   options={optionsRealtors}
-                  icon={IoMdArrowDropdown}
                   nameLabel="o Corretor Vendedor"
                   remove
                   removeRealtors={() => handleRemoveRealtors(sallers, index)}
@@ -176,7 +174,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 <Select
                   name={`users_sellers[${index}].${saller.name}`}
                   options={[{ label: userAuth.name, value: userAuth.id }]}
-                  icon={IoMdArrowDropdown}
                   nameLabel="o Corretor Vendedor"
                   add
                   addRealtors={handleAddSallers}
@@ -187,13 +184,11 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               <Select
                 name="user_coordinator"
                 options={optionsCoordenador}
-                icon={IoMdArrowDropdown}
                 nameLabel="o Coordenador"
               />
               <Select
                 name="user_director"
                 options={optionsDirector}
-                icon={IoMdArrowDropdown}
                 nameLabel="o diretor"
               />
             </InputGroup>
@@ -208,7 +203,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_sellers[${index}].${saller.name}`}
                       options={optionsRealtors}
-                      icon={IoMdArrowDropdown}
                       nameLabel="o Corretor Vendedor"
                       remove
                       removeRealtors={() =>
@@ -219,7 +213,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_sellers[${index}].${saller.name}`}
                       options={[{ label: userAuth.name, value: userAuth.id }]}
-                      icon={IoMdArrowDropdown}
                       nameLabel="o Corretor Vendedor"
                       add
                       addRealtors={handleAddSallers}
@@ -234,7 +227,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_captivators[${index}].${cap.name}`}
                       options={optionsRealtors}
-                      icon={IoMdArrowDropdown}
                       nameLabel="o Corretor Captador"
                       remove
                       removeRealtors={() =>
@@ -245,7 +237,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       name={`users_captivators[${index}].${cap.name}`}
                       options={optionsRealtors}
-                      icon={IoMdArrowDropdown}
                       nameLabel="o Corretor Captador"
                       add
                       addRealtors={handleAddCaptivators}
@@ -257,7 +248,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
             <Select
               name="user_director"
               options={optionsDirector}
-              icon={IoMdArrowDropdown}
               nameLabel="o diretor"
             />
           </>

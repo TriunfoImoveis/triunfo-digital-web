@@ -195,10 +195,16 @@ export const SaleItem = styled.div`
   justify-content: center;
   z-index: 10;
 
-  img {
-    width: 8.8rem;
-    height: 8.8rem;
-    border-radius: 50%;
+  &.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    > img {
+      width: 8.8rem;
+      height: 8.8rem;
+      border-radius: 50%;
+      margin-left: 0.8rem;
+    }
   }
 
   font-size: 2rem;

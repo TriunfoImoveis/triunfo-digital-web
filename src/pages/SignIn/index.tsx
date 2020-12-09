@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 
 import { FaUser } from 'react-icons/fa';
 import { RiLockPasswordFill } from 'react-icons/ri';
-import { IoMdArrowDropdown } from 'react-icons/io';
 import { FormHandles } from '@unform/core';
 import getValidationErros from '../../utils/getValidationErros';
 import { useAuth } from '../../context/AuthContext';
@@ -96,7 +95,7 @@ const SignIn: React.FC = () => {
             placeholder="Senha"
           />
 
-          <Select name="office" options={options} icon={IoMdArrowDropdown} />
+          <Select name="office" options={options} />
           <Button type="submit">
             {loading ? (
               <Loader type="Bars" color="#fff" height={30} width={30} />

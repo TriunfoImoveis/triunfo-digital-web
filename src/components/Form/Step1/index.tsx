@@ -8,7 +8,6 @@ import React, {
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { IoMdArrowDropdown } from 'react-icons/io';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
@@ -191,6 +190,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     },
     [],
   );
+
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
@@ -200,7 +200,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
             name="realty.state"
             placeholder="Selecione um estado"
             options={optionsUFs}
-            icon={IoMdArrowDropdown}
             defaultValue={selectedUf}
             onChange={handleSelectedUF}
             nameLabel="o Estado"
@@ -209,7 +208,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
             name="realty.city"
             placeholder="Cidade"
             options={optionsCities}
-            icon={IoMdArrowDropdown}
             defaultValue={selectedCity}
             onChange={handleSelectCity}
             nameLabel="a cidade"
@@ -220,7 +218,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           name="realty.property"
           placeholder="Tipo do Imovel"
           options={optionsTypeImobille}
-          icon={IoMdArrowDropdown}
           nameLabel="o Tipo do Imóvel"
         />
         <InputForm name="realty.unit" placeholder="Unidade" />
@@ -228,7 +225,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           <Select
             name="builder"
             options={optionBuilder}
-            icon={IoMdArrowDropdown}
             nameLabel="a contrutora"
           />
         )}

@@ -1,14 +1,6 @@
-import React, {
-  ChangeEvent,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
+import React, { ChangeEvent, useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
-import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
 import Loader from 'react-loader-spinner';
 import AdmLayout from '../../Layouts/Adm';
 import { Search, Filter } from '../../../assets/images';
@@ -48,11 +40,10 @@ interface ISaleData {
   sallers: {
     name: string;
     avatar_url: string;
-  }[];
+  };
 }
 
 const ListSales: React.FC = () => {
-  const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [city, setCity] = useState<string>('São Luís');
   const [status, setStatus] = useState<string>('PENDENTE');
@@ -73,10 +64,10 @@ const ListSales: React.FC = () => {
         name: 'Teste',
         vgv: formatPrice(Number(s.realty_ammount)),
         dateSale: DateBRL(s.sale_date),
-        sallers: s.sale_has_sellers.map(sell => ({
-          name: sell.name,
-          avatar_url: sell.avatar_url,
-        })),
+        sallers: {
+          name: s.sale_has_sellers[0].name,
+          avatar_url: s.sale_has_sellers[0].avatar_url,
+        },
       }));
       setSales(salesFormatted);
       setLoading(false);
@@ -112,10 +103,10 @@ const ListSales: React.FC = () => {
         name: 'Teste',
         vgv: formatPrice(Number(s.realty_ammount)),
         dateSale: DateBRL(s.sale_date),
-        sallers: s.sale_has_sellers.map(sell => ({
-          name: sell.name,
-          avatar_url: sell.avatar_url,
-        })),
+        sallers: {
+          name: s.sale_has_sellers[0].name,
+          avatar_url: s.sale_has_sellers[0].avatar_url,
+        },
       }));
       setSales(salesFormatted);
     },
@@ -123,12 +114,7 @@ const ListSales: React.FC = () => {
   );
   return (
     <AdmLayout>
-      <Form
-        ref={formRef}
-        onSubmit={() => {
-          console.log('');
-        }}
-      >
+      <form>
         <FiltersContainer>
           <FiltersTop>
             <Input>
@@ -167,8 +153,8 @@ const ListSales: React.FC = () => {
               <span>Vendas: </span>
               <select value={status} onChange={handleSelectedStatus}>
                 <option value="PENDENTE">PENDENTE</option>
-                <option value="PAGO">PAGO</option>
-                <option value="EM PAPARTE">EM PARTE</option>
+                <option value="PAGO TOTAL">PAGO</option>
+                <option value="EM PARTE">EM PARTE</option>
               </select>
             </FiltersBottonItems>
 
@@ -177,7 +163,7 @@ const ListSales: React.FC = () => {
             </FiltersBottonItems>
           </FiltersBotton>
         </FiltersContainer>
-      </Form>
+      </form>
       <Content>
         {loading ? (
           <LoadingContainer>
@@ -192,20 +178,19 @@ const ListSales: React.FC = () => {
             </SaleHeader>
             {sales.map(sale => (
               <SaleBody key={sale.id}>
-                <SaleItem>
-                  {sale.sallers.map(sell => (
-                    <img
-                      key={sell.name}
-                      src={sell.avatar_url || 'https://imgur.com/I80W1Q0.png'}
-                      alt={sell.name}
-                    />
-                  ))}
+                <SaleItem className="avatar">
+                  <img
+                    src={
+                      sale.sallers.avatar_url || 'https://imgur.com/I80W1Q0.png'
+                    }
+                    alt={sale.sallers.name}
+                  />
                 </SaleItem>
-                <SaleItem>{sale.sallers.map(sell => sell.name)}</SaleItem>
+                <SaleItem>{sale.sallers.name}</SaleItem>
                 <SaleItem>{sale.vgv}</SaleItem>
                 <SaleItem>{sale.dateSale}</SaleItem>
                 <SaleItem>
-                  <Link to="#top">
+                  <Link to={`/adm/detalhes-vendas/${sale.id}`}>
                     <FaPlus size={15} color="#c32925" />
                     Detalhes
                   </Link>
