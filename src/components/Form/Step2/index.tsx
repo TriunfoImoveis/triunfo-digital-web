@@ -5,7 +5,10 @@ import { FormHandles, Scope } from '@unform/core';
 import { toast } from 'react-toastify';
 import getValidationErros from '../../../utils/getValidationErros';
 import { unMaked, DateYMD } from '../../../utils/unMasked';
+import { FoneMask, WhatsMask } from '../../../utils/masked';
+import { DateBRL } from '../../../utils/format';
 import { useForm } from '../../../context/FormContext';
+import api from '../../../services/api';
 
 import Select from '../../Select';
 import Button from '../../Button';
@@ -18,24 +21,63 @@ interface ISaleNewData {
   typeClient: 'buyer' | 'salesman';
 }
 
+interface IClientData {
+  name: string;
+  date_birth: string;
+  email: string;
+  phone: string;
+  whatsapp: string;
+  occupation: string;
+  civil_status: string;
+  number_children: number;
+  gender: string;
+}
+
 const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const [client, setCliente] = useState<IClientData>({} as IClientData);
   const [disabled, setDisable] = useState(true);
   const { updateFormData } = useForm();
 
   const searchClientoForCPF = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    async (event: ChangeEvent<HTMLInputElement>) => {
       const cpf = event.target.value;
-      if (cpf.length < 11) {
-        return;
-      }
+      if (cpf.length === 11) {
+        const unMaskedCPF = unMaked(cpf);
+        const response = await api.get(`/client?cpf=${unMaskedCPF}`);
+        const {
+          name,
+          date_birth,
+          email,
+          phone,
+          whatsapp,
+          occupation,
+          civil_status,
+          number_children,
+          gender,
+        } = response.data;
 
-      setTimeout(() => {
-        setDisable(!disabled);
-      }, 1000);
+        if (!response.data) {
+          setCliente({} as IClientData);
+          setDisable(false);
+          return;
+        }
+        setDisable(true);
+        setCliente({
+          name,
+          date_birth: DateBRL(date_birth),
+          email,
+          phone: FoneMask(phone),
+          whatsapp: WhatsMask(whatsapp),
+          occupation,
+          civil_status,
+          number_children,
+          gender,
+        } as IClientData);
+      }
     },
-    [disabled],
+    [],
   );
   const optionsEstadoCivil = [
     { label: 'Casado(a)', value: 'CASADO(A)' },
@@ -154,7 +196,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           abortEarly: false,
         });
       }
-      console.log(data);
       updateFormData(data || {});
       nextStep();
       setLoading(false);
@@ -187,21 +228,29 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 label="Data de Nascimento"
                 name="date_birth"
                 readOnly={disabled}
+                defaultValue={client.date_birth}
               />
             </InputGroup>
-            <InputForm label="Nome Completo" name="name" readOnly={disabled} />
+            <InputForm
+              label="Nome Completo"
+              name="name"
+              readOnly={disabled}
+              defaultValue={client.name}
+            />
             <InputGroup>
               <Select
                 name="civil_status"
                 options={optionsEstadoCivil}
                 nameLabel="Estado Civíl"
                 disabled={disabled}
+                defaultValue={client.civil_status}
               />
               <Select
                 name="gender"
                 options={optionsGenero}
                 nameLabel="Gênero"
                 disabled={disabled}
+                defaultValue={client.gender}
               />
             </InputGroup>
             <InputGroup>
@@ -211,12 +260,14 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 type="number"
                 maxlength={2}
                 readOnly={disabled}
+                defaultValue={client.number_children}
               />
               <InputForm
                 label="Profissão"
                 name="occupation"
                 type="text"
                 readOnly={disabled}
+                defaultValue={client.occupation}
               />
             </InputGroup>
             <InputGroup>
@@ -228,6 +279,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 type="text"
                 maxlength={11}
                 readOnly={disabled}
+                defaultValue={client.phone}
               />
               <InputForm
                 label="Whatsapp"
@@ -237,6 +289,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 type="text"
                 maxlength={11}
                 readOnly={disabled}
+                defaultValue={client.whatsapp}
               />
             </InputGroup>
             <InputForm
@@ -244,33 +297,48 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               name="email"
               type="email"
               readOnly={disabled}
+              defaultValue={client.email}
             />
           </Scope>
         )}
         {typeClient === 'salesman' && (
           <Scope path="client_seller">
             <InputGroup>
-              <InputForm label="CPF" mask="cpf" name="cpf" maxlength={11} />
+              <InputForm
+                label="CPF"
+                mask="cpf"
+                name="cpf"
+                maxlength={11}
+                onChange={searchClientoForCPF}
+              />
               <InputForm
                 label="Data de Nascimento"
                 type="date"
                 name="date_birth"
                 readOnly={disabled}
+                defaultValue={client.date_birth}
               />
             </InputGroup>
-            <InputForm label="Nome Completo" name="name" readOnly={disabled} />
+            <InputForm
+              label="Nome Completo"
+              name="name"
+              readOnly={disabled}
+              defaultValue={client.name}
+            />
             <InputGroup>
               <Select
                 name="civil_status"
                 options={optionsEstadoCivil}
                 nameLabel="Estado Civíl"
                 disabled={disabled}
+                defaultValue={client.civil_status}
               />
               <Select
                 name="gender"
                 options={optionsGenero}
                 nameLabel="Gênero"
                 disabled={disabled}
+                defaultValue={client.gender}
               />
             </InputGroup>
             <InputGroup>
@@ -280,12 +348,14 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 type="number"
                 maxlength={2}
                 readOnly={disabled}
+                defaultValue={client.number_children}
               />
               <InputForm
                 label="Profissão"
                 name="occupation"
                 type="text"
                 readOnly={disabled}
+                defaultValue={client.occupation}
               />
             </InputGroup>
             <InputGroup>
@@ -297,6 +367,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 type="text"
                 maxlength={11}
                 readOnly={disabled}
+                defaultValue={client.phone}
               />
               <InputForm
                 label="Whatsapp"
@@ -306,6 +377,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 type="text"
                 maxlength={11}
                 readOnly={disabled}
+                defaultValue={client.whatsapp}
               />
             </InputGroup>
             <InputForm
@@ -313,6 +385,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               name="email"
               type="email"
               readOnly={disabled}
+              defaultValue={client.email}
             />
           </Scope>
         )}

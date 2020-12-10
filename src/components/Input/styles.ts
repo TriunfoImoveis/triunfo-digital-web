@@ -84,6 +84,12 @@ export const Container = styled.div<ContainerProps>`
   input:read-only {
     background-color: rgba(129, 129, 129, 0.1);
   }
+
+  @media (max-width: 375px) {
+    input {
+      font-size: 1.2rem;
+    }
+  }
 `;
 
 export const IconContainer = styled.div`

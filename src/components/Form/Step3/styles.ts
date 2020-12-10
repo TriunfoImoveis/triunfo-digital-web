@@ -21,14 +21,12 @@ export const InputFormMask = styled(InputMask)`
 
 export const InputGroup = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
-
-  > div,
-  select,
-  input {
+  > div {
     width: 50%;
-    margin-top: 0;
   }
+
   div + div {
     margin-left: 0.8rem;
   }

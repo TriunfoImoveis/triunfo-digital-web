@@ -31,6 +31,11 @@ interface ISallers {
   name: string;
 }
 
+interface IDirectores {
+  id: string;
+  name: string;
+}
+
 interface IOptions {
   id: string;
   name: string;
@@ -41,8 +46,9 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const [loading, setLoading] = useState(false);
   const [realtors, setRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
-  const [director1, setDirector1] = useState<IOptions[]>([]);
-  const [director2, setDirector2] = useState<IOptions[]>([]);
+  const [directors, setDirectors] = useState<IDirectores[]>([]);
+  const [director1, setDirector1] = useState<IDirectores>({} as IDirectores);
+  const [director2, setDirector2] = useState<IDirectores>({} as IDirectores);
   const [sallers, setSalers] = useState([{ name: 'id' }]);
   const [captavitors, setCaptvators] = useState([{ name: 'id' }]);
   const { updateFormData } = useForm();
@@ -67,11 +73,19 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   useEffect(() => {
     const loadDirector = async () => {
       const response = await api.get(`/users?city=${city}&office=Diretor`);
-      setDirector1(response.data[0]);
-      setDirector2(response.data[1]);
+      setDirectors(response.data);
     };
     loadDirector();
   }, [city]);
+
+  const setDirector = useCallback(() => {
+    const D1 = directors.map(d => ({
+      id: d.id,
+      name: d.name,
+    }));
+    const direcs = D1.map(d => d.name).toString();
+    return direcs;
+  }, [directors]);
 
   const optionsRealtors = realtors.map(realtor => ({
     label: realtor.name,
@@ -187,7 +201,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               <Input
                 name="user_director"
                 label="Diretoria"
-                defaultValue="Cristiane/Raunin"
+                defaultValue={setDirector()}
                 readOnly
               />
             </InputGroup>
