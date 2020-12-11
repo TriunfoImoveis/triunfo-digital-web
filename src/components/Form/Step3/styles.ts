@@ -36,7 +36,8 @@ export const InputGroup = styled.div`
     flex-direction: column;
 
     > div,
-    select {
+    select,
+    input {
       width: 100%;
       margin-top: 0;
     }
@@ -111,5 +112,52 @@ export const UserCaptivators = styled.div`
 
   div + div {
     margin-left: 0;
+  }
+`;
+
+export const Directors = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  > span {
+    margin-top: 0.8rem;
+
+    padding-bottom: 0.2rem;
+    font-size: 1.6rem;
+    line-height: 1.9rem;
+    color: #898989;
+  }
+
+  > input {
+    border-radius: 0.5rem;
+    padding: 1.4rem;
+    background: transparent;
+    padding-left: 1.2rem;
+    width: 100%;
+    height: 4.3rem;
+    flex: 1;
+    border: 0.1rem solid ${({ theme }) => theme.colors.textColorAlpha};
+    color: ${({ theme }) => theme.colors.textColor};
+    &::placeholder {
+      color: ${({ theme }) => theme.colors.textColorAlpha};
+    }
+  }
+
+  input:read-only {
+    background-color: rgba(129, 129, 129, 0.1);
+  }
+
+  @media (max-width: 500px) {
+    > span {
+      font-size: 1.2rem;
+    }
+  }
+
+  @media (max-width: 375px) {
+    input {
+      font-size: 1.2rem;
+    }
   }
 `;

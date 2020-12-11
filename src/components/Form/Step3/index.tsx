@@ -17,6 +17,7 @@ import {
   ButtonGroup,
   UserSallersContainer,
   UserCaptivators,
+  Directors,
 } from './styles';
 import deleteItem from '../../../utils/deleteItem';
 import api from '../../../services/api';
@@ -47,8 +48,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const [realtors, setRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
-  const [director1, setDirector1] = useState<IDirectores>({} as IDirectores);
-  const [director2, setDirector2] = useState<IDirectores>({} as IDirectores);
+  const [user_directors, setUserDirectors] = useState([]);
   const [sallers, setSalers] = useState([{ name: 'id' }]);
   const [captavitors, setCaptvators] = useState([{ name: 'id' }]);
   const { updateFormData } = useForm();
@@ -73,6 +73,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   useEffect(() => {
     const loadDirector = async () => {
       const response = await api.get(`/users?city=${city}&office=Diretor`);
+      const directors = response.data.map(response => ({
+        id: response.id,
+      }));
+      setUserDirectors(directors);
       setDirectors(response.data);
     };
     loadDirector();
@@ -100,6 +104,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const handleSubmit = useCallback(
     async data => {
       formRef.current?.setErrors({});
+      formRef.current?.setFieldValue('user_director', user_directors);
       try {
         setLoading(true);
         if (typeSale === 'new') {
@@ -110,7 +115,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               }),
             ),
             user_coordinator: Yup.string().required('Coordenador Obrigatório'),
-            user_director: Yup.string().required('Diretor Obrigatório'),
           });
           await schema.validate(data, {
             abortEarly: false,
@@ -127,14 +131,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 id: Yup.string().required('Captador Obrigatório'),
               }),
             ),
-            user_director: Yup.string().required('Diretor Obrigatório'),
           });
           await schema.validate(data, {
             abortEarly: false,
           });
         }
-
-        updateFormData(data);
+        const newData = { ...data, users_directors: user_directors };
+        updateFormData(newData);
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -147,7 +150,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [nextStep, typeSale, updateFormData],
+    [nextStep, typeSale, updateFormData, user_directors],
   );
 
   const handleAddSallers = useCallback(() => {
@@ -198,12 +201,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 options={optionsCoordenador}
                 nameLabel="Coordenador"
               />
-              <Input
-                name="user_director"
-                label="Diretoria"
-                defaultValue={setDirector()}
-                readOnly
-              />
+              <Directors>
+                <span>Diretores</span>
+                <input defaultValue={setDirector()} readOnly />
+              </Directors>
             </InputGroup>
           </>
         )}

@@ -54,7 +54,6 @@ export const Container = styled.div<ContainerProps>`
   select {
     background: transparent;
     height: 100%;
-    flex-grow: 2;
     border: 0;
     color: ${({ theme }) => theme.colors.textColor};
     font-size: ${({ theme }) => theme.fontSize.small};
@@ -63,7 +62,6 @@ export const Container = styled.div<ContainerProps>`
     text-indent: 1px;
     text-overflow: '';
     margin-left: 0.8rem;
-    font-size: 1.6rem;
 
     option {
       color: ${({ theme }) => theme.colors.textColor};

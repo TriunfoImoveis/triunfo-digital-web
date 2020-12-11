@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, InputHTMLAttributes, useState } from 'react';
 import { Container } from './styles';
 
-interface Props {
+interface Props extends InputHTMLAttributes<HTMLInputElement> {
   options: {
     id: string;
     value: string;

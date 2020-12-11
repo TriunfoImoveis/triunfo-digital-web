@@ -5,7 +5,7 @@ import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
-import { currency } from '../../../utils/unMasked';
+import { currency, DateYMD } from '../../../utils/unMasked';
 import { money } from '../../../utils/masked';
 import api from '../../../services/api';
 
@@ -35,6 +35,7 @@ interface IOptionsData {
 
 const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
+  const [isNFRequired, setIsNFRequired] = useState(false);
   const [loading, setLoading] = useState(false);
   const [origins, setOrigins] = useState<IOptionsData[]>([]);
   const [companies, setCompanies] = useState<IOptionsData[]>([]);
@@ -104,6 +105,10 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       currency(formRef.current?.getFieldValue('realty_ammount')),
     );
     formRef.current?.setFieldValue(
+      'sale_date',
+      DateYMD(formRef.current?.getFieldValue('sale_date')),
+    );
+    formRef.current?.setFieldValue(
       'percentage_sale',
       currency(formRef.current?.getFieldValue('percentage_sale')),
     );
@@ -121,7 +126,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         const schema = Yup.object().shape({
           realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
           sale_date: Yup.string().required('Data da Venda Obrigatória'),
-          company: Yup.string().required('Taxa de imposto Obrigatório'),
+          company: Yup.string(),
           payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
           percentage_sale: Yup.string().required(
             'Porcetagem Total da venda Obrigatória',
@@ -148,7 +153,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [unMaskValue, updateFormData, nextStep],
+    [unMaskValue, nextStep, updateFormData],
   );
 
   const handleValue = useCallback((value: string) => {
@@ -166,6 +171,21 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         break;
     }
   }, []);
+  const handleValueIsNF = useCallback((value: string) => {
+    switch (value) {
+      case 'Y':
+        setIsNFRequired(true);
+        break;
+      case 'N':
+        setIsNFRequired(false);
+        break;
+      case '':
+        setIsNFRequired(false);
+        break;
+      default:
+        break;
+    }
+  }, []);
 
   return (
     <Container>
@@ -175,26 +195,33 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             label="Valor da Venda"
             name="realty_ammount"
             mask="currency"
+            placeholder="R$ 1.000.000,00"
           />
           <InputForm
+            mask="date"
             label="Data da Venda"
-            type="date"
             name="sale_date"
-            placeholder="Data da Venda"
+            placeholder="DD/MM/AAAA"
           />
         </InputGroup>
+
         <InputGroup>
-          <Select
-            name="company"
-            options={optionsEmpresa}
-            nameLabel="Empresa (%)"
-          />
           <Select
             name="payment_type"
             options={optionsFormaPagamento}
             nameLabel="Forma de pagamento"
           />
         </InputGroup>
+        <BonusConatainer>
+          <span>Nescessita Nota Fiscal ?</span>
+          <CheckBox
+            name="isNF"
+            options={optionsBonus}
+            handleValue={handleValueIsNF}
+          />
+        </BonusConatainer>
+        {isNFRequired && <Select name="company" options={optionsEmpresa} />}
+
         <InputGroup>
           <InputForm
             label="% da Venda"
@@ -207,7 +234,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             label="Comissão"
             name="commission"
             mask="currency"
-            placeholder="Comissão"
+            placeholder="R$ 50.000,00"
             value={comissionValue}
           />
         </InputGroup>
