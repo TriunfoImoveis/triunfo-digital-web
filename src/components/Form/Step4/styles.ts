@@ -3,6 +3,7 @@ import Input from '../../Input';
 import InputMask from '../../Input/InputMask';
 
 export const Container = styled.div`
+  padding-bottom: 1.6rem;
   form {
     margin-top: 1.2rem;
     div {
@@ -25,7 +26,7 @@ export const InputGroup = styled.div`
   > div,
   select,
   input {
-    width: 50%;
+    width: 100%;
     margin-top: 0;
   }
   div + div {
@@ -107,5 +108,11 @@ export const BonusConatainer = styled.div`
     color: ${({ theme }) => theme.colors.textColor};
 
     margin-right: 0.8rem;
+  }
+
+  @media (max-width: 375px) {
+    span {
+      font-size: 1.2rem;
+    }
   }
 `;

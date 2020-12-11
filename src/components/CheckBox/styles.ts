@@ -25,4 +25,10 @@ export const Container = styled.div`
       border: 2px solid white;
     }
   }
+
+  @media (max-width: 375px) {
+    label {
+      font-size: 1.2rem;
+    }
+  }
 `;

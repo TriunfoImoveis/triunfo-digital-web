@@ -21,12 +21,14 @@ const FormProvider: React.FC = ({ children }) => {
   };
 
   const submitFormNew = useCallback(async () => {
+    console.log(formData);
     try {
-      await api.post('/sale/new', formData, {
+      const response = await api.post('/sale/new', formData, {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
+      console.log(response.data);
     } catch (err) {
       toast.error(`ERROR ${err}`);
     }

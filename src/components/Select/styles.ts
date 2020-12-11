@@ -13,7 +13,7 @@ export const ContainerWrapper = styled.div`
 
   > span.label {
     margin-top: 0.8rem;
-    padding-bottom: 0.6rem;
+    padding-bottom: 0.2rem;
     font-size: 1.6rem;
     line-height: 1.9rem;
     color: #898989;
@@ -54,7 +54,6 @@ export const Container = styled.div<ContainerProps>`
   select {
     background: transparent;
     height: 100%;
-    flex-grow: 2;
     border: 0;
     color: ${({ theme }) => theme.colors.textColor};
     font-size: ${({ theme }) => theme.fontSize.small};
@@ -66,6 +65,18 @@ export const Container = styled.div<ContainerProps>`
 
     option {
       color: ${({ theme }) => theme.colors.textColor};
+      font-size: 1.6rem;
+    }
+  }
+
+  select:disabled {
+    background-color: rgba(129, 129, 129, 0.1);
+  }
+
+  @media (max-width: 375px) {
+    select,
+    option {
+      font-size: 1.2rem;
     }
   }
 `;
