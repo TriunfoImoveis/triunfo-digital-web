@@ -6,7 +6,6 @@ import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { GiConsoleController } from 'react-icons/gi';
 import AdmLayout from '../../Layouts/Adm';
 import Input from '../../../components/Input';
 import Select from '../../../components/Select';
@@ -232,10 +231,10 @@ const DetailsSale: React.FC = () => {
     value: property.id,
     label: property.name,
   }));
-  const optionsBuilders = builders.map(builder => ({
-    value: builder.id,
-    label: builder.name,
-  }));
+  // const optionsBuilders = builders.map(builder => ({
+  //   value: builder.id,
+  //   label: builder.name,
+  // }));
 
   return (
     <AdmLayout>
