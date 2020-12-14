@@ -47,8 +47,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
   const { updateFormData } = useForm();
 
   useEffect(() => {
-    setDisable(true);
-    setCliente({} as IClientData);
     return () => {
       setDisable(true);
       setCliente({} as IClientData);
@@ -110,10 +108,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
     if (typeClient === 'buyer') {
       const cpf = unMaked(formRef.current?.getFieldValue('client_buyer.cpf'));
       formRef.current?.setFieldValue('client_buyer.cpf', cpf);
-      const date_birth = DateYMD(
-        formRef.current?.getFieldValue('client_buyer.date_birth'),
-      );
-      formRef.current?.setFieldValue('client_buyer.date_birth', date_birth);
+
       const phone = unMaked(
         formRef.current?.getFieldValue('client_buyer.phone'),
       );
@@ -133,9 +128,9 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
       const cpf = unMaked(formRef.current?.getFieldValue('client_seller.cpf'));
       formRef.current?.setFieldValue('client_seller.cpf', cpf);
       const date_birth = DateYMD(
-        formRef.current?.getFieldValue('client_buyer.date_birth'),
+        formRef.current?.getFieldValue('client_seller.date_birth'),
       );
-      formRef.current?.setFieldValue('client_buyer.date_birth', date_birth);
+      formRef.current?.setFieldValue('client_seller.date_birth', date_birth);
       const phone = unMaked(
         formRef.current?.getFieldValue('client_seller.phone'),
       );
@@ -328,8 +323,8 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 onChange={searchClientoForCPF}
               />
               <InputForm
+                mask="date"
                 label="Data de Nascimento"
-                type="date"
                 name="date_birth"
                 readOnly={disabled}
                 defaultValue={client.date_birth}

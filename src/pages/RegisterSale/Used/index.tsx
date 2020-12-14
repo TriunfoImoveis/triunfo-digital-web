@@ -5,12 +5,13 @@ import Step1 from '../../../components/Form/Step1';
 import Step2 from '../../../components/Form/Step2';
 import Step3 from '../../../components/Form/Step3';
 import Step4 from '../../../components/Form/Step4';
+import ClientSaller from '../../../components/Form/ClientSaller';
 import SuccessForm from '../../../components/Form/Success';
 import TabNavigator from '../../../components/TabNavigator';
 import { Container, Content, FormContainer } from './styles';
 
 const RegisterSaleUsed: React.FC = () => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
 
   const nextSpeps = useCallback(() => {
     setStep(step + 1);
@@ -30,7 +31,7 @@ const RegisterSaleUsed: React.FC = () => {
         );
       case 3:
         return (
-          <Step2
+          <ClientSaller
             nextStep={nextSpeps}
             prevStep={prevSpeps}
             typeClient="salesman"

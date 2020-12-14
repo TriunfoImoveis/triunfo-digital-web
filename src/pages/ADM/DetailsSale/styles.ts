@@ -67,13 +67,43 @@ export const SaleData = styled.div`
       width: 100%;
       padding-left: 2rem;
       margin-bottom: 0.8rem;
-
-      > div {
-      }
     }
-
     > div + div {
       margin-bottom: 0.8rem;
+    }
+  }
+`;
+
+export const Legend = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 0;
+  margin-bottom: 0;
+  > legend {
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 23px;
+    color: #c32925;
+    margin-bottom: 2.5rem;
+  }
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: none;
+    border: 0;
+
+    > span {
+      margin-left: 0.8rem;
+      color: ${({ theme }) => theme.colors.textColor};
+      transition: color 0.2s;
+
+      &:hover {
+        color: ${({ theme }) => theme.colors.primary};
+      }
     }
   }
 `;
