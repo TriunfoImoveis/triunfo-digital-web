@@ -126,7 +126,7 @@ const DetailsSale: React.FC = () => {
     buyer: true,
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
-  const [builders, setBuilders] = useState<IOptionsData[]>([]);
+  const [, setBuilders] = useState<IOptionsData[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedUf, setSelectedUf] = useState('MA');
   const [, setSelectedCity] = useState('0');
