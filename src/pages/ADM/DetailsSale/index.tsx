@@ -12,6 +12,7 @@ import { BiEditAlt } from 'react-icons/bi';
 import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
+import { FaPlus } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
@@ -27,6 +28,9 @@ import {
   InputGroup,
   ButtonGroup,
   Legend,
+  PaymentInstallments,
+  Plot,
+  AddButton,
 } from './styles';
 import api from '../../../services/api';
 
@@ -124,6 +128,12 @@ interface ISaleData {
   }[];
 }
 
+interface IPlots {
+  numberPlots: string;
+  valuePlots: string;
+  datePayment: string;
+}
+
 const DetailsSale: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
@@ -145,6 +155,7 @@ const DetailsSale: React.FC = () => {
   const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
+  const [plots, setPlots] = useState<IPlots[]>([]);
   const { id } = useParams<IParamsData>();
 
   useEffect(() => {
@@ -219,6 +230,20 @@ const DetailsSale: React.FC = () => {
   useEffect(() => {
     formRef.current?.setData(sale);
   }, [sale]);
+
+  const addPlots = useCallback(() => {
+    const listPlots = plots.slice();
+    const numberPlot: string = formRef.current?.getFieldValue('number');
+    const valuePlot: string = formRef.current?.getFieldValue('value_plot');
+    const datePlot: string = formRef.current?.getFieldValue('date_plot');
+    const plot = {
+      numberPlots: numberPlot,
+      valuePlots: valuePlot,
+      datePayment: datePlot,
+    };
+    listPlots.push(plot);
+    setPlots(listPlots);
+  }, [plots]);
 
   const handleEdit = useCallback(
     (stepForm: string): void => {
@@ -581,10 +606,62 @@ const DetailsSale: React.FC = () => {
                   />
                   <Input mask="currency" name="commission" label="Comissão" />
                 </InputGroup>
-                {/* <InputGroup>
-                  <Input />
-                  <Input />
-                </InputGroup> */}
+                <InputGroup>
+                  <Input name="payment_type.name" label="Forma de Pagamento" />
+                </InputGroup>
+                <PaymentInstallments>
+                  <Plot>
+                    <Input
+                      type="number"
+                      name="number"
+                      label="Parcela"
+                      min={1}
+                      defaultValue="1"
+                    />
+                    <Input
+                      mask="currency"
+                      name="value_plot"
+                      label="Valor da Parcela"
+                      placeholder="R$ 0,00"
+                    />
+                    <Input
+                      mask="date"
+                      name="date_plot"
+                      label="Data de Pagamento"
+                      placeholder="07/01/2021"
+                    />
+                    <AddButton type="button" onClick={addPlots}>
+                      <FaPlus size={20} color="#C32925" />
+                    </AddButton>
+                  </Plot>
+
+                  {plots.map((plot, index) => (
+                    <Plot key={plot.numberPlots}>
+                      <Input
+                        type="number"
+                        name="number"
+                        label="Parcela"
+                        min={1}
+                        defaultValue={`${index + 1}`}
+                      />
+                      <Input
+                        mask="currency"
+                        name="value_plot"
+                        label="Valor da Parcela"
+                        placeholder="R$ 0,00"
+                      />
+                      <Input
+                        mask="date"
+                        name="date_plot"
+                        label="Data de Pagamento"
+                        placeholder="07/01/2021"
+                      />
+                      <AddButton type="button" onClick={addPlots}>
+                        <FaPlus size={20} color="#C32925" />
+                      </AddButton>
+                    </Plot>
+                  ))}
+                </PaymentInstallments>
               </fieldset>
             </SaleData>
 

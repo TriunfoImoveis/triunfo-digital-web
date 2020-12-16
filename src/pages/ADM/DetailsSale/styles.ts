@@ -153,3 +153,32 @@ export const ButtonGroup = styled.div`
     margin-left: 3rem;
   }
 `;
+
+export const PaymentInstallments = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const Plot = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  > div {
+    flex: 1;
+    & + div {
+      margin-left: 1.2rem;
+    }
+  }
+`;
+
+export const AddButton = styled.button`
+  margin-top: 2.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.7rem;
+  height: 4.8rem;
+  border: 0;
+  border-radius: 0 0.4rem 0.4rem 0;
+  background: ${({ theme }) => theme.colors.primaryAlpha};
+`;
