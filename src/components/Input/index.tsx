@@ -24,7 +24,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ComponentType<IconBaseProps>;
   mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats' | 'date';
   maxlength?: number;
-  label: string;
+  label?: string;
 }
 
 const Input: React.FC<InputProps> = ({

@@ -1,9 +1,18 @@
-import React, { ChangeEvent, useState, useEffect, useCallback } from 'react';
+import React, {
+  ChangeEvent,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
+
+import { FormHandles } from '@unform/core';
 
 import { BiEditAlt } from 'react-icons/bi';
 import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
+import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
@@ -11,7 +20,7 @@ import Input from '../../../components/Input';
 import Select from '../../../components/Select';
 import { Sync, Garb } from '../../../assets/images';
 import { CPFMask, FoneMask } from '../../../utils/masked';
-import { DateBRL } from '../../../utils/format';
+import { DateBRL, formatPrice } from '../../../utils/format';
 import {
   Container,
   Content,
@@ -19,6 +28,9 @@ import {
   InputGroup,
   ButtonGroup,
   Legend,
+  PaymentInstallments,
+  Plot,
+  AddButton,
 } from './styles';
 import api from '../../../services/api';
 
@@ -35,6 +47,9 @@ interface IParamsData {
   id: string;
 }
 
+interface ISallers {
+  name: string;
+}
 interface ISaleData {
   id: string;
   bonus?: string;
@@ -98,13 +113,8 @@ interface ISaleData {
   };
   realty_ammount: string;
   sale_date: string;
-  sale_has_captivators: {}[];
-  sale_has_sellers: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url?: string;
-  }[];
+  sale_has_captivators: Array<ISallers>;
+  sale_has_sellers: Array<ISallers>;
   sale_type: string;
   status: string;
   user_coordinator?: {
@@ -118,12 +128,22 @@ interface ISaleData {
   }[];
 }
 
+interface IPlots {
+  numberPlots: string;
+  valuePlots: string;
+  datePayment: string;
+}
+
 const DetailsSale: React.FC = () => {
+  const formRef = useRef<FormHandles>(null);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const [uf] = useState(['MA', 'CE', 'PI']);
   const [edits, setEdits] = useState({
     property: true,
     buyer: true,
+    builder: true,
+    realtos: true,
+    saller: true,
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
   const [, setBuilders] = useState<IOptionsData[]>([]);
@@ -131,6 +151,17 @@ const DetailsSale: React.FC = () => {
   const [selectedUf, setSelectedUf] = useState('MA');
   const [, setSelectedCity] = useState('0');
   const [sale, setSale] = useState<ISaleData>({} as ISaleData);
+  const [sallers, setSallers] = useState<ISallers[]>([]);
+  const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
+  const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
+  const [directors, setDirectors] = useState<ISallers[]>([]);
+  const [plots, setPlots] = useState<IPlots[]>([
+    {
+      numberPlots: '',
+      datePayment: '',
+      valuePlots: '',
+    },
+  ]);
   const { id } = useParams<IParamsData>();
 
   useEffect(() => {
@@ -142,16 +173,30 @@ const DetailsSale: React.FC = () => {
           },
         });
         const sale = response.data;
+        const sallers = sale.sale_has_sellers;
+        const coordinator = sale.user_coordinator;
+        const captavators = sale.sale_has_captivators;
+        const directors = sale.users_directors;
         const cpfFormatted = CPFMask(sale.client_buyer.cpf);
         const dataFormatted = DateBRL(sale.client_buyer.date_birth);
         const foneFormatted = FoneMask(sale.client_buyer.phone);
+        const realtyAmmount = formatPrice(sale.realty_ammount);
+        const commission = formatPrice(sale.commission);
+        const saleDate = DateBRL(sale.sale_date);
         const saleFormatted = Object.assign(
           sale,
           (sale.client_buyer.cpf = cpfFormatted),
           (sale.client_buyer.date_birth = dataFormatted),
           (sale.client_buyer.phone = foneFormatted),
+          (sale.realty_ammount = realtyAmmount),
+          (sale.commission = commission),
+          (sale.sale_date = saleDate),
         );
         setSale(saleFormatted);
+        setSallers(sallers);
+        setCoordinator(coordinator);
+        setcaptavators(captavators);
+        setDirectors(directors);
       } catch (error) {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
@@ -188,6 +233,33 @@ const DetailsSale: React.FC = () => {
       });
   }, [selectedUf]);
 
+  useEffect(() => {
+    formRef.current?.setData(sale);
+  }, [sale]);
+
+  const addPlots = useCallback(() => {
+    const listPlots = plots.slice();
+    const numberPlot: string = formRef.current?.getFieldValue('number');
+    const valuePlot: string = formRef.current?.getFieldValue('value_plot');
+    const datePlot: string = formRef.current?.getFieldValue('date_plot');
+    const plot = {
+      numberPlots: numberPlot,
+      valuePlots: valuePlot,
+      datePayment: datePlot,
+    };
+    listPlots.push(plot);
+    setPlots(listPlots);
+  }, [plots]);
+  const removePlots = useCallback(
+    (item: number) => {
+      const listPlots = plots.slice();
+      const newListPlots = listPlots.splice(item, 1);
+
+      setPlots(newListPlots);
+    },
+    [plots],
+  );
+
   const handleEdit = useCallback(
     (stepForm: string): void => {
       switch (stepForm) {
@@ -196,6 +268,9 @@ const DetailsSale: React.FC = () => {
           break;
         case 'buyer':
           setEdits({ ...edits, buyer: !edits.buyer });
+          break;
+        case 'realtors':
+          setEdits({ ...edits, realtos: !edits.realtos });
           break;
         default:
           break;
@@ -241,7 +316,7 @@ const DetailsSale: React.FC = () => {
       <Container>
         <h1>DETALHES DA VENDA</h1>
         <Content>
-          <Form onSubmit={() => console.log('ok')} initialData={sale}>
+          <Form ref={formRef} onSubmit={() => console.log('ok')}>
             <SaleData>
               <fieldset className="login">
                 <Legend>
@@ -390,19 +465,27 @@ const DetailsSale: React.FC = () => {
             {sale.sale_type === 'NOVO' && (
               <SaleData>
                 <fieldset className="login">
-                  <legend>CONSTRUTORA</legend>
-                  <Input
-                    label="Gênero"
-                    name="builder.name"
-                    placeholder="Gênero"
-                  />
+                  <Legend>
+                    <legend>CONSTRUTORA</legend>
+                    <button type="button" onClick={() => handleEdit('buyer')}>
+                      <BiEditAlt size={20} color="#C32925" />
+                      <span>editar</span>
+                    </button>
+                  </Legend>
+                  <Input name="builder.name" placeholder="Dimensão" />
                 </fieldset>
               </SaleData>
             )}
             {sale.sale_type === 'USADO' && (
               <SaleData>
                 <fieldset className="login">
-                  <legend>VENDEDOR</legend>
+                  <Legend>
+                    <legend>VENDEDORES</legend>
+                    <button type="button" onClick={() => handleEdit('buyer')}>
+                      <BiEditAlt size={20} color="#C32925" />
+                      <span>editar</span>
+                    </button>
+                  </Legend>
                   <Input
                     label="Nome Completo"
                     name="client_saller.name"
@@ -454,6 +537,154 @@ const DetailsSale: React.FC = () => {
               </SaleData>
             )}
 
+            <SaleData>
+              <fieldset className="login">
+                <Legend>
+                  <legend>CORRETOES</legend>
+                  <button type="button" onClick={() => handleEdit('realtors')}>
+                    <BiEditAlt size={20} color="#C32925" />
+                    <span>editar</span>
+                  </button>
+                </Legend>
+                {sallers.map((saller, index) =>
+                  edits.realtos ? (
+                    <Input
+                      key={saller.name}
+                      label={
+                        sallers.length === 1
+                          ? 'Corretor Vendedor'
+                          : `Vendedor ${index + 1}`
+                      }
+                      name={`sale_has_sellers[${index}].name`}
+                      placeholder="Corretor Vendedor"
+                      readOnly={edits.realtos}
+                    />
+                  ) : (
+                    <Select
+                      name="realty.property"
+                      nameLabel="Tipo de Imóvel"
+                      options={optionsTypeImobille}
+                    />
+                  ),
+                )}
+                {sale.sale_type === 'USADO' &&
+                  captvators &&
+                  captvators?.map((cap, index) => (
+                    <Input
+                      key={cap.name}
+                      label={
+                        captvators.length === 1
+                          ? 'Corretor Captador'
+                          : `Captador ${index + 1}`
+                      }
+                      name={`sale_has_captivators[${index}].name`}
+                      placeholder="Corretor Vendedor"
+                      readOnly={edits.realtos}
+                    />
+                  ))}
+                {coordinator && (
+                  <Input name="user_coordinator.name" label="Coordenador" />
+                )}
+                {directors.map((director, index) => (
+                  <Input
+                    key={director.name}
+                    label="Diretor"
+                    name={`users_directors[${index}].name`}
+                    placeholder="Diretor"
+                    readOnly={edits.realtos}
+                  />
+                ))}
+              </fieldset>
+            </SaleData>
+            <SaleData>
+              <fieldset className="login">
+                <Legend>
+                  <legend>FINANÇAS</legend>
+                  <button type="button" onClick={() => handleEdit('realtors')}>
+                    <BiEditAlt size={20} color="#C32925" />
+                    <span>editar</span>
+                  </button>
+                </Legend>
+                <InputGroup>
+                  <Input
+                    mask="currency"
+                    name="realty_ammount"
+                    label="Valor da Venda"
+                  />
+                  <Input mask="date" name="sale_date" label="Data da Venda" />
+                </InputGroup>
+                <InputGroup>
+                  <Input
+                    mask="porcent"
+                    name="percentage_sale"
+                    label="(%) da Venda"
+                  />
+                  <Input mask="currency" name="commission" label="Comissão" />
+                </InputGroup>
+                <InputGroup>
+                  <Input name="payment_type.name" label="Forma de Pagamento" />
+                </InputGroup>
+                <PaymentInstallments>
+                  {plots.map((plot, index) =>
+                    index === 0 ? (
+                      <Plot key={plot.numberPlots}>
+                        <Input
+                          type="number"
+                          name="number"
+                          label="Parcela"
+                          min={1}
+                          defaultValue={`${index + 1}`}
+                        />
+                        <Input
+                          mask="currency"
+                          name="value_plot"
+                          label="Valor da Parcela"
+                          placeholder="R$ 0,00"
+                        />
+                        <Input
+                          mask="date"
+                          name="date_plot"
+                          label="Data de Pagamento"
+                          placeholder="07/01/2021"
+                        />
+                        <AddButton type="button" onClick={addPlots}>
+                          <FaPlus size={20} color="#C32925" />
+                        </AddButton>
+                      </Plot>
+                    ) : (
+                      <Plot key={plot.numberPlots}>
+                        <Input
+                          type="number"
+                          name="number"
+                          label="Parcela"
+                          min={1}
+                          defaultValue={`${index + 1}`}
+                        />
+                        <Input
+                          mask="currency"
+                          name="value_plot"
+                          label="Valor da Parcela"
+                          placeholder="R$ 0,00"
+                        />
+                        <Input
+                          mask="date"
+                          name="date_plot"
+                          label="Data de Pagamento"
+                          placeholder="07/01/2021"
+                        />
+                        <AddButton
+                          type="button"
+                          onClick={() => removePlots(index)}
+                        >
+                          <FaMinus size={20} color="#C32925" />
+                        </AddButton>
+                      </Plot>
+                    ),
+                  )}
+                </PaymentInstallments>
+              </fieldset>
+            </SaleData>
+
             <ButtonGroup>
               <button type="button">
                 <Sync />
@@ -467,7 +698,7 @@ const DetailsSale: React.FC = () => {
 
             <button type="submit" className="submit">
               <BsCheckBox size={25} />
-              <span>Cadastrar Colaborador</span>
+              <span>Validar Venda</span>
             </button>
           </Form>
         </Content>
