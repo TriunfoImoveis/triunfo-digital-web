@@ -12,7 +12,7 @@ import { BiEditAlt } from 'react-icons/bi';
 import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
-import { FaPlus } from 'react-icons/fa';
+import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
@@ -155,7 +155,13 @@ const DetailsSale: React.FC = () => {
   const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
-  const [plots, setPlots] = useState<IPlots[]>([]);
+  const [plots, setPlots] = useState<IPlots[]>([
+    {
+      numberPlots: '',
+      datePayment: '',
+      valuePlots: '',
+    },
+  ]);
   const { id } = useParams<IParamsData>();
 
   useEffect(() => {
@@ -244,6 +250,15 @@ const DetailsSale: React.FC = () => {
     listPlots.push(plot);
     setPlots(listPlots);
   }, [plots]);
+  const removePlots = useCallback(
+    (item: number) => {
+      const listPlots = plots.slice();
+      const newListPlots = listPlots.splice(item, 1);
+
+      setPlots(newListPlots);
+    },
+    [plots],
+  );
 
   const handleEdit = useCallback(
     (stepForm: string): void => {
@@ -610,57 +625,62 @@ const DetailsSale: React.FC = () => {
                   <Input name="payment_type.name" label="Forma de Pagamento" />
                 </InputGroup>
                 <PaymentInstallments>
-                  <Plot>
-                    <Input
-                      type="number"
-                      name="number"
-                      label="Parcela"
-                      min={1}
-                      defaultValue="1"
-                    />
-                    <Input
-                      mask="currency"
-                      name="value_plot"
-                      label="Valor da Parcela"
-                      placeholder="R$ 0,00"
-                    />
-                    <Input
-                      mask="date"
-                      name="date_plot"
-                      label="Data de Pagamento"
-                      placeholder="07/01/2021"
-                    />
-                    <AddButton type="button" onClick={addPlots}>
-                      <FaPlus size={20} color="#C32925" />
-                    </AddButton>
-                  </Plot>
-
-                  {plots.map((plot, index) => (
-                    <Plot key={plot.numberPlots}>
-                      <Input
-                        type="number"
-                        name="number"
-                        label="Parcela"
-                        min={1}
-                        defaultValue={`${index + 1}`}
-                      />
-                      <Input
-                        mask="currency"
-                        name="value_plot"
-                        label="Valor da Parcela"
-                        placeholder="R$ 0,00"
-                      />
-                      <Input
-                        mask="date"
-                        name="date_plot"
-                        label="Data de Pagamento"
-                        placeholder="07/01/2021"
-                      />
-                      <AddButton type="button" onClick={addPlots}>
-                        <FaPlus size={20} color="#C32925" />
-                      </AddButton>
-                    </Plot>
-                  ))}
+                  {plots.map((plot, index) =>
+                    index === 0 ? (
+                      <Plot key={plot.numberPlots}>
+                        <Input
+                          type="number"
+                          name="number"
+                          label="Parcela"
+                          min={1}
+                          defaultValue={`${index + 1}`}
+                        />
+                        <Input
+                          mask="currency"
+                          name="value_plot"
+                          label="Valor da Parcela"
+                          placeholder="R$ 0,00"
+                        />
+                        <Input
+                          mask="date"
+                          name="date_plot"
+                          label="Data de Pagamento"
+                          placeholder="07/01/2021"
+                        />
+                        <AddButton type="button" onClick={addPlots}>
+                          <FaPlus size={20} color="#C32925" />
+                        </AddButton>
+                      </Plot>
+                    ) : (
+                      <Plot key={plot.numberPlots}>
+                        <Input
+                          type="number"
+                          name="number"
+                          label="Parcela"
+                          min={1}
+                          defaultValue={`${index + 1}`}
+                        />
+                        <Input
+                          mask="currency"
+                          name="value_plot"
+                          label="Valor da Parcela"
+                          placeholder="R$ 0,00"
+                        />
+                        <Input
+                          mask="date"
+                          name="date_plot"
+                          label="Data de Pagamento"
+                          placeholder="07/01/2021"
+                        />
+                        <AddButton
+                          type="button"
+                          onClick={() => removePlots(index)}
+                        >
+                          <FaMinus size={20} color="#C32925" />
+                        </AddButton>
+                      </Plot>
+                    ),
+                  )}
                 </PaymentInstallments>
               </fieldset>
             </SaleData>
