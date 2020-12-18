@@ -155,6 +155,7 @@ const ListSales: React.FC = () => {
                 <option value="PENDENTE">PENDENTE</option>
                 <option value="PAGO TOTAL">PAGO</option>
                 <option value="EM PARTE">EM PARTE</option>
+                <option value="CAIU">CAIU</option>
               </select>
             </FiltersBottonItems>
 

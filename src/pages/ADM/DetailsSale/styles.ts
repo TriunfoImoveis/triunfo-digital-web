@@ -182,3 +182,7 @@ export const AddButton = styled.button`
   border-radius: 0 0.4rem 0.4rem 0;
   background: ${({ theme }) => theme.colors.primaryAlpha};
 `;
+
+export const ActionsButton = styled.div`
+  display: flex;
+`;

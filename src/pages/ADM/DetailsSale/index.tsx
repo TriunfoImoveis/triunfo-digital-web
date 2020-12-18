@@ -13,7 +13,7 @@ import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
 import { FaMinus, FaPlus } from 'react-icons/fa';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
 import Input from '../../../components/Input';
@@ -129,7 +129,7 @@ interface ISaleData {
 }
 
 interface IPlots {
-  numberPlots: string;
+  numberPlots: number;
   valuePlots: string;
   datePayment: string;
 }
@@ -155,15 +155,14 @@ const DetailsSale: React.FC = () => {
   const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
-  const [plots, setPlots] = useState<IPlots[]>([
-    {
-      numberPlots: '',
-      datePayment: '',
-      valuePlots: '',
-    },
-  ]);
+  const [plots, setPlots] = useState<IPlots[]>([]);
+  const history = useHistory();
   const { id } = useParams<IParamsData>();
 
+  useEffect(() => {
+    const plot = [{ numberPlots: 1, valuePlots: '', datePayment: '' }];
+    setPlots(plot);
+  }, []);
   useEffect(() => {
     const loadSale = async () => {
       try {
@@ -239,26 +238,33 @@ const DetailsSale: React.FC = () => {
 
   const addPlots = useCallback(() => {
     const listPlots = plots.slice();
-    const numberPlot: string = formRef.current?.getFieldValue('number');
+    const numberPlot = Number(formRef.current?.getFieldValue('number'));
     const valuePlot: string = formRef.current?.getFieldValue('value_plot');
     const datePlot: string = formRef.current?.getFieldValue('date_plot');
-    const plot = {
-      numberPlots: numberPlot,
-      valuePlots: valuePlot,
-      datePayment: datePlot,
-    };
-    listPlots.push(plot);
+
+    if (listPlots[0].numberPlots === numberPlot) {
+      listPlots[0].datePayment = datePlot;
+      listPlots[0].valuePlots = valuePlot;
+      listPlots.push({
+        numberPlots: numberPlot + 1,
+        datePayment: '',
+        valuePlots: '',
+      });
+    } else {
+      listPlots.push({
+        numberPlots: numberPlot + 1,
+        datePayment: '',
+        valuePlots: '',
+      });
+    }
     setPlots(listPlots);
   }, [plots]);
-  const removePlots = useCallback(
-    (item: number) => {
-      const listPlots = plots.slice();
-      const newListPlots = listPlots.splice(item, 1);
+  const removePlots = useCallback(() => {
+    const listPlots = plots.slice();
+    listPlots.pop();
 
-      setPlots(newListPlots);
-    },
-    [plots],
-  );
+    setPlots(listPlots);
+  }, [plots]);
 
   const handleEdit = useCallback(
     (stepForm: string): void => {
@@ -292,6 +298,19 @@ const DetailsSale: React.FC = () => {
       setSelectedCity(city);
     },
     [],
+  );
+
+  const handleFall = useCallback(
+    async (id: string) => {
+      try {
+        await api.patch(`/sale/not-valid/${id}`);
+        toast.success('Atualização Realizada');
+        history.push('/adm/lista-vendas');
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [history],
   );
 
   const optionsState = uf.map(u => ({
@@ -633,7 +652,8 @@ const DetailsSale: React.FC = () => {
                           name="number"
                           label="Parcela"
                           min={1}
-                          defaultValue={`${index + 1}`}
+                          readOnly
+                          defaultValue={index + 1}
                         />
                         <Input
                           mask="currency"
@@ -658,7 +678,8 @@ const DetailsSale: React.FC = () => {
                           name="number"
                           label="Parcela"
                           min={1}
-                          defaultValue={`${index + 1}`}
+                          readOnly
+                          defaultValue={index + 1}
                         />
                         <Input
                           mask="currency"
@@ -672,10 +693,8 @@ const DetailsSale: React.FC = () => {
                           label="Data de Pagamento"
                           placeholder="07/01/2021"
                         />
-                        <AddButton
-                          type="button"
-                          onClick={() => removePlots(index)}
-                        >
+
+                        <AddButton type="button" onClick={removePlots}>
                           <FaMinus size={20} color="#C32925" />
                         </AddButton>
                       </Plot>
@@ -690,7 +709,7 @@ const DetailsSale: React.FC = () => {
                 <Sync />
                 <span>Atualizar</span>
               </button>
-              <button type="button">
+              <button type="button" onClick={() => handleFall(sale.id)}>
                 <Garb />
                 <span>Caiu</span>
               </button>
