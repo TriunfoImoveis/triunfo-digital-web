@@ -52,6 +52,7 @@ const Select: React.FC<SelectProps> = ({
       setErrorField(true);
     }
   }, [error]);
+
   const handleInputFocus = useCallback(() => {
     setErrorField(false);
     setIsFocused(true);
