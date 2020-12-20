@@ -6,8 +6,10 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #fff;
 
   h1 {
+    margin-top: 2.4rem;
     margin-bottom: 3.5rem;
     font-size: 3.2rem;
     line-height: 3.7rem;
@@ -16,6 +18,7 @@ export const Container = styled.div`
 `;
 export const Content = styled.div`
   width: 100%;
+  padding: 0 3rem;
   form {
     display: flex;
     flex-direction: column;

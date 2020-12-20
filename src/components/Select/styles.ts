@@ -54,6 +54,7 @@ export const Container = styled.div<ContainerProps>`
   select {
     background: transparent;
     height: 100%;
+    width: 100%;
     border: 0;
     color: ${({ theme }) => theme.colors.textColor};
     font-size: ${({ theme }) => theme.fontSize.small};

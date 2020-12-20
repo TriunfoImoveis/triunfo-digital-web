@@ -33,6 +33,7 @@ import {
   AddButton,
 } from './styles';
 import api from '../../../services/api';
+import { useAuth } from '../../../context/AuthContext';
 
 interface IBGECityResponse {
   nome: string;
@@ -53,7 +54,7 @@ interface ISallers {
 interface ISaleData {
   id: string;
   bonus?: string;
-  builder?: {
+  builder: {
     id: string;
     name: string;
   };
@@ -146,19 +147,22 @@ const DetailsSale: React.FC = () => {
     saller: true,
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
-  const [, setBuilders] = useState<IOptionsData[]>([]);
+  const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedUf, setSelectedUf] = useState('MA');
   const [, setSelectedCity] = useState('0');
   const [sale, setSale] = useState<ISaleData>({} as ISaleData);
   const [sallers, setSallers] = useState<ISallers[]>([]);
+  const [realtos, setRealtors] = useState<IOptionsData[]>([]);
   const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
   const [plots, setPlots] = useState<IPlots[]>([]);
   const history = useHistory();
+  const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
 
+  const { city } = userAuth.subsidiary;
   useEffect(() => {
     const plot = [{ numberPlots: 1, valuePlots: '', datePayment: '' }];
     setPlots(plot);
@@ -196,6 +200,7 @@ const DetailsSale: React.FC = () => {
         setCoordinator(coordinator);
         setcaptavators(captavators);
         setDirectors(directors);
+        console.log(saleFormatted);
       } catch (error) {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
@@ -206,6 +211,10 @@ const DetailsSale: React.FC = () => {
       const response = await api.get('/property-type');
       setPropertyType(response.data);
     };
+    const loadRealtos = async () => {
+      const response = await api.get(`/users?city=${city}&office=Corretor`);
+      setRealtors(response.data);
+    };
     if (sale.sale_type === 'NOVO') {
       const loadBuilders = async () => {
         const response = await api.get('/builder');
@@ -214,8 +223,9 @@ const DetailsSale: React.FC = () => {
       loadBuilders();
     }
     loadSale();
+    loadRealtos();
     loadPropertyType();
-  }, [token, id, sale.sale_type]);
+  }, [token, id, sale.sale_type, city]);
 
   useEffect(() => {
     if (selectedUf === '0') {
@@ -325,10 +335,14 @@ const DetailsSale: React.FC = () => {
     value: property.id,
     label: property.name,
   }));
-  // const optionsBuilders = builders.map(builder => ({
-  //   value: builder.id,
-  //   label: builder.name,
-  // }));
+  const optionsBuilders = builders.map(builder => ({
+    value: builder.id,
+    label: builder.name,
+  }));
+  const optionsRealtors = realtos.map(realtor => ({
+    label: realtor.name,
+    value: realtor.id,
+  }));
 
   return (
     <AdmLayout>
@@ -353,36 +367,20 @@ const DetailsSale: React.FC = () => {
                   readOnly={edits.property}
                 />
                 <InputGroup>
-                  {!edits.property ? (
-                    <Select
-                      name="realty.state"
-                      nameLabel="Estado"
-                      options={optionsState}
-                      onChange={handleSelectedUF}
-                      disabled={edits.property}
-                    />
-                  ) : (
-                    <Input
-                      name="realty.state"
-                      label="Estado"
-                      readOnly={edits.property}
-                    />
-                  )}
-                  {!edits.property ? (
-                    <Select
-                      name="realty.city"
-                      nameLabel="Cidade"
-                      options={optionsCity}
-                      onChange={handleSelectCity}
-                      disabled={edits.property}
-                    />
-                  ) : (
-                    <Input
-                      name="realty.city"
-                      label="Cidade"
-                      readOnly={edits.property}
-                    />
-                  )}
+                  <Select
+                    name="realty.state"
+                    nameLabel="Estado"
+                    options={optionsState}
+                    onChange={handleSelectedUF}
+                    disabled={edits.property}
+                  />
+                  <Select
+                    name="realty.city"
+                    nameLabel="Cidade"
+                    options={optionsCity}
+                    onChange={handleSelectCity}
+                    disabled={edits.property}
+                  />
                 </InputGroup>
                 <Input
                   label="Bairro"
@@ -391,20 +389,12 @@ const DetailsSale: React.FC = () => {
                   readOnly={edits.property}
                 />
                 <InputGroup>
-                  {!edits.property ? (
-                    <Select
-                      name="realty.property"
-                      nameLabel="Tipo de Imóvel"
-                      options={optionsTypeImobille}
-                      disabled={edits.property}
-                    />
-                  ) : (
-                    <Input
-                      name="realty.property.name"
-                      label="Tipo de Imóvel"
-                      readOnly={edits.property}
-                    />
-                  )}
+                  <Select
+                    name="realty.property.id"
+                    nameLabel="Tipo de Imóvel"
+                    options={optionsTypeImobille}
+                    disabled={edits.property}
+                  />
 
                   <Input
                     label="Unidade"
@@ -491,7 +481,7 @@ const DetailsSale: React.FC = () => {
                       <span>editar</span>
                     </button>
                   </Legend>
-                  <Input name="builder.name" placeholder="Dimensão" />
+                  <Select name="builder.name" options={optionsBuilders} />
                 </fieldset>
               </SaleData>
             )}
@@ -565,27 +555,19 @@ const DetailsSale: React.FC = () => {
                     <span>editar</span>
                   </button>
                 </Legend>
-                {sallers.map((saller, index) =>
-                  edits.realtos ? (
-                    <Input
-                      key={saller.name}
-                      label={
-                        sallers.length === 1
-                          ? 'Corretor Vendedor'
-                          : `Vendedor ${index + 1}`
-                      }
-                      name={`sale_has_sellers[${index}].name`}
-                      placeholder="Corretor Vendedor"
-                      readOnly={edits.realtos}
-                    />
-                  ) : (
-                    <Select
-                      name="realty.property"
-                      nameLabel="Tipo de Imóvel"
-                      options={optionsTypeImobille}
-                    />
-                  ),
-                )}
+                {sallers.map((saller, index) => (
+                  <Select
+                    key={saller.name}
+                    nameLabel={
+                      sallers.length === 1
+                        ? 'Corretor Vendedor'
+                        : `Vendedor ${index + 1}`
+                    }
+                    name={`sale_has_sellers[${index}].id`}
+                    options={optionsRealtors}
+                    disabled={edits.realtos}
+                  />
+                ))}
                 {sale.sale_type === 'USADO' &&
                   captvators &&
                   captvators?.map((cap, index) => (
@@ -610,7 +592,7 @@ const DetailsSale: React.FC = () => {
                     label="Diretor"
                     name={`users_directors[${index}].name`}
                     placeholder="Diretor"
-                    readOnly={edits.realtos}
+                    readOnly
                   />
                 ))}
               </fieldset>
