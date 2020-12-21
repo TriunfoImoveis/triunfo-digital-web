@@ -120,6 +120,14 @@ export const InputGroup = styled.div`
       margin-left: 1.2rem;
     }
   }
+
+  .paymment_form {
+    grid-area: paymment_form;
+  }
+
+  .addPlots {
+    grid-area: addPlots;
+  }
 `;
 
 export const ButtonGroup = styled.div`
