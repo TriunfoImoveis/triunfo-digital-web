@@ -147,7 +147,6 @@ const DetailsSale: React.FC = () => {
     saller: true,
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
-  const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedUf, setSelectedUf] = useState('MA');
   const [, setSelectedCity] = useState('0');
@@ -215,13 +214,6 @@ const DetailsSale: React.FC = () => {
       const response = await api.get(`/users?city=${city}&office=Corretor`);
       setRealtors(response.data);
     };
-    if (sale.sale_type === 'NOVO') {
-      const loadBuilders = async () => {
-        const response = await api.get('/builder');
-        setBuilders(response.data);
-      };
-      loadBuilders();
-    }
     loadSale();
     loadRealtos();
     loadPropertyType();
@@ -335,14 +327,23 @@ const DetailsSale: React.FC = () => {
     value: property.id,
     label: property.name,
   }));
-  const optionsBuilders = builders.map(builder => ({
-    value: builder.id,
-    label: builder.name,
-  }));
+
   const optionsRealtors = realtos.map(realtor => ({
     label: realtor.name,
     value: realtor.id,
   }));
+
+  const optionsEstadoCivil = [
+    { label: 'Casado(a)', value: 'CASADO(A)' },
+    { label: 'Solteiro(a)', value: 'SOLTEIRO(A)' },
+    { label: 'Divorciado(a)', value: 'DIVORCIADO(A)' },
+    { label: 'Viúvo(a)', value: 'VIUVO(A)' },
+  ];
+
+  const optionsGenero = [
+    { label: 'Masculino', value: 'MASCULINO' },
+    { label: 'Femenino', value: 'FEMENINO' },
+  ];
 
   return (
     <AdmLayout>
@@ -450,17 +451,17 @@ const DetailsSale: React.FC = () => {
                   />
                 </InputGroup>
                 <InputGroup>
-                  <Input
-                    label="Estado Civíl"
+                  <Select
+                    nameLabel="Estado Civíl"
                     name="client_buyer.civil_status"
-                    placeholder="Estado Civíl"
-                    readOnly={edits.buyer}
+                    options={optionsEstadoCivil}
+                    disabled={edits.buyer}
                   />
-                  <Input
-                    label="Gênero"
+                  <Select
+                    nameLabel="Gênero"
                     name="client_buyer.gender"
-                    placeholder="Gênero"
-                    readOnly={edits.buyer}
+                    options={optionsGenero}
+                    disabled={edits.buyer}
                   />
                   <Input
                     label="Numero de Filhos"
@@ -476,12 +477,8 @@ const DetailsSale: React.FC = () => {
                 <fieldset className="login">
                   <Legend>
                     <legend>CONSTRUTORA</legend>
-                    <button type="button" onClick={() => handleEdit('buyer')}>
-                      <BiEditAlt size={20} color="#C32925" />
-                      <span>editar</span>
-                    </button>
                   </Legend>
-                  <Select name="builder.name" options={optionsBuilders} />
+                  <Input name="builder.name" readOnly />
                 </fieldset>
               </SaleData>
             )}
@@ -526,15 +523,17 @@ const DetailsSale: React.FC = () => {
                     />
                   </InputGroup>
                   <InputGroup>
-                    <Input
-                      label="Estado Civíl"
-                      name="client_saller.civil_status"
-                      placeholder="Estado Civíl"
+                    <Select
+                      nameLabel="Estado Civíl"
+                      name="client_buyer.civil_status"
+                      options={optionsEstadoCivil}
+                      disabled={edits.buyer}
                     />
-                    <Input
-                      label="Gênero"
-                      name="client_saller.gender"
-                      placeholder="Gênero"
+                    <Select
+                      nameLabel="Gênero"
+                      name="client_buyer.gender"
+                      options={optionsGenero}
+                      disabled={edits.buyer}
                     />
                     <Input
                       label="Numero de Filhos"
@@ -622,8 +621,12 @@ const DetailsSale: React.FC = () => {
                   />
                   <Input mask="currency" name="commission" label="Comissão" />
                 </InputGroup>
-                <InputGroup>
-                  <Input name="payment_type.name" label="Forma de Pagamento" />
+                <InputGroup className="paymment_form_container">
+                  <Input
+                    name="payment_type.name"
+                    label="Forma de Pagamento"
+                    className="paymment_form"
+                  />
                 </InputGroup>
                 <PaymentInstallments>
                   {plots.map((plot, index) =>

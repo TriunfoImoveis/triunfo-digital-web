@@ -46,7 +46,7 @@ interface ISaleData {
 const ListSales: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [city, setCity] = useState<string>('São Luís');
-  const [status, setStatus] = useState<string>('PENDENTE');
+  const [status, setStatus] = useState<string>('NAO_VALIDADO');
   const [sales, setSales] = useState<ISaleData[]>([]);
 
   useEffect(() => {
@@ -152,9 +152,9 @@ const ListSales: React.FC = () => {
             <FiltersBottonItems>
               <span>Vendas: </span>
               <select value={status} onChange={handleSelectedStatus}>
-                <option value="PENDENTE">PENDENTE</option>
+                <option value="NAO_VALIDADO">NÃO VALIDADO</option>
+                <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
                 <option value="PAGO TOTAL">PAGO</option>
-                <option value="EM PARTE">EM PARTE</option>
                 <option value="CAIU">CAIU</option>
               </select>
             </FiltersBottonItems>
