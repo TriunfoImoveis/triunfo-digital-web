@@ -197,3 +197,23 @@ export const AddButton = styled.button`
 export const ActionsButton = styled.div`
   display: flex;
 `;
+
+export const ButtonModal = styled.button`
+  margin-left: 0.8rem;
+  padding-top: 2rem;
+  background: none;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    margin-left: 0.8rem;
+    font-size: 1.6rem;
+    color: ${({ theme }) => theme.colors.primary};
+
+    &:hover {
+      color: ${({ theme }) => theme.colors.primaryDark};
+    }
+  }
+`;

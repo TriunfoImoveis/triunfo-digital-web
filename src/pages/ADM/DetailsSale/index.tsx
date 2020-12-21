@@ -13,11 +13,13 @@ import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
 import { FaMinus, FaPlus } from 'react-icons/fa';
+import { VscEdit } from 'react-icons/vsc';
 import { useHistory, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
 import Input from '../../../components/Input';
 import Select from '../../../components/Select';
+import Modal from '../../../components/Modal';
 import { Sync, Garb } from '../../../assets/images';
 import { CPFMask, FoneMask } from '../../../utils/masked';
 import { DateBRL, formatPrice } from '../../../utils/format';
@@ -31,6 +33,7 @@ import {
   PaymentInstallments,
   Plot,
   AddButton,
+  ButtonModal,
 } from './styles';
 import api from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
@@ -157,6 +160,7 @@ const DetailsSale: React.FC = () => {
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
   const [plots, setPlots] = useState<IPlots[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const history = useHistory();
   const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
@@ -315,6 +319,17 @@ const DetailsSale: React.FC = () => {
     [history],
   );
 
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
   const optionsState = uf.map(u => ({
     label: u,
     value: u,
@@ -626,6 +641,16 @@ const DetailsSale: React.FC = () => {
                     name="payment_type.name"
                     label="Forma de Pagamento"
                     className="paymment_form"
+                  />
+                  <ButtonModal type="button" onClick={showModal}>
+                    <VscEdit size={20} color="#C32925" />
+                    <span>Detalhes de pagamento</span>
+                  </ButtonModal>
+                  <Modal
+                    title="Adiconar Parcelas"
+                    visible={isModalVisible}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
                   />
                 </InputGroup>
                 <PaymentInstallments>
