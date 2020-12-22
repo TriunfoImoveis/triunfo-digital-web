@@ -160,7 +160,7 @@ const DetailsSale: React.FC = () => {
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
   const [plots, setPlots] = useState<IPlots[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(true);
   const history = useHistory();
   const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
@@ -320,14 +320,14 @@ const DetailsSale: React.FC = () => {
   );
 
   const showModal = () => {
-    setIsModalVisible(true);
+    setIsModalVisible(!isModalVisible);
   };
 
   const handleOk = () => {
     setIsModalVisible(false);
   };
 
-  const handleCancel = () => {
+  const onClose = () => {
     setIsModalVisible(false);
   };
   const optionsState = uf.map(u => ({
@@ -642,75 +642,75 @@ const DetailsSale: React.FC = () => {
                     label="Forma de Pagamento"
                     className="paymment_form"
                   />
-                  <ButtonModal type="button" onClick={showModal}>
-                    <VscEdit size={20} color="#C32925" />
-                    <span>Detalhes de pagamento</span>
-                  </ButtonModal>
-                  <Modal
-                    title="Adiconar Parcelas"
-                    visible={isModalVisible}
-                    onOk={handleOk}
-                    onCancel={handleCancel}
-                  />
+                  <div>
+                    <ButtonModal type="button" onClick={showModal}>
+                      <VscEdit size={20} color="#C32925" />
+                      <span>Detalhes de pagamento</span>
+                    </ButtonModal>
+                  </div>
                 </InputGroup>
-                <PaymentInstallments>
-                  {plots.map((plot, index) =>
-                    index === 0 ? (
-                      <Plot key={plot.numberPlots}>
-                        <Input
-                          type="number"
-                          name="number"
-                          label="Parcela"
-                          min={1}
-                          readOnly
-                          defaultValue={index + 1}
-                        />
-                        <Input
-                          mask="currency"
-                          name="value_plot"
-                          label="Valor da Parcela"
-                          placeholder="R$ 0,00"
-                        />
-                        <Input
-                          mask="date"
-                          name="date_plot"
-                          label="Data de Pagamento"
-                          placeholder="07/01/2021"
-                        />
-                        <AddButton type="button" onClick={addPlots}>
-                          <FaPlus size={20} color="#C32925" />
-                        </AddButton>
-                      </Plot>
-                    ) : (
-                      <Plot key={plot.numberPlots}>
-                        <Input
-                          type="number"
-                          name="number"
-                          label="Parcela"
-                          min={1}
-                          readOnly
-                          defaultValue={index + 1}
-                        />
-                        <Input
-                          mask="currency"
-                          name="value_plot"
-                          label="Valor da Parcela"
-                          placeholder="R$ 0,00"
-                        />
-                        <Input
-                          mask="date"
-                          name="date_plot"
-                          label="Data de Pagamento"
-                          placeholder="07/01/2021"
-                        />
+                {isModalVisible ? (
+                  <Modal title="Detalhes de Pagamento" onClose={onClose}>
+                    <PaymentInstallments>
+                      {plots.map((plot, index) =>
+                        index === 0 ? (
+                          <Plot key={plot.numberPlots}>
+                            <Input
+                              type="number"
+                              name="number"
+                              label="Parcela"
+                              min={1}
+                              readOnly
+                              defaultValue={index + 1}
+                            />
+                            <Input
+                              mask="currency"
+                              name="value_plot"
+                              label="Valor da Parcela"
+                              placeholder="R$ 0,00"
+                            />
+                            <Input
+                              mask="date"
+                              name="date_plot"
+                              label="Data de Vencimento"
+                              placeholder="07/01/2021"
+                            />
+                            <AddButton type="button" onClick={addPlots}>
+                              <FaPlus size={20} color="#C32925" />
+                            </AddButton>
+                          </Plot>
+                        ) : (
+                          <Plot key={plot.numberPlots}>
+                            <Input
+                              type="number"
+                              name="number"
+                              label="Parcela"
+                              min={1}
+                              readOnly
+                              defaultValue={index + 1}
+                            />
+                            <Input
+                              mask="currency"
+                              name="value_plot"
+                              label="Valor da Parcela"
+                              placeholder="R$ 0,00"
+                            />
+                            <Input
+                              mask="date"
+                              name="date_plot"
+                              label="Data de Pagamento"
+                              placeholder="07/01/2021"
+                            />
 
-                        <AddButton type="button" onClick={removePlots}>
-                          <FaMinus size={20} color="#C32925" />
-                        </AddButton>
-                      </Plot>
-                    ),
-                  )}
-                </PaymentInstallments>
+                            <AddButton type="button" onClick={removePlots}>
+                              <FaMinus size={20} color="#C32925" />
+                            </AddButton>
+                          </Plot>
+                        ),
+                      )}
+                    </PaymentInstallments>
+                  </Modal>
+                ) : null}
               </fieldset>
             </SaleData>
 

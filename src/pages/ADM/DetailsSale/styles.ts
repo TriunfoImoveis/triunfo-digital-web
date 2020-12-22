@@ -117,12 +117,8 @@ export const InputGroup = styled.div`
   > div {
     flex: 1;
     & + div {
-      margin-left: 1.2rem;
+      margin-left: 1.5rem;
     }
-  }
-
-  .paymment_form {
-    grid-area: paymment_form;
   }
 
   .addPlots {
@@ -199,7 +195,8 @@ export const ActionsButton = styled.div`
 `;
 
 export const ButtonModal = styled.button`
-  margin-left: 0.8rem;
+  width: 20.9rem;
+  margin-right: 11rem;
   padding-top: 2rem;
   background: none;
   border: 0;

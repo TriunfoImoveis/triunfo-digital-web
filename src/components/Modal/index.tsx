@@ -1,22 +1,36 @@
 import React from 'react';
 
-import { ModalProps } from 'antd/lib/modal/Modal';
-import { ModalContainer } from './styles';
+import { AiOutlineClose } from 'react-icons/ai';
+import {
+  ModalContainer,
+  ModalBody,
+  ModalHeader,
+  ModalWrapper,
+  Title,
+  ModalFooter,
+} from './styles';
 
-type ModalComponent = ModalProps;
-const Modal: React.FC<ModalComponent> = ({
-  title,
-  visible,
-  onOk,
-  onCancel,
-}) => {
+interface ModalProps {
+  title: string;
+  onClose(): void;
+}
+
+const Modal: React.FC<ModalProps> = ({ title, onClose, children }) => {
   return (
-    <ModalContainer
-      title={title}
-      visible={visible}
-      onOk={onOk}
-      onCancel={onCancel}
-    />
+    <ModalContainer>
+      <ModalWrapper>
+        <ModalHeader>
+          <Title>{title}</Title>
+          <button type="button" onClick={onClose}>
+            <AiOutlineClose size={20} color="#000" />
+          </button>
+        </ModalHeader>
+        <ModalBody>{children}</ModalBody>
+        <ModalFooter>
+          <button type="button">Salvar</button>
+        </ModalFooter>
+      </ModalWrapper>
+    </ModalContainer>
   );
 };
 
