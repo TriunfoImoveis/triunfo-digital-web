@@ -16,8 +16,8 @@ export const ModalContainer = styled.div`
 
 export const ModalWrapper = styled.div`
   width: 85rem;
-  height: 45rem;
-  margin-bottom: 50rem;
+  height: 55rem;
+  margin-bottom: 25rem;
   background-color: #fff;
   box-shadow: -1px 3px 42px 6px rgba(0, 0, 0, 0.75);
   border-radius: 2rem;
@@ -49,5 +49,30 @@ export const ModalFooter = styled.div`
   justify-content: center;
   position: absolute;
   bottom: 0;
-  right: 0;
+  left: 50%;
+  margin-left: -200px;
+  margin-bottom: 3rem;
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40.3rem;
+    height: 6rem;
+    border: 0;
+    background-color: ${({ theme }) => theme.colors.success};
+    transition: background-color 0.2s;
+
+    color: #fff;
+    font-size: ${({ theme }) => theme.fontSize.large};
+
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.successLight};
+    }
+
+    > svg {
+      margin-right: 1.2rem;
+    }
+  }
 `;

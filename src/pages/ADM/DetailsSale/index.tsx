@@ -6,6 +6,8 @@ import React, {
   useRef,
 } from 'react';
 
+import * as Yup from 'yup';
+
 import { FormHandles } from '@unform/core';
 
 import { BiEditAlt } from 'react-icons/bi';
@@ -37,6 +39,7 @@ import {
 } from './styles';
 import api from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
+import getValidationErros from '../../../utils/getValidationErros';
 
 interface IBGECityResponse {
   nome: string;
@@ -140,6 +143,7 @@ interface IPlots {
 
 const DetailsSale: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const formModalRef = useRef<FormHandles>(null);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const [uf] = useState(['MA', 'CE', 'PI']);
   const [edits, setEdits] = useState({
@@ -323,12 +327,37 @@ const DetailsSale: React.FC = () => {
     setIsModalVisible(!isModalVisible);
   };
 
-  const handleOk = () => {
+  const onClose = () => {
     setIsModalVisible(false);
   };
 
-  const onClose = () => {
-    setIsModalVisible(false);
+  const handleModalSubmit = async () => {
+    const data = formModalRef.current?.getData();
+    try {
+      formModalRef.current?.setErrors({});
+
+      const schema = Yup.object({
+        installment: Yup.array().of(
+          Yup.object().shape({
+            value: Yup.string().required('Informe o valor da parcela'),
+            due_date: Yup.string().required('Informe a data de vencimento'),
+          }),
+        ),
+      });
+      await schema.validate(data, {
+        abortEarly: false,
+      });
+      await api.patch(`sale/valid/${id}`, data);
+      toast.success('Parcelas adicionadas!');
+      onClose();
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formModalRef.current?.setErrors(erros);
+      }
+
+      toast.error('ERROR ao adicionar as parcela!');
+    }
   };
   const optionsState = uf.map(u => ({
     label: u,
@@ -650,65 +679,71 @@ const DetailsSale: React.FC = () => {
                   </div>
                 </InputGroup>
                 {isModalVisible ? (
-                  <Modal title="Detalhes de Pagamento" onClose={onClose}>
-                    <PaymentInstallments>
-                      {plots.map((plot, index) =>
-                        index === 0 ? (
-                          <Plot key={plot.numberPlots}>
-                            <Input
-                              type="number"
-                              name="number"
-                              label="Parcela"
-                              min={1}
-                              readOnly
-                              defaultValue={index + 1}
-                            />
-                            <Input
-                              mask="currency"
-                              name="value_plot"
-                              label="Valor da Parcela"
-                              placeholder="R$ 0,00"
-                            />
-                            <Input
-                              mask="date"
-                              name="date_plot"
-                              label="Data de Vencimento"
-                              placeholder="07/01/2021"
-                            />
-                            <AddButton type="button" onClick={addPlots}>
-                              <FaPlus size={20} color="#C32925" />
-                            </AddButton>
-                          </Plot>
-                        ) : (
-                          <Plot key={plot.numberPlots}>
-                            <Input
-                              type="number"
-                              name="number"
-                              label="Parcela"
-                              min={1}
-                              readOnly
-                              defaultValue={index + 1}
-                            />
-                            <Input
-                              mask="currency"
-                              name="value_plot"
-                              label="Valor da Parcela"
-                              placeholder="R$ 0,00"
-                            />
-                            <Input
-                              mask="date"
-                              name="date_plot"
-                              label="Data de Pagamento"
-                              placeholder="07/01/2021"
-                            />
+                  <Modal
+                    onSubmit={handleModalSubmit}
+                    title="Detalhes de Pagamento"
+                    onClose={onClose}
+                  >
+                    <Form ref={formModalRef} onSubmit={handleModalSubmit}>
+                      <PaymentInstallments>
+                        {plots.map((plot, index) =>
+                          index === 0 ? (
+                            <Plot key={plot.numberPlots}>
+                              <Input
+                                type="number"
+                                name={`installments[${index}].installment_number`}
+                                label="Parcela"
+                                min={1}
+                                readOnly
+                                defaultValue={index + 1}
+                              />
+                              <Input
+                                mask="currency"
+                                name={`installments[${index}].value`}
+                                label="Valor da Parcela"
+                                placeholder="R$ 0,00"
+                              />
+                              <Input
+                                mask="date"
+                                name={`installments[${index}].due_date`}
+                                label="Data de Vencimento"
+                                placeholder="07/01/2021"
+                              />
+                              <AddButton type="button" onClick={addPlots}>
+                                <FaPlus size={20} color="#C32925" />
+                              </AddButton>
+                            </Plot>
+                          ) : (
+                            <Plot key={plot.numberPlots}>
+                              <Input
+                                type="number"
+                                name={`installments[${index}].installment_number`}
+                                label="Parcela"
+                                min={1}
+                                readOnly
+                                defaultValue={index + 1}
+                              />
+                              <Input
+                                mask="currency"
+                                name={`installments[${index}].value`}
+                                label="Valor da Parcela"
+                                placeholder="R$ 0,00"
+                              />
+                              <Input
+                                mask="date"
+                                name={`installments[${index}].due_date`}
+                                label="Data de Pagamento"
+                                placeholder="07/01/2021"
+                              />
 
-                            <AddButton type="button" onClick={removePlots}>
-                              <FaMinus size={20} color="#C32925" />
-                            </AddButton>
-                          </Plot>
-                        ),
-                      )}
-                    </PaymentInstallments>
+                              <AddButton type="button" onClick={removePlots}>
+                                <FaMinus size={20} color="#C32925" />
+                              </AddButton>
+                            </Plot>
+                          ),
+                        )}
+                      </PaymentInstallments>
+                    </Form>
                   </Modal>
                 ) : null}
               </fieldset>
