@@ -214,3 +214,57 @@ export const ButtonModal = styled.button`
     }
   }
 `;
+
+export const ModalFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -200px;
+  margin-bottom: 3rem;
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40.3rem;
+    height: 6rem;
+    border: 0;
+    background-color: ${({ theme }) => theme.colors.success};
+    transition: background-color 0.2s;
+
+    color: #fff;
+    font-size: ${({ theme }) => theme.fontSize.large};
+
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.successLight};
+    }
+
+    > svg {
+      margin-right: 1.2rem;
+    }
+  }
+`;
+
+export const ContentFallForm = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  > form {
+  }
+  > form > div {
+    margin-top: 50px;
+    margin-bottom: 2rem;
+  }
+
+  > form > textarea {
+    width: 100%;
+    height: 20rem;
+    padding: 2.4rem;
+    border-radius: ${({ theme }) => theme.borderRadius};
+    border-color: ${({ theme }) => theme.colors.borderColor};
+  }
+`;

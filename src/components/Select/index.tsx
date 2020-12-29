@@ -21,7 +21,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   name: string;
   options: {
     value: string;
-    label: string;
+    label?: string | undefined;
   }[];
   nameLabel?: string;
   add?: boolean;

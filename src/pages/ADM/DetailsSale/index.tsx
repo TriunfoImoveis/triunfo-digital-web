@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 import React, {
   ChangeEvent,
   useState,
@@ -36,10 +37,14 @@ import {
   Plot,
   AddButton,
   ButtonModal,
+  ModalFooter,
+  ContentFallForm,
 } from './styles';
 import api from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
 import getValidationErros from '../../../utils/getValidationErros';
+import { DateYMD, unMaked } from '../../../utils/unMasked';
+import TextArea from '../../../components/TextArea';
 
 interface IBGECityResponse {
   nome: string;
@@ -48,6 +53,7 @@ interface IBGECityResponse {
 interface IOptionsData {
   id: string;
   name: string;
+  description?: string;
 }
 
 interface IParamsData {
@@ -141,9 +147,18 @@ interface IPlots {
   datePayment: string;
 }
 
+interface IInstallmentsData {
+  installments: {
+    installment_number: string;
+    value: string;
+    due_date: string;
+  }[];
+}
+
 const DetailsSale: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const formModalRef = useRef<FormHandles>(null);
+  const formModalFallRef = useRef<FormHandles>(null);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const [uf] = useState(['MA', 'CE', 'PI']);
   const [edits, setEdits] = useState({
@@ -152,8 +167,10 @@ const DetailsSale: React.FC = () => {
     builder: true,
     realtos: true,
     saller: true,
+    fall: true,
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
+  const [motivies, setMotivies] = useState<IOptionsData[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedUf, setSelectedUf] = useState('MA');
   const [, setSelectedCity] = useState('0');
@@ -164,7 +181,8 @@ const DetailsSale: React.FC = () => {
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
   const [plots, setPlots] = useState<IPlots[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isVisibleModalFall, setIsVisibleModalFall] = useState(true);
   const history = useHistory();
   const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
@@ -207,7 +225,6 @@ const DetailsSale: React.FC = () => {
         setCoordinator(coordinator);
         setcaptavators(captavators);
         setDirectors(directors);
-        console.log(saleFormatted);
       } catch (error) {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
@@ -222,9 +239,18 @@ const DetailsSale: React.FC = () => {
       const response = await api.get(`/users?city=${city}&office=Corretor`);
       setRealtors(response.data);
     };
+    const loadMotivies = async () => {
+      try {
+        const response = await api.get('/motive');
+        setMotivies(response.data);
+      } catch (error) {
+        toast.error('Falha na conexão com o servidor contate o suporte');
+      }
+    };
     loadSale();
     loadRealtos();
     loadPropertyType();
+    loadMotivies();
   }, [token, id, sale.sale_type, city]);
 
   useEffect(() => {
@@ -288,6 +314,9 @@ const DetailsSale: React.FC = () => {
         case 'realtors':
           setEdits({ ...edits, realtos: !edits.realtos });
           break;
+        case 'fall':
+          setEdits({ ...edits, fall: false });
+          break;
         default:
           break;
       }
@@ -311,33 +340,67 @@ const DetailsSale: React.FC = () => {
   );
 
   const handleFall = useCallback(
-    async (id: string) => {
+    async data => {
+      formModalFallRef.current?.setErrors({});
       try {
-        await api.patch(`/sale/not-valid/${id}`);
+        const schema = Yup.object({
+          motive: Yup.string().required('Selecione um Motivo'),
+        });
+        await schema.validate(data, { abortEarly: false });
+        await api.patch(`/sale/not-valid/${id}`, data);
         toast.success('Atualização Realizada');
         history.push('/adm/lista-vendas');
       } catch (err) {
-        console.log(err);
+        if (err instanceof Yup.ValidationError) {
+          const erros = getValidationErros(err);
+          formModalRef.current?.setErrors(erros);
+        }
+
+        toast.error('ERROR ao validar os motivos da queda!');
       }
     },
-    [history],
+    [history, id],
+  );
+
+  const handleSelectAnotherMotive = useCallback(
+    async (e: ChangeEvent<HTMLSelectElement>) => {
+      const { value } = e.target;
+      const response = await api.get('/motive');
+      const motives = response.data;
+      const motive = motives.filter(motive => {
+        if (motive.description === 'Outro Motivo') {
+          return { motive };
+        }
+      });
+      motive.map(m =>
+        value === m.id
+          ? handleEdit('fall')
+          : setEdits({ ...edits, fall: true }),
+      );
+      return;
+    },
+    [handleEdit, edits],
   );
 
   const showModal = () => {
     setIsModalVisible(!isModalVisible);
   };
+  const showModalFall = () => {
+    setIsVisibleModalFall(!isVisibleModalFall);
+  };
 
   const onClose = () => {
     setIsModalVisible(false);
   };
+  const onCloseFall = () => {
+    setIsVisibleModalFall(false);
+  };
 
-  const handleModalSubmit = async () => {
-    const data = formModalRef.current?.getData();
+  const handleModalSubmit = async (data: IInstallmentsData) => {
+    formModalRef.current?.setErrors({});
     try {
-      formModalRef.current?.setErrors({});
-
       const schema = Yup.object({
-        installment: Yup.array().of(
+        installments: Yup.array().of(
           Yup.object().shape({
             value: Yup.string().required('Informe o valor da parcela'),
             due_date: Yup.string().required('Informe a data de vencimento'),
@@ -347,7 +410,17 @@ const DetailsSale: React.FC = () => {
       await schema.validate(data, {
         abortEarly: false,
       });
-      await api.patch(`sale/valid/${id}`, data);
+      const installments = data.installments.map(installment => ({
+        installment_number: installment.installment_number,
+        value: unMaked(installment.value),
+        due_date: DateYMD(installment.due_date),
+      }));
+      const newData = { installments };
+      await api.patch(`sale/valid/${id}`, newData, {
+        headers: {
+          authorization: `Token ${token}`,
+        },
+      });
       toast.success('Parcelas adicionadas!');
       onClose();
     } catch (err) {
@@ -388,6 +461,10 @@ const DetailsSale: React.FC = () => {
     { label: 'Masculino', value: 'MASCULINO' },
     { label: 'Femenino', value: 'FEMENINO' },
   ];
+  const optionsMotive = motivies.map(motive => ({
+    label: motive.description,
+    value: motive.id,
+  }));
 
   return (
     <AdmLayout>
@@ -679,11 +756,7 @@ const DetailsSale: React.FC = () => {
                   </div>
                 </InputGroup>
                 {isModalVisible ? (
-                  <Modal
-                    onSubmit={handleModalSubmit}
-                    title="Detalhes de Pagamento"
-                    onClose={onClose}
-                  >
+                  <Modal title="Detalhes de Pagamento" onClose={onClose}>
                     <Form ref={formModalRef} onSubmit={handleModalSubmit}>
                       <PaymentInstallments>
                         {plots.map((plot, index) =>
@@ -743,6 +816,15 @@ const DetailsSale: React.FC = () => {
                           ),
                         )}
                       </PaymentInstallments>
+                      <ModalFooter>
+                        <button
+                          type="button"
+                          onClick={() => formModalRef.current?.submitForm()}
+                        >
+                          <BsCheckBox size={25} />
+                          Salvar
+                        </button>
+                      </ModalFooter>
                     </Form>
                   </Modal>
                 ) : null}
@@ -754,7 +836,7 @@ const DetailsSale: React.FC = () => {
                 <Sync />
                 <span>Atualizar</span>
               </button>
-              <button type="button" onClick={() => handleFall(sale.id)}>
+              <button type="button" onClick={showModalFall}>
                 <Garb />
                 <span>Caiu</span>
               </button>
@@ -767,6 +849,37 @@ const DetailsSale: React.FC = () => {
           </Form>
         </Content>
       </Container>
+      {isVisibleModalFall ? (
+        <Modal title="Venda Caida" onClose={onCloseFall}>
+          <ContentFallForm>
+            <Form ref={formModalFallRef} onSubmit={handleFall}>
+              <Select
+                nameLabel="Motivo da perda"
+                name="motive"
+                options={optionsMotive}
+                onChange={handleSelectAnotherMotive}
+              />
+              {!edits.fall ? (
+                <TextArea
+                  name="another_motive"
+                  label="Outro motivo"
+                  placeholder="Adicone outro motivo"
+                />
+              ) : null}
+
+              <ModalFooter>
+                <button
+                  type="button"
+                  onClick={() => formModalFallRef.current?.submitForm()}
+                >
+                  <BsCheckBox size={25} />
+                  Confirmar
+                </button>
+              </ModalFooter>
+            </Form>
+          </ContentFallForm>
+        </Modal>
+      ) : null}
     </AdmLayout>
   );
 };

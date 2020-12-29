@@ -43,36 +43,3 @@ export const Title = styled.span`
 export const ModalBody = styled.div`
   overflow-y: auto;
 `;
-export const ModalFooter = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  margin-left: -200px;
-  margin-bottom: 3rem;
-
-  > button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 40.3rem;
-    height: 6rem;
-    border: 0;
-    background-color: ${({ theme }) => theme.colors.success};
-    transition: background-color 0.2s;
-
-    color: #fff;
-    font-size: ${({ theme }) => theme.fontSize.large};
-
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.successLight};
-    }
-
-    > svg {
-      margin-right: 1.2rem;
-    }
-  }
-`;
