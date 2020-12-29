@@ -23,29 +23,6 @@ export const Content = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
-
-    .submit {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      outline: 0;
-      height: 6.4rem;
-      background: #6fcf97;
-      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-      border-radius: 4px;
-      margin-bottom: 1.6rem;
-
-      color: #ffffff;
-
-      > span {
-        margin-left: 1.2rem;
-        font-size: 32px;
-        line-height: 37px;
-
-        color: #ffffff;
-      }
-    }
   }
 `;
 export const SaleData = styled.div`
@@ -73,6 +50,30 @@ export const SaleData = styled.div`
     }
     > div + div {
       margin-bottom: 0.8rem;
+    }
+    > .submit {
+      margin-left: 2rem;
+      width: 97%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      outline: 0;
+      height: 6.4rem;
+      background: #6fcf97;
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border-radius: 4px;
+      margin-bottom: 1.6rem;
+
+      color: #ffffff;
+
+      > span {
+        margin-left: 1.2rem;
+        font-size: 32px;
+        line-height: 37px;
+
+        color: #ffffff;
+      }
     }
   }
 `;

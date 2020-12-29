@@ -166,8 +166,9 @@ const DetailsSale: React.FC = () => {
     buyer: true,
     builder: true,
     realtos: true,
-    saller: true,
+    seller: true,
     fall: true,
+    money: true,
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
   const [motivies, setMotivies] = useState<IOptionsData[]>([]);
@@ -182,7 +183,7 @@ const DetailsSale: React.FC = () => {
   const [directors, setDirectors] = useState<ISallers[]>([]);
   const [plots, setPlots] = useState<IPlots[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isVisibleModalFall, setIsVisibleModalFall] = useState(true);
+  const [isVisibleModalFall, setIsVisibleModalFall] = useState(false);
   const history = useHistory();
   const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
@@ -206,20 +207,27 @@ const DetailsSale: React.FC = () => {
         const captavators = sale.sale_has_captivators;
         const directors = sale.users_directors;
         const cpfFormatted = CPFMask(sale.client_buyer.cpf);
+        const cpfSellerFormatted = CPFMask(sale.client_seller.cpf);
         const dataFormatted = DateBRL(sale.client_buyer.date_birth);
+        const dataSellerFormatted = DateBRL(sale.client_seller.date_birth);
         const foneFormatted = FoneMask(sale.client_buyer.phone);
+        const foneSellerFormatted = FoneMask(sale.client_buyer.phone);
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = formatPrice(sale.commission);
         const saleDate = DateBRL(sale.sale_date);
         const saleFormatted = Object.assign(
           sale,
           (sale.client_buyer.cpf = cpfFormatted),
+          (sale.client_seller.cpf = cpfSellerFormatted),
           (sale.client_buyer.date_birth = dataFormatted),
+          (sale.client_seller.date_birth = dataSellerFormatted),
           (sale.client_buyer.phone = foneFormatted),
+          (sale.client_seller.phone = foneSellerFormatted),
           (sale.realty_ammount = realtyAmmount),
           (sale.commission = commission),
           (sale.sale_date = saleDate),
         );
+        console.log(saleFormatted);
         setSale(saleFormatted);
         setSallers(sallers);
         setCoordinator(coordinator);
@@ -314,8 +322,14 @@ const DetailsSale: React.FC = () => {
         case 'realtors':
           setEdits({ ...edits, realtos: !edits.realtos });
           break;
+        case 'seller':
+          setEdits({ ...edits, seller: !edits.seller });
+          break;
         case 'fall':
           setEdits({ ...edits, fall: false });
+          break;
+        case 'money':
+          setEdits({ ...edits, money: !edits.money });
           break;
         default:
           break;
@@ -607,59 +621,65 @@ const DetailsSale: React.FC = () => {
               <SaleData>
                 <fieldset className="login">
                   <Legend>
-                    <legend>VENDEDORES</legend>
-                    <button type="button" onClick={() => handleEdit('buyer')}>
+                    <legend>VENDEDOR</legend>
+                    <button type="button" onClick={() => handleEdit('seller')}>
                       <BiEditAlt size={20} color="#C32925" />
                       <span>editar</span>
                     </button>
                   </Legend>
                   <Input
                     label="Nome Completo"
-                    name="client_saller.name"
+                    name="client_seller.name"
                     placeholder="Nome Completo"
+                    readOnly={edits.seller}
                   />
                   <InputGroup>
                     <Input
                       label="CPF"
-                      name="client_saller.cpf"
+                      name="client_seller.cpf"
                       placeholder="CPF"
+                      readOnly={edits.seller}
                     />
                     <Input
                       label="Data de Nascimento"
-                      name="client_saller.date_birth"
+                      name="client_seller.date_birth"
                       placeholder="Data de Nascimento"
+                      readOnly={edits.seller}
                     />
                   </InputGroup>
                   <InputGroup>
                     <Input
                       label="Telefone"
-                      name="client_saller.phone"
+                      name="client_seller.phone"
                       placeholder="Telefone"
+                      readOnly={edits.seller}
                     />
                     <Input
                       label="E-mail"
-                      name="client_saller.email"
+                      name="client_seller.email"
                       type="email"
                       placeholder="E-mail"
+                      readOnly={edits.seller}
                     />
                   </InputGroup>
                   <InputGroup>
                     <Select
                       nameLabel="Estado Civíl"
-                      name="client_buyer.civil_status"
+                      name="client_seller.civil_status"
                       options={optionsEstadoCivil}
-                      disabled={edits.buyer}
+                      disabled={edits.seller}
                     />
                     <Select
                       nameLabel="Gênero"
-                      name="client_buyer.gender"
+                      name="client_seller.gender"
                       options={optionsGenero}
-                      disabled={edits.buyer}
+                      disabled={edits.seller}
                     />
                     <Input
                       label="Numero de Filhos"
-                      name="client_saller.number_children"
+                      name="client_seller.number_children"
                       placeholder="Número de filhos"
+                      readOnly={edits.seller}
                     />
                   </InputGroup>
                 </fieldset>
@@ -669,7 +689,7 @@ const DetailsSale: React.FC = () => {
             <SaleData>
               <fieldset className="login">
                 <Legend>
-                  <legend>CORRETOES</legend>
+                  <legend>CORRETORES</legend>
                   <button type="button" onClick={() => handleEdit('realtors')}>
                     <BiEditAlt size={20} color="#C32925" />
                     <span>editar</span>
@@ -706,22 +726,24 @@ const DetailsSale: React.FC = () => {
                 {coordinator && (
                   <Input name="user_coordinator.name" label="Coordenador" />
                 )}
-                {directors.map((director, index) => (
-                  <Input
-                    key={director.name}
-                    label="Diretor"
-                    name={`users_directors[${index}].name`}
-                    placeholder="Diretor"
-                    readOnly
-                  />
-                ))}
+                <InputGroup>
+                  {directors.map((director, index) => (
+                    <Input
+                      key={director.name}
+                      label="Diretor"
+                      name={`users_directors[${index}].name`}
+                      placeholder="Diretor"
+                      readOnly
+                    />
+                  ))}
+                </InputGroup>
               </fieldset>
             </SaleData>
             <SaleData>
               <fieldset className="login">
                 <Legend>
                   <legend>FINANÇAS</legend>
-                  <button type="button" onClick={() => handleEdit('realtors')}>
+                  <button type="button" onClick={() => handleEdit('money')}>
                     <BiEditAlt size={20} color="#C32925" />
                     <span>editar</span>
                   </button>
@@ -731,24 +753,37 @@ const DetailsSale: React.FC = () => {
                     mask="currency"
                     name="realty_ammount"
                     label="Valor da Venda"
+                    readOnly={edits.money}
                   />
-                  <Input mask="date" name="sale_date" label="Data da Venda" />
+                  <Input
+                    mask="date"
+                    name="sale_date"
+                    label="Data da Venda"
+                    readOnly={edits.money}
+                  />
                 </InputGroup>
                 <InputGroup>
                   <Input
                     mask="porcent"
                     name="percentage_sale"
                     label="(%) da Venda"
+                    readOnly
                   />
-                  <Input mask="currency" name="commission" label="Comissão" />
+                  <Input
+                    mask="currency"
+                    name="commission"
+                    label="Comissão"
+                    readOnly
+                  />
                 </InputGroup>
                 <InputGroup className="paymment_form_container">
                   <Input
                     name="payment_type.name"
                     label="Forma de Pagamento"
                     className="paymment_form"
+                    readOnly
                   />
-                  <div>
+                  <div className="button-modal">
                     <ButtonModal type="button" onClick={showModal}>
                       <VscEdit size={20} color="#C32925" />
                       <span>Detalhes de pagamento</span>
@@ -830,22 +865,28 @@ const DetailsSale: React.FC = () => {
                 ) : null}
               </fieldset>
             </SaleData>
+            <SaleData>
+              <fieldset className="login">
+                <Legend>
+                  <legend>AÇÕES</legend>
+                </Legend>
+                <ButtonGroup>
+                  <button type="button">
+                    <Sync />
+                    <span>Atualizar</span>
+                  </button>
+                  <button type="button" onClick={showModalFall}>
+                    <Garb />
+                    <span>Caiu</span>
+                  </button>
+                </ButtonGroup>
 
-            <ButtonGroup>
-              <button type="button">
-                <Sync />
-                <span>Atualizar</span>
-              </button>
-              <button type="button" onClick={showModalFall}>
-                <Garb />
-                <span>Caiu</span>
-              </button>
-            </ButtonGroup>
-
-            <button type="submit" className="submit">
-              <BsCheckBox size={25} />
-              <span>Validar Venda</span>
-            </button>
+                <button type="submit" className="submit">
+                  <BsCheckBox size={25} />
+                  <span>Validar Venda</span>
+                </button>
+              </fieldset>
+            </SaleData>
           </Form>
         </Content>
       </Container>
