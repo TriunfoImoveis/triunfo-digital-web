@@ -19,6 +19,13 @@ export const FiltersBotton = styled.div`
   justify-content: space-between;
   z-index: 10;
 `;
+
+export const FilterButtonGroup = styled.div`
+  display: flex;
+  > div + div {
+    margin-left: 1.6rem;
+  }
+`;
 export const Input = styled.div`
   display: flex;
   align-items: center;
@@ -89,7 +96,7 @@ export const FilterItem = styled.div`
     font-family: Roboto;
     font-style: normal;
     font-weight: 500;
-    font-size: 20px;
+    font-size: 2rem;
     line-height: 23px;
 
     color: #818181;
@@ -119,7 +126,7 @@ export const FiltersBottonItems = styled.div`
     color: #818181;
     padding: 0 0.5rem;
 
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   button[type='button'] {

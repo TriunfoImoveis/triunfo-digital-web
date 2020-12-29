@@ -117,12 +117,8 @@ export const InputGroup = styled.div`
   > div {
     flex: 1;
     & + div {
-      margin-left: 1.2rem;
+      margin-left: 1.5rem;
     }
-  }
-
-  .paymment_form {
-    grid-area: paymment_form;
   }
 
   .addPlots {
@@ -196,4 +192,79 @@ export const AddButton = styled.button`
 
 export const ActionsButton = styled.div`
   display: flex;
+`;
+
+export const ButtonModal = styled.button`
+  width: 20.9rem;
+  margin-right: 11rem;
+  padding-top: 2rem;
+  background: none;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    margin-left: 0.8rem;
+    font-size: 1.6rem;
+    color: ${({ theme }) => theme.colors.primary};
+
+    &:hover {
+      color: ${({ theme }) => theme.colors.primaryDark};
+    }
+  }
+`;
+
+export const ModalFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -200px;
+  margin-bottom: 3rem;
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40.3rem;
+    height: 6rem;
+    border: 0;
+    background-color: ${({ theme }) => theme.colors.success};
+    transition: background-color 0.2s;
+
+    color: #fff;
+    font-size: ${({ theme }) => theme.fontSize.large};
+
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.successLight};
+    }
+
+    > svg {
+      margin-right: 1.2rem;
+    }
+  }
+`;
+
+export const ContentFallForm = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  > form {
+  }
+  > form > div {
+    margin-top: 50px;
+    margin-bottom: 2rem;
+  }
+
+  > form > textarea {
+    width: 100%;
+    height: 20rem;
+    padding: 2.4rem;
+    border-radius: ${({ theme }) => theme.borderRadius};
+    border-color: ${({ theme }) => theme.colors.borderColor};
+  }
 `;

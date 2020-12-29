@@ -8,7 +8,6 @@ import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 
 import Select from '../../Select';
-import Input from '../../Input';
 import Button from '../../Button';
 
 import {
@@ -136,6 +135,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
             abortEarly: false,
           });
         }
+
         const newData = { ...data, users_directors: user_directors };
         updateFormData(newData);
         nextStep();
@@ -179,6 +179,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
             {sallers.map((saller, index) =>
               index > 0 ? (
                 <Select
+                  key={saller.name}
                   name={`users_sellers[${index}].${saller.name}`}
                   options={optionsRealtors}
                   nameLabel="Corretor Vendedor"
@@ -187,6 +188,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 />
               ) : (
                 <Select
+                  key={saller.name}
                   name={`users_sellers[${index}].${saller.name}`}
                   options={[{ label: userAuth.name, value: userAuth.id }]}
                   nameLabel="Corretor Vendedor"
@@ -215,6 +217,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 {sallers.map((saller, index) =>
                   index > 0 ? (
                     <Select
+                      key={saller.name}
                       name={`users_sellers[${index}].${saller.name}`}
                       options={optionsRealtors}
                       nameLabel="Corretor Vendedor"
@@ -225,6 +228,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     />
                   ) : (
                     <Select
+                      key={saller.name}
                       name={`users_sellers[${index}].${saller.name}`}
                       options={[{ label: userAuth.name, value: userAuth.id }]}
                       nameLabel="Corretor Vendedor"
@@ -239,6 +243,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 {captavitors.map((cap, index) =>
                   index > 0 ? (
                     <Select
+                      key={cap.name}
                       name={`users_captivators[${index}].${cap.name}`}
                       options={optionsRealtors}
                       nameLabel="Corretor Captador"
@@ -249,6 +254,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     />
                   ) : (
                     <Select
+                      key={cap.name}
                       name={`users_captivators[${index}].${cap.name}`}
                       options={optionsRealtors}
                       nameLabel="Corretor Captador"
@@ -259,12 +265,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 )}
               </UserCaptivators>
             </InputGroup>
-            <Input
-              name="user_director"
-              label="Diretoria"
-              defaultValue="Cristiane/Raunin"
-              readOnly
-            />
+            <Directors>
+              <span>Diretores</span>
+              <input defaultValue={setDirector()} readOnly />
+            </Directors>
           </>
         )}
 

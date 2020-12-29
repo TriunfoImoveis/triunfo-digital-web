@@ -9,7 +9,7 @@ const GlobalStyle = createGlobalStyle`
   }
   html, body, #root {
     font-size: 62.5%; /* 1rem = 10px */
-    height: 100%;
+    height: 100vh;
     font-family: 'Roboto';
   }
   body {
