@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import { Form } from '@unform/web';
@@ -18,9 +18,31 @@ import {
   SaleBody,
   SaleItem,
 } from './styles';
+import api from '../../../services/api';
+
+interface IDepartament {
+  id: string;
+  name: string;
+}
 
 const ListColab: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const [city, setCity] = useState('São Luís');
+  const [departament, setDepartament] = useState<IDepartament[]>([]);
+
+  // useEffect(() => {
+  //   const loadDepartament = async () => {
+  //     const response = await api.get('/departament', {
+  //       params: {
+  //         subsidiary: city,
+  //       },
+  //     });
+  //   };
+
+  //   const loadUsers = async () => {};
+  //   loadDepartament();
+  //   loadUsers();
+  // }, []);
   const user = {
     id: '123456',
   };
