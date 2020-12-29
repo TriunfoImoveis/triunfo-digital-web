@@ -30,8 +30,11 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
       if (typeSale === 'used') {
         try {
           await submitFormUsed();
+          setLoading(false);
           toast.success('Venda cadastrada');
         } catch (err) {
+          setLoading(false);
+
           toast.error('Problema  ao cadastar');
         }
       }

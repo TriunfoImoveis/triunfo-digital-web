@@ -11,7 +11,7 @@ import TabNavigator from '../../../components/TabNavigator';
 import { Container, Content, FormContainer } from './styles';
 
 const RegisterSaleUsed: React.FC = () => {
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
 
   const nextSpeps = useCallback(() => {
     setStep(step + 1);

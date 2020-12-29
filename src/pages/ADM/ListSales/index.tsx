@@ -18,6 +18,7 @@ import {
   SaleBody,
   SaleItem,
   LoadingContainer,
+  FilterButtonGroup,
 } from './styles';
 import api from '../../../services/api';
 import { formatPrice, DateBRL } from '../../../utils/format';
@@ -141,24 +142,25 @@ const ListSales: React.FC = () => {
             </FilterDiv>
           </FiltersTop>
           <FiltersBotton>
-            <FiltersBottonItems>
-              <span>Cidade: </span>
-              <select value={city} onChange={handleSelectCity}>
-                <option value="São Luís">São Luís</option>
-                <option value="Fortaleza">Fortaleza</option>
-                <option value="Teresina">Teresina</option>
-              </select>
-            </FiltersBottonItems>
-            <FiltersBottonItems>
-              <span>Vendas: </span>
-              <select value={status} onChange={handleSelectedStatus}>
-                <option value="NAO_VALIDADO">NÃO VALIDADO</option>
-                <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
-                <option value="PAGO TOTAL">PAGO</option>
-                <option value="CAIU">CAIU</option>
-              </select>
-            </FiltersBottonItems>
-
+            <FilterButtonGroup>
+              <FiltersBottonItems>
+                <span>Cidade: </span>
+                <select value={city} onChange={handleSelectCity}>
+                  <option value="São Luís">São Luís</option>
+                  <option value="Fortaleza">Fortaleza</option>
+                  <option value="Teresina">Teresina</option>
+                </select>
+              </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Status da Venda: </span>
+                <select value={status} onChange={handleSelectedStatus}>
+                  <option value="NAO_VALIDADO">NÃO VALIDADO</option>
+                  <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
+                  <option value="PAGO TOTAL">PAGO</option>
+                  <option value="CAIU">CAIU</option>
+                </select>
+              </FiltersBottonItems>
+            </FilterButtonGroup>
             <FiltersBottonItems>
               <button type="button">Adicionar ao relatório</button>
             </FiltersBottonItems>
