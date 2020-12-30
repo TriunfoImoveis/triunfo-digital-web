@@ -142,9 +142,6 @@ export const InputGroup = styled.div`
   > div {
     flex: 1;
     padding-left: 0.8rem;
-    > div {
-      padding-left: 1.2rem;
-    }
   }
 
   > div + div {

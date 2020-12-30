@@ -129,11 +129,10 @@ export const InputGroup = styled.div`
 
 export const ButtonGroup = styled.div`
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding-left: 3.2rem;
-  padding-bottom: 1.2rem;
 
+  button + button {
+    margin-left: 0.8rem;
+  }
   button {
     display: flex;
     align-items: center;
@@ -155,10 +154,6 @@ export const ButtonGroup = styled.div`
 
       color: #c32925;
     }
-  }
-
-  > button + button {
-    margin-left: 3rem;
   }
 `;
 
