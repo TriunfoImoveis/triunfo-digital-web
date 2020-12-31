@@ -183,3 +183,8 @@ export const ButtonGroup = styled.div`
     margin-left: 3rem;
   }
 `;
+export const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;

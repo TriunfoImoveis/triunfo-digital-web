@@ -488,7 +488,6 @@ const DetailsSale: React.FC = () => {
   }));
 
   const handleUpdateSale = useCallback(async data => {
-    console.log(formRef.current?.getFieldRef('realty.enterprise'));
     console.log(data);
   }, []);
 
@@ -823,6 +822,15 @@ const DetailsSale: React.FC = () => {
                     </div>
                   ) : null}
                 </InputGroup>
+                {sale.percentage_company && (
+                  <InputGroup>
+                    <Input
+                      name="company"
+                      label="(%) da empresa"
+                      value={`${sale.company?.name} - ${sale.percentage_company}`}
+                    />
+                  </InputGroup>
+                )}
               </fieldset>
             </SaleData>
             {sale.status === 'NAO_VALIDADO' ? (

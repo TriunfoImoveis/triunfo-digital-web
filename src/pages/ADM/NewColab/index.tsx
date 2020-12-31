@@ -6,6 +6,7 @@ import React, {
   ChangeEvent,
 } from 'react';
 import { useParams } from 'react-router-dom';
+import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
@@ -23,6 +24,8 @@ import {
 import { Sync, Garb } from '../../../assets/images';
 import api from '../../../services/api';
 import Select from '../../../components/Select';
+import { unMaked, currency, DateYMD } from '../../../utils/unMasked';
+import getValidationErros from '../../../utils/getValidationErros';
 
 interface IRoteparams {
   id: string;
@@ -43,15 +46,14 @@ interface IOffice {
 
 const NewColab: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
+  const [loading, setLoading] = useState(false);
   const [pageDetails, setPageDetails] = useState(false);
   const [subsidiary, setSubsidiary] = useState<ISubsidiary[]>([]);
   const [departament, setDepartament] = useState<IDepartament[]>([]);
   const [officies, setOfficies] = useState<IOffice[]>([]);
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('');
   const [, setSelectedDepartament] = useState('');
-  const handleSubmit = useCallback(() => {
-    console.log('ok');
-  }, []);
+  const token = localStorage.getItem('@TriunfoDigital:token');
 
   const { id } = useParams<IRoteparams>();
 
@@ -123,6 +125,43 @@ const NewColab: React.FC = () => {
     label: departament.name,
     value: departament.id,
   }));
+
+  const unMasked = useCallback(() => {
+    const fone = unMaked(formRef.current?.getFieldValue('phone'));
+    formRef.current?.setFieldValue('phone', fone);
+    const goal = currency(formRef.current?.getFieldValue('goal'));
+    formRef.current?.setFieldValue('goal', goal);
+    const admissionDate = DateYMD(
+      formRef.current?.getFieldValue('admission_date'),
+    );
+    formRef.current?.setFieldValue('admission_date', admissionDate);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    formRef.current?.setErrors({});
+    unMasked();
+    const data = formRef.current?.getData();
+    try {
+      setLoading(true);
+
+      await api.post('/users', data, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success('Novo Corretor Cadastrado');
+      setLoading(false);
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formRef.current?.setErrors(erros);
+      }
+
+      toast.error('ERROR!, verifique as informações e tente novamente');
+      setLoading(false);
+    }
+  }, [unMasked, token]);
+
   return (
     <AdmLayout>
       <Container>
@@ -136,13 +175,12 @@ const NewColab: React.FC = () => {
               <Input label="Senha" name="password" type="password" />
               <Input
                 label="Confirmar Senha"
-                name="confirmed_password"
+                name="password_confirmation"
                 type="password"
               />
             </fieldset>
             <Avatar>
               <img src="https://imgur.com/I80W1Q0.png" alt="Corretor" />
-              <button type="button">Adicionar foto</button>
             </Avatar>
           </InfoLogin>
           <AdmissionsInfo>
@@ -196,7 +234,7 @@ const NewColab: React.FC = () => {
           )}
 
           <button type="submit" className="submit">
-            Cadastrar Colaborador
+            {loading ? 'Aguarde' : 'Cadastrar Colaborador'}
           </button>
         </Form>
       </Container>
