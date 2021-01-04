@@ -1,8 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
-import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
 import AdmLayout from '../../Layouts/Adm';
 import { Search } from '../../../assets/images';
 import {
@@ -25,75 +23,154 @@ interface IDepartament {
   name: string;
 }
 
-const ListColab: React.FC = () => {
-  const formRef = useRef<FormHandles>(null);
-  const [city, setCity] = useState('São Luís');
-  const [departament, setDepartament] = useState<IDepartament[]>([]);
+interface ISubsidiary {
+  id: string;
+  city: string;
+}
+interface IOffice {
+  id: string;
+  name: string;
+}
 
-  // useEffect(() => {
-  //   const loadDepartament = async () => {
-  //     const response = await api.get('/departament', {
-  //       params: {
-  //         subsidiary: city,
-  //       },
-  //     });
-  //   };
-
-  //   const loadUsers = async () => {};
-  //   loadDepartament();
-  //   loadUsers();
-  // }, []);
-  const user = {
-    id: '123456',
+interface IUser {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  departament: {
+    name: string;
   };
+  office: {
+    name: string;
+  };
+}
+const ListColab: React.FC = () => {
+  const token = localStorage.getItem('@TriunfoDigital:token');
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState<ISubsidiary>(
+    {} as ISubsidiary,
+  );
+  const [departament, setDepartament] = useState<IDepartament[]>([]);
+  const [officies, setOfficies] = useState<IOffice[]>([]);
+  const [selectedOffice, setSelectedOffice] = useState('Corretor');
+  const [users, setUsers] = useState<IUser[]>([]);
+
+  useEffect(() => {
+    const loadSubsidiaries = async () => {
+      const response = await api.get('/subsidiary');
+      setSubsidiaries(response.data);
+    };
+    const loadOfficies = async () => {
+      const response = await api.get('/office');
+      setOfficies(response.data);
+    };
+    const loadDepartament = async () => {
+      const response = await api.get('/departament', {
+        params: {
+          subsidiary: selectedSubsidiary.id,
+        },
+      });
+      setDepartament(response.data);
+    };
+    const loadUsers = async () => {
+      const response = await api.get('/users', {
+        params: {
+          city: selectedSubsidiary.city,
+          office: selectedOffice,
+        },
+      });
+      setUsers(response.data);
+    };
+
+    loadSubsidiaries();
+    loadOfficies();
+    loadUsers();
+    if (selectedSubsidiary) {
+      loadDepartament();
+    }
+  }, [selectedSubsidiary, selectedOffice]);
+
+  const handleSelectedSubsidiary = useCallback(
+    async (event: ChangeEvent<HTMLSelectElement>) => {
+      const { value } = event.target;
+      try {
+        const response = await api.get(`/subsidiary/${value}`, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        setSelectedSubsidiary(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    [token],
+  );
+  const handleSelectedOffice = useCallback(
+    async (event: ChangeEvent<HTMLSelectElement>) => {
+      const { value } = event.target;
+      setSelectedOffice(value);
+    },
+    [],
+  );
+
   return (
     <AdmLayout>
-      <Form
-        ref={formRef}
-        onSubmit={() => {
-          console.log('');
-        }}
-      >
-        <FiltersContainer>
-          <FiltersTop>
-            <Input>
-              <Search />
-              <input type="text" placeholder="Buscar por corretor" />
-            </Input>
-          </FiltersTop>
-          <FiltersBotton>
-            <FiltersBottonItems>
-              <span>Cidade: </span>
-              <select name="" id="">
-                <option>São Luís</option>
-                <option>Fortaleza</option>
-                <option>Teresina</option>
-              </select>
-            </FiltersBottonItems>
+      <FiltersContainer>
+        <FiltersTop>
+          <Input>
+            <Search />
+            <input type="text" placeholder="Buscar por corretor" />
+          </Input>
+        </FiltersTop>
+        <FiltersBotton>
+          <FiltersBottonItems>
+            <span>Cidade: </span>
+            <select onChange={handleSelectedSubsidiary} defaultValue="0">
+              <option value="0" disabled>
+                Todas
+              </option>
+              {subsidiaries.map(subsidary => (
+                <option key={subsidary.id} value={subsidary.id}>
+                  {subsidary.city}
+                </option>
+              ))}
+            </select>
+          </FiltersBottonItems>
 
-            <FiltersBottonItems>
-              <span>Departamento: </span>
-              <select name="" id="">
-                <option>Todos</option>
-                <option>Comercial</option>
-                <option>Administrativo</option>
-              </select>
-            </FiltersBottonItems>
-            <FiltersBottonItems>
-              <span>Cargo: </span>
-              <select name="" id="">
-                <option>Todos</option>
-                <option>Corretor</option>
-                <option>MQL</option>
-                <option>Finaceiro</option>
-              </select>
-            </FiltersBottonItems>
-            <FiltersBottonItems>
-              <Link to="/adm/novo-colaborador">Novo Colaborador</Link>
-            </FiltersBottonItems>
-          </FiltersBotton>
-        </FiltersContainer>
-      </Form>
+          <FiltersBottonItems>
+            <span>Departamento: </span>
+            <select defaultValue="0">
+              <option value="0" disabled>
+                Todas
+              </option>
+              {departament.map(depart => (
+                <option key={depart.id} value={depart.id}>
+                  {depart.name}
+                </option>
+              ))}
+            </select>
+          </FiltersBottonItems>
+          <FiltersBottonItems>
+            <span>Cargo: </span>
+            <select
+              onChange={handleSelectedOffice}
+              defaultValue={selectedOffice}
+            >
+              <option value="0" disabled>
+                Todas
+              </option>
+              {officies.map(office => (
+                <option key={office.id} value={office.name}>
+                  {office.name}
+                </option>
+              ))}
+            </select>
+          </FiltersBottonItems>
+          <FiltersBottonItems>
+            <Link to="/adm/novo-colaborador">Novo Colaborador</Link>
+          </FiltersBottonItems>
+        </FiltersBotton>
+      </FiltersContainer>
       <Content>
         <SaleTableContainer>
           <SaleHeader>
@@ -102,20 +179,25 @@ const ListColab: React.FC = () => {
             <HeaderItem>Departamento</HeaderItem>
             <HeaderItem>Cargo</HeaderItem>
           </SaleHeader>
-          <SaleBody>
-            <SaleItem className="avatar">
-              <img src="https://imgur.com/I80W1Q0.png" alt="Corretor" />
-            </SaleItem>
-            <SaleItem>José Corretor</SaleItem>
-            <SaleItem>Comercial</SaleItem>
-            <SaleItem>Corretor</SaleItem>
-            <SaleItem>
-              <Link to={`/adm/detalhes-colaborador/${user.id}`}>
-                <BsPencil size={15} color="#c32925" />
-                Editar
-              </Link>
-            </SaleItem>
-          </SaleBody>
+          {users.map(user => (
+            <SaleBody key={user.id}>
+              <SaleItem className="avatar">
+                <img
+                  src={user.avatar_url || 'https://imgur.com/I80W1Q0.png'}
+                  alt={user.name || 'Usuário'}
+                />
+              </SaleItem>
+              <SaleItem>{user.name}</SaleItem>
+              <SaleItem>{user.departament.name}</SaleItem>
+              <SaleItem>{user.office.name}</SaleItem>
+              <SaleItem>
+                <Link to={`/adm/detalhes-colaborador/${user.id}`}>
+                  <BsPencil size={15} color="#c32925" />
+                  Editar
+                </Link>
+              </SaleItem>
+            </SaleBody>
+          ))}
         </SaleTableContainer>
       </Content>
     </AdmLayout>
