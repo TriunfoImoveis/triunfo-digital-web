@@ -34,11 +34,6 @@ export const ModalHeader = styled.div`
     border: 0;
     margin-right: 1.6rem;
   }
-
-  .value {
-    font-size: 1.8rem;
-    color: ${({ theme }) => theme.colors.primary};
-  }
 `;
 
 export const Title = styled.span`
@@ -47,5 +42,4 @@ export const Title = styled.span`
 `;
 export const ModalBody = styled.div`
   overflow-y: auto;
-  margin-top: 3rem;
 `;
