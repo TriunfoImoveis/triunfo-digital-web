@@ -53,15 +53,26 @@ const NewColab: React.FC = () => {
   const [officies, setOfficies] = useState<IOffice[]>([]);
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('');
   const [, setSelectedDepartament] = useState('');
+  const [user, setUser] = useState({});
   const token = localStorage.getItem('@TriunfoDigital:token');
 
   const { id } = useParams<IRoteparams>();
 
   useEffect(() => {
+    const loadUser = async () => {
+      const response = await api.get(`/users/${id}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      setUser(response.data);
+    };
     if (id) {
       setPageDetails(true);
+      loadUser();
     }
-  }, [id]);
+  }, [id, token]);
 
   useEffect(() => {
     const loadSubsidiary = async () => {
@@ -166,77 +177,155 @@ const NewColab: React.FC = () => {
     <AdmLayout>
       <Container>
         <h1>NOVO COLABORADOR</h1>
-        <Form ref={formRef} onSubmit={handleSubmit}>
-          <InfoLogin>
-            <fieldset className="login">
-              <legend>INFORMAÇÕES DE LOGIN</legend>
-              <Input label="Nome Completo" name="name" />
-              <Input label="E-mail" name="email" type="email" />
-              <Input label="Senha" name="password" type="password" />
-              <Input
-                label="Confirmar Senha"
-                name="password_confirmation"
-                type="password"
-              />
-            </fieldset>
-            <Avatar>
-              <img src="https://imgur.com/I80W1Q0.png" alt="Corretor" />
-            </Avatar>
-          </InfoLogin>
-          <AdmissionsInfo>
-            <fieldset className="login">
-              <legend>INFORMAÇÕES ADMISSIONAIS</legend>
-              <InputGroup>
-                <Input label="Telefone" name="phone" mask="fone" />
-                <Input label="Meta de Venda" name="goal" mask="currency" />
-              </InputGroup>
-              <InputGroup>
-                <Select
-                  name="subsidiary"
-                  nameLabel="Filial"
-                  options={optionsSubsidiary}
-                  onChange={handleSelectedSubsidiary}
-                />
-
-                <Select
-                  name="departament"
-                  nameLabel="Departamento"
-                  options={optionsDepartament}
-                  onChange={handleSelectedDepartament}
-                />
-              </InputGroup>
-              <InputGroup>
-                <Select
-                  name="office"
-                  nameLabel="Cargo"
-                  options={optionsOffice}
-                />
+        {pageDetails ? (
+          <Form ref={formRef} onSubmit={handleSubmit} initialData={user}>
+            <InfoLogin>
+              <fieldset className="login">
+                <legend>INFORMAÇÕES DE LOGIN</legend>
+                <Input label="Nome Completo" name="name" />
+                <Input label="E-mail" name="email" type="email" />
+                <Input label="Senha" name="password" type="password" />
                 <Input
-                  mask="date"
-                  label="Data de Admissão"
-                  name="admission_date"
+                  label="Confirmar Senha"
+                  name="password_confirmation"
+                  type="password"
                 />
-              </InputGroup>
-            </fieldset>
-          </AdmissionsInfo>
+              </fieldset>
+              <Avatar>
+                <img src="https://imgur.com/I80W1Q0.png" alt="Corretor" />
+              </Avatar>
+            </InfoLogin>
+            <AdmissionsInfo>
+              <fieldset className="login">
+                <legend>INFORMAÇÕES ADMISSIONAIS</legend>
+                <InputGroup>
+                  <Input label="Telefone" name="phone" mask="fone" />
+                  <Input label="Meta de Venda" name="goal" mask="currency" />
+                </InputGroup>
+                <InputGroup>
+                  <Select
+                    name="subsidiary"
+                    nameLabel="Filial"
+                    options={optionsSubsidiary}
+                    onChange={handleSelectedSubsidiary}
+                  />
 
-          {pageDetails && (
-            <ButtonGroup>
-              <button type="button">
-                <Sync />
-                <span>Atualizar</span>
-              </button>
-              <button type="button">
-                <Garb />
-                <span>Remover</span>
-              </button>
-            </ButtonGroup>
-          )}
+                  <Select
+                    name="departament"
+                    nameLabel="Departamento"
+                    options={optionsDepartament}
+                    onChange={handleSelectedDepartament}
+                  />
+                </InputGroup>
+                <InputGroup>
+                  <Select
+                    name="office"
+                    nameLabel="Cargo"
+                    options={optionsOffice}
+                  />
+                  <Input
+                    mask="date"
+                    label="Data de Admissão"
+                    name="admission_date"
+                  />
+                </InputGroup>
+              </fieldset>
+            </AdmissionsInfo>
 
-          <button type="submit" className="submit">
-            {loading ? 'Aguarde' : 'Cadastrar Colaborador'}
-          </button>
-        </Form>
+            {pageDetails && (
+              <ButtonGroup>
+                <button type="button">
+                  <Sync />
+                  <span>Atualizar</span>
+                </button>
+                <button type="button">
+                  <Garb />
+                  <span>Remover</span>
+                </button>
+              </ButtonGroup>
+            )}
+
+            {!pageDetails && (
+              <button type="submit" className="submit">
+                {loading ? 'Aguarde' : 'Cadastrar Colaborador'}
+              </button>
+            )}
+          </Form>
+        ) : (
+          <Form ref={formRef} onSubmit={handleSubmit}>
+            <InfoLogin>
+              <fieldset className="login">
+                <legend>INFORMAÇÕES DE LOGIN</legend>
+                <Input label="Nome Completo" name="name" />
+                <Input label="E-mail" name="email" type="email" />
+                <Input label="Senha" name="password" type="password" />
+                <Input
+                  label="Confirmar Senha"
+                  name="password_confirmation"
+                  type="password"
+                />
+              </fieldset>
+              <Avatar>
+                <img src="https://imgur.com/I80W1Q0.png" alt="Corretor" />
+              </Avatar>
+            </InfoLogin>
+            <AdmissionsInfo>
+              <fieldset className="login">
+                <legend>INFORMAÇÕES ADMISSIONAIS</legend>
+                <InputGroup>
+                  <Input label="Telefone" name="phone" mask="fone" />
+                  <Input label="Meta de Venda" name="goal" mask="currency" />
+                </InputGroup>
+                <InputGroup>
+                  <Select
+                    name="subsidiary"
+                    nameLabel="Filial"
+                    options={optionsSubsidiary}
+                    onChange={handleSelectedSubsidiary}
+                  />
+
+                  <Select
+                    name="departament"
+                    nameLabel="Departamento"
+                    options={optionsDepartament}
+                    onChange={handleSelectedDepartament}
+                  />
+                </InputGroup>
+                <InputGroup>
+                  <Select
+                    name="office"
+                    nameLabel="Cargo"
+                    options={optionsOffice}
+                  />
+                  <Input
+                    mask="date"
+                    label="Data de Admissão"
+                    name="admission_date"
+                  />
+                </InputGroup>
+              </fieldset>
+            </AdmissionsInfo>
+
+            {pageDetails && (
+              <ButtonGroup>
+                <button type="button">
+                  <Sync />
+                  <span>Atualizar</span>
+                </button>
+                <button type="button">
+                  <Garb />
+                  <span>Remover</span>
+                </button>
+              </ButtonGroup>
+            )}
+
+            {!pageDetails && (
+              <button type="submit" className="submit">
+                {loading ? 'Aguarde' : 'Cadastrar Colaborador'}
+              </button>
+            )}
+          </Form>
+        )}
       </Container>
     </AdmLayout>
   );
