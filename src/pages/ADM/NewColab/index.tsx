@@ -26,6 +26,8 @@ import api from '../../../services/api';
 import Select from '../../../components/Select';
 import { unMaked, currency, DateYMD } from '../../../utils/unMasked';
 import getValidationErros from '../../../utils/getValidationErros';
+import { DateBRL, formatPrice } from '../../../utils/format';
+import { FoneMask } from '../../../utils/masked';
 
 interface IRoteparams {
   id: string;
@@ -44,6 +46,27 @@ interface IOffice {
   name: string;
 }
 
+interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  departament: {
+    id: string;
+    name: string;
+  };
+  office: {
+    id: string;
+    name: string;
+  };
+  goal: string;
+  phone: string;
+  avatar_url: string;
+  subsidiary: {
+    id: string;
+    city: string;
+  };
+}
+
 const NewColab: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
@@ -53,7 +76,7 @@ const NewColab: React.FC = () => {
   const [officies, setOfficies] = useState<IOffice[]>([]);
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('');
   const [, setSelectedDepartament] = useState('');
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState<IUser>({} as IUser);
   const token = localStorage.getItem('@TriunfoDigital:token');
 
   const { id } = useParams<IRoteparams>();
@@ -65,8 +88,14 @@ const NewColab: React.FC = () => {
           authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.data);
-      setUser(response.data);
+      const user = response.data;
+      const userFormatted = {
+        ...user,
+        goal: formatPrice(user.goal),
+        phone: FoneMask(user.phone),
+        admission_date: DateBRL(user.admission_date),
+      };
+      setUser(userFormatted);
     };
     if (id) {
       setPageDetails(true);
@@ -184,15 +213,18 @@ const NewColab: React.FC = () => {
                 <legend>INFORMAÇÕES DE LOGIN</legend>
                 <Input label="Nome Completo" name="name" />
                 <Input label="E-mail" name="email" type="email" />
-                <Input label="Senha" name="password" type="password" />
+                <Input label="Nova Senha" name="password" type="password" />
                 <Input
-                  label="Confirmar Senha"
+                  label="Confirmar Nova Senha"
                   name="password_confirmation"
                   type="password"
                 />
               </fieldset>
               <Avatar>
-                <img src="https://imgur.com/I80W1Q0.png" alt="Corretor" />
+                <img
+                  src={user.avatar_url || 'https://imgur.com/I80W1Q0.png'}
+                  alt="Corretor"
+                />
               </Avatar>
             </InfoLogin>
             <AdmissionsInfo>
@@ -204,14 +236,14 @@ const NewColab: React.FC = () => {
                 </InputGroup>
                 <InputGroup>
                   <Select
-                    name="subsidiary"
+                    name="subsidiary.id"
                     nameLabel="Filial"
                     options={optionsSubsidiary}
                     onChange={handleSelectedSubsidiary}
                   />
 
                   <Select
-                    name="departament"
+                    name="departament.id"
                     nameLabel="Departamento"
                     options={optionsDepartament}
                     onChange={handleSelectedDepartament}
@@ -258,9 +290,9 @@ const NewColab: React.FC = () => {
                 <legend>INFORMAÇÕES DE LOGIN</legend>
                 <Input label="Nome Completo" name="name" />
                 <Input label="E-mail" name="email" type="email" />
-                <Input label="Senha" name="password" type="password" />
+                <Input label="Nova Senha" name="password" type="password" />
                 <Input
-                  label="Confirmar Senha"
+                  label="Confirmar Nova Senha"
                   name="password_confirmation"
                   type="password"
                 />

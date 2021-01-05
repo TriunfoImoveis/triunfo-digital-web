@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
+import Loader from 'react-loader-spinner';
+import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
 import { Search } from '../../../assets/images';
 import {
@@ -15,6 +17,7 @@ import {
   SaleHeader,
   SaleBody,
   SaleItem,
+  LoadingContainer,
 } from './styles';
 import api from '../../../services/api';
 
@@ -45,6 +48,7 @@ interface IUser {
 }
 const ListColab: React.FC = () => {
   const token = localStorage.getItem('@TriunfoDigital:token');
+  const [loading, setLoading] = useState(false);
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
   const [selectedSubsidiary, setSelectedSubsidiary] = useState<ISubsidiary>(
     {} as ISubsidiary,
@@ -100,7 +104,7 @@ const ListColab: React.FC = () => {
         });
         setSelectedSubsidiary(response.data);
       } catch (error) {
-        console.log(error);
+        toast.error('Error ao connectar ao servidor, Contate o suporte');
       }
     },
     [token],
@@ -113,13 +117,38 @@ const ListColab: React.FC = () => {
     [],
   );
 
+  const searchUserByName = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      if (event.target.value === '') {
+        setLoading(true);
+        const response = await api.get('/users');
+        setUsers(response.data);
+        setLoading(false);
+      } else {
+        setLoading(true);
+        const response = await api.get('/users', {
+          params: {
+            name: event.target.value,
+          },
+        });
+        setUsers(response.data);
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   return (
     <AdmLayout>
       <FiltersContainer>
         <FiltersTop>
           <Input>
             <Search />
-            <input type="text" placeholder="Buscar por corretor" />
+            <input
+              type="text"
+              placeholder="Buscar por corretor"
+              onChange={searchUserByName}
+            />
           </Input>
         </FiltersTop>
         <FiltersBotton>
@@ -179,25 +208,31 @@ const ListColab: React.FC = () => {
             <HeaderItem>Departamento</HeaderItem>
             <HeaderItem>Cargo</HeaderItem>
           </SaleHeader>
-          {users.map(user => (
-            <SaleBody key={user.id}>
-              <SaleItem className="avatar">
-                <img
-                  src={user.avatar_url || 'https://imgur.com/I80W1Q0.png'}
-                  alt={user.name || 'Usuário'}
-                />
-              </SaleItem>
-              <SaleItem>{user.name}</SaleItem>
-              <SaleItem>{user.departament.name}</SaleItem>
-              <SaleItem>{user.office.name}</SaleItem>
-              <SaleItem>
-                <Link to={`/adm/detalhes-colaborador/${user.id}`}>
-                  <BsPencil size={15} color="#c32925" />
-                  Editar
-                </Link>
-              </SaleItem>
-            </SaleBody>
-          ))}
+          {users.map(user =>
+            loading ? (
+              <LoadingContainer>
+                <Loader type="Bars" color="#c32925" height={100} width={100} />
+              </LoadingContainer>
+            ) : (
+              <SaleBody key={user.id}>
+                <SaleItem className="avatar">
+                  <img
+                    src={user.avatar_url || 'https://imgur.com/I80W1Q0.png'}
+                    alt={user.name || 'Usuário'}
+                  />
+                </SaleItem>
+                <SaleItem>{user.name}</SaleItem>
+                <SaleItem>{user.departament.name}</SaleItem>
+                <SaleItem>{user.office.name}</SaleItem>
+                <SaleItem>
+                  <Link to={`/adm/detalhes-colaborador/${user.id}`}>
+                    <BsPencil size={15} color="#c32925" />
+                    Editar
+                  </Link>
+                </SaleItem>
+              </SaleBody>
+            ),
+          )}
         </SaleTableContainer>
       </Content>
     </AdmLayout>
