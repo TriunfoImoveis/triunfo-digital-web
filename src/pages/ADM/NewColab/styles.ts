@@ -142,9 +142,6 @@ export const InputGroup = styled.div`
   > div {
     flex: 1;
     padding-left: 0.8rem;
-    > div {
-      padding-left: 1.2rem;
-    }
   }
 
   > div + div {
@@ -185,4 +182,9 @@ export const ButtonGroup = styled.div`
   > button + button {
     margin-left: 3rem;
   }
+`;
+export const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;

@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
 import AdmLayout from '../../Layouts/Adm';
@@ -33,6 +33,7 @@ const ListRealtors: React.FC = () => {
   const [city, setCity] = useState<string>('São Luís');
   const [realtors, setRealtors] = useState<IRealtorData[]>([]);
   const token = localStorage.getItem('@TriunfoDigital:token');
+  const history = useHistory();
 
   useEffect(() => {
     const loadRealtors = async () => {
@@ -92,6 +93,10 @@ const ListRealtors: React.FC = () => {
     },
     [city],
   );
+
+  const handleNavigateToNewRealtor = useCallback(() => {
+    history.push(`/adm/novo-colaborador`);
+  }, [history]);
   return (
     <AdmLayout>
       <form>
@@ -117,7 +122,12 @@ const ListRealtors: React.FC = () => {
             </FiltersBottonItems>
 
             <FiltersBottonItems>
-              <button type="button">Novo Corretor</button>
+              <button
+                type="button"
+                onClick={() => handleNavigateToNewRealtor()}
+              >
+                Novo Corretor
+              </button>
             </FiltersBottonItems>
           </FiltersBotton>
         </FiltersContainer>

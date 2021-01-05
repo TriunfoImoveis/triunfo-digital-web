@@ -25,6 +25,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats' | 'date';
   maxlength?: number;
   label?: string;
+  readOnly?: boolean | undefined;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -33,6 +34,7 @@ const Input: React.FC<InputProps> = ({
   maxlength,
   icon: Icon,
   label,
+  readOnly,
   ...rest
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +63,9 @@ const Input: React.FC<InputProps> = ({
       name: fieldName,
       ref: inputRef.current,
       path: 'value',
+      clearValue: inputRef => {
+        inputRef.clear();
+      },
     });
   }, [fieldName, registerField]);
 
@@ -110,12 +115,13 @@ const Input: React.FC<InputProps> = ({
         )}
         {mask ? (
           <input
+            ref={inputRef}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
-            ref={inputRef}
             defaultValue={defaultValue}
             onKeyUp={e => masked(e)}
             maxLength={maxlength}
+            readOnly={readOnly}
             {...rest}
           />
         ) : (
@@ -125,6 +131,7 @@ const Input: React.FC<InputProps> = ({
             ref={inputRef}
             defaultValue={defaultValue}
             maxLength={maxlength}
+            readOnly={readOnly}
             {...rest}
           />
         )}

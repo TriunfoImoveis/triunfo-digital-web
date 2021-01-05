@@ -83,6 +83,12 @@ interface ISaleData {
     phone: string;
     whatsapp: string;
   };
+  installments: {
+    due_date: string;
+    id: string;
+    installment_number: number;
+    value: string;
+  }[];
   client_seller?: {
     civil_status: string;
     cpf: string;
@@ -147,6 +153,12 @@ interface IPlots {
   datePayment: string;
 }
 
+interface IInstallments {
+  due_date: string;
+  id: string;
+  installment_number: number;
+  value: string;
+}
 interface IInstallmentsData {
   installments: {
     installment_number: string;
@@ -166,8 +178,9 @@ const DetailsSale: React.FC = () => {
     buyer: true,
     builder: true,
     realtos: true,
-    saller: true,
+    seller: true,
     fall: true,
+    money: true,
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
   const [motivies, setMotivies] = useState<IOptionsData[]>([]);
@@ -182,7 +195,8 @@ const DetailsSale: React.FC = () => {
   const [directors, setDirectors] = useState<ISallers[]>([]);
   const [plots, setPlots] = useState<IPlots[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isVisibleModalFall, setIsVisibleModalFall] = useState(true);
+  const [isVisibleModalFall, setIsVisibleModalFall] = useState(false);
+  const [installments, setInstallments] = useState<IInstallments[]>([]);
   const history = useHistory();
   const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
@@ -205,6 +219,17 @@ const DetailsSale: React.FC = () => {
         const coordinator = sale.user_coordinator;
         const captavators = sale.sale_has_captivators;
         const directors = sale.users_directors;
+        if (sale.client_seller) {
+          const cpfSellerFormatted = CPFMask(sale.client_seller.cpf);
+          const dataSellerFormatted = DateBRL(sale.client_seller.date_birth);
+          const foneSellerFormatted = FoneMask(sale.client_seller.phone);
+          Object.assign(
+            sale,
+            (sale.client_seller.cpf = cpfSellerFormatted),
+            (sale.client_seller.date_birth = dataSellerFormatted),
+            (sale.client_seller.phone = foneSellerFormatted),
+          );
+        }
         const cpfFormatted = CPFMask(sale.client_buyer.cpf);
         const dataFormatted = DateBRL(sale.client_buyer.date_birth);
         const foneFormatted = FoneMask(sale.client_buyer.phone);
@@ -220,6 +245,7 @@ const DetailsSale: React.FC = () => {
           (sale.commission = commission),
           (sale.sale_date = saleDate),
         );
+        console.log(saleFormatted);
         setSale(saleFormatted);
         setSallers(sallers);
         setCoordinator(coordinator);
@@ -229,6 +255,7 @@ const DetailsSale: React.FC = () => {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
         );
+        console.log(error);
       }
     };
     const loadPropertyType = async () => {
@@ -272,6 +299,20 @@ const DetailsSale: React.FC = () => {
     formRef.current?.setData(sale);
   }, [sale]);
 
+  useEffect(() => {
+    const { installments } = sale;
+    if (installments) {
+      const installmentsFormatted = installments.map(installment => ({
+        id: installment.id,
+        installment_number: installment.installment_number,
+        value: formatPrice(Number(installment.value)),
+        due_date: DateBRL(installment.due_date),
+      }));
+      setInstallments(installmentsFormatted);
+    }
+    return;
+  }, [sale]);
+
   const addPlots = useCallback(() => {
     const listPlots = plots.slice();
     const numberPlot = Number(formRef.current?.getFieldValue('number'));
@@ -302,11 +343,25 @@ const DetailsSale: React.FC = () => {
     setPlots(listPlots);
   }, [plots]);
 
+  const handleValidSale = useCallback(async () => {
+    try {
+      await api.patch(`/sale/valid/${id}`, {
+        headers: {
+          authorization: `Token ${token}`,
+        },
+      });
+      console.log('deu');
+    } catch (error) {
+      console.log(error);
+    }
+  }, [id, token]);
+
   const handleEdit = useCallback(
     (stepForm: string): void => {
       switch (stepForm) {
         case 'property':
           setEdits({ ...edits, property: !edits.property });
+
           break;
         case 'buyer':
           setEdits({ ...edits, buyer: !edits.buyer });
@@ -314,8 +369,14 @@ const DetailsSale: React.FC = () => {
         case 'realtors':
           setEdits({ ...edits, realtos: !edits.realtos });
           break;
+        case 'seller':
+          setEdits({ ...edits, seller: !edits.seller });
+          break;
         case 'fall':
           setEdits({ ...edits, fall: false });
+          break;
+        case 'money':
+          setEdits({ ...edits, money: !edits.money });
           break;
         default:
           break;
@@ -416,11 +477,12 @@ const DetailsSale: React.FC = () => {
         due_date: DateYMD(installment.due_date),
       }));
       const newData = { installments };
-      await api.patch(`sale/valid/${id}`, newData, {
+      const response = await api.post(`installment/${id}`, newData, {
         headers: {
           authorization: `Token ${token}`,
         },
       });
+      setInstallments(response.data);
       toast.success('Parcelas adicionadas!');
       onClose();
     } catch (err) {
@@ -466,20 +528,30 @@ const DetailsSale: React.FC = () => {
     value: motive.id,
   }));
 
+  const handleUpdateSale = useCallback(async data => {
+    console.log(formRef.current?.getFieldRef('realty.enterprise'));
+    console.log(data);
+  }, []);
+
   return (
     <AdmLayout>
       <Container>
         <h1>DETALHES DA VENDA</h1>
         <Content>
-          <Form ref={formRef} onSubmit={() => console.log('ok')}>
+          <Form ref={formRef} onSubmit={handleUpdateSale}>
             <SaleData>
               <fieldset className="login">
                 <Legend>
                   <legend>IMÓVEL</legend>
-                  <button type="button" onClick={() => handleEdit('property')}>
-                    <BiEditAlt size={20} color="#C32925" />
-                    <span>editar</span>
-                  </button>
+                  {sale.status !== 'CAIU' ? (
+                    <button
+                      type="button"
+                      onClick={() => handleEdit('property')}
+                    >
+                      <BiEditAlt size={20} color="#C32925" />
+                      <span>editar</span>
+                    </button>
+                  ) : null}
                 </Legend>
 
                 <Input
@@ -531,10 +603,12 @@ const DetailsSale: React.FC = () => {
               <fieldset className="login">
                 <Legend>
                   <legend>COMPRADOR</legend>
-                  <button type="button" onClick={() => handleEdit('buyer')}>
-                    <BiEditAlt size={20} color="#C32925" />
-                    <span>editar</span>
-                  </button>
+                  {sale.status !== 'CAIU' ? (
+                    <button type="button" onClick={() => handleEdit('buyer')}>
+                      <BiEditAlt size={20} color="#C32925" />
+                      <span>editar</span>
+                    </button>
+                  ) : null}
                 </Legend>
                 <Input
                   label="Nome Completo"
@@ -607,59 +681,70 @@ const DetailsSale: React.FC = () => {
               <SaleData>
                 <fieldset className="login">
                   <Legend>
-                    <legend>VENDEDORES</legend>
-                    <button type="button" onClick={() => handleEdit('buyer')}>
-                      <BiEditAlt size={20} color="#C32925" />
-                      <span>editar</span>
-                    </button>
+                    <legend>VENDEDOR</legend>
+                    {sale.status !== 'CAIU' ? (
+                      <button
+                        type="button"
+                        onClick={() => handleEdit('seller')}
+                      >
+                        <BiEditAlt size={20} color="#C32925" />
+                        <span>editar</span>
+                      </button>
+                    ) : null}
                   </Legend>
                   <Input
                     label="Nome Completo"
-                    name="client_saller.name"
+                    name="client_seller.name"
                     placeholder="Nome Completo"
+                    readOnly={edits.seller}
                   />
                   <InputGroup>
                     <Input
                       label="CPF"
-                      name="client_saller.cpf"
+                      name="client_seller.cpf"
                       placeholder="CPF"
+                      readOnly={edits.seller}
                     />
                     <Input
                       label="Data de Nascimento"
-                      name="client_saller.date_birth"
+                      name="client_seller.date_birth"
                       placeholder="Data de Nascimento"
+                      readOnly={edits.seller}
                     />
                   </InputGroup>
                   <InputGroup>
                     <Input
                       label="Telefone"
-                      name="client_saller.phone"
+                      name="client_seller.phone"
                       placeholder="Telefone"
+                      readOnly={edits.seller}
                     />
                     <Input
                       label="E-mail"
-                      name="client_saller.email"
+                      name="client_seller.email"
                       type="email"
                       placeholder="E-mail"
+                      readOnly={edits.seller}
                     />
                   </InputGroup>
                   <InputGroup>
                     <Select
                       nameLabel="Estado Civíl"
-                      name="client_buyer.civil_status"
+                      name="client_seller.civil_status"
                       options={optionsEstadoCivil}
-                      disabled={edits.buyer}
+                      disabled={edits.seller}
                     />
                     <Select
                       nameLabel="Gênero"
-                      name="client_buyer.gender"
+                      name="client_seller.gender"
                       options={optionsGenero}
-                      disabled={edits.buyer}
+                      disabled={edits.seller}
                     />
                     <Input
                       label="Numero de Filhos"
-                      name="client_saller.number_children"
+                      name="client_seller.number_children"
                       placeholder="Número de filhos"
+                      readOnly={edits.seller}
                     />
                   </InputGroup>
                 </fieldset>
@@ -669,11 +754,16 @@ const DetailsSale: React.FC = () => {
             <SaleData>
               <fieldset className="login">
                 <Legend>
-                  <legend>CORRETOES</legend>
-                  <button type="button" onClick={() => handleEdit('realtors')}>
-                    <BiEditAlt size={20} color="#C32925" />
-                    <span>editar</span>
-                  </button>
+                  <legend>CORRETORES</legend>
+                  {sale.status !== 'CAIU' ? (
+                    <button
+                      type="button"
+                      onClick={() => handleEdit('realtors')}
+                    >
+                      <BiEditAlt size={20} color="#C32925" />
+                      <span>editar</span>
+                    </button>
+                  ) : null}
                 </Legend>
                 {sallers.map((saller, index) => (
                   <Select
@@ -706,149 +796,229 @@ const DetailsSale: React.FC = () => {
                 {coordinator && (
                   <Input name="user_coordinator.name" label="Coordenador" />
                 )}
-                {directors.map((director, index) => (
-                  <Input
-                    key={director.name}
-                    label="Diretor"
-                    name={`users_directors[${index}].name`}
-                    placeholder="Diretor"
-                    readOnly
-                  />
-                ))}
+                <InputGroup>
+                  {directors.map((director, index) => (
+                    <Input
+                      key={director.name}
+                      label="Diretor"
+                      name={`users_directors[${index}].name`}
+                      placeholder="Diretor"
+                      readOnly
+                    />
+                  ))}
+                </InputGroup>
               </fieldset>
             </SaleData>
             <SaleData>
               <fieldset className="login">
                 <Legend>
                   <legend>FINANÇAS</legend>
-                  <button type="button" onClick={() => handleEdit('realtors')}>
-                    <BiEditAlt size={20} color="#C32925" />
-                    <span>editar</span>
-                  </button>
+                  {sale.status !== 'CAIU' ? (
+                    <button type="button" onClick={() => handleEdit('money')}>
+                      <BiEditAlt size={20} color="#C32925" />
+                      <span>editar</span>
+                    </button>
+                  ) : null}
                 </Legend>
                 <InputGroup>
                   <Input
                     mask="currency"
                     name="realty_ammount"
                     label="Valor da Venda"
+                    readOnly={edits.money}
                   />
-                  <Input mask="date" name="sale_date" label="Data da Venda" />
+                  <Input
+                    mask="date"
+                    name="sale_date"
+                    label="Data da Venda"
+                    readOnly={edits.money}
+                  />
                 </InputGroup>
                 <InputGroup>
                   <Input
                     mask="porcent"
                     name="percentage_sale"
                     label="(%) da Venda"
+                    readOnly
                   />
-                  <Input mask="currency" name="commission" label="Comissão" />
+                  <Input
+                    mask="currency"
+                    name="commission"
+                    label="Comissão"
+                    readOnly
+                  />
                 </InputGroup>
                 <InputGroup className="paymment_form_container">
                   <Input
                     name="payment_type.name"
                     label="Forma de Pagamento"
                     className="paymment_form"
+                    readOnly
                   />
-                  <div>
-                    <ButtonModal type="button" onClick={showModal}>
-                      <VscEdit size={20} color="#C32925" />
-                      <span>Detalhes de pagamento</span>
-                    </ButtonModal>
-                  </div>
+                  {sale.status === 'NAO_VALIDADO' ? (
+                    <div className="button-modal">
+                      <ButtonModal type="button" onClick={showModal}>
+                        <VscEdit size={20} color="#C32925" />
+                        <span>Adicionar Parcelas</span>
+                      </ButtonModal>
+                    </div>
+                  ) : null}
                 </InputGroup>
-                {isModalVisible ? (
-                  <Modal title="Detalhes de Pagamento" onClose={onClose}>
-                    <Form ref={formModalRef} onSubmit={handleModalSubmit}>
-                      <PaymentInstallments>
-                        {plots.map((plot, index) =>
-                          index === 0 ? (
-                            <Plot key={plot.numberPlots}>
-                              <Input
-                                type="number"
-                                name={`installments[${index}].installment_number`}
-                                label="Parcela"
-                                min={1}
-                                readOnly
-                                defaultValue={index + 1}
-                              />
-                              <Input
-                                mask="currency"
-                                name={`installments[${index}].value`}
-                                label="Valor da Parcela"
-                                placeholder="R$ 0,00"
-                              />
-                              <Input
-                                mask="date"
-                                name={`installments[${index}].due_date`}
-                                label="Data de Vencimento"
-                                placeholder="07/01/2021"
-                              />
-                              <AddButton type="button" onClick={addPlots}>
-                                <FaPlus size={20} color="#C32925" />
-                              </AddButton>
-                            </Plot>
-                          ) : (
-                            <Plot key={plot.numberPlots}>
-                              <Input
-                                type="number"
-                                name={`installments[${index}].installment_number`}
-                                label="Parcela"
-                                min={1}
-                                readOnly
-                                defaultValue={index + 1}
-                              />
-                              <Input
-                                mask="currency"
-                                name={`installments[${index}].value`}
-                                label="Valor da Parcela"
-                                placeholder="R$ 0,00"
-                              />
-                              <Input
-                                mask="date"
-                                name={`installments[${index}].due_date`}
-                                label="Data de Pagamento"
-                                placeholder="07/01/2021"
-                              />
-
-                              <AddButton type="button" onClick={removePlots}>
-                                <FaMinus size={20} color="#C32925" />
-                              </AddButton>
-                            </Plot>
-                          ),
-                        )}
-                      </PaymentInstallments>
-                      <ModalFooter>
-                        <button
-                          type="button"
-                          onClick={() => formModalRef.current?.submitForm()}
-                        >
-                          <BsCheckBox size={25} />
-                          Salvar
-                        </button>
-                      </ModalFooter>
-                    </Form>
-                  </Modal>
-                ) : null}
+                {sale.percentage_company && (
+                  <InputGroup>
+                    <Input
+                      name="company"
+                      label="(%) da empresa"
+                      value={`${sale.company?.name} - ${sale.percentage_company}`}
+                    />
+                  </InputGroup>
+                )}
               </fieldset>
             </SaleData>
+            {sale.status === 'NAO_VALIDADO' ? (
+              <SaleData>
+                <fieldset className="login">
+                  <ButtonGroup>
+                    <button
+                      type="button"
+                      onClick={() => formRef.current?.submitForm()}
+                    >
+                      <Sync />
+                      <span>Atualizar</span>
+                    </button>
+                    <button type="button" onClick={showModalFall}>
+                      <Garb />
+                      <span>Caiu</span>
+                    </button>
+                  </ButtonGroup>
 
-            <ButtonGroup>
-              <button type="button">
-                <Sync />
-                <span>Atualizar</span>
-              </button>
-              <button type="button" onClick={showModalFall}>
-                <Garb />
-                <span>Caiu</span>
-              </button>
-            </ButtonGroup>
-
-            <button type="submit" className="submit">
-              <BsCheckBox size={25} />
-              <span>Validar Venda</span>
-            </button>
+                  <button
+                    type="submit"
+                    className="submit"
+                    onClick={handleValidSale}
+                  >
+                    <BsCheckBox size={25} />
+                    <span>Validar Venda</span>
+                  </button>
+                </fieldset>
+              </SaleData>
+            ) : null}
           </Form>
         </Content>
       </Container>
+      {isModalVisible ? (
+        <Modal
+          title="Detalhes de Pagamento"
+          value={sale.commission}
+          onClose={onClose}
+        >
+          <Form
+            ref={formModalRef}
+            onSubmit={handleModalSubmit}
+            initialData={installments}
+          >
+            {installments.length !== 0 ? (
+              <PaymentInstallments>
+                {installments.map((installment, index) => (
+                  <Plot key={installment.id}>
+                    <Input
+                      type="number"
+                      name={`installments[${index}].installment_number`}
+                      label="Parcela"
+                      min={1}
+                      readOnly
+                      defaultValue={installment.installment_number}
+                    />
+                    <Input
+                      mask="currency"
+                      name={`installments[${index}].value`}
+                      label="Valor da Parcela"
+                      placeholder="R$ 0,00"
+                      defaultValue={installment.value}
+                    />
+                    <Input
+                      mask="date"
+                      name={`installments[${index}].due_date`}
+                      label="Data de Vencimento"
+                      placeholder="07/01/2021"
+                      defaultValue={installment.due_date}
+                    />
+                  </Plot>
+                ))}
+              </PaymentInstallments>
+            ) : (
+              <PaymentInstallments>
+                {plots.map((plot, index) =>
+                  index === 0 ? (
+                    <Plot key={plot.numberPlots}>
+                      <Input
+                        type="number"
+                        name={`installments[${index}].installment_number`}
+                        label="Parcela"
+                        min={1}
+                        readOnly
+                        defaultValue={index + 1}
+                      />
+                      <Input
+                        mask="currency"
+                        name={`installments[${index}].value`}
+                        label="Valor da Parcela"
+                        placeholder="R$ 0,00"
+                      />
+                      <Input
+                        mask="date"
+                        name={`installments[${index}].due_date`}
+                        label="Data de Vencimento"
+                        placeholder="07/01/2021"
+                      />
+                      <AddButton type="button" onClick={addPlots}>
+                        <FaPlus size={20} color="#C32925" />
+                      </AddButton>
+                    </Plot>
+                  ) : (
+                    <Plot key={plot.numberPlots}>
+                      <Input
+                        type="number"
+                        name={`installments[${index}].installment_number`}
+                        label="Parcela"
+                        min={1}
+                        readOnly
+                        defaultValue={index + 1}
+                      />
+                      <Input
+                        mask="currency"
+                        name={`installments[${index}].value`}
+                        label="Valor da Parcela"
+                        placeholder="R$ 0,00"
+                      />
+                      <Input
+                        mask="date"
+                        name={`installments[${index}].due_date`}
+                        label="Data de Pagamento"
+                        placeholder="07/01/2021"
+                      />
+
+                      <AddButton type="button" onClick={removePlots}>
+                        <FaMinus size={20} color="#C32925" />
+                      </AddButton>
+                    </Plot>
+                  ),
+                )}
+              </PaymentInstallments>
+            )}
+
+            <ModalFooter>
+              <button
+                type="button"
+                onClick={() => formModalRef.current?.submitForm()}
+              >
+                <BsCheckBox size={25} />
+                Salvar
+              </button>
+            </ModalFooter>
+          </Form>
+        </Modal>
+      ) : null}
       {isVisibleModalFall ? (
         <Modal title="Venda Caida" onClose={onCloseFall}>
           <ContentFallForm>
