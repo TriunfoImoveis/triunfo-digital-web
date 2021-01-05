@@ -121,7 +121,6 @@ const Perfil: React.FC = () => {
           toast.error('Imagem tem que ser png/jpeg');
           toast.error('Imagem tem que ser de ate 1MB');
           setLoadingImg(false);
-          console.log(err);
         }
       }
     },

@@ -2,6 +2,19 @@ import styled from 'styled-components';
 
 export const Container = styled.div`
   position: relative;
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 0;
+
+    > span {
+      margin-left: 0.8rem;
+      color: ${({ theme }) => theme.colors.primary};
+    }
+  }
 `;
 export const MenuButton = styled.button`
   background: none;
