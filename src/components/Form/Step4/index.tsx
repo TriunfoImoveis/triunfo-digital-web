@@ -19,7 +19,9 @@ import {
   ButtonGroup,
   InputForm,
   BonusConatainer,
+  Plot,
 } from './styles';
+import Input from '../../Input';
 
 interface ISaleNewData {
   prevStep: () => void;
@@ -35,10 +37,8 @@ interface IOptionsData {
 
 const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
-  const [isNFRequired, setIsNFRequired] = useState(false);
   const [loading, setLoading] = useState(false);
   const [origins, setOrigins] = useState<IOptionsData[]>([]);
-  const [companies, setCompanies] = useState<IOptionsData[]>([]);
   const [paymentTypes, setpaymentTypes] = useState<IOptionsData[]>([]);
   const [comissionValue, setcomissionValue] = useState('');
   const [isExistBonus, setisExistBonus] = useState(false);
@@ -52,13 +52,6 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     loadOrigins();
   }, []);
 
-  useEffect(() => {
-    const loadCompany = async () => {
-      const response = await api.get('/company');
-      setCompanies(response.data);
-    };
-    loadCompany();
-  }, []);
   useEffect(() => {
     const loadPaymentType = async () => {
       if (typeSale === 'new') {
@@ -75,11 +68,6 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   const optionsOptions = origins.map(origin => ({
     label: origin.name,
     value: origin.id,
-  }));
-
-  const optionsEmpresa = companies.map(company => ({
-    label: `${company.name} - ${company.percentage}%`,
-    value: company.id,
   }));
 
   const optionsBonus = [
@@ -131,8 +119,13 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           percentage_sale: Yup.string().required(
             'Porcetagem Total da venda Obrigatória',
           ),
-          commission: Yup.string().required('Comissão Obrigatória'),
           origin: Yup.string().required('Origem da venda obrigatória'),
+          installments: Yup.array().of(
+            Yup.object().shape({
+              due_date: Yup.string().required('Data do Pagamento Obrigatório'),
+              value: Yup.string().required('Valor Obrigatório'),
+            }),
+          ),
           bonus: Yup.string(),
         });
         await schema.validate(data, {
@@ -171,21 +164,21 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         break;
     }
   }, []);
-  const handleValueIsNF = useCallback((value: string) => {
-    switch (value) {
-      case 'Y':
-        setIsNFRequired(true);
-        break;
-      case 'N':
-        setIsNFRequired(false);
-        break;
-      case '':
-        setIsNFRequired(false);
-        break;
-      default:
-        break;
-    }
-  }, []);
+  // const handleValueIsNF = useCallback((value: string) => {
+  //   switch (value) {
+  //     case 'Y':
+  //       setIsNFRequired(true);
+  //       break;
+  //     case 'N':
+  //       setIsNFRequired(false);
+  //       break;
+  //     case '':
+  //       setIsNFRequired(false);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }, []);
 
   return (
     <Container>
@@ -206,23 +199,6 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         </InputGroup>
 
         <InputGroup>
-          <Select
-            name="payment_type"
-            options={optionsFormaPagamento}
-            nameLabel="Forma de pagamento"
-          />
-        </InputGroup>
-        <BonusConatainer>
-          <span>Nescessita Nota Fiscal ?</span>
-          <CheckBox
-            name="isNF"
-            options={optionsBonus}
-            handleValue={handleValueIsNF}
-          />
-        </BonusConatainer>
-        {isNFRequired && <Select name="company" options={optionsEmpresa} />}
-
-        <InputGroup>
           <InputForm
             label="% da Venda"
             name="percentage_sale"
@@ -236,8 +212,48 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             mask="currency"
             placeholder="R$ 50.000,00"
             value={comissionValue}
+            readOnly
           />
         </InputGroup>
+        <InputGroup>
+          <Select
+            name="payment_type"
+            options={optionsFormaPagamento}
+            nameLabel="Forma de pagamento"
+          />
+        </InputGroup>
+        <Plot>
+          <Input
+            type="number"
+            name="installments[0].installment_number"
+            label="Parcela"
+            min={1}
+            readOnly
+            defaultValue={1}
+          />
+          <Input
+            mask="currency"
+            name="installments[0].value"
+            label="Valor"
+            placeholder="R$ 0,00"
+          />
+          <Input
+            mask="date"
+            name="installments[0].due_date"
+            label="Data do Pagamento"
+            placeholder="07/01/2021"
+          />
+        </Plot>
+        {/* <BonusConatainer>
+          <span>Nescessita Nota Fiscal ?</span>
+          <CheckBox
+            name="isNF"
+            options={optionsBonus}
+            handleValue={handleValueIsNF}
+          />
+        </BonusConatainer> */}
+        {/* {isNFRequired && <Select name="company" options={optionsEmpresa} />} */}
+
         <Select name="origin" options={optionsOptions} nameLabel="Origem" />
         <BonusConatainer>
           <span>Bonus da Venda ?</span>

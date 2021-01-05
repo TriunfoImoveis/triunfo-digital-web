@@ -245,7 +245,6 @@ const DetailsSale: React.FC = () => {
           (sale.commission = commission),
           (sale.sale_date = saleDate),
         );
-        console.log(saleFormatted);
         setSale(saleFormatted);
         setSallers(sallers);
         setCoordinator(coordinator);
@@ -255,7 +254,6 @@ const DetailsSale: React.FC = () => {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
         );
-        console.log(error);
       }
     };
     const loadPropertyType = async () => {
@@ -350,11 +348,12 @@ const DetailsSale: React.FC = () => {
           authorization: `Token ${token}`,
         },
       });
-      console.log('deu');
+      toast.success('Venda Validada com sucesso !');
+      history.push('/adm/lista-vendas');
     } catch (error) {
-      console.log(error);
+      toast.error('Error ao validar');
     }
-  }, [id, token]);
+  }, [id, token, history]);
 
   const handleEdit = useCallback(
     (stepForm: string): void => {
