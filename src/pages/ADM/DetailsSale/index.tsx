@@ -236,6 +236,17 @@ const DetailsSale: React.FC = () => {
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = formatPrice(sale.commission);
         const saleDate = DateBRL(sale.sale_date);
+        const { installments } = sale;
+        if (installments) {
+          const installmentsFormatted = installments.map(installment => ({
+            id: installment.id,
+            installment_number: installment.installment_number,
+            value: formatPrice(Number(installment.value)),
+            due_date: DateBRL(installment.due_date),
+          }));
+          setInstallments(installmentsFormatted);
+        }
+
         const saleFormatted = Object.assign(
           sale,
           (sale.client_buyer.cpf = cpfFormatted),
@@ -297,19 +308,12 @@ const DetailsSale: React.FC = () => {
     formRef.current?.setData(sale);
   }, [sale]);
 
-  useEffect(() => {
-    const { installments } = sale;
-    if (installments) {
-      const installmentsFormatted = installments.map(installment => ({
-        id: installment.id,
-        installment_number: installment.installment_number,
-        value: formatPrice(Number(installment.value)),
-        due_date: DateBRL(installment.due_date),
-      }));
-      setInstallments(installmentsFormatted);
-    }
-    return;
-  }, [sale]);
+  // useEffect(() => {
+
+  //     setInstallments(installmentsFormatted);
+  //   }
+  //   return;
+  // }, [sale]);
 
   const addPlots = useCallback(() => {
     const listPlots = plots.slice();
@@ -481,7 +485,14 @@ const DetailsSale: React.FC = () => {
           authorization: `Token ${token}`,
         },
       });
-      setInstallments(response.data);
+      console.log(response.data);
+      const newInstallments = response.data.map(installment => ({
+        due_date: DateBRL(installment.due_date),
+        id: installment.id,
+        installment_number: installment.installment_number,
+        value: formatPrice(installment.value),
+      }));
+      setInstallments(newInstallments);
       toast.success('Parcelas adicionadas!');
       onClose();
     } catch (err) {
@@ -863,6 +874,36 @@ const DetailsSale: React.FC = () => {
                     </div>
                   ) : null}
                 </InputGroup>
+                {installments ? (
+                  <PaymentInstallments>
+                    {installments.map((installment, index) => (
+                      <Plot>
+                        <Input
+                          type="number"
+                          name={`installments[${index}].installment_number`}
+                          label="Parcela"
+                          min={1}
+                          readOnly
+                          defaultValue={installment.installment_number}
+                        />
+                        <Input
+                          mask="currency"
+                          name={`installments[${index}].value`}
+                          label="Valor da Parcela"
+                          placeholder="R$ 0,00"
+                          defaultValue={formatPrice(Number(installment.value))}
+                        />
+                        <Input
+                          mask="date"
+                          name={`installments[${index}].due_date`}
+                          label="Data de Vencimento"
+                          placeholder="07/01/2021"
+                          defaultValue={installment.due_date}
+                        />
+                      </Plot>
+                    ))}
+                  </PaymentInstallments>
+                ) : null}
                 {sale.percentage_company && (
                   <InputGroup>
                     <Input
