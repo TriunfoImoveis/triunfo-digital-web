@@ -15,7 +15,7 @@ import { BiEditAlt } from 'react-icons/bi';
 import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
-import { FaMinus, FaPlus } from 'react-icons/fa';
+import { FaCheck, FaMinus, FaPlus } from 'react-icons/fa';
 import { VscEdit } from 'react-icons/vsc';
 import { useHistory, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -154,6 +154,8 @@ interface IInstallments {
   id?: string;
   installment_number: number;
   value: string;
+  status?: string;
+  pay_date?: string;
 }
 interface IInstallmentsData {
   installments: {
@@ -549,6 +551,30 @@ const DetailsSale: React.FC = () => {
     console.log(data);
   }, []);
 
+  const handlePayPlot = useCallback(
+    async idPlot => {
+      if (!idPlot) {
+        toast.error('Nao foi possivel validar a parcela');
+        return;
+      }
+      const today = new Date();
+      const todayFormatted = new Intl.DateTimeFormat('en-US').format(today);
+      const pay_date = { pay_date: todayFormatted };
+      try {
+        await api.patch(`/installment/paid/${idPlot}`, pay_date, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success('status do pagamento atualizado');
+        window.location.reload();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    [token],
+  );
+
   return (
     <AdmLayout>
       <Container>
@@ -913,6 +939,20 @@ const DetailsSale: React.FC = () => {
                           defaultValue={installment.due_date}
                           readOnly
                         />
+                        <Input
+                          name={`installments[${index}].status`}
+                          label="Status"
+                          defaultValue={installment.status}
+                        />
+                        {!installment.pay_date && (
+                          <AddButton
+                            type="button"
+                            className="valid"
+                            onClick={() => handlePayPlot(installment.id)}
+                          >
+                            <FaCheck size={20} color="#FCF9F9" />
+                          </AddButton>
+                        )}
                       </Plot>
                     ))}
                   </PaymentInstallments>
@@ -1006,6 +1046,7 @@ const DetailsSale: React.FC = () => {
                         placeholder="07/01/2021"
                         defaultValue={installment.due_date}
                       />
+
                       <AddButton type="button" onClick={addPlots}>
                         <FaPlus size={20} color="#C32925" />
                       </AddButton>

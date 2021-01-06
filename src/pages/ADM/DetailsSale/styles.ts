@@ -184,6 +184,18 @@ export const AddButton = styled.button`
   border: 0;
   border-radius: 0 0.4rem 0.4rem 0;
   background: ${({ theme }) => theme.colors.primaryAlpha};
+
+  &.valid {
+    margin-top: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.7rem;
+    height: 4.8rem;
+    border: 0;
+    border-radius: 0 0.4rem 0.4rem 0;
+    background: ${({ theme }) => theme.colors.success};
+  }
 `;
 
 export const ActionsButton = styled.div`
