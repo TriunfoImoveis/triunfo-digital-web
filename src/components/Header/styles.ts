@@ -51,6 +51,7 @@ export const NavItemContent = styled.div`
     margin-left: 2.4rem;
   }
   > svg {
+    width: 4rem;
     path {
       fill: #c32925;
     }
