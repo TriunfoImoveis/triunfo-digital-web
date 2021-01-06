@@ -116,3 +116,28 @@ export const BonusConatainer = styled.div`
     }
   }
 `;
+
+export const Plot = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  > div {
+    flex: 1;
+    & + div {
+      margin-left: 1.2rem;
+    }
+  }
+  @media (max-width: 500px) {
+    flex: 1;
+    flex-direction: column;
+
+    > div,
+    select {
+      width: 100%;
+      margin-top: 0;
+    }
+    div + div {
+      margin-left: 0;
+    }
+  }
+`;

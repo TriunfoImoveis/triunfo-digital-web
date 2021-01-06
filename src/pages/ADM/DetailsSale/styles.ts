@@ -264,3 +264,21 @@ export const ContentFallForm = styled.div`
     border-color: ${({ theme }) => theme.colors.borderColor};
   }
 `;
+
+export const BonusConatainer = styled.div`
+  display: flex;
+  align-items: center;
+
+  span {
+    font-size: 1.6rem;
+    color: ${({ theme }) => theme.colors.textColor};
+
+    margin-right: 0.8rem;
+  }
+
+  @media (max-width: 375px) {
+    span {
+      font-size: 1.2rem;
+    }
+  }
+`;
