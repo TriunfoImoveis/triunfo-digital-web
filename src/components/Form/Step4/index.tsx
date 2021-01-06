@@ -164,21 +164,6 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         break;
     }
   }, []);
-  // const handleValueIsNF = useCallback((value: string) => {
-  //   switch (value) {
-  //     case 'Y':
-  //       setIsNFRequired(true);
-  //       break;
-  //     case 'N':
-  //       setIsNFRequired(false);
-  //       break;
-  //     case '':
-  //       setIsNFRequired(false);
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // }, []);
 
   return (
     <Container>
@@ -244,15 +229,6 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             placeholder="07/01/2021"
           />
         </Plot>
-        {/* <BonusConatainer>
-          <span>Nescessita Nota Fiscal ?</span>
-          <CheckBox
-            name="isNF"
-            options={optionsBonus}
-            handleValue={handleValueIsNF}
-          />
-        </BonusConatainer> */}
-        {/* {isNFRequired && <Select name="company" options={optionsEmpresa} />} */}
 
         <Select name="origin" options={optionsOptions} nameLabel="Origem" />
         <BonusConatainer>

@@ -39,12 +39,14 @@ import {
   ButtonModal,
   ModalFooter,
   ContentFallForm,
+  BonusConatainer,
 } from './styles';
 import api from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
 import getValidationErros from '../../../utils/getValidationErros';
 import { DateYMD, unMaked } from '../../../utils/unMasked';
 import TextArea from '../../../components/TextArea';
+import CheckboxInput from '../../../components/CheckBox';
 
 interface IBGECityResponse {
   nome: string;
@@ -197,14 +199,24 @@ const DetailsSale: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isVisibleModalFall, setIsVisibleModalFall] = useState(false);
   const [installments, setInstallments] = useState<IInstallments[]>([]);
+  const [companies, setCompanies] = useState<IOptionsData[]>([]);
+  const [isNFRequired, setIsNFRequired] = useState(false);
   const history = useHistory();
   const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
 
   const { city } = userAuth.subsidiary;
+
   useEffect(() => {
     const plot = [{ numberPlots: 1, valuePlots: '', datePayment: '' }];
     setPlots(plot);
+  }, []);
+  useEffect(() => {
+    const loadCompany = async () => {
+      const response = await api.get('/company');
+      setCompanies(response.data);
+    };
+    loadCompany();
   }, []);
   useEffect(() => {
     const loadSale = async () => {
@@ -236,16 +248,12 @@ const DetailsSale: React.FC = () => {
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = formatPrice(sale.commission);
         const saleDate = DateBRL(sale.sale_date);
-        const { installments } = sale;
-        if (installments) {
-          const installmentsFormatted = installments.map(installment => ({
-            id: installment.id,
-            installment_number: installment.installment_number,
-            value: formatPrice(Number(installment.value)),
-            due_date: DateBRL(installment.due_date),
-          }));
-          setInstallments(installmentsFormatted);
-        }
+        const installmentData = sale.installments;
+        const newInstallments = installmentData.map(i => ({
+          ...i,
+          due_date: DateBRL(i.due_date),
+          value: formatPrice(Number(i.value)),
+        }));
 
         const saleFormatted = Object.assign(
           sale,
@@ -256,7 +264,12 @@ const DetailsSale: React.FC = () => {
           (sale.commission = commission),
           (sale.sale_date = saleDate),
         );
-        setSale(saleFormatted);
+        const newSaleFormatted: ISaleData = {
+          ...saleFormatted,
+          installments: newInstallments,
+        };
+        setInstallments(newInstallments);
+        setSale(newSaleFormatted);
         setSallers(sallers);
         setCoordinator(coordinator);
         setcaptavators(captavators);
@@ -307,13 +320,6 @@ const DetailsSale: React.FC = () => {
   useEffect(() => {
     formRef.current?.setData(sale);
   }, [sale]);
-
-  // useEffect(() => {
-
-  //     setInstallments(installmentsFormatted);
-  //   }
-  //   return;
-  // }, [sale]);
 
   const addPlots = useCallback(() => {
     const listPlots = plots.slice();
@@ -480,19 +486,11 @@ const DetailsSale: React.FC = () => {
         due_date: DateYMD(installment.due_date),
       }));
       const newData = { installments };
-      const response = await api.post(`installment/${id}`, newData, {
+      await api.post(`installment/${id}`, newData, {
         headers: {
           authorization: `Token ${token}`,
         },
       });
-      console.log(response.data);
-      const newInstallments = response.data.map(installment => ({
-        due_date: DateBRL(installment.due_date),
-        id: installment.id,
-        installment_number: installment.installment_number,
-        value: formatPrice(installment.value),
-      }));
-      setInstallments(newInstallments);
       toast.success('Parcelas adicionadas!');
       onClose();
     } catch (err) {
@@ -517,10 +515,20 @@ const DetailsSale: React.FC = () => {
     label: property.name,
   }));
 
+  const optionsEmpresa = companies.map(company => ({
+    value: company.id,
+    label: company.name,
+  }));
+
   const optionsRealtors = realtos.map(realtor => ({
     label: realtor.name,
     value: realtor.id,
   }));
+
+  const optionsBonus = [
+    { id: '1', label: 'Sim', value: 'Y' },
+    { id: '2', label: 'Não', value: 'N' },
+  ];
 
   const optionsEstadoCivil = [
     { label: 'Casado(a)', value: 'CASADO(A)' },
@@ -537,6 +545,22 @@ const DetailsSale: React.FC = () => {
     label: motive.description,
     value: motive.id,
   }));
+
+  const handleValueIsNF = useCallback((value: string) => {
+    switch (value) {
+      case 'Y':
+        setIsNFRequired(true);
+        break;
+      case 'N':
+        setIsNFRequired(false);
+        break;
+      case '':
+        setIsNFRequired(false);
+        break;
+      default:
+        break;
+    }
+  }, []);
 
   const handleUpdateSale = useCallback(async data => {
     console.log(formRef.current?.getFieldRef('realty.enterprise'));
@@ -869,15 +893,20 @@ const DetailsSale: React.FC = () => {
                     <div className="button-modal">
                       <ButtonModal type="button" onClick={showModal}>
                         <VscEdit size={20} color="#C32925" />
-                        <span>Adicionar Parcelas</span>
+                        <span>
+                          {installments
+                            ? 'Editar Parcelas'
+                            : 'Adicionar Parcelas'}
+                        </span>
                       </ButtonModal>
                     </div>
                   ) : null}
                 </InputGroup>
+
                 {installments ? (
                   <PaymentInstallments>
                     {installments.map((installment, index) => (
-                      <Plot>
+                      <Plot key={installment.id}>
                         <Input
                           type="number"
                           name={`installments[${index}].installment_number`}
@@ -891,7 +920,8 @@ const DetailsSale: React.FC = () => {
                           name={`installments[${index}].value`}
                           label="Valor da Parcela"
                           placeholder="R$ 0,00"
-                          defaultValue={formatPrice(Number(installment.value))}
+                          defaultValue={installment.value}
+                          readOnly
                         />
                         <Input
                           mask="date"
@@ -899,17 +929,31 @@ const DetailsSale: React.FC = () => {
                           label="Data de Vencimento"
                           placeholder="07/01/2021"
                           defaultValue={installment.due_date}
+                          readOnly
                         />
                       </Plot>
                     ))}
                   </PaymentInstallments>
                 ) : null}
-                {sale.percentage_company && (
+                <BonusConatainer>
+                  <span>Nescessita Nota Fiscal ?</span>
+                  <CheckboxInput
+                    name="isNF"
+                    options={optionsBonus}
+                    handleValue={handleValueIsNF}
+                  />
+                </BonusConatainer>
+                {isNFRequired && (
                   <InputGroup>
-                    <Input
+                    <Select
+                      nameLabel="Empresa"
                       name="company"
-                      label="(%) da empresa"
-                      value={`${sale.company?.name} - ${sale.percentage_company}`}
+                      options={optionsEmpresa}
+                    />
+                    <Input
+                      name="porcent_company"
+                      label="% do Imposto"
+                      mask="porcent"
                     />
                   </InputGroup>
                 )}
