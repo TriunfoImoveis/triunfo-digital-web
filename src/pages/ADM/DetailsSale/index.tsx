@@ -149,15 +149,9 @@ interface ISaleData {
   }[];
 }
 
-interface IPlots {
-  numberPlots: number;
-  valuePlots: string;
-  datePayment: string;
-}
-
 interface IInstallments {
   due_date: string;
-  id: string;
+  id?: string;
   installment_number: number;
   value: string;
 }
@@ -195,7 +189,6 @@ const DetailsSale: React.FC = () => {
   const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
-  const [plots, setPlots] = useState<IPlots[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isVisibleModalFall, setIsVisibleModalFall] = useState(false);
   const [installments, setInstallments] = useState<IInstallments[]>([]);
@@ -207,10 +200,6 @@ const DetailsSale: React.FC = () => {
 
   const { city } = userAuth.subsidiary;
 
-  useEffect(() => {
-    const plot = [{ numberPlots: 1, valuePlots: '', datePayment: '' }];
-    setPlots(plot);
-  }, []);
   useEffect(() => {
     const loadCompany = async () => {
       const response = await api.get('/company');
@@ -322,34 +311,26 @@ const DetailsSale: React.FC = () => {
   }, [sale]);
 
   const addPlots = useCallback(() => {
-    const listPlots = plots.slice();
-    const numberPlot = Number(formRef.current?.getFieldValue('number'));
-    const valuePlot: string = formRef.current?.getFieldValue('value_plot');
-    const datePlot: string = formRef.current?.getFieldValue('date_plot');
+    const listPlots = installments.slice();
+    const numberPlot = Number(
+      formRef.current?.getFieldValue(
+        `installments[${installments.length - 1}].installment_number`,
+      ),
+    );
 
-    if (listPlots[0].numberPlots === numberPlot) {
-      listPlots[0].datePayment = datePlot;
-      listPlots[0].valuePlots = valuePlot;
-      listPlots.push({
-        numberPlots: numberPlot + 1,
-        datePayment: '',
-        valuePlots: '',
-      });
-    } else {
-      listPlots.push({
-        numberPlots: numberPlot + 1,
-        datePayment: '',
-        valuePlots: '',
-      });
-    }
-    setPlots(listPlots);
-  }, [plots]);
+    listPlots.push({
+      installment_number: numberPlot + 1,
+      due_date: '',
+      value: '',
+    });
+    setInstallments(listPlots);
+  }, [installments]);
   const removePlots = useCallback(() => {
-    const listPlots = plots.slice();
+    const listPlots = installments.slice();
     listPlots.pop();
 
-    setPlots(listPlots);
-  }, [plots]);
+    setInstallments(listPlots);
+  }, [installments]);
 
   const handleValidSale = useCallback(async () => {
     try {
@@ -493,6 +474,7 @@ const DetailsSale: React.FC = () => {
       });
       toast.success('Parcelas adicionadas!');
       onClose();
+      window.location.reload();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
@@ -906,7 +888,7 @@ const DetailsSale: React.FC = () => {
                 {installments ? (
                   <PaymentInstallments>
                     {installments.map((installment, index) => (
-                      <Plot key={installment.id}>
+                      <Plot key={installment.installment_number}>
                         <Input
                           type="number"
                           name={`installments[${index}].installment_number`}
@@ -950,11 +932,7 @@ const DetailsSale: React.FC = () => {
                       name="company"
                       options={optionsEmpresa}
                     />
-                    <Input
-                      name="porcent_company"
-                      label="% do Imposto"
-                      mask="porcent"
-                    />
+                    <Input name="porcent_company" label="% do Imposto" />
                   </InputGroup>
                 )}
               </fieldset>
@@ -1003,83 +981,58 @@ const DetailsSale: React.FC = () => {
           >
             {installments.length !== 0 ? (
               <PaymentInstallments>
-                {installments.map((installment, index) => (
-                  <Plot key={installment.id}>
-                    <Input
-                      type="number"
-                      name={`installments[${index}].installment_number`}
-                      label="Parcela"
-                      min={1}
-                      readOnly
-                      defaultValue={installment.installment_number}
-                    />
-                    <Input
-                      mask="currency"
-                      name={`installments[${index}].value`}
-                      label="Valor da Parcela"
-                      placeholder="R$ 0,00"
-                      defaultValue={installment.value}
-                    />
-                    <Input
-                      mask="date"
-                      name={`installments[${index}].due_date`}
-                      label="Data de Vencimento"
-                      placeholder="07/01/2021"
-                      defaultValue={installment.due_date}
-                    />
-                  </Plot>
-                ))}
-              </PaymentInstallments>
-            ) : (
-              <PaymentInstallments>
-                {plots.map((plot, index) =>
+                {installments.map((installment, index) =>
                   index === 0 ? (
-                    <Plot key={plot.numberPlots}>
+                    <Plot key={installment.installment_number}>
                       <Input
                         type="number"
                         name={`installments[${index}].installment_number`}
                         label="Parcela"
                         min={1}
                         readOnly
-                        defaultValue={index + 1}
+                        defaultValue={installment.installment_number}
                       />
                       <Input
                         mask="currency"
                         name={`installments[${index}].value`}
                         label="Valor da Parcela"
                         placeholder="R$ 0,00"
+                        defaultValue={installment.value}
                       />
                       <Input
                         mask="date"
                         name={`installments[${index}].due_date`}
                         label="Data de Vencimento"
                         placeholder="07/01/2021"
+                        defaultValue={installment.due_date}
                       />
                       <AddButton type="button" onClick={addPlots}>
                         <FaPlus size={20} color="#C32925" />
                       </AddButton>
                     </Plot>
                   ) : (
-                    <Plot key={plot.numberPlots}>
+                    <Plot key={installment.installment_number}>
                       <Input
                         type="number"
                         name={`installments[${index}].installment_number`}
                         label="Parcela"
                         min={1}
                         readOnly
-                        defaultValue={index + 1}
+                        defaultValue={installment.installment_number}
                       />
                       <Input
                         mask="currency"
                         name={`installments[${index}].value`}
                         label="Valor da Parcela"
                         placeholder="R$ 0,00"
+                        defaultValue={installment.value}
                       />
                       <Input
                         mask="date"
                         name={`installments[${index}].due_date`}
                         label="Data de Pagamento"
                         placeholder="07/01/2021"
+                        defaultValue={installment.due_date}
                       />
 
                       <AddButton type="button" onClick={removePlots}>
@@ -1089,7 +1042,7 @@ const DetailsSale: React.FC = () => {
                   ),
                 )}
               </PaymentInstallments>
-            )}
+            ) : null}
 
             <ModalFooter>
               <button

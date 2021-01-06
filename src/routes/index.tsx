@@ -14,6 +14,7 @@ import ListRealtors from '../pages/ADM/ListRealtors';
 import ListColab from '../pages/ADM/ListColab';
 import NewColab from '../pages/ADM/NewColab';
 import DatailSale from '../pages/ADM/DetailsSale';
+import ReportSale from '../pages/ADM/ReportSale';
 import Perfil from '../pages/Perfil';
 
 const Routes: React.FC = () => (
@@ -35,6 +36,7 @@ const Routes: React.FC = () => (
       isPrivate
     />
     <Route path="/adm/detalhes-vendas/:id" component={DatailSale} isPrivate />
+    <Route path="/adm/relatorio-vendas" component={ReportSale} isPrivate />
   </Switch>
 );
 

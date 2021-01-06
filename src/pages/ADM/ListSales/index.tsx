@@ -162,7 +162,15 @@ const ListSales: React.FC = () => {
               </FiltersBottonItems>
             </FilterButtonGroup>
             <FiltersBottonItems>
-              <button type="button">Adicionar ao relatório</button>
+              <Link
+                to={{
+                  pathname: '/adm/relatorio-vendas',
+                  state: { sales },
+                }}
+                target="_blank"
+              >
+                Adicionar ao relatório
+              </Link>
             </FiltersBottonItems>
           </FiltersBotton>
         </FiltersContainer>
