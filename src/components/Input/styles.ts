@@ -4,6 +4,7 @@ interface ContainerProps {
   isFocused: boolean;
   isFilled: boolean;
   isErrored: boolean;
+  status?: string;
 }
 
 export const ContainerWrapper = styled.div`
@@ -50,6 +51,18 @@ export const Container = styled.div<ContainerProps>`
     props.isFilled &&
     css`
       color: ${({ theme }) => theme.colors.primary};
+    `}
+    ${props =>
+    props.status === 'PENDENTE' &&
+    css`
+      background-color: ${({ theme }) => theme.colors.warningAlpha};
+      border-color: ${({ theme }) => theme.colors.warningAlpha};
+    `}
+    ${props =>
+    props.status === 'PAGO' &&
+    css`
+      background-color: ${({ theme }) => theme.colors.successAlpha};
+      border-color: ${({ theme }) => theme.colors.successAlpha};
     `}
 
 

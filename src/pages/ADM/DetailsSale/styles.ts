@@ -160,6 +160,19 @@ export const ButtonGroup = styled.div`
 export const PaymentInstallments = styled.div`
   display: flex;
   flex-direction: column;
+
+  > span {
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    margin: 0.8rem 0;
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  > strong {
+    font-size: 1.4rem;
+    color: ${({ theme }) => theme.colors.textColor};
+  }
 `;
 
 export const Plot = styled.div`

@@ -26,6 +26,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   maxlength?: number;
   label?: string;
   readOnly?: boolean | undefined;
+  status?: 'PAGO' | 'PENDENTE';
 }
 
 const Input: React.FC<InputProps> = ({
@@ -35,6 +36,7 @@ const Input: React.FC<InputProps> = ({
   icon: Icon,
   label,
   readOnly,
+  status,
   ...rest
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,6 +109,7 @@ const Input: React.FC<InputProps> = ({
         isErrored={errorField}
         isFilled={isFilled}
         isFocused={isFocused}
+        status={status}
       >
         {Icon && (
           <IconContainer>
