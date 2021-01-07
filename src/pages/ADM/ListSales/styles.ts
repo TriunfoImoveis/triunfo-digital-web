@@ -129,10 +129,13 @@ export const FiltersBottonItems = styled.div`
     font-size: 1.8rem;
   }
 
-  button[type='button'] {
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 17.1rem;
     height: 4.8rem;
-
+    font-size: 1.4rem;
     background: #2d9cdb;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 4px;

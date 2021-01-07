@@ -2,7 +2,6 @@ import React from 'react';
 
 import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
-import { GrUserAdmin } from 'react-icons/gr';
 import { useAuth } from '../../context/AuthContext';
 import {
   LogoHeader,
@@ -12,6 +11,7 @@ import {
   Realter,
   Sale,
   Collaborators,
+  AdmLogo,
 } from '../../assets/images';
 
 import MenuResponsive from '../MenuResponsive';
@@ -54,7 +54,7 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
         <NavBarContainer>
           {userAuth.office.name === 'Administrador' && (
             <NavItemContent>
-              <GrUserAdmin size={20} color="#C32925" />
+              <AdmLogo />
               <Link to="/adm/lista-vendas">Administrativo</Link>
             </NavItemContent>
           )}

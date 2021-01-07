@@ -104,6 +104,14 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       'commission',
       currency(formRef.current?.getFieldValue('commission')),
     );
+    formRef.current?.setFieldValue(
+      'installment.value',
+      currency(formRef.current.getFieldValue('installment.value')),
+    );
+    formRef.current?.setFieldValue(
+      'installment.due_date',
+      DateYMD(formRef.current.getFieldValue('installment.due_date')),
+    );
   }, []);
 
   const handleSubmit = useCallback(
@@ -210,7 +218,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         <Plot>
           <Input
             type="number"
-            name="installments[0].installment_number"
+            name="installment.installment_number"
             label="Parcela"
             min={1}
             readOnly
@@ -218,13 +226,13 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           />
           <Input
             mask="currency"
-            name="installments[0].value"
+            name="installment.value"
             label="Valor"
             placeholder="R$ 0,00"
           />
           <Input
             mask="date"
-            name="installments[0].due_date"
+            name="installment.due_date"
             label="Data do Pagamento"
             placeholder="07/01/2021"
           />

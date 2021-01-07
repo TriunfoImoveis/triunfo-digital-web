@@ -17,11 +17,15 @@ declare module 'styled-components' {
       success: string;
       successLight?: string;
       successDark?: string;
+      successAlpha: string;
 
       dangerLight?: string;
       danger: string;
       dangerDark?: string;
       borderColor?: string;
+
+      warning?: string;
+      warningAlpha: string;
 
       background: string;
       textColor?: string;

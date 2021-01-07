@@ -432,3 +432,23 @@ export const LoadingContainer = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
+export const SelectSubsidiary = styled.div`
+  select {
+    border: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 500px) {
+    select {
+      font-size: 1.4rem;
+    }
+  }
+  @media (max-width: 375px) {
+    select {
+      font-size: 1.2rem;
+    }
+  }
+`;

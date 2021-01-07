@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import Loader from 'react-loader-spinner';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/Header';
@@ -23,6 +23,7 @@ import {
   VGV,
   ButtonGroup,
   LoadingContainer,
+  SelectSubsidiary,
 } from './styles';
 import { formatPrice } from '../../utils/format';
 import api from '../../services/api';
@@ -38,6 +39,7 @@ const Ranking: React.FC = () => {
   const [realtors, setRealtors] = useState<IRealtorData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(false);
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState('São Luís');
   const [token] = useState(() => localStorage.getItem('@TriunfoDigital:token'));
   const { userAuth } = useAuth();
 
@@ -66,8 +68,38 @@ const Ranking: React.FC = () => {
         setLoading(false);
       }
     };
-    loadRanking();
-  }, [token, userAuth.subsidiary.city]);
+    const loadRankingAdm = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get('/ranking', {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+          params: {
+            city: selectedSubsidiary,
+          },
+        });
+        const ranking = response.data;
+        const rankingFormatted = ranking.map(r => ({
+          id: r.id,
+          avatar_url: r.avatar_url,
+          name: r.name,
+          vgv: formatPrice(r.vgv),
+        }));
+        setRealtors(rankingFormatted);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+      }
+    };
+
+    userAuth.office.name === 'Administrador' ? loadRankingAdm() : loadRanking();
+  }, [
+    token,
+    userAuth.subsidiary.city,
+    selectedSubsidiary,
+    userAuth.office.name,
+  ]);
 
   const handleSwichVGVToYear = async (filter: string) => {
     const month = new Date().getMonth();
@@ -82,7 +114,10 @@ const Ranking: React.FC = () => {
               authorization: `Bearer ${token}`,
             },
             params: {
-              city: userAuth.subsidiary.city,
+              city:
+                userAuth.office.name === 'Administrador'
+                  ? selectedSubsidiary
+                  : userAuth.subsidiary.city,
               month: monthSystem.toString(),
             },
           });
@@ -130,12 +165,33 @@ const Ranking: React.FC = () => {
     }
   };
 
+  const handleSelectSubsidiary = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const subsidiaryCity = event.target.value;
+      setSelectedSubsidiary(subsidiaryCity);
+    },
+    [],
+  );
+
   return (
     <Container>
       <Header />
       <BackgroundImage />
       <Content>
         <Title>Top Five</Title>
+        {userAuth.office.name === 'Administrador' && (
+          <SelectSubsidiary>
+            <select
+              defaultValue={selectedSubsidiary}
+              onChange={handleSelectSubsidiary}
+            >
+              <option value="São Luís">São Luís</option>
+              <option value="Fortaleza">Fortaleza</option>
+              <option value="Teresina">Teresina</option>
+            </select>
+          </SelectSubsidiary>
+        )}
+
         <RankingContainer>
           <LabelContainer>
             <div />

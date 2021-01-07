@@ -15,7 +15,7 @@ import { BiEditAlt } from 'react-icons/bi';
 import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
-import { FaMinus, FaPlus } from 'react-icons/fa';
+import { FaCheck, FaMinus, FaPlus } from 'react-icons/fa';
 import { VscEdit } from 'react-icons/vsc';
 import { useHistory, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -149,17 +149,13 @@ interface ISaleData {
   }[];
 }
 
-interface IPlots {
-  numberPlots: number;
-  valuePlots: string;
-  datePayment: string;
-}
-
 interface IInstallments {
   due_date: string;
-  id: string;
+  id?: string;
   installment_number: number;
   value: string;
+  status?: string;
+  pay_date?: string;
 }
 interface IInstallmentsData {
   installments: {
@@ -195,10 +191,10 @@ const DetailsSale: React.FC = () => {
   const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
-  const [plots, setPlots] = useState<IPlots[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isVisibleModalFall, setIsVisibleModalFall] = useState(false);
   const [installments, setInstallments] = useState<IInstallments[]>([]);
+  const [installmentsPay, setInstallmentsPay] = useState<IInstallments[]>([]);
   const [companies, setCompanies] = useState<IOptionsData[]>([]);
   const [isNFRequired, setIsNFRequired] = useState(false);
   const history = useHistory();
@@ -207,10 +203,6 @@ const DetailsSale: React.FC = () => {
 
   const { city } = userAuth.subsidiary;
 
-  useEffect(() => {
-    const plot = [{ numberPlots: 1, valuePlots: '', datePayment: '' }];
-    setPlots(plot);
-  }, []);
   useEffect(() => {
     const loadCompany = async () => {
       const response = await api.get('/company');
@@ -253,6 +245,7 @@ const DetailsSale: React.FC = () => {
           ...i,
           due_date: DateBRL(i.due_date),
           value: formatPrice(Number(i.value)),
+          pay_date: i.pay_date ? DateBRL(i.pay_date) : null,
         }));
 
         const saleFormatted = Object.assign(
@@ -268,7 +261,11 @@ const DetailsSale: React.FC = () => {
           ...saleFormatted,
           installments: newInstallments,
         };
+        const installmentPay = newInstallments.filter(
+          installment => installment.status === 'PAGO',
+        );
         setInstallments(newInstallments);
+        setInstallmentsPay(installmentPay);
         setSale(newSaleFormatted);
         setSallers(sallers);
         setCoordinator(coordinator);
@@ -322,34 +319,26 @@ const DetailsSale: React.FC = () => {
   }, [sale]);
 
   const addPlots = useCallback(() => {
-    const listPlots = plots.slice();
-    const numberPlot = Number(formRef.current?.getFieldValue('number'));
-    const valuePlot: string = formRef.current?.getFieldValue('value_plot');
-    const datePlot: string = formRef.current?.getFieldValue('date_plot');
+    const listPlots = installments.slice();
+    const numberPlot = Number(
+      formRef.current?.getFieldValue(
+        `installments[${installments.length - 1}].installment_number`,
+      ),
+    );
 
-    if (listPlots[0].numberPlots === numberPlot) {
-      listPlots[0].datePayment = datePlot;
-      listPlots[0].valuePlots = valuePlot;
-      listPlots.push({
-        numberPlots: numberPlot + 1,
-        datePayment: '',
-        valuePlots: '',
-      });
-    } else {
-      listPlots.push({
-        numberPlots: numberPlot + 1,
-        datePayment: '',
-        valuePlots: '',
-      });
-    }
-    setPlots(listPlots);
-  }, [plots]);
+    listPlots.push({
+      installment_number: numberPlot + 1,
+      due_date: '',
+      value: '',
+    });
+    setInstallments(listPlots);
+  }, [installments]);
   const removePlots = useCallback(() => {
-    const listPlots = plots.slice();
+    const listPlots = installments.slice();
     listPlots.pop();
 
-    setPlots(listPlots);
-  }, [plots]);
+    setInstallments(listPlots);
+  }, [installments]);
 
   const handleValidSale = useCallback(async () => {
     try {
@@ -493,6 +482,7 @@ const DetailsSale: React.FC = () => {
       });
       toast.success('Parcelas adicionadas!');
       onClose();
+      window.location.reload();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
@@ -566,6 +556,30 @@ const DetailsSale: React.FC = () => {
     console.log(formRef.current?.getFieldRef('realty.enterprise'));
     console.log(data);
   }, []);
+
+  const handlePayPlot = useCallback(
+    async idPlot => {
+      if (!idPlot) {
+        toast.error('Nao foi possivel validar a parcela');
+        return;
+      }
+      const today = new Date();
+      const todayFormatted = new Intl.DateTimeFormat('en-US').format(today);
+      const pay_date = { pay_date: todayFormatted };
+      try {
+        await api.patch(`/installment/paid/${idPlot}`, pay_date, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success('status do pagamento atualizado');
+        window.location.reload();
+      } catch (error) {
+        toast.success('Não foi possível confirmar o pagamento');
+      }
+    },
+    [token],
+  );
 
   return (
     <AdmLayout>
@@ -905,34 +919,94 @@ const DetailsSale: React.FC = () => {
 
                 {installments ? (
                   <PaymentInstallments>
-                    {installments.map((installment, index) => (
-                      <Plot key={installment.id}>
-                        <Input
-                          type="number"
-                          name={`installments[${index}].installment_number`}
-                          label="Parcela"
-                          min={1}
-                          readOnly
-                          defaultValue={installment.installment_number}
-                        />
-                        <Input
-                          mask="currency"
-                          name={`installments[${index}].value`}
-                          label="Valor da Parcela"
-                          placeholder="R$ 0,00"
-                          defaultValue={installment.value}
-                          readOnly
-                        />
-                        <Input
-                          mask="date"
-                          name={`installments[${index}].due_date`}
-                          label="Data de Vencimento"
-                          placeholder="07/01/2021"
-                          defaultValue={installment.due_date}
-                          readOnly
-                        />
-                      </Plot>
-                    ))}
+                    <span>Parcelas Pendentes</span>
+                    {installments.map(
+                      (installment, index) =>
+                        installment.status === 'PENDENTE' && (
+                          <Plot key={installment.installment_number}>
+                            <Input
+                              type="number"
+                              name={`installments[${index}].installment_number`}
+                              label="Parcela"
+                              min={1}
+                              readOnly
+                              defaultValue={installment.installment_number}
+                            />
+                            <Input
+                              mask="currency"
+                              name={`installments[${index}].value`}
+                              label="Valor da Parcela"
+                              placeholder="R$ 0,00"
+                              defaultValue={installment.value}
+                              readOnly
+                            />
+                            <Input
+                              mask="date"
+                              name={`installments[${index}].due_date`}
+                              label="Data de Vencimento"
+                              placeholder="07/01/2021"
+                              defaultValue={installment.due_date}
+                              readOnly
+                            />
+                            <Input
+                              name={`installments[${index}].status`}
+                              label="Status"
+                              defaultValue={installment.status}
+                              status={installment.status}
+                              readOnly
+                            />
+                            {!installment.pay_date && (
+                              <AddButton
+                                type="button"
+                                className="valid"
+                                onClick={() => handlePayPlot(installment.id)}
+                              >
+                                <FaCheck size={20} color="#FCF9F9" />
+                              </AddButton>
+                            )}
+                          </Plot>
+                        ),
+                    )}
+                    <span>Parcelas Pagas</span>
+                    {installmentsPay.length > 0 ? (
+                      installmentsPay.map((installment, index) => (
+                        <Plot key={installment.installment_number}>
+                          <Input
+                            type="number"
+                            name={`installments[${index}].installment_number`}
+                            label="Parcela"
+                            min={1}
+                            readOnly
+                            defaultValue={installment.installment_number}
+                          />
+                          <Input
+                            mask="currency"
+                            name={`installments[${index}].value`}
+                            label="Valor da Parcela"
+                            placeholder="R$ 0,00"
+                            defaultValue={installment.value}
+                            readOnly
+                          />
+                          <Input
+                            mask="date"
+                            name={`installments[${index}].due_date`}
+                            label="Data de Pagamento"
+                            placeholder="07/01/2021"
+                            defaultValue={installment.pay_date}
+                            readOnly
+                          />
+                          <Input
+                            name={`installments[${index}].status`}
+                            label="Status"
+                            defaultValue={installment.status}
+                            status="PAGO"
+                            readOnly
+                          />
+                        </Plot>
+                      ))
+                    ) : (
+                      <strong>Nehuma Parcela paga</strong>
+                    )}
                   </PaymentInstallments>
                 ) : null}
                 <BonusConatainer>
@@ -950,11 +1024,7 @@ const DetailsSale: React.FC = () => {
                       name="company"
                       options={optionsEmpresa}
                     />
-                    <Input
-                      name="porcent_company"
-                      label="% do Imposto"
-                      mask="porcent"
-                    />
+                    <Input name="porcent_company" label="% do Imposto" />
                   </InputGroup>
                 )}
               </fieldset>
@@ -1003,83 +1073,59 @@ const DetailsSale: React.FC = () => {
           >
             {installments.length !== 0 ? (
               <PaymentInstallments>
-                {installments.map((installment, index) => (
-                  <Plot key={installment.id}>
-                    <Input
-                      type="number"
-                      name={`installments[${index}].installment_number`}
-                      label="Parcela"
-                      min={1}
-                      readOnly
-                      defaultValue={installment.installment_number}
-                    />
-                    <Input
-                      mask="currency"
-                      name={`installments[${index}].value`}
-                      label="Valor da Parcela"
-                      placeholder="R$ 0,00"
-                      defaultValue={installment.value}
-                    />
-                    <Input
-                      mask="date"
-                      name={`installments[${index}].due_date`}
-                      label="Data de Vencimento"
-                      placeholder="07/01/2021"
-                      defaultValue={installment.due_date}
-                    />
-                  </Plot>
-                ))}
-              </PaymentInstallments>
-            ) : (
-              <PaymentInstallments>
-                {plots.map((plot, index) =>
+                {installments.map((installment, index) =>
                   index === 0 ? (
-                    <Plot key={plot.numberPlots}>
+                    <Plot key={installment.installment_number}>
                       <Input
                         type="number"
                         name={`installments[${index}].installment_number`}
                         label="Parcela"
                         min={1}
                         readOnly
-                        defaultValue={index + 1}
+                        defaultValue={installment.installment_number}
                       />
                       <Input
                         mask="currency"
                         name={`installments[${index}].value`}
                         label="Valor da Parcela"
                         placeholder="R$ 0,00"
+                        defaultValue={installment.value}
                       />
                       <Input
                         mask="date"
                         name={`installments[${index}].due_date`}
                         label="Data de Vencimento"
                         placeholder="07/01/2021"
+                        defaultValue={installment.due_date}
                       />
+
                       <AddButton type="button" onClick={addPlots}>
                         <FaPlus size={20} color="#C32925" />
                       </AddButton>
                     </Plot>
                   ) : (
-                    <Plot key={plot.numberPlots}>
+                    <Plot key={installment.installment_number}>
                       <Input
                         type="number"
                         name={`installments[${index}].installment_number`}
                         label="Parcela"
                         min={1}
                         readOnly
-                        defaultValue={index + 1}
+                        defaultValue={installment.installment_number}
                       />
                       <Input
                         mask="currency"
                         name={`installments[${index}].value`}
                         label="Valor da Parcela"
                         placeholder="R$ 0,00"
+                        defaultValue={installment.value}
                       />
                       <Input
                         mask="date"
                         name={`installments[${index}].due_date`}
                         label="Data de Pagamento"
                         placeholder="07/01/2021"
+                        defaultValue={installment.due_date}
                       />
 
                       <AddButton type="button" onClick={removePlots}>
@@ -1089,7 +1135,7 @@ const DetailsSale: React.FC = () => {
                   ),
                 )}
               </PaymentInstallments>
-            )}
+            ) : null}
 
             <ModalFooter>
               <button

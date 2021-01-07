@@ -176,27 +176,53 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         {typeSale === 'new' && (
           <>
-            {sallers.map((saller, index) =>
-              index > 0 ? (
-                <Select
-                  key={saller.name}
-                  name={`users_sellers[${index}].${saller.name}`}
-                  options={optionsRealtors}
-                  nameLabel="Corretor Vendedor"
-                  remove
-                  removeRealtors={() => handleRemoveRealtors(sallers, index)}
-                />
-              ) : (
-                <Select
-                  key={saller.name}
-                  name={`users_sellers[${index}].${saller.name}`}
-                  options={[{ label: userAuth.name, value: userAuth.id }]}
-                  nameLabel="Corretor Vendedor"
-                  add
-                  addRealtors={handleAddSallers}
-                />
-              ),
-            )}
+            {userAuth.office.name === 'Administrador'
+              ? sallers.map((saller, index) =>
+                  index > 0 ? (
+                    <Select
+                      key={saller.name}
+                      name={`users_sellers[${index}].${saller.name}`}
+                      options={optionsRealtors}
+                      nameLabel="Corretor Vendedor"
+                      remove
+                      removeRealtors={() =>
+                        handleRemoveRealtors(sallers, index)
+                      }
+                    />
+                  ) : (
+                    <Select
+                      key={saller.name}
+                      name={`users_sellers[${index}].${saller.name}`}
+                      options={optionsRealtors}
+                      nameLabel="Corretor Vendedor"
+                      add
+                      addRealtors={handleAddSallers}
+                    />
+                  ),
+                )
+              : sallers.map((saller, index) =>
+                  index > 0 ? (
+                    <Select
+                      key={saller.name}
+                      name={`users_sellers[${index}].${saller.name}`}
+                      options={optionsRealtors}
+                      nameLabel="Corretor Vendedor"
+                      remove
+                      removeRealtors={() =>
+                        handleRemoveRealtors(sallers, index)
+                      }
+                    />
+                  ) : (
+                    <Select
+                      key={saller.name}
+                      name={`users_sellers[${index}].${saller.name}`}
+                      options={[{ label: userAuth.name, value: userAuth.id }]}
+                      nameLabel="Corretor Vendedor"
+                      add
+                      addRealtors={handleAddSallers}
+                    />
+                  ),
+                )}
             <InputGroup>
               <Select
                 name="user_coordinator"
