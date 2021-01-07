@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch } from 'react-router-dom';
+import { Switch, Route as RouterDom } from 'react-router-dom';
 
 import Route from './Routes';
 
@@ -36,7 +36,10 @@ const Routes: React.FC = () => (
       isPrivate
     />
     <Route path="/adm/detalhes-vendas/:id" component={DatailSale} isPrivate />
-    <Route path="/adm/relatorio-vendas" component={ReportSale} isPrivate />
+    <RouterDom
+      path="/adm/relatorio-vendas"
+      render={props => <ReportSale {...props} />}
+    />
   </Switch>
 );
 

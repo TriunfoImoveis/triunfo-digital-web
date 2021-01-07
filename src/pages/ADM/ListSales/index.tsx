@@ -22,6 +22,7 @@ import {
 } from './styles';
 import api from '../../../services/api';
 import { formatPrice, DateBRL } from '../../../utils/format';
+import ReportSale from '../ReportSale';
 
 interface ISale {
   id: string;
@@ -163,10 +164,7 @@ const ListSales: React.FC = () => {
             </FilterButtonGroup>
             <FiltersBottonItems>
               <Link
-                to={{
-                  pathname: '/adm/relatorio-vendas',
-                  state: { sales },
-                }}
+                to={`/adm/relatorio-vendas?city=${city}&status=${status}&name=${''}`}
                 target="_blank"
               >
                 Adicionar ao relatório

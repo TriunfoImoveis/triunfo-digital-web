@@ -30,6 +30,9 @@ declare module 'styled-components' {
       background: string;
       textColor?: string;
       textColorAlpha?: string;
+
+      buttonAddColor?: string;
+      buttonAddColorAlpha?: string;
     };
     fontSize: {
       tiny?: string;
