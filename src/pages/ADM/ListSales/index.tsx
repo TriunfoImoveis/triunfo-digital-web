@@ -48,6 +48,7 @@ const ListSales: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [city, setCity] = useState<string>('São Luís');
   const [status, setStatus] = useState<string>('NAO_VALIDADO');
+  const [name, setName] = useState('');
   const [sales, setSales] = useState<ISaleData[]>([]);
 
   useEffect(() => {
@@ -91,6 +92,7 @@ const ListSales: React.FC = () => {
 
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
+      const name = event.target.value;
       const response = await api.get('/sale', {
         params: {
           city,
@@ -98,6 +100,7 @@ const ListSales: React.FC = () => {
           name: event.target.value,
         },
       });
+      setName(name);
       const listSales: ISale[] = response.data;
       const salesFormatted: ISaleData[] = listSales.map(s => ({
         id: s.id,
@@ -163,10 +166,7 @@ const ListSales: React.FC = () => {
             </FilterButtonGroup>
             <FiltersBottonItems>
               <Link
-                to={{
-                  pathname: '/adm/relatorio-vendas',
-                  state: { sales },
-                }}
+                to={`/adm/relatorio-vendas?city=${city}&status=${status}&name=${name}`}
                 target="_blank"
               >
                 Adicionar ao relatório

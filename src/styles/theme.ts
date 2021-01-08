@@ -15,6 +15,8 @@ const theme: DefaultTheme = {
     borderColor: '#818181',
     textColor: '#898989',
     textColorAlpha: 'rgba(121,119,119,0.5)',
+    buttonAddColor: '#2d9cdb',
+    buttonAddColorAlpha: 'rgba(45,156,219, 0.8)',
   },
   fontSize: {
     tiny: '1.2rem',
