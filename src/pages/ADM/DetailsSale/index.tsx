@@ -564,7 +564,7 @@ const DetailsSale: React.FC = () => {
         return;
       }
       const today = new Date();
-      const todayFormatted = new Intl.DateTimeFormat('en-US').format(today);
+      const todayFormatted = new Intl.DateTimeFormat('en-CA').format(today);
       const pay_date = { pay_date: todayFormatted };
       try {
         await api.patch(`/installment/paid/${idPlot}`, pay_date, {

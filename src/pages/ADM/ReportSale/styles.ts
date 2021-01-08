@@ -38,7 +38,7 @@ export const Table = styled.table`
   width: 100%;
 `;
 export const Header = styled.thead`
-  height: 4.1rem;
+  height: 5rem;
   background-color: ${({ theme }) => theme.colors.primaryAlpha};
   display: grid;
   grid-template-columns: repeat(9, 150px);
@@ -47,7 +47,20 @@ export const Header = styled.thead`
     border-right: 1px solid ${({ theme }) => theme.colors.borderColor};
     border-bottom: 1px solid ${({ theme }) => theme.colors.borderColor};
     padding: 1rem;
-    font-size: 1.2rem;
+    font-size: 1.6rem;
+  }
+
+  @media print {
+    height: 2rem;
+    background-color: ${({ theme }) => theme.colors.primaryAlpha};
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    > th {
+      text-align: center;
+      border-right: 1px solid ${({ theme }) => theme.colors.borderColor};
+      border-bottom: 1px solid ${({ theme }) => theme.colors.borderColor};
+      font-size: 1rem;
+    }
   }
 `;
 
@@ -59,8 +72,20 @@ export const Body = styled.tbody`
       text-align: center;
       border-right: 1px solid ${({ theme }) => theme.colors.borderColor};
       border-bottom: 1px solid ${({ theme }) => theme.colors.borderColor};
-      padding: 1rem;
       font-size: 1.2rem;
+    }
+  }
+
+  @media print {
+    > tr {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      > td {
+        text-align: center;
+        border-right: 1px solid ${({ theme }) => theme.colors.borderColor};
+        border-bottom: 1px solid ${({ theme }) => theme.colors.borderColor};
+        font-size: 1rem;
+      }
     }
   }
 `;
