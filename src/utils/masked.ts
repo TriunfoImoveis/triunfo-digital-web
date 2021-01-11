@@ -72,8 +72,13 @@ export const Fone = (
 };
 export const FoneMask = (value: string): string => {
   let valueMasked = value;
-  valueMasked = valueMasked.replace(/\D/g, '');
-  valueMasked = valueMasked.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  if (valueMasked.length <= 10) {
+    valueMasked = valueMasked.replace(/\D/g, '');
+    valueMasked = valueMasked.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  } else {
+    valueMasked = valueMasked.replace(/\D/g, '');
+    valueMasked = valueMasked.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  }
   return valueMasked;
 };
 export const Whats = (
@@ -100,6 +105,29 @@ export const DateDMY = (
   let valueMasked = event.target.value;
   valueMasked = valueMasked.replace(/\D/g, '');
   valueMasked = valueMasked.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+  event.currentTarget.value = valueMasked;
+  return event;
+};
+
+export const cnpj = (value: string): string => {
+  let valueMasked = value;
+  valueMasked = valueMasked.replace(/\D/g, '');
+  valueMasked = valueMasked.replace(
+    /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+    '$1.$2.$3/$4-$5',
+  );
+  return valueMasked;
+};
+
+export const CNPJMask = (
+  event: ChangeEvent<HTMLInputElement>,
+): ChangeEvent<HTMLInputElement> => {
+  let valueMasked = event.target.value;
+  valueMasked = valueMasked.replace(/\D/g, '');
+  valueMasked = valueMasked.replace(
+    /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+    '$1.$2.$3/$4-$5',
+  );
   event.currentTarget.value = valueMasked;
   return event;
 };

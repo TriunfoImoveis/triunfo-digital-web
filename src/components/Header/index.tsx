@@ -12,6 +12,7 @@ import {
   Sale,
   Collaborators,
   AdmLogo,
+  Builders,
 } from '../../assets/images';
 
 import MenuResponsive from '../MenuResponsive';
@@ -42,6 +43,10 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
           <NavItemContent>
             <Collaborators />
             <Link to="/adm/lista-colaboradores">RH</Link>
+          </NavItemContent>
+          <NavItemContent>
+            <Builders />
+            <Link to="/adm/lista-construtoras">Construtoras</Link>
           </NavItemContent>
           <NavItemContent>
             <IoIosLogOut size={30} color="#fff" />

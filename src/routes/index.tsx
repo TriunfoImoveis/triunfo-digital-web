@@ -12,9 +12,11 @@ import RegisterSaleUsed from '../pages/RegisterSale/Used';
 import ListSale from '../pages/ADM/ListSales';
 import ListRealtors from '../pages/ADM/ListRealtors';
 import ListColab from '../pages/ADM/ListColab';
+import ListBuilders from '../pages/ADM/ListBuilders';
 import NewColab from '../pages/ADM/NewColab';
 import DatailSale from '../pages/ADM/DetailsSale';
 import ReportSale from '../pages/ADM/ReportSale';
+import NewBuilders from '../pages/ADM/NewBuilder';
 import Perfil from '../pages/Perfil';
 
 const Routes: React.FC = () => (
@@ -29,6 +31,7 @@ const Routes: React.FC = () => (
     <Route path="/adm/lista-vendas" component={ListSale} isPrivate />
     <Route path="/adm/lista-corretores" component={ListRealtors} isPrivate />
     <Route path="/adm/lista-colaboradores" component={ListColab} isPrivate />
+    <Route path="/adm/lista-construtoras" component={ListBuilders} isPrivate />
     <Route path="/adm/novo-colaborador" component={NewColab} isPrivate />
     <Route
       path="/adm/detalhes-colaborador/:id"
@@ -36,6 +39,12 @@ const Routes: React.FC = () => (
       isPrivate
     />
     <Route path="/adm/detalhes-vendas/:id" component={DatailSale} isPrivate />
+    <Route path="/adm/nova-construtora" component={NewBuilders} isPrivate />
+    <Route
+      path="/adm/detalhes-construtora/:id"
+      component={NewBuilders}
+      isPrivate
+    />
     <Route path="/adm/relatorio-vendas" component={ReportSale} isPrivate />
   </Switch>
 );

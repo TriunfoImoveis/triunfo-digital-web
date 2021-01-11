@@ -15,6 +15,7 @@ import {
   Fone,
   Whats,
   DateDMY,
+  CNPJMask,
 } from '../../utils/masked';
 
 import { ContainerWrapper, Container, IconContainer, Error } from './styles';
@@ -22,7 +23,15 @@ import { ContainerWrapper, Container, IconContainer, Error } from './styles';
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   icon?: React.ComponentType<IconBaseProps>;
-  mask?: 'currency' | 'cep' | 'cpf' | 'porcent' | 'fone' | 'whats' | 'date';
+  mask?:
+    | 'currency'
+    | 'cep'
+    | 'cpf'
+    | 'porcent'
+    | 'fone'
+    | 'whats'
+    | 'date'
+    | 'cnpj';
   maxlength?: number;
   label?: string;
   readOnly?: boolean | undefined;
@@ -94,6 +103,9 @@ const Input: React.FC<InputProps> = ({
           break;
         case 'date':
           DateDMY(e);
+          break;
+        case 'cnpj':
+          CNPJMask(e);
           break;
         default:
           break;

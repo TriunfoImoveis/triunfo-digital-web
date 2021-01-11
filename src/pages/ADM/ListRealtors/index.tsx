@@ -155,7 +155,7 @@ const ListRealtors: React.FC = () => {
                 <SaleItem>{realtor.name}</SaleItem>
                 <SaleItem>{realtor.vgv}</SaleItem>
                 <SaleItem>
-                  <Link to="#top">
+                  <Link to={`/adm/detalhes-colaborador/${realtor.id}`}>
                     <BsPencil size={15} color="#c32925" />
                     Editar
                   </Link>

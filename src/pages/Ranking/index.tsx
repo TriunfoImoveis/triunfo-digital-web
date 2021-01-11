@@ -143,7 +143,7 @@ const Ranking: React.FC = () => {
               authorization: `Bearer ${token}`,
             },
             params: {
-              city: userAuth.subsidiary.city,
+              city: selectedSubsidiary,
             },
           });
           const ranking = response.data;
@@ -252,7 +252,7 @@ const Ranking: React.FC = () => {
                 {realtors.map((realtor, i) => {
                   return i >= 5 ? (
                     <PositionItem key={realtor.id}>
-                      <Position>{`${i}°`}</Position>
+                      <Position>{`${i + 1}°`}</Position>
                       <Realtor>
                         <img
                           src={
@@ -264,7 +264,7 @@ const Ranking: React.FC = () => {
                         <Name>
                           <span>{realtor.name}</span>
                         </Name>
-                        <VGV position={String(i)}>
+                        <VGV position={String(i + 1)}>
                           <strong>{realtor.vgv}</strong>
                         </VGV>
                       </Realtor>
