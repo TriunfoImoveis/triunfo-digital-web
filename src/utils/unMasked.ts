@@ -8,6 +8,10 @@ export const unMaked = (value: string): string => {
   return value;
 };
 
+export const unMaskedCNPJ = (value: string): string => {
+  value = value.replace(/([^\d+,])+/gim, '');
+  return value;
+};
 export const DateYMD = (dateSale: string): string => {
   const [D, M, Y] = dateSale.split('/');
   return `${Y}-${M}-${D}`;
