@@ -254,7 +254,13 @@ const Ranking: React.FC = () => {
                     <PositionItem key={realtor.id}>
                       <Position>{`${i}°`}</Position>
                       <Realtor>
-                        <img src={realtor.avatar_url} alt={realtor.name} />
+                        <img
+                          src={
+                            realtor.avatar_url ||
+                            'https://imgur.com/I80W1Q0.png'
+                          }
+                          alt={realtor.name}
+                        />
                         <Name>
                           <span>{realtor.name}</span>
                         </Name>
