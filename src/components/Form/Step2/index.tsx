@@ -59,37 +59,36 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
       setCliente({} as IClientData);
       const cpf = event.target.value;
       if (cpf.length === 11) {
-        const unMaskedCPF = unMaked(cpf);
-        const response = await api.get(`/client?cpf=${unMaskedCPF}`);
-        const {
-          name,
-          date_birth,
-          email,
-          phone,
-          whatsapp,
-          occupation,
-          civil_status,
-          number_children,
-          gender,
-        } = response.data;
-
-        if (!response.data) {
+        try {
+          const unMaskedCPF = unMaked(cpf);
+          const response = await api.get(`/client?cpf=${unMaskedCPF}`);
+          const {
+            name,
+            date_birth,
+            email,
+            phone,
+            whatsapp,
+            occupation,
+            civil_status,
+            number_children,
+            gender,
+          } = response.data;
+          setDisable(true);
+          setCliente({
+            name,
+            date_birth: DateBRL(date_birth),
+            email,
+            phone: FoneMask(phone),
+            whatsapp: WhatsMask(whatsapp),
+            occupation,
+            civil_status,
+            number_children,
+            gender,
+          } as IClientData);
+        } catch (error) {
           setCliente({} as IClientData);
           setDisable(false);
-          return;
         }
-        setDisable(true);
-        setCliente({
-          name,
-          date_birth: DateBRL(date_birth),
-          email,
-          phone: FoneMask(phone),
-          whatsapp: WhatsMask(whatsapp),
-          occupation,
-          civil_status,
-          number_children,
-          gender,
-        } as IClientData);
       }
     },
     [],
