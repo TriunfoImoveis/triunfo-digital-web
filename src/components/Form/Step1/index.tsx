@@ -83,17 +83,21 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
       return;
     }
     const loadBuilders = async () => {
-      const response = await api.get('/builder');
+      const response = await api.get('/builder', {
+        params: {
+          uf: selectedUf,
+        },
+      });
       setBuilders(response.data);
     };
     loadBuilders();
-  }, [typeSale]);
+  }, [typeSale, selectedUf]);
   const optionsUFs = [
     { label: 'Maranhão', value: 'MA' },
     { label: 'Ceará', value: 'CE' },
     { label: 'Piauí', value: 'PI' },
     { label: 'Paraíba', value: 'PB' },
-    { label: 'São Luís', value: 'SP' },
+    { label: 'São Paulo', value: 'SP' },
   ];
 
   const optionsCities = cities.map(city => ({ value: city, label: city }));
