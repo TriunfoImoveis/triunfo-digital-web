@@ -153,6 +153,35 @@ const NewBuilders: React.FC = () => {
     }
   }, [unMasked, token, history]);
 
+  const updateBuilder = useCallback(async () => {
+    unMasked();
+    const data = formRef.current?.getData();
+    try {
+      await api.put(`/builder/${id}`, data, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success('Dados da Construtora Atualizadaos');
+      window.location.reload();
+    } catch (error) {
+      toast.error('ERRO!');
+    }
+  }, [unMasked, id, token]);
+  const deleteBuilder = useCallback(async () => {
+    try {
+      await api.patch(`/builder/deactivate/${id}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success('Contrutora desativada');
+      history.push('/adm/lista-construtoras');
+    } catch (error) {
+      toast.error('ERROR! Contate o suporte');
+    }
+  }, [history, id, token]);
+
   return (
     <AdmLayout>
       <Container>
@@ -179,23 +208,16 @@ const NewBuilders: React.FC = () => {
                   defaultValue={selectedUf}
                   onChange={handleSelectedUF}
                 />
-                <Select
-                  name="city"
-                  nameLabel="Cidade"
-                  options={optionsCities}
-                  defaultValue={builder.city}
-                  onChange={handleSelectCity}
-                />
               </fieldset>
             </InfoLogin>
 
             {pageDetails && (
               <ButtonGroup>
-                <button type="button">
+                <button type="button" onClick={updateBuilder}>
                   <Sync />
                   <span>Atualizar</span>
                 </button>
-                <button type="button">
+                <button type="button" onClick={deleteBuilder}>
                   <Garb />
                   <span>Remover</span>
                 </button>

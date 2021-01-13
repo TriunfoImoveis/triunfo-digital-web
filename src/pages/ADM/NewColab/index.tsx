@@ -67,6 +67,16 @@ interface IUser {
   };
 }
 
+interface IUpdateUser {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  phone: string;
+  goal: string;
+  admission_date: string;
+}
+
 const NewColab: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
@@ -125,9 +135,6 @@ const NewColab: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedSubsidiary === '0') {
-      return;
-    }
     api
       .get(`/departament`, {
         params: {
@@ -202,12 +209,85 @@ const NewColab: React.FC = () => {
     }
   }, [unMasked, token]);
 
+  const updateRealtor = useCallback(
+    async (data: IUpdateUser) => {
+      try {
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          password: Yup.string(),
+          password_confirmation: Yup.string().oneOf(
+            [Yup.ref('password'), undefined],
+            'Confirmação Incorreta',
+          ),
+        });
+
+        await schema.validate(data, {
+          abortEarly: false,
+        });
+
+        const {
+          name,
+          email,
+          password,
+          password_confirmation,
+          goal,
+          admission_date,
+          phone,
+        } = data;
+
+        const formData = {
+          name,
+          email,
+          goal,
+          admission_date,
+          phone,
+          ...(password
+            ? {
+                password,
+                password_confirmation,
+              }
+            : {}),
+        };
+
+        const dataFormated = {
+          ...formData,
+          goal: unMaked(goal),
+          admission_date: DateYMD(admission_date),
+          phone: unMaked(phone),
+        };
+        await api.put(`/users/${id}`, dataFormated, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success('Dados atualizados com sucesso');
+        window.location.reload();
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const erros = getValidationErros(err);
+          formRef.current?.setErrors(erros);
+        }
+
+        toast.error('Error ao atualizar');
+      }
+    },
+    [id, token],
+  );
+
+  // const removeRealtor = useCallback(() => {
+  //   try {
+  //     await api.patch()
+  //   } catch (error) {
+
+  //   }
+  // }, []);
+
   return (
     <AdmLayout>
       <Container>
         <h1>NOVO COLABORADOR</h1>
         {pageDetails ? (
-          <Form ref={formRef} onSubmit={handleSubmit} initialData={user}>
+          <Form ref={formRef} onSubmit={updateRealtor} initialData={user}>
             <InfoLogin>
               <fieldset className="login">
                 <legend>INFORMAÇÕES DE LOGIN</legend>
@@ -234,27 +314,8 @@ const NewColab: React.FC = () => {
                   <Input label="Telefone" name="phone" mask="fone" />
                   <Input label="Meta de Venda" name="goal" mask="currency" />
                 </InputGroup>
-                <InputGroup>
-                  <Select
-                    name="subsidiary.id"
-                    nameLabel="Filial"
-                    options={optionsSubsidiary}
-                    onChange={handleSelectedSubsidiary}
-                  />
 
-                  <Select
-                    name="departament.id"
-                    nameLabel="Departamento"
-                    options={optionsDepartament}
-                    onChange={handleSelectedDepartament}
-                  />
-                </InputGroup>
                 <InputGroup>
-                  <Select
-                    name="office"
-                    nameLabel="Cargo"
-                    options={optionsOffice}
-                  />
                   <Input
                     mask="date"
                     label="Data de Admissão"
@@ -266,7 +327,7 @@ const NewColab: React.FC = () => {
 
             {pageDetails && (
               <ButtonGroup>
-                <button type="button">
+                <button type="submit">
                   <Sync />
                   <span>Atualizar</span>
                 </button>
@@ -275,12 +336,6 @@ const NewColab: React.FC = () => {
                   <span>Remover</span>
                 </button>
               </ButtonGroup>
-            )}
-
-            {!pageDetails && (
-              <button type="submit" className="submit">
-                {loading ? 'Aguarde' : 'Cadastrar Colaborador'}
-              </button>
             )}
           </Form>
         ) : (

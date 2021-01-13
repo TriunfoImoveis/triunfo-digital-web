@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
-import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
 import { Search } from '../../../assets/images';
 import {
@@ -25,6 +24,7 @@ import { FoneMask } from '../../../utils/masked';
 interface ISubsidiary {
   id: string;
   city: string;
+  state: string;
 }
 
 interface IBuilder {
@@ -34,12 +34,10 @@ interface IBuilder {
   city: string;
 }
 const ListBuilders: React.FC = () => {
-  const token = localStorage.getItem('@TriunfoDigital:token');
   const [loading, setLoading] = useState(false);
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
-  const [selectedSubsidiary, setSelectedSubsidiary] = useState<ISubsidiary>(
-    {} as ISubsidiary,
-  );
+  const [selectedUf, setSelectedUf] = useState<string>('MA');
+  const [selectedSubsidiary] = useState<ISubsidiary>({} as ISubsidiary);
   const [builders, setBuilders] = useState<IBuilder[]>([]);
 
   useEffect(() => {
@@ -50,7 +48,7 @@ const ListBuilders: React.FC = () => {
     const loadBuilders = async () => {
       const response = await api.get('/builder', {
         params: {
-          city: selectedSubsidiary.city,
+          uf: selectedUf,
         },
       });
       const builders = response.data.map(builder => ({
@@ -64,23 +62,14 @@ const ListBuilders: React.FC = () => {
 
     loadSubsidiaries();
     loadBuilders();
-  }, [selectedSubsidiary]);
+  }, [selectedUf]);
 
-  const handleSelectedSubsidiary = useCallback(
+  const handleSelectUf = useCallback(
     async (event: ChangeEvent<HTMLSelectElement>) => {
       const { value } = event.target;
-      try {
-        const response = await api.get(`/subsidiary/${value}`, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        });
-        setSelectedSubsidiary(response.data);
-      } catch (error) {
-        toast.error('Error ao connectar ao servidor, Contate o suporte');
-      }
+      setSelectedUf(value);
     },
-    [token],
+    [],
   );
 
   const searchBuilderByName = useCallback(
@@ -94,14 +83,14 @@ const ListBuilders: React.FC = () => {
         setLoading(true);
         const response = await api.get('/builder', {
           params: {
-            name: event.target.value,
+            uf: selectedSubsidiary.state,
           },
         });
         setBuilders(response.data);
         setLoading(false);
       }
     },
-    [],
+    [selectedSubsidiary.state],
   );
 
   return (
@@ -119,14 +108,11 @@ const ListBuilders: React.FC = () => {
         </FiltersTop>
         <FiltersBotton>
           <FiltersBottonItems>
-            <span>Cidade: </span>
-            <select onChange={handleSelectedSubsidiary} defaultValue="0">
-              <option value="0" disabled>
-                Todas
-              </option>
+            <span>Estado: </span>
+            <select onChange={handleSelectUf}>
               {subsidiaries.map(subsidary => (
-                <option key={subsidary.id} value={subsidary.id}>
-                  {subsidary.city}
+                <option key={subsidary.id} value={subsidary.state}>
+                  {subsidary.state}
                 </option>
               ))}
             </select>
