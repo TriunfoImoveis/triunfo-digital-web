@@ -13,7 +13,7 @@ debug.log
 
 # production
 /build
-.env.json
+/src/.env.json
 
 # misc
 .DS_Store
