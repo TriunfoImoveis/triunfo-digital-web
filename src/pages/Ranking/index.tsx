@@ -179,19 +179,30 @@ const Ranking: React.FC = () => {
       <BackgroundImage />
       <Content>
         <Title>Top Five</Title>
-        {userAuth.office.name === 'Presidente' ||
-          ('Gerente' && (
-            <SelectSubsidiary>
-              <select
-                defaultValue={selectedSubsidiary}
-                onChange={handleSelectSubsidiary}
-              >
-                <option value="São Luís">São Luís</option>
-                <option value="Fortaleza">Fortaleza</option>
-                <option value="Teresina">Teresina</option>
-              </select>
-            </SelectSubsidiary>
-          ))}
+        {userAuth.office.name === 'Presidente' && (
+          <SelectSubsidiary>
+            <select
+              defaultValue={selectedSubsidiary}
+              onChange={handleSelectSubsidiary}
+            >
+              <option value="São Luís">São Luís</option>
+              <option value="Fortaleza">Fortaleza</option>
+              <option value="Teresina">Teresina</option>
+            </select>
+          </SelectSubsidiary>
+        )}
+        {userAuth.office.name === 'Gerente' && (
+          <SelectSubsidiary>
+            <select
+              defaultValue={selectedSubsidiary}
+              onChange={handleSelectSubsidiary}
+            >
+              <option value="São Luís">São Luís</option>
+              <option value="Fortaleza">Fortaleza</option>
+              <option value="Teresina">Teresina</option>
+            </select>
+          </SelectSubsidiary>
+        )}
 
         <RankingContainer>
           <LabelContainer>

@@ -563,11 +563,8 @@ const DetailsSale: React.FC = () => {
         toast.error('Nao foi possivel validar a parcela');
         return;
       }
-      const today = new Date();
-      const todayFormatted = new Intl.DateTimeFormat('en-CA').format(today);
-      const pay_date = { pay_date: todayFormatted };
       try {
-        await api.patch(`/installment/paid/${idPlot}`, pay_date, {
+        await api.patch(`/installment/paid/${idPlot}`, {
           headers: {
             authorization: `Bearer ${token}`,
           },

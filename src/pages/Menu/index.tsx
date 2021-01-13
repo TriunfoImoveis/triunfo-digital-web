@@ -51,29 +51,130 @@ const Menu: React.FC = () => {
           </InfoContainer>
         </UserContainer>
         <OptionsContainer>
-          {userAuth.office.name === 'Presidente' ||
-            ('Gerente' && (
+          {userAuth.office.name === 'Presidente' && (
+            <>
               <Option to="/adm/lista-vendas">
                 <AdmLogo />
                 <span>Painel Administrativo</span>
               </Option>
-            ))}
-          <Option to="/actions">
-            <RegisterSellIcon />
-            <span>Cadastar Vendas</span>
-          </Option>
-          <Option to="/ranking">
-            <RankingIcon />
-            <span>Ranking</span>
-          </Option>
-          <Option to="/#top">
-            <DashboardIcon />
-            <span>Dashboard</span>
-          </Option>
-          <Option to="/perfil">
-            <Perfil />
-            <span>Perfil</span>
-          </Option>
+              <Option to="/actions">
+                <RegisterSellIcon />
+                <span>Cadastar Vendas</span>
+              </Option>
+              <Option to="/ranking">
+                <RankingIcon />
+                <span>Ranking</span>
+              </Option>
+              <Option to="/#top">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          )}
+          {userAuth.office.name === 'Gerente' && (
+            <>
+              <Option to="/adm/lista-vendas">
+                <AdmLogo />
+                <span>Painel Administrativo</span>
+              </Option>
+              <Option to="/actions">
+                <RegisterSellIcon />
+                <span>Cadastar Vendas</span>
+              </Option>
+              <Option to="/ranking">
+                <RankingIcon />
+                <span>Ranking</span>
+              </Option>
+              <Option to="/#top">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          )}
+          {userAuth.office.name === 'Corretor' && (
+            <>
+              <Option to="/actions">
+                <RegisterSellIcon />
+                <span>Cadastar Vendas</span>
+              </Option>
+              <Option to="/ranking">
+                <RankingIcon />
+                <span>Ranking</span>
+              </Option>
+              <Option to="/#top">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          )}
+          {userAuth.office.name === 'Coordenador' && (
+            <>
+              <Option to="/actions">
+                <RegisterSellIcon />
+                <span>Cadastar Vendas</span>
+              </Option>
+              <Option to="/ranking">
+                <RankingIcon />
+                <span>Ranking</span>
+              </Option>
+              <Option to="/#top">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          )}
+          {userAuth.office.name === 'Diretor' && (
+            <>
+              <Option to="/actions">
+                <RegisterSellIcon />
+                <span>Cadastar Vendas</span>
+              </Option>
+              <Option to="/ranking">
+                <RankingIcon />
+                <span>Ranking</span>
+              </Option>
+              <Option to="/#top">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          )}
+          {userAuth.office.name === 'Administrador' && (
+            <>
+              <Option to="/adm/lista-corretores">
+                <Perfil />
+                <span>Corretores</span>
+              </Option>
+              <Option to="/adm/lista-construtoras">
+                <Perfil />
+                <span>Construtora</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          )}
         </OptionsContainer>
       </Content>
     </Container>
