@@ -51,12 +51,13 @@ const Menu: React.FC = () => {
           </InfoContainer>
         </UserContainer>
         <OptionsContainer>
-          {userAuth.office.name === 'Administrador' && (
-            <Option to="/adm/lista-vendas">
-              <AdmLogo />
-              <span>Painel Administrativo</span>
-            </Option>
-          )}
+          {userAuth.office.name === 'Presidente' ||
+            ('Gerente' && (
+              <Option to="/adm/lista-vendas">
+                <AdmLogo />
+                <span>Painel Administrativo</span>
+              </Option>
+            ))}
           <Option to="/actions">
             <RegisterSellIcon />
             <span>Cadastar Vendas</span>
