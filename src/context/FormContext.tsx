@@ -14,6 +14,7 @@ const FormContext = createContext({} as FormContextData);
 const FormProvider: React.FC = ({ children }) => {
   const [formData, setFormData] = useState({});
   const token = localStorage.getItem('@TriunfoDigital:token');
+  console.log(token);
 
   const updateFormData = (data: Object) => {
     const newData = Object.assign(formData, data);
