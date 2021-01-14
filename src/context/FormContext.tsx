@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from 'react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
 
@@ -14,6 +20,7 @@ const FormContext = createContext({} as FormContextData);
 const FormProvider: React.FC = ({ children }) => {
   const [formData, setFormData] = useState({});
   const token = localStorage.getItem('@TriunfoDigital:token');
+
   console.log(token);
 
   const updateFormData = (data: Object) => {
