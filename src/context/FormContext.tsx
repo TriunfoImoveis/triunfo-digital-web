@@ -15,14 +15,13 @@ const FormProvider: React.FC = ({ children }) => {
   const [formData, setFormData] = useState({});
   const token = localStorage.getItem('@TriunfoDigital:token');
 
-  console.log(token);
-
   const updateFormData = (data: Object) => {
     const newData = Object.assign(formData, data);
     setFormData(newData);
   };
 
   const submitFormNew = useCallback(async () => {
+    console.log(token);
     try {
       await api.post('/sale/new', formData, {
         headers: {
