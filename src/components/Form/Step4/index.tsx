@@ -195,8 +195,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           <InputForm
             label="% da Venda"
             name="percentage_sale"
-            mask="porcent"
-            placeholder="5%"
+            placeholder="4,3%"
             onChange={calcComission}
           />
           <InputForm

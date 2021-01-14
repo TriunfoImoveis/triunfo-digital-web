@@ -93,7 +93,9 @@ const Ranking: React.FC = () => {
       }
     };
 
-    userAuth.office.name === 'Administrador' ? loadRankingAdm() : loadRanking();
+    userAuth.office.name === 'Presidente' || userAuth.office.name === 'Gerente'
+      ? loadRankingAdm()
+      : loadRanking();
   }, [
     token,
     userAuth.subsidiary.city,
@@ -115,7 +117,8 @@ const Ranking: React.FC = () => {
             },
             params: {
               city:
-                userAuth.office.name === 'Administrador'
+                userAuth.office.name === 'Presidente' ||
+                userAuth.office.name === 'Gerente'
                   ? selectedSubsidiary
                   : userAuth.subsidiary.city,
               month: monthSystem.toString(),
@@ -143,7 +146,12 @@ const Ranking: React.FC = () => {
               authorization: `Bearer ${token}`,
             },
             params: {
-              city: selectedSubsidiary,
+              city:
+                userAuth.office.name === 'Presidente' ||
+                userAuth.office.name === 'Gerente'
+                  ? selectedSubsidiary
+                  : userAuth.subsidiary.city,
+              month: monthSystem.toString(),
             },
           });
           const ranking = response.data;

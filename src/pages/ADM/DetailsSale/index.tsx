@@ -12,7 +12,6 @@ import * as Yup from 'yup';
 import { FormHandles } from '@unform/core';
 
 import { BiEditAlt } from 'react-icons/bi';
-import axios from 'axios';
 import { Form } from '@unform/web';
 import { BsCheckBox } from 'react-icons/bs';
 import { FaCheck, FaMinus, FaPlus } from 'react-icons/fa';
@@ -42,7 +41,6 @@ import {
   BonusConatainer,
 } from './styles';
 import api from '../../../services/api';
-import { useAuth } from '../../../context/AuthContext';
 import getValidationErros from '../../../utils/getValidationErros';
 import { DateYMD, unMaked } from '../../../utils/unMasked';
 import TextArea from '../../../components/TextArea';
@@ -182,9 +180,7 @@ const DetailsSale: React.FC = () => {
   });
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
   const [motivies, setMotivies] = useState<IOptionsData[]>([]);
-  const [cities, setCities] = useState<string[]>([]);
-  const [selectedUf, setSelectedUf] = useState('MA');
-  const [, setSelectedCity] = useState('0');
+  const [, setSelectedUf] = useState('MA');
   const [sale, setSale] = useState<ISaleData>({} as ISaleData);
   const [sallers, setSallers] = useState<ISallers[]>([]);
   const [realtos, setRealtors] = useState<IOptionsData[]>([]);
@@ -198,10 +194,7 @@ const DetailsSale: React.FC = () => {
   const [companies, setCompanies] = useState<IOptionsData[]>([]);
   const [isNFRequired, setIsNFRequired] = useState(false);
   const history = useHistory();
-  const { userAuth } = useAuth();
   const { id } = useParams<IParamsData>();
-
-  const { city } = userAuth.subsidiary;
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -282,7 +275,7 @@ const DetailsSale: React.FC = () => {
       setPropertyType(response.data);
     };
     const loadRealtos = async () => {
-      const response = await api.get(`/users?city=${city}&office=Corretor`);
+      const response = await api.get(`/users?office=Corretor`);
       setRealtors(response.data);
     };
     const loadMotivies = async () => {
@@ -297,22 +290,7 @@ const DetailsSale: React.FC = () => {
     loadRealtos();
     loadPropertyType();
     loadMotivies();
-  }, [token, id, sale.sale_type, city]);
-
-  useEffect(() => {
-    if (selectedUf === '0') {
-      return;
-    }
-
-    axios
-      .get<IBGECityResponse[]>(
-        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
-      )
-      .then(response => {
-        const cityNames = response.data.map(city => city.nome);
-        setCities(cityNames);
-      });
-  }, [selectedUf]);
+  }, [token, id, sale.sale_type]);
 
   useEffect(() => {
     formRef.current?.setData(sale);
@@ -390,13 +368,13 @@ const DetailsSale: React.FC = () => {
     [],
   );
 
-  const handleSelectCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const city = event.target.value;
-      setSelectedCity(city);
-    },
-    [],
-  );
+  // const handleSelectCity = useCallback(
+  //   (event: ChangeEvent<HTMLSelectElement>) => {
+  //     const city = event.target.value;
+  //     setSelectedCity(city);
+  //   },
+  //   [],
+  // );
 
   const handleFall = useCallback(
     async data => {
@@ -496,10 +474,10 @@ const DetailsSale: React.FC = () => {
     label: u,
     value: u,
   }));
-  const optionsCity = cities.map(city => ({
-    label: city,
-    value: city,
-  }));
+  // const optionsCity = cities.map(city => ({
+  //   label: city,
+  //   value: city,
+  // }));
   const optionsTypeImobille = propertyType.map(property => ({
     value: property.id,
     label: property.name,
@@ -613,12 +591,10 @@ const DetailsSale: React.FC = () => {
                     onChange={handleSelectedUF}
                     disabled={edits.property}
                   />
-                  <Select
+                  <Input
                     name="realty.city"
-                    nameLabel="Cidade"
-                    options={optionsCity}
-                    onChange={handleSelectCity}
-                    disabled={edits.property}
+                    label="Cidade"
+                    readOnly={edits.property}
                   />
                 </InputGroup>
                 <Input
@@ -1026,23 +1002,22 @@ const DetailsSale: React.FC = () => {
                 )}
               </fieldset>
             </SaleData>
-            {sale.status === 'NAO_VALIDADO' ? (
-              <SaleData>
-                <fieldset className="login">
-                  <ButtonGroup>
-                    <button
-                      type="button"
-                      onClick={() => formRef.current?.submitForm()}
-                    >
-                      <Sync />
-                      <span>Atualizar</span>
-                    </button>
-                    <button type="button" onClick={showModalFall}>
-                      <Garb />
-                      <span>Caiu</span>
-                    </button>
-                  </ButtonGroup>
-
+            <SaleData>
+              <fieldset className="login">
+                <ButtonGroup>
+                  <button
+                    type="button"
+                    onClick={() => formRef.current?.submitForm()}
+                  >
+                    <Sync />
+                    <span>Atualizar</span>
+                  </button>
+                  <button type="button" onClick={showModalFall}>
+                    <Garb />
+                    <span>Caiu</span>
+                  </button>
+                </ButtonGroup>
+                {sale.status === 'NAO_VALIDADO' && (
                   <button
                     type="submit"
                     className="submit"
@@ -1051,9 +1026,9 @@ const DetailsSale: React.FC = () => {
                     <BsCheckBox size={25} />
                     <span>Validar Venda</span>
                   </button>
-                </fieldset>
-              </SaleData>
-            ) : null}
+                )}
+              </fieldset>
+            </SaleData>
           </Form>
         </Content>
       </Container>
