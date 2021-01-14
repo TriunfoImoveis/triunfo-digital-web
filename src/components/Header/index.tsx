@@ -78,7 +78,8 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
         </NavBarContainer>
       ) : (
         <NavBarContainer>
-          {userAuth.office.name === 'Presidente' || 'Gerente' ? (
+          {userAuth.office.name === 'Presidente' ||
+          userAuth.office.name === 'Gerente' ? (
             <NavItemContent>
               <AdmLogo />
               <Link to="/adm/lista-vendas">Administrativo</Link>

@@ -6,14 +6,16 @@ export const { format: formatPrice } = new Intl.NumberFormat('pt-BR', {
 export const DateBRL = (dateSale: string): string => {
   const date = new Date(dateSale);
   const year = date.getFullYear();
-  let month = date.getMonth() + 1;
-  let dt = date.getDate() + 1;
+  const month = date.getMonth() + 1;
+  const dt = date.getDate() + 1;
 
+  let dia = dt.toString();
+  let mes = month.toString();
   if (dt < 10) {
-    dt = 0 + dt;
+    dia = `0${dia}`;
   }
   if (month < 10) {
-    month = 0 + month;
+    mes = `0${mes}`;
   }
-  return `${dt}/${month}/${year}`;
+  return `${dia}/${mes}/${year}`;
 };
