@@ -56,29 +56,46 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const { updateFormData } = useForm();
 
   useEffect(() => {
+    let mounted = true;
     if (selectedUf === '0') {
       return;
     }
 
-    axios
-      .get<IBGECityResponse[]>(
-        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
-      )
-      .then(response => {
-        const cityNames = response.data.map(city => city.nome);
-        setCities(cityNames);
-      });
+    if (mounted) {
+      axios
+        .get<IBGECityResponse[]>(
+          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
+        )
+        .then(response => {
+          const cityNames = response.data.map(city => city.nome);
+          setCities(cityNames);
+        });
+    }
+
+    return function cleanup() {
+      mounted = false;
+    };
   }, [selectedUf]);
 
   useEffect(() => {
+    let mounted = true;
+
     const loadPropertyType = async () => {
       const response = await api.get('/property-type');
       setPropertyType(response.data);
     };
-    loadPropertyType();
+
+    if (mounted) {
+      loadPropertyType();
+    }
+
+    return function cleanup() {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
+    let mounted = true;
     if (typeSale === 'used') {
       return;
     }
@@ -90,7 +107,12 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
       });
       setBuilders(response.data);
     };
-    loadBuilders();
+    if (mounted) {
+      loadBuilders();
+    }
+    return function cleanup() {
+      mounted = false;
+    };
   }, [typeSale, selectedUf]);
   const optionsUFs = [
     { label: 'Maranhão', value: 'MA' },

@@ -159,7 +159,7 @@ const ListSales: React.FC = () => {
                 <select value={status} onChange={handleSelectedStatus}>
                   <option value="NAO_VALIDADO">NÃO VALIDADO</option>
                   <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
-                  <option value="PAGO TOTAL">PAGO</option>
+                  <option value="PAGO_TOTAL">PAGO</option>
                   <option value="CAIU">CAIU</option>
                 </select>
               </FiltersBottonItems>

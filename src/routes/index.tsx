@@ -18,6 +18,7 @@ import DatailSale from '../pages/ADM/DetailsSale';
 import ReportSale from '../pages/ADM/ReportSale';
 import NewBuilders from '../pages/ADM/NewBuilder';
 import Perfil from '../pages/Perfil';
+import RankingCapture from '../pages/RankingCapture';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -26,6 +27,7 @@ const Routes: React.FC = () => (
     <Route path="/menu" component={Menu} isPrivate />
     <Route path="/perfil" component={Perfil} isPrivate />
     <Route path="/ranking" component={Ranking} isPrivate />
+    <Route path="/ranking-captacao" component={RankingCapture} isPrivate />
     <Route path="/vendas-novo" component={RegisterSaleNew} isPrivate />
     <Route path="/vendas-usado" component={RegisterSaleUsed} isPrivate />
     <Route path="/adm/lista-vendas" component={ListSale} isPrivate />
