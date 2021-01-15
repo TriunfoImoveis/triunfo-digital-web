@@ -64,7 +64,11 @@ const Menu: React.FC = () => {
               </Option>
               <Option to="/ranking">
                 <RankingIcon />
-                <span>Ranking</span>
+                <span>Ranking de Vendas</span>
+              </Option>
+              <Option to="/ranking-captacao">
+                <RankingIcon />
+                <span>Ranking de Captação</span>
               </Option>
               <Option to="/#top">
                 <DashboardIcon />
@@ -87,7 +91,11 @@ const Menu: React.FC = () => {
               </Option>
               <Option to="/ranking">
                 <RankingIcon />
-                <span>Ranking</span>
+                <span>Ranking de Vendas</span>
+              </Option>
+              <Option to="/ranking-captacao">
+                <RankingIcon />
+                <span>Ranking de Captação</span>
               </Option>
               <Option to="/#top">
                 <DashboardIcon />

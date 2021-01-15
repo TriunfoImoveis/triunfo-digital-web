@@ -35,7 +35,7 @@ interface IRealtorData {
   vgv: string;
 }
 
-const Ranking: React.FC = () => {
+const RankingCapture: React.FC = () => {
   const [realtors, setRealtors] = useState<IRealtorData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(false);
@@ -53,7 +53,7 @@ const Ranking: React.FC = () => {
           },
           params: {
             city: userAuth.subsidiary.city,
-            user: 'Corretor',
+            user: 'Captador',
           },
         });
         const ranking = response.data;
@@ -78,7 +78,7 @@ const Ranking: React.FC = () => {
           },
           params: {
             city: selectedSubsidiary,
-            user: 'Corretor',
+            user: 'Captador',
           },
         });
         const ranking = response.data;
@@ -121,8 +121,8 @@ const Ranking: React.FC = () => {
                 userAuth.office.name === 'Gerente'
                   ? selectedSubsidiary
                   : userAuth.subsidiary.city,
+              user: 'Captador',
               type: 'MENSAL',
-              user: 'Corretor',
             },
           });
           const ranking = response.data;
@@ -152,7 +152,8 @@ const Ranking: React.FC = () => {
                 userAuth.office.name === 'Gerente'
                   ? selectedSubsidiary
                   : userAuth.subsidiary.city,
-              user: 'Corretor',
+              user: 'Captador',
+              type: 'ANUAL',
             },
           });
           const ranking = response.data;
@@ -301,4 +302,4 @@ const Ranking: React.FC = () => {
   );
 };
 
-export default Ranking;
+export default RankingCapture;

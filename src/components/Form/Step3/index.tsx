@@ -45,6 +45,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const [realtors, setRealtors] = useState<IOptions[]>([]);
+  const [allRealtors, setAllRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
   const [user_directors, setUserDirectors] = useState([]);
@@ -59,7 +60,14 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
       const response = await api.get(`/users?city=${city}&office=Corretor`);
       setRealtors(response.data);
     };
+    const loadAllRealtors = async () => {
+      const response = await api.get(
+        `/users?city=${city}&departament=Comercial`,
+      );
+      setAllRealtors(response.data);
+    };
     loadRealtos();
+    loadAllRealtors();
   }, [city]);
   useEffect(() => {
     const loadCoordinator = async () => {
@@ -98,6 +106,11 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const optionsCoordenador = cordinators.map(coordinator => ({
     label: coordinator.name,
     value: coordinator.id,
+  }));
+
+  const optionsCaptvators = allRealtors.map(cap => ({
+    label: cap.name,
+    value: cap.id,
   }));
 
   const handleSubmit = useCallback(
@@ -271,7 +284,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       key={cap.name}
                       name={`users_captivators[${index}].${cap.name}`}
-                      options={optionsRealtors}
+                      options={optionsCaptvators}
                       nameLabel="Corretor Captador"
                       remove
                       removeRealtors={() =>
@@ -282,7 +295,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       key={cap.name}
                       name={`users_captivators[${index}].${cap.name}`}
-                      options={optionsRealtors}
+                      options={optionsCaptvators}
                       nameLabel="Corretor Captador"
                       add
                       addRealtors={handleAddCaptivators}
