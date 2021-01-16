@@ -38,14 +38,14 @@ const ListRealtors: React.FC = () => {
   useEffect(() => {
     const loadRealtors = async () => {
       setLoading(true);
-      const year = new Date().getFullYear();
       const response = await api.get('/ranking', {
         headers: {
           authorization: `Bearer ${token}`,
         },
         params: {
           city,
-          year,
+          user: 'Corretor',
+          type: 'ANUAL',
         },
       });
       const listRealtors = response.data;
