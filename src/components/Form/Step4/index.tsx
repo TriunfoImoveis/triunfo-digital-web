@@ -232,7 +232,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           <Input
             mask="date"
             name="installment.due_date"
-            label="Data do Pagamento"
+            label="Data de Vencimento"
             placeholder="07/01/2021"
           />
         </Plot>

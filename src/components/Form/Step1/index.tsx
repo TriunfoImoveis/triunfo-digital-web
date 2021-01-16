@@ -8,7 +8,6 @@ import React, {
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
@@ -18,10 +17,7 @@ import Select from '../../Select';
 import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
-
-interface IBGECityResponse {
-  nome: string;
-}
+import Input from '../../Input';
 
 interface IOptionsData {
   id: string;
@@ -48,34 +44,10 @@ interface IStep1FormData {
 const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
-  const [cities, setCities] = useState<string[]>([]);
   const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [selectedUf, setSelectedUf] = useState('MA');
-  const [selectedCity, setSelectedCity] = useState('0');
   const { updateFormData } = useForm();
-
-  useEffect(() => {
-    let mounted = true;
-    if (selectedUf === '0') {
-      return;
-    }
-
-    if (mounted) {
-      axios
-        .get<IBGECityResponse[]>(
-          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
-        )
-        .then(response => {
-          const cityNames = response.data.map(city => city.nome);
-          setCities(cityNames);
-        });
-    }
-
-    return function cleanup() {
-      mounted = false;
-    };
-  }, [selectedUf]);
 
   useEffect(() => {
     let mounted = true;
@@ -121,8 +93,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     { label: 'Paraíba', value: 'PB' },
     { label: 'São Paulo', value: 'SP' },
   ];
-
-  const optionsCities = cities.map(city => ({ value: city, label: city }));
 
   const optionsTypeImobille = propertyType.map(property => ({
     value: property.id,
@@ -196,14 +166,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     [nextStep, updateFormData, typeSale],
   );
 
-  const handleSelectCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const city = event.target.value;
-      setSelectedCity(city);
-    },
-    [],
-  );
-
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
@@ -216,14 +178,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
             onChange={handleSelectedUF}
             nameLabel="Estado"
           />
-          <Select
-            name="realty.city"
-            placeholder="Cidade"
-            options={optionsCities}
-            defaultValue={selectedCity}
-            onChange={handleSelectCity}
-            nameLabel="Cidade"
-          />
+          <Input name="realty.city" placeholder="Cidade" label="Cidade" />
         </InputGroup>
         <InputForm
           label="Bairro"
