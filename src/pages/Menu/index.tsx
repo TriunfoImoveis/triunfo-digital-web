@@ -82,9 +82,36 @@ const Menu: React.FC = () => {
           ) : null}
 
           {userAuth.office.name === 'Corretor' ||
-          userAuth.office.name === 'Coordenador' ||
-          userAuth.office.name === 'Diretor' ? (
+          userAuth.office.name === 'Coordenador' ? (
             <>
+              <Option to="/actions">
+                <RegisterSellIcon />
+                <span>Cadastar Vendas</span>
+              </Option>
+              <Option to="/ranking">
+                <RankingIcon />
+                <span>Ranking de Vendas</span>
+              </Option>
+              <Option to="/ranking-captacao">
+                <RankingIcon />
+                <span>Ranking de Captação</span>
+              </Option>
+              <Option to="/#top">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          ) : null}
+          {userAuth.office.name === 'Diretor' ? (
+            <>
+              <Option to="/adm/lista-vendas">
+                <AdmLogo />
+                <span>Painel Administrativo</span>
+              </Option>
               <Option to="/actions">
                 <RegisterSellIcon />
                 <span>Cadastar Vendas</span>

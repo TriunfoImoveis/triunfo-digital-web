@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
@@ -17,11 +18,15 @@ import Select from '../../Select';
 import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
-import Input from '../../Input';
+import { useAuth } from '../../../context/AuthContext';
 
 interface IOptionsData {
   id: string;
   name: string;
+}
+
+interface IBGECityResponse {
+  nome: string;
 }
 
 interface ISaleNewData {
@@ -43,12 +48,30 @@ interface IStep1FormData {
 
 const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
+  const { userAuth } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
-  const [builders, setBuilders] = useState<IOptionsData[]>([]);
-  const [selectedUf, setSelectedUf] = useState('MA');
   const { updateFormData } = useForm();
 
+  const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
+  const [builders, setBuilders] = useState<IOptionsData[]>([]);
+  const [selectedUf, setSelectedUf] = useState(userAuth.subsidiary.state);
+  const [selectedCity] = useState(userAuth.subsidiary.city);
+  const [cities, setCities] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (selectedUf === '0') {
+      return;
+    }
+
+    axios
+      .get<IBGECityResponse[]>(
+        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
+      )
+      .then(response => {
+        const cityNames = response.data.map(city => city.nome);
+        setCities(cityNames);
+      });
+  }, [selectedUf]);
   useEffect(() => {
     let mounted = true;
 
@@ -87,8 +110,8 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     };
   }, [typeSale, selectedUf]);
   const optionsUFs = [
-    { label: 'Maranhão', value: 'MA' },
     { label: 'Ceará', value: 'CE' },
+    { label: 'Maranhão', value: 'MA' },
     { label: 'Piauí', value: 'PI' },
     { label: 'Paraíba', value: 'PB' },
     { label: 'São Paulo', value: 'SP' },
@@ -102,6 +125,11 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
     value: builder.id,
+  }));
+
+  const optionsCity = cities.map(city => ({
+    label: city,
+    value: city,
   }));
 
   const handleSelectedUF = useCallback(
@@ -178,7 +206,12 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
             onChange={handleSelectedUF}
             nameLabel="Estado"
           />
-          <Input name="realty.city" placeholder="Cidade" label="Cidade" />
+          <Select
+            name="realty.city"
+            nameLabel="Cidade"
+            options={optionsCity}
+            defaultValue={selectedCity}
+          />
         </InputGroup>
         <InputForm
           label="Bairro"
