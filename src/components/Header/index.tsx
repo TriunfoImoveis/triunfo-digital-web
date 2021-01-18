@@ -51,28 +51,53 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
             </>
           ) : (
             <>
-              <NavItemContent>
-                <Realter />
-                <Link to="/adm/lista-corretores">Corretores</Link>
-              </NavItemContent>
-              <NavItemContent>
-                <Sale />
-                <Link to="/adm/lista-vendas">Vendas</Link>
-              </NavItemContent>
-              <NavItemContent>
-                <Collaborators />
-                <Link to="/adm/lista-colaboradores">RH</Link>
-              </NavItemContent>
-              <NavItemContent>
-                <Builders />
-                <Link to="/adm/lista-construtoras">Construtoras</Link>
-              </NavItemContent>
-              <NavItemContent>
-                <IoIosLogOut size={30} color="#fff" />
-                <button type="button" onClick={signOut}>
-                  Sair
-                </button>
-              </NavItemContent>
+              {userAuth.office.name === 'Diretor' ? (
+                <>
+                  <NavItemContent>
+                    <Sale />
+                    <Link to="/adm/lista-vendas">Vendas</Link>
+                  </NavItemContent>
+                  <NavItemContent>
+                    <Realter />
+                    <Link to="/adm/lista-corretores">Corretores</Link>
+                  </NavItemContent>
+                  <NavItemContent>
+                    <Builders />
+                    <Link to="/adm/lista-construtoras">Construtoras</Link>
+                  </NavItemContent>
+                  <NavItemContent>
+                    <IoIosLogOut size={30} color="#fff" />
+                    <button type="button" onClick={signOut}>
+                      Sair
+                    </button>
+                  </NavItemContent>
+                </>
+              ) : (
+                <>
+                  <NavItemContent>
+                    <Realter />
+                    <Link to="/adm/lista-corretores">Corretores</Link>
+                  </NavItemContent>
+                  <NavItemContent>
+                    <Sale />
+                    <Link to="/adm/lista-vendas">Vendas</Link>
+                  </NavItemContent>
+                  <NavItemContent>
+                    <Collaborators />
+                    <Link to="/adm/lista-colaboradores">RH</Link>
+                  </NavItemContent>
+                  <NavItemContent>
+                    <Builders />
+                    <Link to="/adm/lista-construtoras">Construtoras</Link>
+                  </NavItemContent>
+                  <NavItemContent>
+                    <IoIosLogOut size={30} color="#fff" />
+                    <button type="button" onClick={signOut}>
+                      Sair
+                    </button>
+                  </NavItemContent>
+                </>
+              )}
             </>
           )}
         </NavBarContainer>

@@ -46,6 +46,7 @@ import { DateYMD, unMaked } from '../../../utils/unMasked';
 import TextArea from '../../../components/TextArea';
 import CheckboxInput from '../../../components/CheckBox';
 import InputDisable from '../../../components/InputDisabled';
+import { useAuth } from '../../../context/AuthContext';
 
 interface IOptionsData {
   id: string;
@@ -208,6 +209,7 @@ const DetailsSale: React.FC = () => {
   const [isNFRequired, setIsNFRequired] = useState(false);
   const history = useHistory();
   const { id } = useParams<IParamsData>();
+  const { userAuth } = useAuth();
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -289,7 +291,7 @@ const DetailsSale: React.FC = () => {
       setPropertyType(response.data);
     };
     const loadRealtos = async () => {
-      const response = await api.get(`/users?office=Corretor`);
+      const response = await api.get(`/users?departament=Comercial`);
       setRealtors(response.data);
     };
     const loadMotivies = async () => {
@@ -911,7 +913,8 @@ const DetailsSale: React.FC = () => {
                     className="paymment_form"
                     readOnly
                   />
-                  {sale.status === 'NAO_VALIDADO' ? (
+                  {sale.status === 'NAO_VALIDADO' ||
+                  userAuth.office.name !== 'Diretor' ? (
                     <div className="button-modal">
                       <ButtonModal type="button" onClick={showModal}>
                         <VscEdit size={20} color="#C32925" />
@@ -927,104 +930,113 @@ const DetailsSale: React.FC = () => {
 
                 {installments ? (
                   <PaymentInstallments>
-                    <span>Parcelas Pendentes</span>
-                    {installments.map(
-                      (installment, index) =>
-                        installment.status === 'PENDENTE' && (
-                          <Plot key={installment.installment_number}>
-                            <Input
-                              type="number"
-                              name={`installments[${index}].installment_number`}
-                              label="Parcela"
-                              min={1}
-                              readOnly
-                              defaultValue={installment.installment_number}
-                            />
-                            <Input
-                              mask="currency"
-                              name={`installments[${index}].value`}
-                              label="Valor da Parcela"
-                              placeholder="R$ 0,00"
-                              defaultValue={installment.value}
-                              readOnly
-                            />
-                            <Input
-                              mask="date"
-                              name={`installments[${index}].due_date`}
-                              label="Data de Vencimento"
-                              placeholder="07/01/2021"
-                              defaultValue={installment.due_date}
-                              readOnly
-                            />
-                            <Input
-                              name={`installments[${index}].status`}
-                              label="Status"
-                              defaultValue={installment.status}
-                              status={installment.status}
-                              readOnly
-                            />
-                            {!installment.pay_date && (
-                              <AddButton
-                                type="button"
-                                className="valid"
-                                onClick={() => handlePayPlot(installment.id)}
-                              >
-                                <FaCheck size={20} color="#FCF9F9" />
-                              </AddButton>
-                            )}
-                          </Plot>
-                        ),
-                    )}
-                    <span>Parcelas Pagas</span>
-                    {installmentsPay.length > 0 ? (
-                      installmentsPay.map((installment, index) => (
-                        <Plot key={installment.installment_number}>
-                          <Input
-                            type="number"
-                            name={`installments[${index}].installment_number`}
-                            label="Parcela"
-                            min={1}
-                            readOnly
-                            defaultValue={installment.installment_number}
-                          />
-                          <Input
-                            mask="currency"
-                            name={`installments[${index}].value`}
-                            label="Valor da Parcela"
-                            placeholder="R$ 0,00"
-                            defaultValue={installment.value}
-                            readOnly
-                          />
-                          <Input
-                            mask="date"
-                            name={`installments[${index}].due_date`}
-                            label="Data de Pagamento"
-                            placeholder="07/01/2021"
-                            defaultValue={installment.pay_date}
-                            readOnly
-                          />
-                          <Input
-                            name={`installments[${index}].status`}
-                            label="Status"
-                            defaultValue={installment.status}
-                            status="PAGO"
-                            readOnly
-                          />
-                        </Plot>
-                      ))
-                    ) : (
-                      <strong>Nehuma Parcela paga</strong>
-                    )}
+                    {userAuth.office.name !== 'Diretor' ? (
+                      <>
+                        <span>Parcelas Pendentes</span>
+                        {installments.map(
+                          (installment, index) =>
+                            installment.status === 'PENDENTE' && (
+                              <Plot key={installment.installment_number}>
+                                <Input
+                                  type="number"
+                                  name={`installments[${index}].installment_number`}
+                                  label="Parcela"
+                                  min={1}
+                                  readOnly
+                                  defaultValue={installment.installment_number}
+                                />
+                                <Input
+                                  mask="currency"
+                                  name={`installments[${index}].value`}
+                                  label="Valor da Parcela"
+                                  placeholder="R$ 0,00"
+                                  defaultValue={installment.value}
+                                  readOnly
+                                />
+                                <Input
+                                  mask="date"
+                                  name={`installments[${index}].due_date`}
+                                  label="Data de Vencimento"
+                                  placeholder="07/01/2021"
+                                  defaultValue={installment.due_date}
+                                  readOnly
+                                />
+                                <Input
+                                  name={`installments[${index}].status`}
+                                  label="Status"
+                                  defaultValue={installment.status}
+                                  status={installment.status}
+                                  readOnly
+                                />
+                                {!installment.pay_date && (
+                                  <AddButton
+                                    type="button"
+                                    className="valid"
+                                    onClick={() =>
+                                      handlePayPlot(installment.id)
+                                    }
+                                  >
+                                    <FaCheck size={20} color="#FCF9F9" />
+                                  </AddButton>
+                                )}
+                              </Plot>
+                            ),
+                        )}
+                        <span>Parcelas Pagas</span>
+                        {installmentsPay.length > 0 ? (
+                          installmentsPay.map((installment, index) => (
+                            <Plot key={installment.installment_number}>
+                              <Input
+                                type="number"
+                                name={`installments[${index}].installment_number`}
+                                label="Parcela"
+                                min={1}
+                                readOnly
+                                defaultValue={installment.installment_number}
+                              />
+                              <Input
+                                mask="currency"
+                                name={`installments[${index}].value`}
+                                label="Valor da Parcela"
+                                placeholder="R$ 0,00"
+                                defaultValue={installment.value}
+                                readOnly
+                              />
+                              <Input
+                                mask="date"
+                                name={`installments[${index}].due_date`}
+                                label="Data de Pagamento"
+                                placeholder="07/01/2021"
+                                defaultValue={installment.pay_date}
+                                readOnly
+                              />
+                              <Input
+                                name={`installments[${index}].status`}
+                                label="Status"
+                                defaultValue={installment.status}
+                                status="PAGO"
+                                readOnly
+                              />
+                            </Plot>
+                          ))
+                        ) : (
+                          <strong>Nehuma Parcela paga</strong>
+                        )}
+                      </>
+                    ) : null}
                   </PaymentInstallments>
                 ) : null}
-                <BonusConatainer>
-                  <span>Nescessita Nota Fiscal ?</span>
-                  <CheckboxInput
-                    name="isNF"
-                    options={optionsBonus}
-                    handleValue={handleValueIsNF}
-                  />
-                </BonusConatainer>
+                {userAuth.office.name !== 'Diretor' ? (
+                  <BonusConatainer>
+                    <span>Nescessita Nota Fiscal ?</span>
+                    <CheckboxInput
+                      name="isNF"
+                      options={optionsBonus}
+                      handleValue={handleValueIsNF}
+                    />
+                  </BonusConatainer>
+                ) : null}
+
                 {isNFRequired && (
                   <InputGroup>
                     <Select
@@ -1047,10 +1059,12 @@ const DetailsSale: React.FC = () => {
                     <Sync />
                     <span>Atualizar</span>
                   </button>
-                  <button type="button" onClick={showModalFall}>
-                    <Garb />
-                    <span>Caiu</span>
-                  </button>
+                  {userAuth.office.name !== 'Diretor' ? (
+                    <button type="button" onClick={showModalFall}>
+                      <Garb />
+                      <span>Caiu</span>
+                    </button>
+                  ) : null}
                 </ButtonGroup>
                 {sale.status === 'NAO_VALIDADO' && (
                   <button
@@ -1062,6 +1076,16 @@ const DetailsSale: React.FC = () => {
                     <span>Validar Venda</span>
                   </button>
                 )}
+                {userAuth.office.name !== 'Diretor' ? (
+                  <button
+                    type="submit"
+                    className="submit"
+                    onClick={handleValidSale}
+                  >
+                    <BsCheckBox size={25} />
+                    <span>Validar Venda</span>
+                  </button>
+                ) : null}
               </fieldset>
             </SaleData>
           </Form>

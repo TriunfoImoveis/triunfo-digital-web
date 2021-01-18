@@ -153,6 +153,29 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
     }
   }, [typeClient]);
 
+  const validateDate = useCallback((data: string) => {
+    const [Year, Month, Day] = data.split('-');
+    const curentYear = new Date().getFullYear();
+    if (Number(Year) > Number(curentYear)) {
+      formRef.current?.setFieldError(
+        'client_buyer.date_birth',
+        'Data Invalida',
+      );
+    }
+    if (Number(Month) > 12) {
+      formRef.current?.setFieldError(
+        'client_buyer.date_birth',
+        'Data Invalida',
+      );
+    }
+    if (Number(Day) > 31 || Number(Day) < 1) {
+      formRef.current?.setFieldError(
+        'client_buyer.date_birth',
+        'Data Invalida',
+      );
+    }
+  }, []);
+
   const handleSubmit = useCallback(async () => {
     formRef.current?.setErrors({});
     unMaskValue();
@@ -164,6 +187,10 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           client_buyer: Yup.object().shape({
             name: Yup.string().required('Nome Obrigatório'),
             cpf: Yup.string()
+              .min(
+                11,
+                'Informe o cpf corretamente, cpf deve conter 11 digitos, sem traços ou pontos',
+              )
               .max(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
             date_birth: Yup.string().required('Data de nascimento obrigatória'),
@@ -173,13 +200,20 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               'Quantidade de filhos Obrigatória',
             ),
             occupation: Yup.string().required('Profissão Obrigatória'),
-            phone: Yup.string().required('Telefone obrigatório'),
-            whatsapp: Yup.string().required('Whatsapp obrigatório'),
+            phone: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 números')
+              .max(14, 'Digite um numero de telefone válido')
+              .required('Telefone obrigatório'),
+            whatsapp: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 digitos')
+              .max(14, 'Digite um numero de telefone válido')
+              .required('Whatsapp obrigatório'),
             email: Yup.string()
               .email('informe um email Válido')
               .required('E-mail Obrigatório'),
           }),
         });
+        validateDate(formRef.current?.getFieldValue('client_buyer.date_birth'));
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -188,10 +222,10 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           client_seller: Yup.object().shape({
             name: Yup.string().required('Nome Obrigatório'),
             cpf: Yup.string()
-              .max(14, 'Informe o cpf corretamente')
+              .min(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
             date_birth: Yup.string()
-              .max(12, 'Formato da Data DD/MM/AAAA')
+              .min(12, 'Formato da Data DD/MM/AAAA')
               .required('Data de nascimento obrigatória'),
             civil_status: Yup.string().required('Estado Civil Obrigatório'),
             gender: Yup.string().required('Genero Obrigatório'),
@@ -206,6 +240,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('E-mail Obrigatório'),
           }),
         });
+        validateDate(formRef.current?.getFieldValue('client_buyer.date_birth'));
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -223,7 +258,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
       toast.error('ERROR!, verifique as informações e tente novamente');
       setLoading(false);
     }
-  }, [updateFormData, nextStep, unMaskValue, typeClient]);
+  }, [updateFormData, nextStep, unMaskValue, typeClient, validateDate]);
 
   return (
     <Container>

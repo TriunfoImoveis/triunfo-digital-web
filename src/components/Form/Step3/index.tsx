@@ -112,6 +112,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     label: cap.name,
     value: cap.id,
   }));
+  const optionsAllRealtors = allRealtors.map(all => ({
+    label: all.name,
+    value: all.id,
+  }));
 
   const handleSubmit = useCallback(
     async data => {
@@ -189,13 +193,15 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         {typeSale === 'new' && (
           <>
-            {userAuth.office.name === 'Administrador'
+            {userAuth.office.name === 'Presidente' ||
+            userAuth.office.name === 'Gerente' ||
+            userAuth.office.name === 'Diretor'
               ? sallers.map((saller, index) =>
                   index > 0 ? (
                     <Select
                       key={saller.name}
                       name={`users_sellers[${index}].${saller.name}`}
-                      options={optionsRealtors}
+                      options={optionsAllRealtors}
                       nameLabel="Corretor Vendedor"
                       remove
                       removeRealtors={() =>
@@ -206,7 +212,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     <Select
                       key={saller.name}
                       name={`users_sellers[${index}].${saller.name}`}
-                      options={optionsRealtors}
+                      options={optionsAllRealtors}
                       nameLabel="Corretor Vendedor"
                       add
                       addRealtors={handleAddSallers}
@@ -253,29 +259,57 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
           <>
             <InputGroup>
               <UserSallersContainer>
-                {sallers.map((saller, index) =>
-                  index > 0 ? (
-                    <Select
-                      key={saller.name}
-                      name={`users_sellers[${index}].${saller.name}`}
-                      options={optionsRealtors}
-                      nameLabel="Corretor Vendedor"
-                      remove
-                      removeRealtors={() =>
-                        handleRemoveRealtors(captavitors, index)
-                      }
-                    />
-                  ) : (
-                    <Select
-                      key={saller.name}
-                      name={`users_sellers[${index}].${saller.name}`}
-                      options={[{ label: userAuth.name, value: userAuth.id }]}
-                      nameLabel="Corretor Vendedor"
-                      add
-                      addRealtors={handleAddSallers}
-                    />
-                  ),
-                )}
+                {userAuth.office.name === 'Presidente' ||
+                userAuth.office.name === 'Gerente' ||
+                userAuth.office.name === 'Diretor'
+                  ? sallers.map((saller, index) =>
+                      index > 0 ? (
+                        <Select
+                          key={saller.name}
+                          name={`users_sellers[${index}].${saller.name}`}
+                          options={optionsAllRealtors}
+                          nameLabel="Corretor Vendedor"
+                          remove
+                          removeRealtors={() =>
+                            handleRemoveRealtors(captavitors, index)
+                          }
+                        />
+                      ) : (
+                        <Select
+                          key={saller.name}
+                          name={`users_sellers[${index}].${saller.name}`}
+                          options={optionsAllRealtors}
+                          nameLabel="Corretor Vendedor"
+                          add
+                          addRealtors={handleAddSallers}
+                        />
+                      ),
+                    )
+                  : sallers.map((saller, index) =>
+                      index > 0 ? (
+                        <Select
+                          key={saller.name}
+                          name={`users_sellers[${index}].${saller.name}`}
+                          options={optionsRealtors}
+                          nameLabel="Corretor Vendedor"
+                          remove
+                          removeRealtors={() =>
+                            handleRemoveRealtors(captavitors, index)
+                          }
+                        />
+                      ) : (
+                        <Select
+                          key={saller.name}
+                          name={`users_sellers[${index}].${saller.name}`}
+                          options={[
+                            { label: userAuth.name, value: userAuth.id },
+                          ]}
+                          nameLabel="Corretor Vendedor"
+                          add
+                          addRealtors={handleAddSallers}
+                        />
+                      ),
+                    )}
               </UserSallersContainer>
 
               <UserCaptivators>
