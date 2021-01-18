@@ -128,12 +128,12 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             'Porcetagem Total da venda Obrigatória',
           ),
           origin: Yup.string().required('Origem da venda obrigatória'),
-          installments: Yup.array().of(
-            Yup.object().shape({
-              due_date: Yup.string().required('Data do Pagamento Obrigatório'),
+          installment: Yup.object()
+            .shape({
+              due_date: Yup.string().required('Data de Vencimento Obrigatório'),
               value: Yup.string().required('Valor Obrigatório'),
-            }),
-          ),
+            })
+            .required(),
           bonus: Yup.string(),
         });
         await schema.validate(data, {

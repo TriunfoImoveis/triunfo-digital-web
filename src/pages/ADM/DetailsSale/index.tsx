@@ -45,10 +45,7 @@ import getValidationErros from '../../../utils/getValidationErros';
 import { DateYMD, unMaked } from '../../../utils/unMasked';
 import TextArea from '../../../components/TextArea';
 import CheckboxInput from '../../../components/CheckBox';
-
-interface IBGECityResponse {
-  nome: string;
-}
+import InputDisable from '../../../components/InputDisabled';
 
 interface IOptionsData {
   id: string;
@@ -155,6 +152,21 @@ interface IInstallments {
   status?: string;
   pay_date?: string;
 }
+
+interface IRealty {
+  city: string;
+  enterprise: string;
+  id: string;
+  neighborhood: string;
+  property: ITypeProperty;
+  state: string;
+  unit: string;
+}
+
+interface ITypeProperty {
+  id: string;
+  name: string;
+}
 interface IInstallmentsData {
   installments: {
     installment_number: string;
@@ -184,6 +196,7 @@ const DetailsSale: React.FC = () => {
   const [sale, setSale] = useState<ISaleData>({} as ISaleData);
   const [sallers, setSallers] = useState<ISallers[]>([]);
   const [realtos, setRealtors] = useState<IOptionsData[]>([]);
+  const [realty, setRealty] = useState({} as IRealty);
   const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
   const [captvators, setcaptavators] = useState<ISallers[] | null>(null);
   const [directors, setDirectors] = useState<ISallers[]>([]);
@@ -260,6 +273,7 @@ const DetailsSale: React.FC = () => {
         setInstallments(newInstallments);
         setInstallmentsPay(installmentPay);
         setSale(newSaleFormatted);
+        setRealty(sale.realty);
         setSallers(sallers);
         setCoordinator(coordinator);
         setcaptavators(captavators);
@@ -531,7 +545,6 @@ const DetailsSale: React.FC = () => {
   }, []);
 
   const handleUpdateSale = useCallback(async data => {
-    console.log(formRef.current?.getFieldRef('realty.enterprise'));
     console.log(data);
   }, []);
 
@@ -576,48 +589,70 @@ const DetailsSale: React.FC = () => {
                     </button>
                   ) : null}
                 </Legend>
+                {edits.property === true ? (
+                  <>
+                    <InputDisable
+                      label="Empreendimento"
+                      data={realty.enterprise}
+                    />
+                    <InputGroup>
+                      <InputDisable label="Estado" data={realty.state} />
+                      <InputDisable label="Cidade" data={realty.city} />
+                    </InputGroup>
+                    <InputDisable label="Bairro" data={realty.neighborhood} />
+                    <InputGroup>
+                      {/* <InputDisable
+                        label="Tipo do Imóvel"
+                        data={realty.property.name}
+                      /> */}
+                      <InputDisable label="Cidade" data={realty.city} />
+                    </InputGroup>
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      label="Empreendimento"
+                      name="realty.enterprise"
+                      placeholder="Empreendimento"
+                      readOnly={edits.property}
+                    />
+                    <InputGroup>
+                      <Select
+                        name="realty.state"
+                        nameLabel="Estado"
+                        options={optionsState}
+                        onChange={handleSelectedUF}
+                        disabled={edits.property}
+                      />
+                      <Input
+                        name="realty.city"
+                        label="Cidade"
+                        readOnly={edits.property}
+                      />
+                    </InputGroup>
+                    <Input
+                      label="Bairro"
+                      name="realty.neighborhood"
+                      placeholder="Bairro"
+                      readOnly={edits.property}
+                    />
+                    <InputGroup>
+                      <Select
+                        name="realty.property.id"
+                        nameLabel="Tipo de Imóvel"
+                        options={optionsTypeImobille}
+                        disabled={edits.property}
+                      />
 
-                <Input
-                  label="Empreendimento"
-                  name="realty.enterprise"
-                  placeholder="Empreendimento"
-                  readOnly={edits.property}
-                />
-                <InputGroup>
-                  <Select
-                    name="realty.state"
-                    nameLabel="Estado"
-                    options={optionsState}
-                    onChange={handleSelectedUF}
-                    disabled={edits.property}
-                  />
-                  <Input
-                    name="realty.city"
-                    label="Cidade"
-                    readOnly={edits.property}
-                  />
-                </InputGroup>
-                <Input
-                  label="Bairro"
-                  name="realty.neighborhood"
-                  placeholder="Bairro"
-                  readOnly={edits.property}
-                />
-                <InputGroup>
-                  <Select
-                    name="realty.property.id"
-                    nameLabel="Tipo de Imóvel"
-                    options={optionsTypeImobille}
-                    disabled={edits.property}
-                  />
-
-                  <Input
-                    label="Unidade"
-                    name="realty.unit"
-                    placeholder="Unidade"
-                    readOnly={edits.property}
-                  />
-                </InputGroup>
+                      <Input
+                        label="Unidade"
+                        name="realty.unit"
+                        placeholder="Unidade"
+                        readOnly={edits.property}
+                      />
+                    </InputGroup>
+                  </>
+                )}
               </fieldset>
             </SaleData>
             <SaleData>
