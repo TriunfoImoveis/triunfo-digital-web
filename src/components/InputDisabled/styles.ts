@@ -1,10 +1,13 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
+interface ContainerProps {
+  status?: string | undefined;
+}
 export const ContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
-export const Container = styled.div`
+export const Container = styled.div<ContainerProps>`
   background: rgba(129, 129, 129, 0.1);
   padding-left: 1.2rem;
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -13,6 +16,19 @@ export const Container = styled.div`
   height: 4.5rem;
   display: flex;
   align-items: center;
+
+  ${props =>
+    props.status === 'PENDENTE' &&
+    css`
+      background-color: ${({ theme }) => theme.colors.warningAlpha};
+      border-color: ${({ theme }) => theme.colors.warningAlpha};
+    `}
+  ${props =>
+    props.status === 'PAGO' &&
+    css`
+      background-color: ${({ theme }) => theme.colors.successAlpha};
+      border-color: ${({ theme }) => theme.colors.successAlpha};
+    `}
 `;
 export const Label = styled.span`
   margin-top: 0.8rem;
