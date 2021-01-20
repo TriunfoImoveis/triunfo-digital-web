@@ -54,9 +54,12 @@ const SignIn: React.FC = () => {
         setLoading(true);
         const schema = Yup.object().shape({
           email: Yup.string()
-            .required('E-mail obrigatório')
-            .email('Digite um e-mail válido'),
-          password: Yup.string().required('Senha obrigatória'),
+            .email('Digite um e-mail válido')
+            .required('E-mail obrigatório'),
+          password: Yup.string()
+            .min(6, 'A senha deve conter no minímo 6 digítos')
+            .max(6, 'A senha deve conter no maxímo 6 digítos')
+            .required('Senha obrigatória'),
           office: Yup.string().required('Cargo obrigatório'),
         });
         await schema.validate(data, {
@@ -74,8 +77,14 @@ const SignIn: React.FC = () => {
           const erros = getValidationErros(err);
           formRef.current?.setErrors(erros);
         }
+        if (err.response) {
+          toast.error(`ERROR! ${err.response.data.message}`);
+        } else if (err.request) {
+          toast.error(
+            `ERROR! Falha ao connectar ao servidor! Entre em contato com o suporte.`,
+          );
+        }
 
-        toast.error('ERROR!, verifique suas credenciais');
         setLoading(false);
       }
     },
