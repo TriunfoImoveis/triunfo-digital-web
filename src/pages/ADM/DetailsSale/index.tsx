@@ -102,10 +102,7 @@ interface ISaleData {
     id: string;
     name: string;
   };
-  payment_type: {
-    id: string;
-    name: string;
-  };
+  payment_type: IPaymentType;
   percentage_company: number;
   percentage_sale: number;
   realty: {
@@ -215,6 +212,7 @@ const DetailsSale: React.FC = () => {
   const [realtos, setRealtors] = useState<IOptionsData[]>([]);
   const [realty, setRealty] = useState({} as IRealty);
   const [paymentType, setPaymentType] = useState({} as IPaymentType);
+  const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
   const [typeProperty, setTypePrperty] = useState({} as ITypeProperty);
   const [clientBuyer, setClientBuyer] = useState({} as IClientBuyer);
   const [coordinator, setCoordinator] = useState<ICoordinator>(
@@ -340,12 +338,22 @@ const DetailsSale: React.FC = () => {
       const response = await api.get(`/users?office=Coordenador`);
       setCoordinators(response.data);
     };
+    const loadPaymmentType = async () => {
+      if (sale.sale_type === 'new') {
+        const response = await api.get('/payment-type?type=NOVO');
+        setPaymentTypes(response.data);
+      } else if (sale.sale_type === 'used') {
+        const response = await api.get(`/payment-type?type=USADO`);
+        setPaymentTypes(response.data);
+      }
+    };
     loadSale();
     loadRealtos();
     loadPropertyType();
     loadMotivies();
     loadBuilder();
     loadCoordinator();
+    loadPaymmentType();
   }, [token, id, sale.sale_type, realty.state]);
 
   useEffect(() => {
@@ -540,10 +548,10 @@ const DetailsSale: React.FC = () => {
     label: u,
     value: u,
   }));
-  // const optionsCity = cities.map(city => ({
-  //   label: city,
-  //   value: city,
-  // }));
+  const optionsPaymentType = paymentTypes.map(pt => ({
+    label: pt.name,
+    value: pt.id,
+  }));
   const optionsTypeImobille = propertyType.map(property => ({
     value: property.id,
     label: property.name,
@@ -608,7 +616,7 @@ const DetailsSale: React.FC = () => {
     async data => {
       try {
         setLoading(true);
-        let formData = {};
+        let formData = data;
         if (!edits.buyer) {
           const cpf = formRef.current?.getFieldValue('client_buyer.cpf');
           const dateBirth = formRef.current?.getFieldValue(
@@ -651,12 +659,19 @@ const DetailsSale: React.FC = () => {
             )}`,
           },
         });
+
         setLoading(false);
         toast.success('Dados da Venda atualizadas!');
         history.push('/adm/lista-vendas');
       } catch (errors) {
         setLoading(false);
-        toast.error('Erro ao atualizar contate o suporte');
+        if (errors.response) {
+          toast.error(`ERROR! ${errors.response.data.status}`);
+        } else if (errors.request) {
+          toast.error(`Erro interno do servidor contate o suporte`);
+        } else {
+          toast.error('Erro ao atualizar contate o suporte');
+        }
       }
     },
     [edits.buyer, edits.money, sale.id, history],
@@ -677,7 +692,13 @@ const DetailsSale: React.FC = () => {
         toast.success('status do pagamento atualizado');
         window.location.reload();
       } catch (error) {
-        toast.success('Não foi possível confirmar o pagamento');
+        if (error.response) {
+          toast.error(`ERROR! ${error.response.message}`);
+        } else if (error.response) {
+          toast.error(`Erro interno do servidor contate o suporte`);
+        } else {
+          toast.error('Não foi possível confirmar o pagamento');
+        }
       }
     },
     [token],
@@ -756,7 +777,7 @@ const DetailsSale: React.FC = () => {
                     />
                     <InputGroup>
                       <Select
-                        name="realty.property.id"
+                        name="realty.property"
                         nameLabel="Tipo de Imóvel"
                         options={optionsTypeImobille}
                         disabled={edits.property}
@@ -902,7 +923,7 @@ const DetailsSale: React.FC = () => {
                   {edits.builder ? (
                     <InputDisable label="" data={builder.name} />
                   ) : (
-                    <Select name="builder.id" options={optionsBuilder} />
+                    <Select name="builder" options={optionsBuilder} />
                   )}
                 </fieldset>
               </SaleData>
@@ -1014,7 +1035,7 @@ const DetailsSale: React.FC = () => {
                           ? 'Corretor Vendedor'
                           : `Vendedor ${index + 1}`
                       }
-                      name={`sale_has_sellers[${index}].id`}
+                      name={`users_sellers[${index}].id`}
                       options={optionsRealtors}
                       disabled={edits.realtos}
                     />
@@ -1043,7 +1064,7 @@ const DetailsSale: React.FC = () => {
                     />
                   ) : (
                     <Select
-                      name="user_coordinator.id"
+                      name="user_coordinator"
                       nameLabel="Coordenador"
                       options={optionsCoordinator}
                       defaultValue={coordinator.id}
@@ -1145,11 +1166,11 @@ const DetailsSale: React.FC = () => {
                       />
                     </InputGroup>
                     <InputGroup className="paymment_form_container">
-                      <Input
-                        name="payment_type.name"
-                        label="Forma de Pagamento"
-                        className="paymment_form"
-                        readOnly={edits.money}
+                      <Select
+                        name="payment_type"
+                        nameLabel="Forma de Pagamento"
+                        disabled={edits.money}
+                        options={optionsPaymentType}
                         defaultValue={paymentType.name}
                       />
                       {sale.status === 'NAO_VALIDADO' ? (
