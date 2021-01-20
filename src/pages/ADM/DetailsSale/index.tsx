@@ -339,10 +339,10 @@ const DetailsSale: React.FC = () => {
       setCoordinators(response.data);
     };
     const loadPaymmentType = async () => {
-      if (sale.sale_type === 'new') {
+      if (sale.sale_type === 'NOVO') {
         const response = await api.get('/payment-type?type=NOVO');
         setPaymentTypes(response.data);
-      } else if (sale.sale_type === 'used') {
+      } else if (sale.sale_type === 'USADO') {
         const response = await api.get(`/payment-type?type=USADO`);
         setPaymentTypes(response.data);
       }
@@ -397,9 +397,17 @@ const DetailsSale: React.FC = () => {
         },
       });
       toast.success('Venda Validada com sucesso !');
-      history.push('/adm/lista-vendas');
+      history.push('/ranking');
     } catch (error) {
-      toast.error('Error ao validar');
+      if (error.response) {
+        toast.error(`${error.response.data.message}`);
+      } else if (error.request) {
+        toast.error(
+          'Erro de Conexão tente recarregar a página, contate o suporte',
+        );
+      } else {
+        toast.error(' Erro desconhecido, contate o suporte');
+      }
     }
   }, [id, token, history]);
 
@@ -1005,7 +1013,7 @@ const DetailsSale: React.FC = () => {
             <SaleData>
               <fieldset className="login">
                 <Legend>
-                  <legend>CORRETORES</legend>
+                  {/* <legend>CORRETORES</legend>
                   {sale.status !== 'CAIU' ? (
                     <button
                       type="button"
@@ -1014,7 +1022,7 @@ const DetailsSale: React.FC = () => {
                       <BiEditAlt size={20} color="#C32925" />
                       <span>editar</span>
                     </button>
-                  ) : null}
+                  ) : null} */}
                 </Legend>
                 {sallers.map((saller, index) =>
                   edits.realtos ? (
@@ -1301,7 +1309,7 @@ const DetailsSale: React.FC = () => {
                 </ButtonGroup>
                 {sale.status === 'NAO_VALIDADO' && (
                   <button
-                    type="submit"
+                    type="button"
                     className="submit"
                     onClick={handleValidSale}
                   >
@@ -1365,7 +1373,7 @@ const DetailsSale: React.FC = () => {
                         label="Parcela"
                         min={1}
                         readOnly
-                        defaultValue={installment.installment_number}
+                        defaultValue={index + 1}
                       />
                       <Input
                         mask="currency"
@@ -1377,7 +1385,7 @@ const DetailsSale: React.FC = () => {
                       <Input
                         mask="date"
                         name={`installments[${index}].due_date`}
-                        label="Data de Pagamento"
+                        label="Data de Vencimento"
                         placeholder="07/01/2021"
                         defaultValue={installment.due_date}
                       />
