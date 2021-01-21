@@ -31,6 +31,9 @@ import {
   FormContent,
   Input,
   LoadingContainer,
+  TabWrapper,
+  TabContainer,
+  Tab,
 } from './styles';
 import getValidationErros from '../../utils/getValidationErros';
 
@@ -144,94 +147,273 @@ const Perfil: React.FC = () => {
 
       <Content>
         <h1>Perfil do Usuário</h1>
-        <ProfileContainer>
-          <BasicInfo>
-            <Avatar>
-              <img
-                src={userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'}
-                alt={userAuth.name || 'Corretor'}
-              />
+        <TabWrapper>
+          <TabContainer
+            id="tab-container"
+            className="tab-container"
+            defaultActiveKey="profile"
+          >
+            <Tab eventKey="profile" title="Perfil">
+              <ProfileContainer>
+                <BasicInfo>
+                  <Avatar>
+                    <img
+                      src={
+                        userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'
+                      }
+                      alt={userAuth.name || 'Corretor'}
+                    />
 
-              {loadingImg ? (
-                <LoadingContainer>
-                  <Loader type="Bars" color="#c32925" height={50} width={50} />
-                </LoadingContainer>
-              ) : (
-                <label htmlFor="avatar">
-                  <input
-                    type="file"
-                    id="avatar"
-                    onChange={handleAvatarChange}
-                  />
-                  <span>Mudar a foto</span>
-                  <Camera />
-                </label>
-              )}
-            </Avatar>
-            <InforUser>
-              <InfoItem>
-                <span className="label">Nome</span>
-                <span>{userAuth.name}</span>
-              </InfoItem>
-              <InfoGroup>
-                <InfoItem>
-                  <span className="label">Cargo</span>
-                  <span>{userAuth.office.name}</span>
-                </InfoItem>
-                <InfoItem>
-                  <span className="label">Filial</span>
-                  <span>{userAuth.subsidiary.city}</span>
-                </InfoItem>
-              </InfoGroup>
-            </InforUser>
-          </BasicInfo>
-          <Separator />
-          <LogonInfo>
-            <h2>Atualização de dados</h2>
-            <Form ref={formRef} onSubmit={handleSubmit}>
-              <FormContent>
-                <Input>
-                  <InputForm
-                    label="Email"
-                    name="email"
-                    defaultValue={userAuth.email}
-                  />
-                </Input>
-                <Input>
-                  <InputForm
-                    label="Senha Antiga"
-                    name="oldPassword"
-                    type="password"
-                  />
-                </Input>
-                <Input>
-                  <InputForm
-                    label="Nova Senha"
-                    name="newPassword"
-                    type="password"
-                  />
-                </Input>
-                <Input>
-                  <InputForm
-                    label="Repetetir Nova Senha"
-                    name="confirmNewPassword"
-                    type="password"
-                  />
-                </Input>
-              </FormContent>
-              <button type="submit">
-                {loading ? (
-                  <Loader type="Bars" color="#C32925" height={30} width={30} />
-                ) : (
-                  <>
-                    <span>Atualizar</span>
-                    <Sync />
-                  </>
-                )}
-              </button>
-            </Form>
-          </LogonInfo>
-        </ProfileContainer>
+                    {loadingImg ? (
+                      <LoadingContainer>
+                        <Loader
+                          type="Bars"
+                          color="#c32925"
+                          height={50}
+                          width={50}
+                        />
+                      </LoadingContainer>
+                    ) : (
+                      <label htmlFor="avatar">
+                        <input
+                          type="file"
+                          id="avatar"
+                          onChange={handleAvatarChange}
+                        />
+                        <span>Mudar a foto</span>
+                        <Camera />
+                      </label>
+                    )}
+                  </Avatar>
+                  <InforUser>
+                    <InfoItem>
+                      <span className="label">Nome</span>
+                      <span>{userAuth.name}</span>
+                    </InfoItem>
+                    <InfoGroup>
+                      <InfoItem>
+                        <span className="label">Cargo</span>
+                        <span>{userAuth.office.name}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <span className="label">Filial</span>
+                        <span>{userAuth.subsidiary.city}</span>
+                      </InfoItem>
+                    </InfoGroup>
+                  </InforUser>
+                </BasicInfo>
+                <Separator />
+              </ProfileContainer>
+
+              <LogonInfo>
+                <h2>Atualiz ação de dados</h2>
+                <Form ref={formRef} onSubmit={handleSubmit}>
+                  <FormContent>
+                    <Input>
+                      <InputForm
+                        label="Email"
+                        name="email"
+                        defaultValue={userAuth.email}
+                      />
+                    </Input>
+                    <Input>
+                      <InputForm
+                        label="Senha Antiga"
+                        name="oldPassword"
+                        type="password"
+                      />
+                    </Input>
+                    <Input>
+                      <InputForm
+                        label="Nova Senha"
+                        name="newPassword"
+                        type="password"
+                      />
+                    </Input>
+                    <Input>
+                      <InputForm
+                        label="Repetetir Nova Senha"
+                        name="confirmNewPassword"
+                        type="password"
+                      />
+                    </Input>
+                  </FormContent>
+                  <button type="submit">
+                    {loading ? (
+                      <Loader
+                        type="Bars"
+                        color="#C32925"
+                        height={30}
+                        width={30}
+                      />
+                    ) : (
+                      <>
+                        <span>Atualizar</span>
+                        <Sync />
+                      </>
+                    )}
+                  </button>
+                </Form>
+              </LogonInfo>
+            </Tab>
+            <Tab eventKey="sales" title="Vendas">
+              <ProfileContainer>
+                <BasicInfo>
+                  <Avatar>
+                    <img
+                      src={
+                        userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'
+                      }
+                      alt={userAuth.name || 'Corretor'}
+                    />
+
+                    {loadingImg ? (
+                      <LoadingContainer>
+                        <Loader
+                          type="Bars"
+                          color="#c32925"
+                          height={50}
+                          width={50}
+                        />
+                      </LoadingContainer>
+                    ) : (
+                      <label htmlFor="avatar">
+                        <input
+                          type="file"
+                          id="avatar"
+                          onChange={handleAvatarChange}
+                        />
+                        <span>Mudar a foto</span>
+                        <Camera />
+                      </label>
+                    )}
+                  </Avatar>
+                  <InforUser>
+                    <InfoItem>
+                      <span className="label">Nome</span>
+                      <span>{userAuth.name}</span>
+                    </InfoItem>
+                    <InfoGroup>
+                      <InfoItem>
+                        <span className="label">Cargo</span>
+                        <span>{userAuth.office.name}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <span className="label">Filial</span>
+                        <span>{userAuth.subsidiary.city}</span>
+                      </InfoItem>
+                    </InfoGroup>
+                  </InforUser>
+                </BasicInfo>
+                <Separator />
+              </ProfileContainer>
+
+              <LogonInfo>
+                <h2>Atualização de dados</h2>
+                <Form ref={formRef} onSubmit={handleSubmit}>
+                  <FormContent>
+                    <Input>
+                      <InputForm label="Banco" name="bank" />
+                    </Input>
+                  </FormContent>
+                  <button type="submit">
+                    {loading ? (
+                      <Loader
+                        type="Bars"
+                        color="#C32925"
+                        height={30}
+                        width={30}
+                      />
+                    ) : (
+                      <>
+                        <span>Atualizar</span>
+                        <Sync />
+                      </>
+                    )}
+                  </button>
+                </Form>
+              </LogonInfo>
+            </Tab>
+            <Tab eventKey="bank" title="Financeiro">
+              <ProfileContainer>
+                <BasicInfo>
+                  <Avatar>
+                    <img
+                      src={
+                        userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'
+                      }
+                      alt={userAuth.name || 'Corretor'}
+                    />
+
+                    {loadingImg ? (
+                      <LoadingContainer>
+                        <Loader
+                          type="Bars"
+                          color="#c32925"
+                          height={50}
+                          width={50}
+                        />
+                      </LoadingContainer>
+                    ) : (
+                      <label htmlFor="avatar">
+                        <input
+                          type="file"
+                          id="avatar"
+                          onChange={handleAvatarChange}
+                        />
+                        <span>Mudar a foto</span>
+                        <Camera />
+                      </label>
+                    )}
+                  </Avatar>
+                  <InforUser>
+                    <InfoItem>
+                      <span className="label">Nome</span>
+                      <span>{userAuth.name}</span>
+                    </InfoItem>
+                    <InfoGroup>
+                      <InfoItem>
+                        <span className="label">Cargo</span>
+                        <span>{userAuth.office.name}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <span className="label">Filial</span>
+                        <span>{userAuth.subsidiary.city}</span>
+                      </InfoItem>
+                    </InfoGroup>
+                  </InforUser>
+                </BasicInfo>
+                <Separator />
+              </ProfileContainer>
+
+              <LogonInfo>
+                <h2>Atualização de dados</h2>
+                <Form ref={formRef} onSubmit={handleSubmit}>
+                  <FormContent>
+                    <Input>
+                      <InputForm label="Banco" name="bank" />
+                    </Input>
+                  </FormContent>
+                  <button type="submit">
+                    {loading ? (
+                      <Loader
+                        type="Bars"
+                        color="#C32925"
+                        height={30}
+                        width={30}
+                      />
+                    ) : (
+                      <>
+                        <span>Atualizar</span>
+                        <Sync />
+                      </>
+                    )}
+                  </button>
+                </Form>
+              </LogonInfo>
+            </Tab>
+          </TabContainer>
+        </TabWrapper>
       </Content>
     </Container>
   );

@@ -11,7 +11,7 @@ import { AuthProvider } from './context/AuthContext';
 import { FormProvider } from './context/FormContext';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
-import 'antd/dist/antd.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App: React.FC = () => {
   return (

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 
 export const Container = styled.div`
   height: 100vh;
@@ -89,7 +90,7 @@ export const Content = styled.div`
 `;
 
 export const ProfileContainer = styled.div`
-  width: 70%;
+  width: 100%;
   @media (max-width: 500px) {
     width: 100%;
   }
@@ -306,3 +307,18 @@ export const LoadingContainer = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
+export const TabWrapper = styled.div`
+  width: 70%;
+`;
+export const TabContainer = styled(Tabs)`
+  border-bottom: none;
+  > a {
+    font-size: 1.8rem;
+    color: ${({ theme }) => theme.colors.primary};
+    &.nav-tabs .nav-link:hover {
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+`;
+export const Tab = styled(TabBootstrap)``;
