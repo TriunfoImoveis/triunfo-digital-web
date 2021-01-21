@@ -10,7 +10,6 @@ import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
-import Axios from 'axios';
 import AdmLayout from '../../Layouts/Adm';
 import Input from '../../../components/Input';
 
@@ -45,8 +44,8 @@ const NewBuilders: React.FC = () => {
   const [pageDetails, setPageDetails] = useState(false);
   const [builder, setBuilders] = useState<IBuilder>({} as IBuilder);
   const [selectedUf, setSelectedUf] = useState('MA');
-  const [selectedCity, setSelectedCity] = useState('0');
-  const [cities, setCities] = useState<string[]>([]);
+  // const [selectedCity, setSelectedCity] = useState('0');
+  // const [cities, setCities] = useState<string[]>([]);
   const token = localStorage.getItem('@TriunfoDigital:token');
   const history = useHistory();
 
@@ -73,26 +72,26 @@ const NewBuilders: React.FC = () => {
     }
   }, [id, token]);
 
-  useEffect(() => {
-    if (selectedUf === '0') {
-      return;
-    }
+  // useEffect(() => {
+  //   if (selectedUf === '0') {
+  //     return;
+  //   }
 
-    Axios.get<IBGECityResponse[]>(
-      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
-    ).then(response => {
-      const cityNames = response.data.map(city => city.nome);
-      setCities(cityNames);
-    });
-  }, [selectedUf]);
+  //   Axios.get<IBGECityResponse[]>(
+  //     `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
+  //   ).then(response => {
+  //     const cityNames = response.data.map(city => city.nome);
+  //     setCities(cityNames);
+  //   });
+  // }, [selectedUf]);
 
-  const handleSelectCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const city = event.target.value;
-      setSelectedCity(city);
-    },
-    [],
-  );
+  // const handleSelectCity = useCallback(
+  //   (event: ChangeEvent<HTMLSelectElement>) => {
+  //     const city = event.target.value;
+  //     setSelectedCity(city);
+  //   },
+  //   [],
+  // );
 
   const optionsState = [
     { label: 'Maranhão', value: 'MA' },
@@ -108,7 +107,7 @@ const NewBuilders: React.FC = () => {
     [],
   );
 
-  const optionsCities = cities.map(city => ({ value: city, label: city }));
+  // const optionsCities = cities.map(city => ({ value: city, label: city }));
   const unMasked = useCallback(() => {
     const fone = unMaked(formRef.current?.getFieldValue('phone'));
     formRef.current?.setFieldValue('phone', fone);
@@ -235,16 +234,36 @@ const NewBuilders: React.FC = () => {
             <InfoLogin>
               <fieldset className="login">
                 <legend>INFORMAÇÕES DE LOGIN</legend>
-                <Input label="Nome" name="name" />
-                <Input label="CNPJ" name="cnpj" maxlength={14} mask="cnpj" />
-                <Input label="E-mail" name="email" type="email" />
+                <Input
+                  label="Nome"
+                  name="name"
+                  placeholder="Contrutora Triunfo"
+                />
+                <Input
+                  label="CNPJ"
+                  name="cnpj"
+                  maxlength={14}
+                  mask="cnpj"
+                  placeholder="00.000.000/0001-12"
+                />
+                <Input
+                  label="E-mail"
+                  name="email"
+                  type="email"
+                  placeholder="triunfocontrutora@gmail.com"
+                />
                 <Input
                   label="Telefone"
                   name="phone"
                   mask="fone"
                   maxlength={11}
+                  placeholder="(99) 9999-9999"
                 />
-                <Input label="Nome do Responsável" name="responsible" />
+                <Input
+                  label="Nome do Responsável"
+                  name="responsible"
+                  placeholder="Francistelmo Santos"
+                />
                 <Select
                   name="state"
                   nameLabel="Estado"
@@ -252,13 +271,7 @@ const NewBuilders: React.FC = () => {
                   defaultValue={selectedUf}
                   onChange={handleSelectedUF}
                 />
-                <Select
-                  name="city"
-                  nameLabel="Cidade"
-                  options={optionsCities}
-                  defaultValue={selectedCity}
-                  onChange={handleSelectCity}
-                />
+                <Input name="city" label="Cidade" />
               </fieldset>
             </InfoLogin>
 

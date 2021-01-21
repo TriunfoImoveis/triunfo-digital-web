@@ -159,6 +159,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           client_buyer: Yup.object().shape({
             name: Yup.string().required('Nome Obrigatório'),
             cpf: Yup.string()
+              .min(11, 'Informe o cpf corretamente, cpf deve conter 11 digitos')
               .max(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
             date_birth: Yup.string().required('Data de nascimento obrigatória'),
@@ -168,8 +169,14 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               'Quantidade de filhos Obrigatória',
             ),
             occupation: Yup.string().required('Profissão Obrigatória'),
-            phone: Yup.string().required('Telefone obrigatório'),
-            whatsapp: Yup.string().required('Whatsapp obrigatório'),
+            phone: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 digitos')
+              .max(14, 'Digite um numero de telefone válido')
+              .required('Telefone obrigatório'),
+            whatsapp: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 digitos')
+              .max(14, 'Digite um numero de telefone válido')
+              .required('Whatsapp obrigatório'),
             email: Yup.string()
               .email('informe um email Válido')
               .required('E-mail Obrigatório'),

@@ -86,6 +86,22 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     const comission = currency(valueSale) * (currency(portcent) / 100);
     setcomissionValue(money(comission));
   }, []);
+  const validateDate = useCallback((data: string) => {
+    const [, Month, Day] = data.split('-');
+
+    if (Number(Month) > 12) {
+      formRef.current?.setFieldError(
+        'client_buyer.date_birth',
+        'Data Invalida',
+      );
+    }
+    if (Number(Day) > 31 || Number(Day) < 1) {
+      formRef.current?.setFieldError(
+        'client_buyer.date_birth',
+        'Data Invalida',
+      );
+    }
+  }, []);
 
   const unMaskValue = useCallback(() => {
     formRef.current?.setFieldValue(
@@ -128,14 +144,16 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             'Porcetagem Total da venda Obrigatória',
           ),
           origin: Yup.string().required('Origem da venda obrigatória'),
-          installments: Yup.array().of(
-            Yup.object().shape({
-              due_date: Yup.string().required('Data do Pagamento Obrigatório'),
+          installment: Yup.object()
+            .shape({
+              due_date: Yup.string().required('Data de Vencimento Obrigatório'),
               value: Yup.string().required('Valor Obrigatório'),
-            }),
-          ),
+            })
+            .required(),
           bonus: Yup.string(),
         });
+        validateDate(formRef.current?.getFieldValue('sale_date'));
+        validateDate(formRef.current?.getFieldValue('installment.due_date'));
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -154,7 +172,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [unMaskValue, nextStep, updateFormData],
+    [unMaskValue, nextStep, updateFormData, validateDate],
   );
 
   const handleValue = useCallback((value: string) => {
@@ -232,7 +250,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           <Input
             mask="date"
             name="installment.due_date"
-            label="Data do Pagamento"
+            label="Data de Vencimento"
             placeholder="07/01/2021"
           />
         </Plot>

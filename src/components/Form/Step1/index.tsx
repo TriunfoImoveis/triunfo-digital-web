@@ -8,8 +8,8 @@ import React, {
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import axios from 'axios';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
@@ -18,14 +18,15 @@ import Select from '../../Select';
 import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
-
-interface IBGECityResponse {
-  nome: string;
-}
+import { useAuth } from '../../../context/AuthContext';
 
 interface IOptionsData {
   id: string;
   name: string;
+}
+
+interface IBGECityResponse {
+  nome: string;
 }
 
 interface ISaleNewData {
@@ -47,36 +48,30 @@ interface IStep1FormData {
 
 const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
+  const { userAuth } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [cities, setCities] = useState<string[]>([]);
-  const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
-  const [builders, setBuilders] = useState<IOptionsData[]>([]);
-  const [selectedUf, setSelectedUf] = useState('MA');
-  const [selectedCity, setSelectedCity] = useState('0');
   const { updateFormData } = useForm();
 
+  const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
+  const [builders, setBuilders] = useState<IOptionsData[]>([]);
+  const [selectedUf, setSelectedUf] = useState(userAuth.subsidiary.state);
+  const [selectedCity] = useState(userAuth.subsidiary.city);
+  const [cities, setCities] = useState<string[]>([]);
+
   useEffect(() => {
-    let mounted = true;
     if (selectedUf === '0') {
       return;
     }
 
-    if (mounted) {
-      axios
-        .get<IBGECityResponse[]>(
-          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
-        )
-        .then(response => {
-          const cityNames = response.data.map(city => city.nome);
-          setCities(cityNames);
-        });
-    }
-
-    return function cleanup() {
-      mounted = false;
-    };
+    axios
+      .get<IBGECityResponse[]>(
+        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
+      )
+      .then(response => {
+        const cityNames = response.data.map(city => city.nome);
+        setCities(cityNames);
+      });
   }, [selectedUf]);
-
   useEffect(() => {
     let mounted = true;
 
@@ -115,14 +110,12 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     };
   }, [typeSale, selectedUf]);
   const optionsUFs = [
-    { label: 'Maranhão', value: 'MA' },
     { label: 'Ceará', value: 'CE' },
+    { label: 'Maranhão', value: 'MA' },
     { label: 'Piauí', value: 'PI' },
     { label: 'Paraíba', value: 'PB' },
     { label: 'São Paulo', value: 'SP' },
   ];
-
-  const optionsCities = cities.map(city => ({ value: city, label: city }));
 
   const optionsTypeImobille = propertyType.map(property => ({
     value: property.id,
@@ -132,6 +125,11 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
     value: builder.id,
+  }));
+
+  const optionsCity = cities.map(city => ({
+    label: city,
+    value: city,
   }));
 
   const handleSelectedUF = useCallback(
@@ -196,14 +194,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     [nextStep, updateFormData, typeSale],
   );
 
-  const handleSelectCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const city = event.target.value;
-      setSelectedCity(city);
-    },
-    [],
-  );
-
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
@@ -218,11 +208,9 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           />
           <Select
             name="realty.city"
-            placeholder="Cidade"
-            options={optionsCities}
-            defaultValue={selectedCity}
-            onChange={handleSelectCity}
             nameLabel="Cidade"
+            options={optionsCity}
+            defaultValue={selectedCity}
           />
         </InputGroup>
         <InputForm
