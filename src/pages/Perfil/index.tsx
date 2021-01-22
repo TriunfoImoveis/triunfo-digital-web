@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import Loader from 'react-loader-spinner';
-
+import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
 import InputForm from '../../components/Input';
 
@@ -32,8 +32,6 @@ import {
   Input,
   LoadingContainer,
   TabWrapper,
-  TabContainer,
-  Tab,
 } from './styles';
 import getValidationErros from '../../utils/getValidationErros';
 
@@ -148,12 +146,13 @@ const Perfil: React.FC = () => {
       <Content>
         <h1>Perfil do Usuário</h1>
         <TabWrapper>
-          <TabContainer
+          <Tabs
             id="tab-container"
             className="tab-container"
             defaultActiveKey="profile"
+            variant="tabs"
           >
-            <Tab eventKey="profile" title="Perfil">
+            <TabBootstrap eventKey="profile" title="Perfil">
               <ProfileContainer>
                 <BasicInfo>
                   <Avatar>
@@ -255,8 +254,8 @@ const Perfil: React.FC = () => {
                   </button>
                 </Form>
               </LogonInfo>
-            </Tab>
-            <Tab eventKey="sales" title="Vendas">
+            </TabBootstrap>
+            <TabBootstrap eventKey="sales" title="Vendas">
               <ProfileContainer>
                 <BasicInfo>
                   <Avatar>
@@ -333,8 +332,8 @@ const Perfil: React.FC = () => {
                   </button>
                 </Form>
               </LogonInfo>
-            </Tab>
-            <Tab eventKey="bank" title="Financeiro">
+            </TabBootstrap>
+            <TabBootstrap eventKey="bank" title="Financeiro">
               <ProfileContainer>
                 <BasicInfo>
                   <Avatar>
@@ -411,8 +410,8 @@ const Perfil: React.FC = () => {
                   </button>
                 </Form>
               </LogonInfo>
-            </Tab>
-          </TabContainer>
+            </TabBootstrap>
+          </Tabs>
         </TabWrapper>
       </Content>
     </Container>
