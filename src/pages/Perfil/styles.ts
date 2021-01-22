@@ -89,7 +89,7 @@ export const Content = styled.div`
 `;
 
 export const ProfileContainer = styled.div`
-  width: 70%;
+  width: 100%;
   @media (max-width: 500px) {
     width: 100%;
   }
@@ -305,4 +305,47 @@ export const LoadingContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+export const TabWrapper = styled.div`
+  width: 70%;
+  .nav-tabs {
+    border-bottom: none;
+  }
+  .nav-tabs .nav-link.active {
+    color: ${({ theme }) => theme.colors.primary};
+    background-color: transparent;
+    border-color: ${({ theme }) => theme.colors.primary}
+      ${({ theme }) => theme.colors.primary} #fff;
+  }
+
+  .nav-tabs .nav-link {
+    padding: 0.5rem 3rem;
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: 1.8rem;
+    border-radius: 1rem 1rem 0 0;
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.primaryAlpha}
+        ${({ theme }) => theme.colors.primaryAlpha} #fff;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .nav-link {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      border-radius: 0;
+      &:hover {
+        background-color: ${({ theme }) => theme.colors.primary};
+        color: #fff;
+        border-radius: 0;
+      }
+    }
+    .nav-tabs .nav-link.active {
+      background-color: ${({ theme }) => theme.colors.primary};
+      color: #fff;
+      border-radius: 0;
+    }
+  }
 `;
