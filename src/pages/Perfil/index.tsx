@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
 import * as Yup from 'yup';
-
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 
@@ -34,6 +33,7 @@ import {
   TabWrapper,
 } from './styles';
 import getValidationErros from '../../utils/getValidationErros';
+// import Select from '../../components/Select';
 
 interface FormData {
   email?: string;
@@ -48,10 +48,12 @@ const Perfil: React.FC = () => {
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { userAuth, signOut, upadatedUser } = useAuth();
 
-  const formRef = useRef<FormHandles>(null);
-  const handleSubmit = async (data: FormData) => {
+  const formProfileRef = useRef<FormHandles>(null);
+  // const formBankRef = useRef<FormHandles>(null);
+
+  const handleSubmitProfile = async (data: FormData) => {
     try {
-      formRef.current?.setErrors({});
+      formProfileRef.current?.setErrors({});
       setLoading(true);
       const schema = Yup.object().shape({
         email: Yup.string().email('Digite um e-mail válido'),
@@ -92,7 +94,7 @@ const Perfil: React.FC = () => {
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
-        formRef.current?.setErrors(erros);
+        formProfileRef.current?.setErrors(erros);
       }
       toast.error('Erro ao atualizar');
       setLoading(false);
@@ -206,7 +208,7 @@ const Perfil: React.FC = () => {
 
               <LogonInfo>
                 <h2>Atualiz ação de dados</h2>
-                <Form ref={formRef} onSubmit={handleSubmit}>
+                <Form ref={formProfileRef} onSubmit={handleSubmitProfile}>
                   <FormContent>
                     <Input>
                       <InputForm
@@ -255,7 +257,7 @@ const Perfil: React.FC = () => {
                 </Form>
               </LogonInfo>
             </TabBootstrap>
-            <TabBootstrap eventKey="sales" title="Vendas">
+            {/* <TabBootstrap eventKey="sales" title="Vendas">
               <ProfileContainer>
                 <BasicInfo>
                   <Avatar>
@@ -309,28 +311,6 @@ const Perfil: React.FC = () => {
 
               <LogonInfo>
                 <h2>Atualização de dados</h2>
-                <Form ref={formRef} onSubmit={handleSubmit}>
-                  <FormContent>
-                    <Input>
-                      <InputForm label="Banco" name="bank" />
-                    </Input>
-                  </FormContent>
-                  <button type="submit">
-                    {loading ? (
-                      <Loader
-                        type="Bars"
-                        color="#C32925"
-                        height={30}
-                        width={30}
-                      />
-                    ) : (
-                      <>
-                        <span>Atualizar</span>
-                        <Sync />
-                      </>
-                    )}
-                  </button>
-                </Form>
               </LogonInfo>
             </TabBootstrap>
             <TabBootstrap eventKey="bank" title="Financeiro">
@@ -386,11 +366,24 @@ const Perfil: React.FC = () => {
               </ProfileContainer>
 
               <LogonInfo>
-                <h2>Atualização de dados</h2>
-                <Form ref={formRef} onSubmit={handleSubmit}>
+                <h2>Dados Bancários</h2>
+                <Form ref={formBankRef} onSubmit={() => console.log('ok')}>
                   <FormContent>
                     <Input>
-                      <InputForm label="Banco" name="bank" />
+                      <InputForm label="Qual o banco" name="name_bank" />
+                    </Input>
+                    <Input>
+                      <Select
+                        nameLabel="Tipo de conta"
+                        name="type_acount"
+                        options={[
+                          { label: 'Corrente', value: 'CC' },
+                          { label: 'Poupança', value: 'CP' },
+                        ]}
+                      />
+                    </Input>
+                    <Input>
+                      <InputForm label="Número da conta" name="number_acount" />
                     </Input>
                   </FormContent>
                   <button type="submit">
@@ -410,7 +403,7 @@ const Perfil: React.FC = () => {
                   </button>
                 </Form>
               </LogonInfo>
-            </TabBootstrap>
+            </TabBootstrap> */}
           </Tabs>
         </TabWrapper>
       </Content>
