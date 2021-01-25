@@ -102,7 +102,8 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
 
   const optionsGenero = [
     { label: 'Masculino', value: 'MASCULINO' },
-    { label: 'Femenino', value: 'FEMENINO' },
+    { label: 'Feminino', value: 'FEMININO' },
+    { label: 'Outros', value: 'OUTROS' },
   ];
 
   const unMaskValue = useCallback(() => {
