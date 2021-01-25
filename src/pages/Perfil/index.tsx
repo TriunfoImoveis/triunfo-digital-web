@@ -1,134 +1,28 @@
-import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
-import * as Yup from 'yup';
-import { FormHandles } from '@unform/core';
-import { Form } from '@unform/web';
+import React from 'react';
 
 import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
-import { toast } from 'react-toastify';
-import Loader from 'react-loader-spinner';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
-import { useAuth } from '../../context/AuthContext';
-import InputForm from '../../components/Input';
 
-import { LogoHeader, Camera, Sync } from '../../assets/images';
-import api from '../../services/api';
+import { LogoHeader } from '../../assets/images';
 import {
   Container,
   Header,
   NavBarContainer,
   NavItemContent,
   Content,
-  ProfileContainer,
-  BasicInfo,
-  Avatar,
-  InforUser,
-  InfoItem,
-  InfoGroup,
-  Separator,
-  LogonInfo,
-  FormContent,
-  Input,
-  LoadingContainer,
   TabWrapper,
 } from './styles';
-import getValidationErros from '../../utils/getValidationErros';
+import UserProfile from '../../components/Profile/UserProfile';
+import UserUpdate from '../../components/Profile/UserUpdate';
+import { useAuth } from '../../context/AuthContext';
 // import Select from '../../components/Select';
 
-interface FormData {
-  email?: string;
-  oldPassword?: string;
-  newPassword?: string;
-  confirmNewPassword?: string;
-}
-
 const Perfil: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [loadingImg, setLoadingImg] = useState(false);
-  const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
-  const { userAuth, signOut, upadatedUser } = useAuth();
+  const { signOut } = useAuth();
 
-  const formProfileRef = useRef<FormHandles>(null);
   // const formBankRef = useRef<FormHandles>(null);
 
-  const handleSubmitProfile = async (data: FormData) => {
-    try {
-      formProfileRef.current?.setErrors({});
-      setLoading(true);
-      const schema = Yup.object().shape({
-        email: Yup.string().email('Digite um e-mail válido'),
-        oldPassword: Yup.string(),
-        newPassword: Yup.string().when('oldPassword', {
-          is: val => !!val.length,
-          then: Yup.string().required('Campo obrigatório'),
-          otherwise: Yup.string(),
-        }),
-        confirmNewPassword: Yup.string()
-          .when('oldPassword', {
-            is: val => !!val.length,
-            then: Yup.string().required('Campo obrigatório'),
-            otherwise: Yup.string(),
-          })
-          .oneOf([Yup.ref('newPassword'), undefined], 'Confirmação incorreta'),
-      });
-
-      await schema.validate(data, {
-        abortEarly: false,
-      });
-
-      const { email, oldPassword, newPassword, confirmNewPassword } = data;
-      const formData = {
-        email,
-        ...(oldPassword
-          ? { password: newPassword, password_confirmation: confirmNewPassword }
-          : {}),
-      };
-      const response = await api.put(`/users/${userAuth.id}`, formData, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
-      upadatedUser(response.data);
-      setLoading(false);
-      toast.success('Dados atualizados');
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const erros = getValidationErros(err);
-        formProfileRef.current?.setErrors(erros);
-      }
-      toast.error('Erro ao atualizar');
-      setLoading(false);
-      toast.error(err);
-    }
-  };
-
-  const handleAvatarChange = useCallback(
-    async (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) {
-        setLoadingImg(true);
-        try {
-          const data = new FormData();
-          data.append('avatar', e.target.files[0]);
-
-          const response = await api.patch('/users/avatar', data, {
-            headers: {
-              authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-          upadatedUser(response.data);
-          toast.success('Foto de perfil atualizada');
-          setLoadingImg(false);
-        } catch (err) {
-          toast.error('Não foi possível atualizar a foto de perfil!');
-          toast.error('Imagem tem que ser png/jpeg');
-          toast.error('Imagem tem que ser de ate 1MB');
-          setLoadingImg(false);
-        }
-      }
-    },
-    [token, upadatedUser],
-  );
   return (
     <Container>
       <Header>
@@ -155,255 +49,15 @@ const Perfil: React.FC = () => {
             variant="tabs"
           >
             <TabBootstrap eventKey="profile" title="Perfil">
-              <ProfileContainer>
-                <BasicInfo>
-                  <Avatar>
-                    <img
-                      src={
-                        userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'
-                      }
-                      alt={userAuth.name || 'Corretor'}
-                    />
-
-                    {loadingImg ? (
-                      <LoadingContainer>
-                        <Loader
-                          type="Bars"
-                          color="#c32925"
-                          height={50}
-                          width={50}
-                        />
-                      </LoadingContainer>
-                    ) : (
-                      <label htmlFor="avatar">
-                        <input
-                          type="file"
-                          id="avatar"
-                          onChange={handleAvatarChange}
-                        />
-                        <span>Mudar a foto</span>
-                        <Camera />
-                      </label>
-                    )}
-                  </Avatar>
-                  <InforUser>
-                    <InfoItem>
-                      <span className="label">Nome</span>
-                      <span>{userAuth.name}</span>
-                    </InfoItem>
-                    <InfoGroup>
-                      <InfoItem>
-                        <span className="label">Cargo</span>
-                        <span>{userAuth.office.name}</span>
-                      </InfoItem>
-                      <InfoItem>
-                        <span className="label">Filial</span>
-                        <span>{userAuth.subsidiary.city}</span>
-                      </InfoItem>
-                    </InfoGroup>
-                  </InforUser>
-                </BasicInfo>
-                <Separator />
-              </ProfileContainer>
-
-              <LogonInfo>
-                <h2>Atualiz ação de dados</h2>
-                <Form ref={formProfileRef} onSubmit={handleSubmitProfile}>
-                  <FormContent>
-                    <Input>
-                      <InputForm
-                        label="Email"
-                        name="email"
-                        defaultValue={userAuth.email}
-                      />
-                    </Input>
-                    <Input>
-                      <InputForm
-                        label="Senha Antiga"
-                        name="oldPassword"
-                        type="password"
-                      />
-                    </Input>
-                    <Input>
-                      <InputForm
-                        label="Nova Senha"
-                        name="newPassword"
-                        type="password"
-                      />
-                    </Input>
-                    <Input>
-                      <InputForm
-                        label="Repetetir Nova Senha"
-                        name="confirmNewPassword"
-                        type="password"
-                      />
-                    </Input>
-                  </FormContent>
-                  <button type="submit">
-                    {loading ? (
-                      <Loader
-                        type="Bars"
-                        color="#C32925"
-                        height={30}
-                        width={30}
-                      />
-                    ) : (
-                      <>
-                        <span>Atualizar</span>
-                        <Sync />
-                      </>
-                    )}
-                  </button>
-                </Form>
-              </LogonInfo>
-            </TabBootstrap>
-            {/* <TabBootstrap eventKey="sales" title="Vendas">
-              <ProfileContainer>
-                <BasicInfo>
-                  <Avatar>
-                    <img
-                      src={
-                        userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'
-                      }
-                      alt={userAuth.name || 'Corretor'}
-                    />
-
-                    {loadingImg ? (
-                      <LoadingContainer>
-                        <Loader
-                          type="Bars"
-                          color="#c32925"
-                          height={50}
-                          width={50}
-                        />
-                      </LoadingContainer>
-                    ) : (
-                      <label htmlFor="avatar">
-                        <input
-                          type="file"
-                          id="avatar"
-                          onChange={handleAvatarChange}
-                        />
-                        <span>Mudar a foto</span>
-                        <Camera />
-                      </label>
-                    )}
-                  </Avatar>
-                  <InforUser>
-                    <InfoItem>
-                      <span className="label">Nome</span>
-                      <span>{userAuth.name}</span>
-                    </InfoItem>
-                    <InfoGroup>
-                      <InfoItem>
-                        <span className="label">Cargo</span>
-                        <span>{userAuth.office.name}</span>
-                      </InfoItem>
-                      <InfoItem>
-                        <span className="label">Filial</span>
-                        <span>{userAuth.subsidiary.city}</span>
-                      </InfoItem>
-                    </InfoGroup>
-                  </InforUser>
-                </BasicInfo>
-                <Separator />
-              </ProfileContainer>
-
-              <LogonInfo>
-                <h2>Atualização de dados</h2>
-              </LogonInfo>
+              <UserProfile />
+              <UserUpdate />
             </TabBootstrap>
             <TabBootstrap eventKey="bank" title="Financeiro">
-              <ProfileContainer>
-                <BasicInfo>
-                  <Avatar>
-                    <img
-                      src={
-                        userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'
-                      }
-                      alt={userAuth.name || 'Corretor'}
-                    />
-
-                    {loadingImg ? (
-                      <LoadingContainer>
-                        <Loader
-                          type="Bars"
-                          color="#c32925"
-                          height={50}
-                          width={50}
-                        />
-                      </LoadingContainer>
-                    ) : (
-                      <label htmlFor="avatar">
-                        <input
-                          type="file"
-                          id="avatar"
-                          onChange={handleAvatarChange}
-                        />
-                        <span>Mudar a foto</span>
-                        <Camera />
-                      </label>
-                    )}
-                  </Avatar>
-                  <InforUser>
-                    <InfoItem>
-                      <span className="label">Nome</span>
-                      <span>{userAuth.name}</span>
-                    </InfoItem>
-                    <InfoGroup>
-                      <InfoItem>
-                        <span className="label">Cargo</span>
-                        <span>{userAuth.office.name}</span>
-                      </InfoItem>
-                      <InfoItem>
-                        <span className="label">Filial</span>
-                        <span>{userAuth.subsidiary.city}</span>
-                      </InfoItem>
-                    </InfoGroup>
-                  </InforUser>
-                </BasicInfo>
-                <Separator />
-              </ProfileContainer>
-
-              <LogonInfo>
-                <h2>Dados Bancários</h2>
-                <Form ref={formBankRef} onSubmit={() => console.log('ok')}>
-                  <FormContent>
-                    <Input>
-                      <InputForm label="Qual o banco" name="name_bank" />
-                    </Input>
-                    <Input>
-                      <Select
-                        nameLabel="Tipo de conta"
-                        name="type_acount"
-                        options={[
-                          { label: 'Corrente', value: 'CC' },
-                          { label: 'Poupança', value: 'CP' },
-                        ]}
-                      />
-                    </Input>
-                    <Input>
-                      <InputForm label="Número da conta" name="number_acount" />
-                    </Input>
-                  </FormContent>
-                  <button type="submit">
-                    {loading ? (
-                      <Loader
-                        type="Bars"
-                        color="#C32925"
-                        height={30}
-                        width={30}
-                      />
-                    ) : (
-                      <>
-                        <span>Atualizar</span>
-                        <Sync />
-                      </>
-                    )}
-                  </button>
-                </Form>
-              </LogonInfo>
-            </TabBootstrap> */}
+              <UserProfile />
+            </TabBootstrap>
+            <TabBootstrap eventKey="sales" title="Vendas">
+              <UserProfile />
+            </TabBootstrap>
           </Tabs>
         </TabWrapper>
       </Content>
