@@ -46,9 +46,11 @@ const AsyncSelect: React.FC<Props> = ({ name, label, ...rest }) => {
 
   const handleInputFocus = useCallback(() => {
     setIsFocused(true);
+    setErrorField(false);
   }, []);
   const handleInputBlur = useCallback(() => {
     setIsFocused(false);
+    setErrorField(false);
   }, []);
 
   return (

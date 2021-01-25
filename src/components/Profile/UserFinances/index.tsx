@@ -1,4 +1,5 @@
 import React, { useRef, useCallback } from 'react';
+import * as Yup from 'yup';
 import { FormHandles, SubmitHandler } from '@unform/core';
 import { Form } from '@unform/web';
 import Input from '../../Input';
@@ -6,9 +7,13 @@ import { Sync } from '../../../assets/images';
 
 import Button from '../../Button';
 import AsyncSelect from '../../AsyncSelect';
-import banks from '../../../services/Data/banks';
+import {
+  loadOptionsBank,
+  loadOptionsTypeAccount,
+} from '../../../utils/loadOptions';
 
 import { Container, FormContent, InputGroup } from './styles';
+import getValidationErros from '../../../utils/getValidationErros';
 
 interface BankData {
   bank: string;
@@ -16,72 +21,43 @@ interface BankData {
   account: string;
 }
 
-interface OptionsData {
-  label: string;
-  value: string;
-}
 const UserFinances: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
-
-  const finances = {
-    banks: 'CAIXA ECONOMICA FEDERAL',
-    agency: '12345',
-    account: '12345678-9',
-    type: 'CORRENTE',
-  };
-
-  const handleSubmit: SubmitHandler<BankData> = useCallback(data => {
-    console.log(data);
+  const handleSubmit: SubmitHandler<BankData> = useCallback(async data => {
+    formRef.current?.setErrors({});
+    try {
+      const schema = Yup.object().shape({
+        bank: Yup.string().required('Instituição financeira Obrigatória'),
+        agency: Yup.string()
+          .min(4, 'A agência deve conter no minímo 4 digítos')
+          .max(6, 'Iforme uma agência válida!')
+          .required('Agência Obrigatória'),
+        account: Yup.string().required('Número da conta obrigatório'),
+        type: Yup.string().required('Tipo da conta é obrigatório'),
+      });
+      await schema.validate(data, {
+        abortEarly: false,
+      });
+      console.log(data);
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formRef.current?.setErrors(erros);
+      }
+    }
   }, []);
 
-  const opionsBanks = banks.map(bank => ({
-    label: `${bank.code} - ${bank.fullName}`,
-    value: bank.fullName,
-  }));
-
-  const OptionsTypeAccount = [
-    { label: 'POUPANÇA', value: 'POUPANÇA' },
-    { label: 'CORRENTE', value: 'CORRENTE' },
-  ];
-
-  const filterBanks = useCallback(
-    (inputValue: string, options: OptionsData[]) => {
-      return options.filter(option =>
-        option.label.toLowerCase().includes(inputValue.toLowerCase()),
-      );
-    },
-    [],
-  );
-
-  const loadOptionsBank = useCallback(
-    (inputValue: string, callback: any) => {
-      setTimeout(() => {
-        callback(filterBanks(inputValue, opionsBanks));
-      }, 1000);
-    },
-    [filterBanks, opionsBanks],
-  );
-  const loadOptionsTypeAccount = useCallback(
-    (inputValue: string, callback: any) => {
-      setTimeout(() => {
-        callback(filterBanks(inputValue, OptionsTypeAccount));
-      }, 1000);
-    },
-    [filterBanks, OptionsTypeAccount],
-  );
   return (
     <Container>
       <h2>Dados Bancários</h2>
-      <Form ref={formRef} onSubmit={handleSubmit} initialData={finances}>
+      <Form ref={formRef} onSubmit={handleSubmit}>
         <FormContent>
           <AsyncSelect
-            name="banks"
+            name="bank"
             label="Instituição Financeira"
             loadOptions={loadOptionsBank}
-            options={opionsBanks}
             placeholder="Digite o código ou o nome do banco"
             defaultOptions
-            defaultInputValue={finances.banks}
           />
           <InputGroup>
             <Input name="agency" label="Agência" />
@@ -91,10 +67,8 @@ const UserFinances: React.FC = () => {
             name="type"
             label="Tipo da Conta"
             loadOptions={loadOptionsTypeAccount}
-            options={opionsBanks}
             placeholder="Informe o tipo da conta"
             defaultOptions
-            defaultInputValue={finances.type}
           />
         </FormContent>
         <Button>
