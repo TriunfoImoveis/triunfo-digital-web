@@ -16,6 +16,7 @@ import {
 import UserProfile from '../../components/Profile/UserProfile';
 import UserUpdate from '../../components/Profile/UserUpdate';
 import { useAuth } from '../../context/AuthContext';
+import UserFinances from '../../components/Profile/UserFinances';
 // import Select from '../../components/Select';
 
 const Perfil: React.FC = () => {
@@ -45,15 +46,16 @@ const Perfil: React.FC = () => {
           <Tabs
             id="tab-container"
             className="tab-container"
-            defaultActiveKey="profile"
+            defaultActiveKey="finances"
             variant="tabs"
           >
             <TabBootstrap eventKey="profile" title="Perfil">
               <UserProfile />
               <UserUpdate />
             </TabBootstrap>
-            <TabBootstrap eventKey="bank" title="Financeiro">
+            <TabBootstrap eventKey="finances" title="Financeiro">
               <UserProfile />
+              <UserFinances />
             </TabBootstrap>
             <TabBootstrap eventKey="sales" title="Vendas">
               <UserProfile />
