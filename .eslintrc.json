@@ -30,6 +30,7 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "no-explicit-any": "off",
     "array-callback-return": "off",
     "no-shadow": "off",
     "no-return-assign": "off",

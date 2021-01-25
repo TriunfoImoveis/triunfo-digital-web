@@ -50,3 +50,14 @@ export const FormContent = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
+export const InputGroup = styled.div`
+  display: flex;
+  justify-content: space-between;
+  > div {
+    width: 50%;
+    & + div {
+      margin-left: 1.2rem;
+    }
+  }
+`;
