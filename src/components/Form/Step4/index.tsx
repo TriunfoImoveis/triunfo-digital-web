@@ -208,7 +208,20 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             placeholder="DD/MM/AAAA"
           />
         </InputGroup>
-
+        <Plot>
+          <Input
+            mask="currency"
+            name="installment.value"
+            label="Ato"
+            placeholder="R$ 0,00"
+          />
+          <Input
+            mask="date"
+            name="installment.due_date"
+            label="Data de Pagamento do Ato"
+            placeholder="07/01/2021"
+          />
+        </Plot>
         <InputGroup>
           <InputForm
             label="% da Venda"
