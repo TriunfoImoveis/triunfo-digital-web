@@ -16,6 +16,9 @@ import getValidationErros from '../../../utils/getValidationErros';
 
 import Select from '../../Select';
 import Button from '../../Button';
+import AsyncSelect from '../../AsyncSelect';
+
+import { loadPropertyType } from '../../../utils/loadOptions';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
 import { useAuth } from '../../../context/AuthContext';
@@ -72,22 +75,22 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
         setCities(cityNames);
       });
   }, [selectedUf]);
-  useEffect(() => {
-    let mounted = true;
+  // useEffect(() => {
+  //   let mounted = true;
 
-    const loadPropertyType = async () => {
-      const response = await api.get('/property-type');
-      setPropertyType(response.data);
-    };
+  //   const loadPropertyType = async () => {
+  //     const response = await api.get('/property-type');
+  //     setPropertyType(response.data);
+  //   };
 
-    if (mounted) {
-      loadPropertyType();
-    }
+  //   if (mounted) {
+  //     loadPropertyType();
+  //   }
 
-    return function cleanup() {
-      mounted = false;
-    };
-  }, []);
+  //   return function cleanup() {
+  //     mounted = false;
+  //   };
+  // }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -117,10 +120,10 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     { label: 'São Paulo', value: 'SP' },
   ];
 
-  const optionsTypeImobille = propertyType.map(property => ({
-    value: property.id,
-    label: property.name,
-  }));
+  // const optionsTypeImobille = propertyType.map(property => ({
+  //   value: property.id,
+  //   label: property.name,
+  // }));
 
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
@@ -218,11 +221,12 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           name="realty.neighborhood"
           placeholder="Bairro"
         />
-        <Select
+        <AsyncSelect
           name="realty.property"
-          placeholder="Tipo do Imovel"
-          options={optionsTypeImobille}
-          nameLabel="Tipo do Imóvel"
+          label="Tipo de Imóvel"
+          loadOptions={loadPropertyType}
+          placeholder="Selecione o tipo do imovel"
+          defaultOptions
         />
         <InputForm label="Unidade" name="realty.unit" placeholder="Unidade" />
         {typeSale === 'new' && (
