@@ -20,6 +20,7 @@ import Select from '../../Select';
 import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
+import { valiateDate } from '../../../utils/validateDate';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -163,7 +164,15 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .min(11, 'Informe o cpf corretamente, cpf deve conter 11 digitos')
               .max(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
-            date_birth: Yup.string().required('Data de nascimento obrigatória'),
+            date_birth: Yup.string()
+              .test('validateDate', 'Data Invalida', function valid(value) {
+                const { path, createError } = this;
+                const isValid = valiateDate(value);
+                return (
+                  isValid || createError({ path, message: 'Data Invalida' })
+                );
+              })
+              .required('Data de nascimento obrigatória'),
             civil_status: Yup.string().required('Estado Civil Obrigatório'),
             gender: Yup.string().required('Genero Obrigatório'),
             number_children: Yup.string().required(
@@ -195,6 +204,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('CPF obrigatório'),
             date_birth: Yup.string()
               .max(12, 'Formato da Data DD/MM/AAAA')
+              .test('validateDate', 'Data Invalida', function valid(value) {
+                const { path, createError } = this;
+                const isValid = valiateDate(value);
+                return (
+                  isValid || createError({ path, message: 'Data Invalida' })
+                );
+              })
               .required('Data de nascimento obrigatória'),
             civil_status: Yup.string().required('Estado Civil Obrigatório'),
             gender: Yup.string().required('Genero Obrigatório'),
