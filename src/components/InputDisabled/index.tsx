@@ -4,7 +4,7 @@ import { ContainerWrapper, Container, Label, Content } from './styles';
 
 interface IInputDisableProps {
   label: string;
-  data?: string;
+  data?: string | null;
   status?: 'PAGO' | 'PENDENTE';
 }
 
