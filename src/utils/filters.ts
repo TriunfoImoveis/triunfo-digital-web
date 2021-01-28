@@ -3,7 +3,6 @@ interface OptionsData {
   value: string;
 }
 
-// Bancos
 export const filterOptions = (
   inputValue: string,
   options: OptionsData[],

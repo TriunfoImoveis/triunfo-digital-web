@@ -1,10 +1,4 @@
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
@@ -14,11 +8,8 @@ import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 
-import Select from '../../Select';
 import Button from '../../Button';
-import AsyncSelect from '../../AsyncSelect';
-
-import { loadPropertyType } from '../../../utils/loadOptions';
+import ReactSelect from '../../ReactSelect';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
 import { useAuth } from '../../../context/AuthContext';
@@ -55,10 +46,9 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const [loading, setLoading] = useState(false);
   const { updateFormData } = useForm();
 
-  const [propertyType, setPropertyType] = useState<IOptionsData[]>([]);
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
+  const [propertyTypes, setPropertyTypes] = useState<IOptionsData[]>([]);
   const [selectedUf, setSelectedUf] = useState(userAuth.subsidiary.state);
-  const [selectedCity] = useState(userAuth.subsidiary.city);
   const [cities, setCities] = useState<string[]>([]);
 
   useEffect(() => {
@@ -75,22 +65,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
         setCities(cityNames);
       });
   }, [selectedUf]);
-  // useEffect(() => {
-  //   let mounted = true;
-
-  //   const loadPropertyType = async () => {
-  //     const response = await api.get('/property-type');
-  //     setPropertyType(response.data);
-  //   };
-
-  //   if (mounted) {
-  //     loadPropertyType();
-  //   }
-
-  //   return function cleanup() {
-  //     mounted = false;
-  //   };
-  // }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -105,8 +79,17 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
       });
       setBuilders(response.data);
     };
+    const loadPropertyType = async () => {
+      const response = await api.get('/property-type');
+      const options = response.data.map(data => ({
+        label: data.name,
+        value: data.id,
+      }));
+      setPropertyTypes(options);
+    };
     if (mounted) {
       loadBuilders();
+      loadPropertyType();
     }
     return function cleanup() {
       mounted = false;
@@ -120,11 +103,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     { label: 'São Paulo', value: 'SP' },
   ];
 
-  // const optionsTypeImobille = propertyType.map(property => ({
-  //   value: property.id,
-  //   label: property.name,
-  // }));
-
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
     value: builder.id,
@@ -135,13 +113,15 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     value: city,
   }));
 
-  const handleSelectedUF = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const uf = event.target.value;
-      setSelectedUf(uf);
-    },
-    [],
-  );
+  const handleSelectedUF = (inputValue, { action }) => {
+    switch (action) {
+      case 'select-option':
+        setSelectedUf(inputValue.value);
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleSubmit = useCallback(
     async (data: IStep1FormData) => {
@@ -202,18 +182,18 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         <InputForm label="Empreendimento" name="realty.enterprise" />
         <InputGroup>
-          <Select
+          <ReactSelect
             name="realty.state"
+            placeholder="Informe o estado"
             options={optionsUFs}
-            defaultValue={selectedUf}
             onChange={handleSelectedUF}
-            nameLabel="Estado"
+            label="Estado"
           />
-          <Select
+          <ReactSelect
             name="realty.city"
-            nameLabel="Cidade"
+            label="Cidade"
+            placeholder="Digite a cidade"
             options={optionsCity}
-            defaultValue={selectedCity}
           />
         </InputGroup>
         <InputForm
@@ -221,19 +201,19 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           name="realty.neighborhood"
           placeholder="Bairro"
         />
-        <AsyncSelect
+        <ReactSelect
           name="realty.property"
           label="Tipo de Imóvel"
-          loadOptions={loadPropertyType}
           placeholder="Selecione o tipo do imovel"
-          defaultOptions
+          options={propertyTypes}
         />
         <InputForm label="Unidade" name="realty.unit" placeholder="Unidade" />
         {typeSale === 'new' && (
-          <Select
+          <ReactSelect
+            placeholder="Selecione a construtora"
             name="builder"
             options={optionBuilder}
-            nameLabel="Contrutora"
+            label="Contrutora"
           />
         )}
         <ButtonGroup>

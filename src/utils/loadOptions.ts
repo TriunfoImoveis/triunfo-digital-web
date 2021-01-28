@@ -1,4 +1,3 @@
-import api from '../services/api';
 import banks from '../services/Data/banks';
 import { filterOptions } from './filters';
 
@@ -30,18 +29,14 @@ export const loadOptionsTypeAccount = (inputValue: string, callback: any) => {
   }, 1000);
 };
 
-// TIPOS DE PROPRIEDADE
-export const loadPropertyType = async (
-  inputValue: string,
-  callback: any,
-  uf: string,
-) => {
-  const response = await api.get('/property-type');
-  const optionsPropertyType: OptionsData[] = response.data.map(data => ({
-    label: data.name,
-    value: data.id,
-  }));
+// CIDADES
+const optionsStates: OptionsData[] = [
+  { label: 'Maranhão', value: 'MA' },
+  { label: 'Ceará', value: 'CE' },
+  { label: 'PI', value: 'MA' },
+];
+export const loadStates = async (inputValue: string, callback: any) => {
   setTimeout(() => {
-    callback(filterOptions(inputValue, optionsPropertyType));
+    callback(filterOptions(inputValue, optionsStates));
   }, 1000);
 };
