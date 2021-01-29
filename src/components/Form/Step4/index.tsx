@@ -22,6 +22,7 @@ import {
   Plot,
 } from './styles';
 import Input from '../../Input';
+import { valiateDate } from '../../../utils/validateDate';
 
 interface ISaleNewData {
   prevStep: () => void;
@@ -86,22 +87,6 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     const comission = currency(valueSale) * (currency(portcent) / 100);
     setcomissionValue(money(comission));
   }, []);
-  const validateDate = useCallback((data: string) => {
-    const [, Month, Day] = data.split('-');
-
-    if (Number(Month) > 12) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-    if (Number(Day) > 31 || Number(Day) < 1) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-  }, []);
 
   const unMaskValue = useCallback(() => {
     formRef.current?.setFieldValue(
@@ -111,6 +96,10 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     formRef.current?.setFieldValue(
       'sale_date',
       DateYMD(formRef.current?.getFieldValue('sale_date')),
+    );
+    formRef.current?.setFieldValue(
+      'pay_date_signal',
+      DateYMD(formRef.current?.getFieldValue('pay_date_signal')),
     );
     formRef.current?.setFieldValue(
       'percentage_sale',
@@ -125,6 +114,10 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       currency(formRef.current.getFieldValue('installment.value')),
     );
     formRef.current?.setFieldValue(
+      'value_signal',
+      currency(formRef.current.getFieldValue('value_signal')),
+    );
+    formRef.current?.setFieldValue(
       'installment.due_date',
       DateYMD(formRef.current.getFieldValue('installment.due_date')),
     );
@@ -137,23 +130,44 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         setLoading(true);
         const schema = Yup.object().shape({
           realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
-          sale_date: Yup.string().required('Data da Venda Obrigatória'),
+          sale_date: Yup.string()
+            .test('validateDate', 'Data Invalida', function valid(value) {
+              const { path, createError } = this;
+              const isValid = valiateDate(value);
+              return isValid || createError({ path, message: 'Data Invalida' });
+            })
+            .required('Data da Venda Obrigatória'),
           company: Yup.string(),
           payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
           percentage_sale: Yup.string().required(
             'Porcetagem Total da venda Obrigatória',
           ),
           origin: Yup.string().required('Origem da venda obrigatória'),
+          value_signal: Yup.string().required('Valor do Ato Obrigatório'),
+          pay_date_signal: Yup.string()
+            .test('validateDate', 'Data Invalida', function valid(value) {
+              const { path, createError } = this;
+              const isValid = valiateDate(value);
+              return isValid || createError({ path, message: 'Data Invalida' });
+            })
+            .required('Data do pagamento do Ato Obrigatório'),
           installment: Yup.object()
             .shape({
-              due_date: Yup.string().required('Data de Vencimento Obrigatório'),
+              due_date: Yup.string()
+                .test('validateDate', 'Data Invalida', function valid(value) {
+                  const { path, createError } = this;
+                  const isValid = valiateDate(value);
+                  return (
+                    isValid || createError({ path, message: 'Data Invalida' })
+                  );
+                })
+                .required('Data de Vencimento Obrigatório'),
               value: Yup.string().required('Valor Obrigatório'),
             })
             .required(),
           bonus: Yup.string(),
         });
-        validateDate(formRef.current?.getFieldValue('sale_date'));
-        validateDate(formRef.current?.getFieldValue('installment.due_date'));
+
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -172,7 +186,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [unMaskValue, nextStep, updateFormData, validateDate],
+    [unMaskValue, nextStep, updateFormData],
   );
 
   const handleValue = useCallback((value: string) => {
@@ -208,7 +222,20 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             placeholder="DD/MM/AAAA"
           />
         </InputGroup>
-
+        <Plot>
+          <Input
+            mask="currency"
+            name="value_signal"
+            label="Ato"
+            placeholder="R$ 0,00"
+          />
+          <Input
+            mask="date"
+            name="pay_date_signal"
+            label="Data de Pagamento do Ato"
+            placeholder="07/01/2021"
+          />
+        </Plot>
         <InputGroup>
           <InputForm
             label="% da Venda"

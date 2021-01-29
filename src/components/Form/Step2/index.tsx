@@ -20,6 +20,7 @@ import Select from '../../ReactSelect';
 import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
+import { valiateDate } from '../../../utils/validateDate';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -102,7 +103,8 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
 
   const optionsGenero = [
     { label: 'Masculino', value: 'MASCULINO' },
-    { label: 'Femenino', value: 'FEMENINO' },
+    { label: 'Feminino', value: 'FEMININO' },
+    { label: 'Outros', value: 'OUTROS' },
   ];
 
   const unMaskValue = useCallback(() => {
@@ -153,29 +155,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
     }
   }, [typeClient]);
 
-  const validateDate = useCallback((data: string) => {
-    const [Year, Month, Day] = data.split('-');
-    const curentYear = new Date().getFullYear();
-    if (Number(Year) > Number(curentYear)) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-    if (Number(Month) > 12) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-    if (Number(Day) > 31 || Number(Day) < 1) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-  }, []);
-
   const handleSubmit = useCallback(async () => {
     formRef.current?.setErrors({});
     unMaskValue();
@@ -193,7 +172,15 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               )
               .max(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
-            date_birth: Yup.string().required('Data de nascimento obrigatória'),
+            date_birth: Yup.string()
+              .test('validateDate', 'Data Invalida', function valid(value) {
+                const { path, createError } = this;
+                const isValid = valiateDate(value);
+                return (
+                  isValid || createError({ path, message: 'Data Invalida' })
+                );
+              })
+              .required('Data de nascimento obrigatória'),
             civil_status: Yup.string().required('Estado Civil Obrigatório'),
             gender: Yup.string().required('Genero Obrigatório'),
             number_children: Yup.string().required(
@@ -213,7 +200,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('E-mail Obrigatório'),
           }),
         });
-        validateDate(formRef.current?.getFieldValue('client_buyer.date_birth'));
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -226,6 +212,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('CPF obrigatório'),
             date_birth: Yup.string()
               .min(12, 'Formato da Data DD/MM/AAAA')
+              .test('validateDate', 'Data Invalida', function valid(value) {
+                const { path, createError } = this;
+                const isValid = valiateDate(value);
+                return (
+                  isValid || createError({ path, message: 'Data Invalida' })
+                );
+              })
               .required('Data de nascimento obrigatória'),
             civil_status: Yup.string().required('Estado Civil Obrigatório'),
             gender: Yup.string().required('Genero Obrigatório'),
@@ -240,7 +233,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('E-mail Obrigatório'),
           }),
         });
-        validateDate(formRef.current?.getFieldValue('client_buyer.date_birth'));
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -258,7 +250,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
       toast.error('ERROR!, verifique as informações e tente novamente');
       setLoading(false);
     }
-  }, [updateFormData, nextStep, unMaskValue, typeClient, validateDate]);
+  }, [updateFormData, nextStep, unMaskValue, typeClient]);
 
   return (
     <Container>
