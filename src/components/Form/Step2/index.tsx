@@ -16,10 +16,11 @@ import { DateBRL } from '../../../utils/format';
 import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
 
-import Select from '../../Select';
+import Select from '../../ReactSelect';
 import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
+import { valiateDate } from '../../../utils/validateDate';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -154,29 +155,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
     }
   }, [typeClient]);
 
-  const validateDate = useCallback((data: string) => {
-    const [Year, Month, Day] = data.split('-');
-    const curentYear = new Date().getFullYear();
-    if (Number(Year) > Number(curentYear)) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-    if (Number(Month) > 12) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-    if (Number(Day) > 31 || Number(Day) < 1) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-  }, []);
-
   const handleSubmit = useCallback(async () => {
     formRef.current?.setErrors({});
     unMaskValue();
@@ -194,7 +172,15 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               )
               .max(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
-            date_birth: Yup.string().required('Data de nascimento obrigatória'),
+            date_birth: Yup.string()
+              .test('validateDate', 'Data Invalida', function valid(value) {
+                const { path, createError } = this;
+                const isValid = valiateDate(value);
+                return (
+                  isValid || createError({ path, message: 'Data Invalida' })
+                );
+              })
+              .required('Data de nascimento obrigatória'),
             civil_status: Yup.string().required('Estado Civil Obrigatório'),
             gender: Yup.string().required('Genero Obrigatório'),
             number_children: Yup.string().required(
@@ -214,7 +200,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('E-mail Obrigatório'),
           }),
         });
-        validateDate(formRef.current?.getFieldValue('client_buyer.date_birth'));
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -227,6 +212,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('CPF obrigatório'),
             date_birth: Yup.string()
               .min(12, 'Formato da Data DD/MM/AAAA')
+              .test('validateDate', 'Data Invalida', function valid(value) {
+                const { path, createError } = this;
+                const isValid = valiateDate(value);
+                return (
+                  isValid || createError({ path, message: 'Data Invalida' })
+                );
+              })
               .required('Data de nascimento obrigatória'),
             civil_status: Yup.string().required('Estado Civil Obrigatório'),
             gender: Yup.string().required('Genero Obrigatório'),
@@ -241,7 +233,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               .required('E-mail Obrigatório'),
           }),
         });
-        validateDate(formRef.current?.getFieldValue('client_buyer.date_birth'));
         await schema.validate(data, {
           abortEarly: false,
         });
@@ -259,7 +250,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
       toast.error('ERROR!, verifique as informações e tente novamente');
       setLoading(false);
     }
-  }, [updateFormData, nextStep, unMaskValue, typeClient, validateDate]);
+  }, [updateFormData, nextStep, unMaskValue, typeClient]);
 
   return (
     <Container>
@@ -289,20 +280,41 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               defaultValue={client.name}
             />
             <InputGroup>
-              <Select
-                name="civil_status"
-                options={optionsEstadoCivil}
-                nameLabel="Estado Civíl"
-                disabled={disabled}
-                defaultValue={client.civil_status}
-              />
-              <Select
-                name="gender"
-                options={optionsGenero}
-                nameLabel="Gênero"
-                disabled={disabled}
-                defaultValue={client.gender}
-              />
+              {disabled ? (
+                <>
+                  <InputForm
+                    label="Estado Civíl"
+                    name="civil_status"
+                    readOnly={disabled}
+                    defaultValue={client.civil_status}
+                  />
+                  <InputForm
+                    label="Gênero"
+                    name="gender"
+                    readOnly={disabled}
+                    defaultValue={client.gender}
+                  />
+                </>
+              ) : (
+                <>
+                  <Select
+                    name="civil_status"
+                    placeholder="Infome o Estado Civíl"
+                    options={optionsEstadoCivil}
+                    label="Estado Civíl"
+                    isDisabled={disabled}
+                    defaultInputValue={client.civil_status}
+                  />
+                  <Select
+                    name="gender"
+                    placeholder="Infome o Genêno"
+                    options={optionsGenero}
+                    label="Gênero"
+                    isDisabled={disabled}
+                    defaultInputValue={client.gender}
+                  />
+                </>
+              )}
             </InputGroup>
             <InputGroup>
               <InputForm
@@ -382,14 +394,14 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                 options={optionsEstadoCivil}
                 nameLabel="Estado Civíl"
                 disabled={disabled}
-                defaultValue={client.civil_status}
+                defaultInputValue={client.civil_status}
               />
               <Select
                 name="gender"
                 options={optionsGenero}
                 nameLabel="Gênero"
                 disabled={disabled}
-                defaultValue={client.gender}
+                defaultInputValue={client.gender}
               />
             </InputGroup>
             <InputGroup>

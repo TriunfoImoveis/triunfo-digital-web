@@ -6,9 +6,6 @@ export const Container = styled.div`
   padding-bottom: 1.6rem;
   form {
     margin-top: 1.2rem;
-    div {
-      margin-bottom: 0.2rem;
-    }
   }
 `;
 export const InputForm = styled(Input)`
@@ -132,7 +129,7 @@ export const Directors = styled.div`
 
   > input {
     border-radius: 0.5rem;
-    padding: 1.4rem;
+    padding: 1rem;
     background: transparent;
     padding-left: 1.2rem;
     width: 100%;

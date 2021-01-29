@@ -7,7 +7,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 
-import Select from '../../Select';
+import Select from '../../ReactSelect';
 import Button from '../../Button';
 
 import {
@@ -18,17 +18,12 @@ import {
   UserCaptivators,
   Directors,
 } from './styles';
-import deleteItem from '../../../utils/deleteItem';
 import api from '../../../services/api';
 
 interface ISaleNewData {
   nextStep: () => void;
   prevStep: () => void;
   typeSale: 'new' | 'used';
-}
-
-interface ISallers {
-  name: string;
 }
 
 interface IDirectores {
@@ -49,8 +44,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
   const [user_directors, setUserDirectors] = useState([]);
-  const [sallers, setSalers] = useState([{ name: 'id' }]);
-  const [captavitors, setCaptvators] = useState([{ name: 'id' }]);
+
   const { updateFormData } = useForm();
   const { userAuth } = useAuth();
 
@@ -80,7 +74,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   useEffect(() => {
     const loadDirector = async () => {
       const response = await api.get(`/users?city=${city}&office=Diretor`);
-      const directors = response.data.map(response => ({
+      const directors = response.data.map((response: any) => ({
         id: response.id,
       }));
       setUserDirectors(directors);
@@ -119,42 +113,73 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
 
   const handleSubmit = useCallback(
     async data => {
+      const { users_sellers, users_captivators } = data;
+      let formData = {};
       formRef.current?.setErrors({});
       formRef.current?.setFieldValue('user_director', user_directors);
+      if (users_sellers) {
+        const newUsersSellers = users_sellers.map((saller: any) => ({
+          id: saller,
+        }));
+        formData = {
+          ...data,
+          users_sellers: newUsersSellers,
+          users_directors: user_directors,
+        };
+      }
+      if (users_captivators) {
+        const newUsersSellers = users_sellers.map((saller: any) => ({
+          id: saller,
+        }));
+        const newUsersCap = users_captivators.map((cap: any) => ({
+          id: cap,
+        }));
+        formData = {
+          ...data,
+          users_sellers: newUsersSellers,
+          users_captivators: newUsersCap,
+          users_directors: user_directors,
+        };
+      }
+
       try {
         setLoading(true);
         if (typeSale === 'new') {
           const schema = Yup.object().shape({
-            users_sellers: Yup.array().of(
-              Yup.object().shape({
-                id: Yup.string().required('Vendedor Obrigatório'),
-              }),
-            ),
+            users_sellers: Yup.array()
+              .of(
+                Yup.object().shape({
+                  id: Yup.string().required('Vendedor Obrigatório'),
+                }),
+              )
+              .required('Vendedor(es) Obrigatório'),
             user_coordinator: Yup.string().required('Coordenador Obrigatório'),
           });
-          await schema.validate(data, {
+          await schema.validate(formData, {
             abortEarly: false,
           });
         } else if (typeSale === 'used') {
           const schema = Yup.object().shape({
-            users_sellers: Yup.array().of(
-              Yup.object().shape({
-                id: Yup.string().required('Vendedor Obrigatório'),
-              }),
-            ),
-            users_captivators: Yup.array().of(
-              Yup.object().shape({
-                id: Yup.string().required('Captador Obrigatório'),
-              }),
-            ),
+            users_sellers: Yup.array()
+              .of(
+                Yup.object().shape({
+                  id: Yup.string().required('Vendedor Obrigatório'),
+                }),
+              )
+              .required('Vendedor Obrigatório'),
+            users_captivators: Yup.array()
+              .of(
+                Yup.object().shape({
+                  id: Yup.string().required('Captador Obrigatório'),
+                }),
+              )
+              .required('Captador Obrigatório'),
           });
-          await schema.validate(data, {
+          await schema.validate(formData, {
             abortEarly: false,
           });
         }
-
-        const newData = { ...data, users_directors: user_directors };
-        updateFormData(newData);
+        updateFormData(formData);
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -162,31 +187,11 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
           const erros = getValidationErros(err);
           formRef.current?.setErrors(erros);
         }
-
         toast.error('ERROR!, verifique as informações e tente novamente');
         setLoading(false);
       }
     },
     [nextStep, typeSale, updateFormData, user_directors],
-  );
-
-  const handleAddSallers = useCallback(() => {
-    setSalers([...sallers, { name: 'id' }]);
-  }, [sallers]);
-  const handleAddCaptivators = useCallback(() => {
-    setCaptvators([...captavitors, { name: 'id' }]);
-  }, [captavitors]);
-
-  const handleRemoveRealtors = useCallback((array: ISallers[], id: number) => {
-    const newArray = deleteItem(array, id);
-    setSalers(newArray);
-  }, []);
-  const handleRemoveCaptvators = useCallback(
-    (array: ISallers[], id: number) => {
-      const newArray = deleteItem(array, id);
-      setCaptvators(newArray);
-    },
-    [],
   );
   return (
     <Container>
@@ -195,58 +200,28 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
           <>
             {userAuth.office.name === 'Presidente' ||
             userAuth.office.name === 'Gerente' ||
-            userAuth.office.name === 'Diretor'
-              ? sallers.map((saller, index) =>
-                  index > 0 ? (
-                    <Select
-                      key={saller.name}
-                      name={`users_sellers[${index}].${saller.name}`}
-                      options={optionsAllRealtors}
-                      nameLabel="Corretor Vendedor"
-                      remove
-                      removeRealtors={() =>
-                        handleRemoveRealtors(sallers, index)
-                      }
-                    />
-                  ) : (
-                    <Select
-                      key={saller.name}
-                      name={`users_sellers[${index}].${saller.name}`}
-                      options={optionsAllRealtors}
-                      nameLabel="Corretor Vendedor"
-                      add
-                      addRealtors={handleAddSallers}
-                    />
-                  ),
-                )
-              : sallers.map((saller, index) =>
-                  index > 0 ? (
-                    <Select
-                      key={saller.name}
-                      name={`users_sellers[${index}].${saller.name}`}
-                      options={optionsRealtors}
-                      nameLabel="Corretor Vendedor"
-                      remove
-                      removeRealtors={() =>
-                        handleRemoveRealtors(sallers, index)
-                      }
-                    />
-                  ) : (
-                    <Select
-                      key={saller.name}
-                      name={`users_sellers[${index}].${saller.name}`}
-                      options={[{ label: userAuth.name, value: userAuth.id }]}
-                      nameLabel="Corretor Vendedor"
-                      add
-                      addRealtors={handleAddSallers}
-                    />
-                  ),
-                )}
+            userAuth.office.name === 'Diretor' ? (
+              <Select
+                name="users_sellers"
+                options={optionsAllRealtors}
+                label="Corretor Vendedor"
+                placeholder="Infome o corretor(es)"
+                isMulti
+              />
+            ) : (
+              <Select
+                name="users_sellers"
+                options={optionsRealtors}
+                label="Corretor Vendedor"
+                placeholder="Infome o corretor(es)"
+                isMulti
+              />
+            )}
             <InputGroup>
               <Select
                 name="user_coordinator"
                 options={optionsCoordenador}
-                nameLabel="Coordenador"
+                label="Coordenador"
               />
               <Directors>
                 <span>Diretores</span>
@@ -261,87 +236,53 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               <UserSallersContainer>
                 {userAuth.office.name === 'Presidente' ||
                 userAuth.office.name === 'Gerente' ||
-                userAuth.office.name === 'Diretor'
-                  ? sallers.map((saller, index) =>
-                      index > 0 ? (
-                        <Select
-                          key={saller.name}
-                          name={`users_sellers[${index}].${saller.name}`}
-                          options={optionsAllRealtors}
-                          nameLabel="Corretor Vendedor"
-                          remove
-                          removeRealtors={() =>
-                            handleRemoveRealtors(captavitors, index)
-                          }
-                        />
-                      ) : (
-                        <Select
-                          key={saller.name}
-                          name={`users_sellers[${index}].${saller.name}`}
-                          options={optionsAllRealtors}
-                          nameLabel="Corretor Vendedor"
-                          add
-                          addRealtors={handleAddSallers}
-                        />
-                      ),
-                    )
-                  : sallers.map((saller, index) =>
-                      index > 0 ? (
-                        <Select
-                          key={saller.name}
-                          name={`users_sellers[${index}].${saller.name}`}
-                          options={optionsRealtors}
-                          nameLabel="Corretor Vendedor"
-                          remove
-                          removeRealtors={() =>
-                            handleRemoveRealtors(captavitors, index)
-                          }
-                        />
-                      ) : (
-                        <Select
-                          key={saller.name}
-                          name={`users_sellers[${index}].${saller.name}`}
-                          options={[
-                            { label: userAuth.name, value: userAuth.id },
-                          ]}
-                          nameLabel="Corretor Vendedor"
-                          add
-                          addRealtors={handleAddSallers}
-                        />
-                      ),
-                    )}
+                userAuth.office.name === 'Diretor' ? (
+                  <Select
+                    name="users_sellers"
+                    options={optionsAllRealtors}
+                    label="Corretor Vendedor"
+                    placeholder="Infome o corretor(es)"
+                    isMulti
+                  />
+                ) : (
+                  <Select
+                    name="users_sellers"
+                    options={optionsRealtors}
+                    label="Corretor Vendedor"
+                    placeholder="Infome o corretor(es)"
+                    isMulti
+                  />
+                )}
               </UserSallersContainer>
 
               <UserCaptivators>
-                {captavitors.map((cap, index) =>
-                  index > 0 ? (
-                    <Select
-                      key={cap.name}
-                      name={`users_captivators[${index}].${cap.name}`}
-                      options={optionsCaptvators}
-                      nameLabel="Corretor Captador"
-                      remove
-                      removeRealtors={() =>
-                        handleRemoveCaptvators(captavitors, index)
-                      }
-                    />
-                  ) : (
-                    <Select
-                      key={cap.name}
-                      name={`users_captivators[${index}].${cap.name}`}
-                      options={optionsCaptvators}
-                      nameLabel="Corretor Captador"
-                      add
-                      addRealtors={handleAddCaptivators}
-                    />
-                  ),
-                )}
+                <Select
+                  name="users_captivators"
+                  options={optionsCaptvators}
+                  label="Corretor Captador"
+                  isMulti
+                  placeholder="Informe o(s) Captador(es)"
+                />
               </UserCaptivators>
             </InputGroup>
-            <Directors>
-              <span>Diretores</span>
-              <input defaultValue={setDirector()} readOnly />
-            </Directors>
+            {userAuth.subsidiary.city === 'Teresina' ? (
+              <InputGroup>
+                <Select
+                  name="user_coordinator"
+                  options={optionsCoordenador}
+                  label="Coordenador"
+                />
+                <Directors>
+                  <span>Diretores</span>
+                  <input defaultValue={setDirector()} readOnly />
+                </Directors>
+              </InputGroup>
+            ) : (
+              <Directors>
+                <span>Diretores</span>
+                <input defaultValue={setDirector()} readOnly />
+              </Directors>
+            )}
           </>
         )}
 

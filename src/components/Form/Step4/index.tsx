@@ -3,13 +3,15 @@ import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
+import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 import { currency, DateYMD } from '../../../utils/unMasked';
 import { money } from '../../../utils/masked';
+
 import api from '../../../services/api';
 
-import Select from '../../Select';
+import Select from '../../ReactSelect';
 import Button from '../../Button';
 import CheckBox from '../../CheckBox';
 
@@ -20,8 +22,11 @@ import {
   InputForm,
   BonusConatainer,
   Plot,
+  AddButton,
+  PaymentInstallments,
 } from './styles';
 import Input from '../../Input';
+import { valiateDate } from '../../../utils/validateDate';
 
 interface ISaleNewData {
   prevStep: () => void;
@@ -35,6 +40,15 @@ interface IOptionsData {
   percentage?: number;
 }
 
+interface IInstallments {
+  due_date: string;
+  id?: string;
+  installment_number: number;
+  value: string;
+  status?: 'PAGO' | 'PENDENTE';
+  pay_date?: string;
+}
+
 const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
@@ -42,6 +56,9 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   const [paymentTypes, setpaymentTypes] = useState<IOptionsData[]>([]);
   const [comissionValue, setcomissionValue] = useState('');
   const [isExistBonus, setisExistBonus] = useState(false);
+  const [installments, setInstallments] = useState<IInstallments[]>([
+    { installment_number: 1, value: '', due_date: '' },
+  ]);
   const { updateFormData } = useForm();
 
   useEffect(() => {
@@ -86,23 +103,15 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     const comission = currency(valueSale) * (currency(portcent) / 100);
     setcomissionValue(money(comission));
   }, []);
-  const validateDate = useCallback((data: string) => {
-    const [, Month, Day] = data.split('-');
 
-    if (Number(Month) > 12) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-    if (Number(Day) > 31 || Number(Day) < 1) {
-      formRef.current?.setFieldError(
-        'client_buyer.date_birth',
-        'Data Invalida',
-      );
-    }
-  }, []);
-
+  const unMaskedPlotsValues = (installments: IInstallments[]) => {
+    const unMaskedInstallments = installments.map(installment => ({
+      installment_number: installment.installment_number,
+      due_date: DateYMD(installment.due_date),
+      value: String(currency(installment.value)),
+    }));
+    return unMaskedInstallments;
+  };
   const unMaskValue = useCallback(() => {
     formRef.current?.setFieldValue(
       'realty_ammount',
@@ -113,6 +122,10 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       DateYMD(formRef.current?.getFieldValue('sale_date')),
     );
     formRef.current?.setFieldValue(
+      'pay_date_signal',
+      DateYMD(formRef.current?.getFieldValue('pay_date_signal')),
+    );
+    formRef.current?.setFieldValue(
       'percentage_sale',
       currency(formRef.current?.getFieldValue('percentage_sale')),
     );
@@ -121,12 +134,8 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       currency(formRef.current?.getFieldValue('commission')),
     );
     formRef.current?.setFieldValue(
-      'installment.value',
-      currency(formRef.current.getFieldValue('installment.value')),
-    );
-    formRef.current?.setFieldValue(
-      'installment.due_date',
-      DateYMD(formRef.current.getFieldValue('installment.due_date')),
+      'value_signal',
+      currency(formRef.current.getFieldValue('value_signal')),
     );
   }, []);
 
@@ -137,29 +146,52 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         setLoading(true);
         const schema = Yup.object().shape({
           realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
-          sale_date: Yup.string().required('Data da Venda Obrigatória'),
+          sale_date: Yup.string()
+            .test('validateDate', 'Data Invalida', function valid(value) {
+              const { path, createError } = this;
+              const isValid = valiateDate(value);
+              return isValid || createError({ path, message: 'Data Invalida' });
+            })
+            .required('Data da Venda Obrigatória'),
           company: Yup.string(),
           payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
           percentage_sale: Yup.string().required(
             'Porcetagem Total da venda Obrigatória',
           ),
           origin: Yup.string().required('Origem da venda obrigatória'),
-          installment: Yup.object()
-            .shape({
-              due_date: Yup.string().required('Data de Vencimento Obrigatório'),
-              value: Yup.string().required('Valor Obrigatório'),
+          value_signal: Yup.string().required('Valor do Ato Obrigatório'),
+          pay_date_signal: Yup.string()
+            .test('validateDate', 'Data Invalida', function valid(value) {
+              const { path, createError } = this;
+              const isValid = valiateDate(value);
+              return isValid || createError({ path, message: 'Data Invalida' });
             })
-            .required(),
+            .required('Data do pagamento do Ato Obrigatório'),
+          installments: Yup.array().of(
+            Yup.object().shape({
+              value: Yup.string().required('Valor da parcela obrigatória'),
+              due_date: Yup.string()
+                .test('validateDate', 'Data Invalida', function valid(value) {
+                  const { path, createError } = this;
+                  const isValid = valiateDate(value);
+                  return (
+                    isValid || createError({ path, message: 'Data Invalida' })
+                  );
+                })
+                .required('Data do pagamento da parcela obrigatória'),
+            }),
+          ),
           bonus: Yup.string(),
         });
-        validateDate(formRef.current?.getFieldValue('sale_date'));
-        validateDate(formRef.current?.getFieldValue('installment.due_date'));
+
         await schema.validate(data, {
           abortEarly: false,
         });
+        const installments = unMaskedPlotsValues(data.installments);
         unMaskValue();
         const newdata = formRef.current?.getData();
-        updateFormData(newdata || {});
+        const financesData = { ...newdata, installments };
+        updateFormData(financesData || {});
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -172,7 +204,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [unMaskValue, nextStep, updateFormData, validateDate],
+    [unMaskValue, nextStep, updateFormData],
   );
 
   const handleValue = useCallback((value: string) => {
@@ -191,6 +223,28 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     }
   }, []);
 
+  const addPlots = useCallback(() => {
+    const listPlots = installments.slice();
+    const numberPlot = Number(
+      formRef.current?.getFieldValue(
+        `installments[${installments.length - 1}].installment_number`,
+      ),
+    );
+
+    listPlots.push({
+      installment_number: numberPlot + 1,
+      due_date: '',
+      value: '',
+    });
+    setInstallments(listPlots);
+  }, [installments]);
+  const removePlots = useCallback(() => {
+    const listPlots = installments.slice();
+    listPlots.pop();
+
+    setInstallments(listPlots);
+  }, [installments]);
+
   return (
     <Container>
       <Form ref={formRef} onSubmit={handleSubmit}>
@@ -208,7 +262,20 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             placeholder="DD/MM/AAAA"
           />
         </InputGroup>
-
+        <Plot>
+          <Input
+            mask="currency"
+            name="value_signal"
+            label="Ato"
+            placeholder="R$ 0,00"
+          />
+          <Input
+            mask="date"
+            name="pay_date_signal"
+            label="Data de Pagamento do Ato"
+            placeholder="07/01/2021"
+          />
+        </Plot>
         <InputGroup>
           <InputForm
             label="% da Venda"
@@ -229,33 +296,82 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           <Select
             name="payment_type"
             options={optionsFormaPagamento}
-            nameLabel="Forma de pagamento"
+            label="Forma de pagamento"
+            placeholder="Selecione a forma de pagamento da comissão"
           />
         </InputGroup>
-        <Plot>
-          <Input
-            type="number"
-            name="installment.installment_number"
-            label="Parcela"
-            min={1}
-            readOnly
-            defaultValue={1}
-          />
-          <Input
-            mask="currency"
-            name="installment.value"
-            label="Valor"
-            placeholder="R$ 0,00"
-          />
-          <Input
-            mask="date"
-            name="installment.due_date"
-            label="Data de Vencimento"
-            placeholder="07/01/2021"
-          />
-        </Plot>
+        {installments.length !== 0 ? (
+          <PaymentInstallments>
+            {installments.map((installment, index) =>
+              index === 0 ? (
+                <Plot key={installment.installment_number}>
+                  <Input
+                    type="number"
+                    name={`installments[${index}].installment_number`}
+                    label="Parcela"
+                    min={1}
+                    readOnly
+                    defaultValue={installment.installment_number}
+                  />
+                  <Input
+                    mask="currency"
+                    name={`installments[${index}].value`}
+                    label="Valor da Parcela"
+                    placeholder="R$ 0,00"
+                    defaultValue={installment.value}
+                  />
+                  <Input
+                    mask="date"
+                    name={`installments[${index}].due_date`}
+                    label="Data de Vencimento"
+                    placeholder="07/01/2021"
+                    defaultValue={installment.due_date}
+                  />
 
-        <Select name="origin" options={optionsOptions} nameLabel="Origem" />
+                  <AddButton type="button" onClick={addPlots}>
+                    <FaPlus size={20} color="#FFF" />
+                  </AddButton>
+                </Plot>
+              ) : (
+                <Plot key={installment.installment_number}>
+                  <Input
+                    type="number"
+                    name={`installments[${index}].installment_number`}
+                    label="Parcela"
+                    min={1}
+                    readOnly
+                    defaultValue={index + 1}
+                  />
+                  <Input
+                    mask="currency"
+                    name={`installments[${index}].value`}
+                    label="Valor da Parcela"
+                    placeholder="R$ 0,00"
+                    defaultValue={installment.value}
+                  />
+                  <Input
+                    mask="date"
+                    name={`installments[${index}].due_date`}
+                    label="Data de Vencimento"
+                    placeholder="07/01/2021"
+                    defaultValue={installment.due_date}
+                  />
+
+                  <AddButton type="button" onClick={removePlots}>
+                    <FaMinus size={20} color="#FFF" />
+                  </AddButton>
+                </Plot>
+              ),
+            )}
+          </PaymentInstallments>
+        ) : null}
+
+        <Select
+          name="origin"
+          options={optionsOptions}
+          label="Origem"
+          placeholder="Selecione a origem"
+        />
         <BonusConatainer>
           <span>Bonus da Venda ?</span>
           <CheckBox options={optionsBonus} handleValue={handleValue} />

@@ -72,26 +72,14 @@ interface ISaleData {
     id: string;
     name: string;
   };
-  client_buyer: IClientBuyer;
+  client_buyer: IClient;
   installments: {
     due_date: string;
     id: string;
     installment_number: number;
     value: string;
   }[];
-  client_seller?: {
-    civil_status: string;
-    cpf: string;
-    date_birth: string;
-    email: string;
-    gender: string;
-    id: string;
-    name: string;
-    number_children: number;
-    occupation: string;
-    phone: string;
-    whatsapp: string;
-  };
+  client_seller?: IClient;
   commission: string;
   company?: {
     id: string;
@@ -132,6 +120,10 @@ interface ISaleData {
     id: string;
     name: string;
   }[];
+
+  value_signal?: string | null;
+  payment_signal: boolean;
+  pay_date_signal?: string | null;
 }
 
 interface IBuilder {
@@ -167,7 +159,7 @@ interface ITypeProperty {
   name: string;
 }
 
-interface IClientBuyer {
+interface IClient {
   civil_status: string;
   cpf: string;
   date_birth: string;
@@ -214,7 +206,8 @@ const DetailsSale: React.FC = () => {
   const [paymentType, setPaymentType] = useState({} as IPaymentType);
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
   const [typeProperty, setTypePrperty] = useState({} as ITypeProperty);
-  const [clientBuyer, setClientBuyer] = useState({} as IClientBuyer);
+  const [clientBuyer, setClientBuyer] = useState({} as IClient);
+  const [clientSaller, setClientSeller] = useState({} as IClient);
   const [coordinator, setCoordinator] = useState<ICoordinator>(
     {} as ICoordinator,
   );
@@ -272,6 +265,8 @@ const DetailsSale: React.FC = () => {
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = formatPrice(sale.commission);
         const saleDate = DateBRL(sale.sale_date);
+        const valueSignal = formatPrice(sale.value_signal);
+        const PayDateSignal = DateBRL(sale.pay_date_signal);
         const installmentData = sale.installments;
         const newInstallments = installmentData.map(i => ({
           ...i,
@@ -288,6 +283,8 @@ const DetailsSale: React.FC = () => {
           (sale.realty_ammount = realtyAmmount),
           (sale.commission = commission),
           (sale.sale_date = saleDate),
+          (sale.pay_date_signal = PayDateSignal),
+          (sale.value_signal = valueSignal),
         );
         const newSaleFormatted: ISaleData = {
           ...saleFormatted,
@@ -298,10 +295,11 @@ const DetailsSale: React.FC = () => {
         );
         setInstallments(newInstallments);
         setInstallmentsPay(installmentPay);
-        setSale(newSaleFormatted);
         setRealty(sale.realty);
+        setSale(newSaleFormatted);
         setTypePrperty(sale.realty.property);
         setClientBuyer(sale.client_buyer);
+        setClientSeller(sale.client_seller);
         setPaymentType(sale.payment_type);
         setBuilder(sale.builder);
         setSallers(sallers);
@@ -589,7 +587,7 @@ const DetailsSale: React.FC = () => {
 
   const optionsGenero = [
     { label: 'Masculino', value: 'MASCULINO' },
-    { label: 'Femenino', value: 'FEMENINO' },
+    { label: 'Feminino', value: 'FEMININO' },
   ];
   const optionsMotive = motivies.map(motive => ({
     label: motive.description,
@@ -642,10 +640,16 @@ const DetailsSale: React.FC = () => {
           const vgv = formRef.current?.getFieldValue('realty_ammount');
           const dateSale = formRef.current?.getFieldValue('sale_date');
           const comission = formRef.current?.getFieldValue('commission');
+          const pay_date_signal = formRef.current?.getFieldValue(
+            'pay_date_signal',
+          );
+          const value_signal = formRef.current?.getFieldValue('value_signal');
           formData = Object.assign(
             data,
             (data.realty_ammount = unMaked(vgv)),
+            (data.value_signal = unMaked(value_signal)),
             (data.sale_date = DateYMD(dateSale)),
+            (data.pay_date_signal = DateYMD(pay_date_signal)),
             (data.commission = unMaked(comission)),
           );
         }
@@ -693,6 +697,32 @@ const DetailsSale: React.FC = () => {
       }
       try {
         await api.patch(`/installment/paid/${idPlot}`, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success('status do pagamento atualizado');
+        window.location.reload();
+      } catch (error) {
+        if (error.response) {
+          toast.error(`ERROR! ${error.response.message}`);
+        } else if (error.response) {
+          toast.error(`Erro interno do servidor contate o suporte`);
+        } else {
+          toast.error('Não foi possível confirmar o pagamento');
+        }
+      }
+    },
+    [token],
+  );
+  const handlePaySignal = useCallback(
+    async idSale => {
+      if (!idSale) {
+        toast.error('Nao foi possivel validar a parcela');
+        return;
+      }
+      try {
+        await api.patch(`/sale/valid-signal/${idSale}`, {
           headers: {
             authorization: `Bearer ${token}`,
           },
@@ -951,61 +981,103 @@ const DetailsSale: React.FC = () => {
                       </button>
                     ) : null}
                   </Legend>
-                  <Input
-                    label="Nome Completo"
-                    name="client_seller.name"
-                    placeholder="Nome Completo"
-                    readOnly={edits.seller}
-                  />
-                  <InputGroup>
-                    <Input
-                      label="CPF"
-                      name="client_seller.cpf"
-                      placeholder="CPF"
-                      readOnly={edits.seller}
-                    />
-                    <Input
-                      label="Data de Nascimento"
-                      name="client_seller.date_birth"
-                      placeholder="Data de Nascimento"
-                      readOnly={edits.seller}
-                    />
-                  </InputGroup>
-                  <InputGroup>
-                    <Input
-                      label="Telefone"
-                      name="client_seller.phone"
-                      placeholder="Telefone"
-                      readOnly={edits.seller}
-                    />
-                    <Input
-                      label="E-mail"
-                      name="client_seller.email"
-                      type="email"
-                      placeholder="E-mail"
-                      readOnly={edits.seller}
-                    />
-                  </InputGroup>
-                  <InputGroup>
-                    <Select
-                      nameLabel="Estado Civíl"
-                      name="client_seller.civil_status"
-                      options={optionsEstadoCivil}
-                      disabled={edits.seller}
-                    />
-                    <Select
-                      nameLabel="Gênero"
-                      name="client_seller.gender"
-                      options={optionsGenero}
-                      disabled={edits.seller}
-                    />
-                    <Input
-                      label="Numero de Filhos"
-                      name="client_seller.number_children"
-                      placeholder="Número de filhos"
-                      readOnly={edits.seller}
-                    />
-                  </InputGroup>
+                  {edits.seller ? (
+                    <>
+                      <InputDisable
+                        label="Nome Completo"
+                        data={clientSaller.name}
+                      />
+                      <InputGroup>
+                        <InputDisable label="CPF" data={clientSaller.cpf} />
+                        <InputDisable
+                          label="Data de Nascimento"
+                          data={clientSaller.date_birth}
+                        />
+                      </InputGroup>
+                      <InputGroup>
+                        <InputDisable
+                          label="Telefone"
+                          data={clientSaller.phone}
+                        />
+                        <InputDisable
+                          label="E-mail"
+                          data={clientSaller.email}
+                        />
+                      </InputGroup>
+                      <InputGroup>
+                        <InputDisable
+                          label="Estado Civíl"
+                          data={clientSaller.civil_status}
+                        />
+                        <InputDisable
+                          label="Gênero"
+                          data={clientSaller.gender}
+                        />
+                        <InputDisable
+                          label="Numero de Filhos"
+                          data={clientSaller.number_children}
+                        />
+                      </InputGroup>
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        label="Nome Completo"
+                        name="client_seller.name"
+                        placeholder="Nome Completo"
+                        readOnly={edits.seller}
+                      />
+                      <InputGroup>
+                        <Input
+                          label="CPF"
+                          name="client_seller.cpf"
+                          placeholder="CPF"
+                          readOnly={edits.seller}
+                        />
+                        <Input
+                          label="Data de Nascimento"
+                          name="client_seller.date_birth"
+                          placeholder="Data de Nascimento"
+                          readOnly={edits.seller}
+                        />
+                      </InputGroup>
+                      <InputGroup>
+                        <Input
+                          label="Telefone"
+                          name="client_seller.phone"
+                          placeholder="Telefone"
+                          readOnly={edits.seller}
+                        />
+                        <Input
+                          label="E-mail"
+                          name="client_seller.email"
+                          type="email"
+                          placeholder="E-mail"
+                          readOnly={edits.seller}
+                        />
+                      </InputGroup>
+                      <InputGroup>
+                        <Select
+                          nameLabel="Estado Civíl"
+                          name="client_seller.civil_status"
+                          options={optionsEstadoCivil}
+                          disabled={edits.seller}
+                        />
+                        <Select
+                          nameLabel="Gênero"
+                          name="client_seller.gender"
+                          options={optionsGenero}
+                          disabled={edits.seller}
+                        />
+                        <Input
+                          label="Numero de Filhos"
+                          name="client_seller.number_children"
+                          placeholder="Número de filhos"
+                          readOnly={edits.seller}
+                        />
+                      </InputGroup>
+                    </>
+                  )}
                 </fieldset>
               </SaleData>
             )}
@@ -1051,19 +1123,31 @@ const DetailsSale: React.FC = () => {
                 )}
                 {sale.sale_type === 'USADO' &&
                   captvators &&
-                  captvators?.map((cap, index) => (
-                    <Input
-                      key={cap.name}
-                      label={
-                        captvators.length === 1
-                          ? 'Corretor Captador'
-                          : `Captador ${index + 1}`
-                      }
-                      name={`sale_has_captivators[${index}].name`}
-                      placeholder="Corretor Vendedor"
-                      readOnly={edits.realtos}
-                    />
-                  ))}
+                  captvators?.map((cap, index) =>
+                    edits.realtos ? (
+                      <InputDisable
+                        key={cap.name}
+                        label={
+                          captvators.length === 1
+                            ? 'Corretor Vendedor'
+                            : `Vendedor ${index + 1}`
+                        }
+                        data={cap.name}
+                      />
+                    ) : (
+                      <Input
+                        key={cap.name}
+                        label={
+                          captvators.length === 1
+                            ? 'Corretor Captador'
+                            : `Captador ${index + 1}`
+                        }
+                        name={`sale_has_captivators[${index}].name`}
+                        placeholder="Corretor Vendedor"
+                        readOnly={edits.realtos}
+                      />
+                    ),
+                  )}
                 {coordinator &&
                   (edits.realtos ? (
                     <InputDisable
@@ -1137,6 +1221,32 @@ const DetailsSale: React.FC = () => {
                         </div>
                       ) : null}
                     </InputGroup>
+                    <InputGroup>
+                      <Plot>
+                        <InputDisable
+                          label="Valor do Ato"
+                          data={sale.value_signal}
+                        />
+                        <InputDisable
+                          label="Data de Vencimento"
+                          data={sale.pay_date_signal}
+                        />
+                        <InputDisable
+                          label="Status"
+                          data={sale.payment_signal ? 'PAGO' : 'PENDENTE'}
+                          status={sale.payment_signal ? 'PAGO' : 'PENDENTE'}
+                        />
+                      </Plot>
+                      {!sale.payment_signal && (
+                        <AddButton
+                          type="button"
+                          className="valid"
+                          onClick={() => handlePaySignal(sale.id)}
+                        >
+                          <FaCheck size={20} color="#FCF9F9" />
+                        </AddButton>
+                      )}
+                    </InputGroup>
                   </>
                 ) : (
                   <>
@@ -1181,6 +1291,7 @@ const DetailsSale: React.FC = () => {
                         options={optionsPaymentType}
                         defaultValue={paymentType.name}
                       />
+
                       {sale.status === 'NAO_VALIDADO' ? (
                         <div className="button-modal">
                           <ButtonModal type="button" onClick={showModal}>
@@ -1193,6 +1304,22 @@ const DetailsSale: React.FC = () => {
                           </ButtonModal>
                         </div>
                       ) : null}
+                    </InputGroup>
+                    <InputGroup>
+                      <Plot>
+                        <Input
+                          label="Valor do Ato"
+                          name="value_signal"
+                          mask="currency"
+                          placeholder="R$ 00,00"
+                        />
+                        <Input
+                          label="Data de Pagamento"
+                          name="pay_date_signal"
+                          mask="date"
+                          placeholder="DD/MM/AAAA"
+                        />
+                      </Plot>
                     </InputGroup>
                   </>
                 )}
@@ -1285,7 +1412,7 @@ const DetailsSale: React.FC = () => {
                       name="company"
                       options={optionsEmpresa}
                     />
-                    <Input name="porcent_company" label="% do Imposto" />
+                    <Input name="percentage_company" label="% do Imposto" />
                   </InputGroup>
                 )}
               </fieldset>

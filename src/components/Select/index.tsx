@@ -72,7 +72,7 @@ const Select: React.FC<SelectProps> = ({
   }, [fieldName, registerField, name]);
   return (
     <ContainerWrapper>
-      <span className="label">{nameLabel}</span>
+      {nameLabel && <span className="label">{nameLabel}</span>}
       <Container
         isErrored={errorField}
         isFilled={isFilled}
