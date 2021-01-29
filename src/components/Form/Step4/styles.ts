@@ -171,7 +171,7 @@ export const AddButton = styled.button`
   height: 4.8rem;
   border: 0;
   border-radius: 0 0.4rem 0.4rem 0;
-  background: ${({ theme }) => theme.colors.primaryAlpha};
+  background: ${({ theme }) => theme.colors.danger};
 
   &.valid {
     margin-top: 2.8rem;
@@ -186,7 +186,7 @@ export const AddButton = styled.button`
   }
 
   @media (max-width: 500px) {
-    margin-top: -0.4rem;
+    margin-top: 0;
     width: 100%;
     border-radius: 0.4rem;
   }

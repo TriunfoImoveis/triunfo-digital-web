@@ -106,7 +106,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
 
   const unMaskedPlotsValues = (installments: IInstallments[]) => {
     const unMaskedInstallments = installments.map(installment => ({
-      instalment_number: installment.installment_number,
+      installment_number: installment.installment_number,
       due_date: DateYMD(installment.due_date),
       value: String(currency(installment.value)),
     }));
@@ -329,7 +329,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
                   />
 
                   <AddButton type="button" onClick={addPlots}>
-                    <FaPlus size={20} color="#C32925" />
+                    <FaPlus size={20} color="#FFF" />
                   </AddButton>
                 </Plot>
               ) : (
@@ -358,7 +358,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
                   />
 
                   <AddButton type="button" onClick={removePlots}>
-                    <FaMinus size={20} color="#C32925" />
+                    <FaMinus size={20} color="#FFF" />
                   </AddButton>
                 </Plot>
               ),

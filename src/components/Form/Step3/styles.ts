@@ -129,7 +129,7 @@ export const Directors = styled.div`
 
   > input {
     border-radius: 0.5rem;
-    padding: 1.4rem;
+    padding: 1rem;
     background: transparent;
     padding-left: 1.2rem;
     width: 100%;
