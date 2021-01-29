@@ -16,7 +16,7 @@ import { DateBRL } from '../../../utils/format';
 import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
 
-import Select from '../../Select';
+import Select from '../../ReactSelect';
 import Button from '../../Button';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
@@ -272,20 +272,41 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               defaultValue={client.name}
             />
             <InputGroup>
-              <Select
-                name="civil_status"
-                options={optionsEstadoCivil}
-                nameLabel="Estado Civíl"
-                disabled={disabled}
-                defaultValue={client.civil_status}
-              />
-              <Select
-                name="gender"
-                options={optionsGenero}
-                nameLabel="Gênero"
-                disabled={disabled}
-                defaultValue={client.gender}
-              />
+              {disabled ? (
+                <>
+                  <InputForm
+                    label="Estado Civíl"
+                    name="civil_status"
+                    readOnly={disabled}
+                    defaultValue={client.civil_status}
+                  />
+                  <InputForm
+                    label="Gênero"
+                    name="gender"
+                    readOnly={disabled}
+                    defaultValue={client.gender}
+                  />
+                </>
+              ) : (
+                <>
+                  <Select
+                    name="civil_status"
+                    placeholder="Infome o Estado Civíl"
+                    options={optionsEstadoCivil}
+                    label="Estado Civíl"
+                    isDisabled={disabled}
+                    defaultInputValue={client.civil_status}
+                  />
+                  <Select
+                    name="gender"
+                    placeholder="Infome o Genêno"
+                    options={optionsGenero}
+                    label="Gênero"
+                    isDisabled={disabled}
+                    defaultInputValue={client.gender}
+                  />
+                </>
+              )}
             </InputGroup>
             <InputGroup>
               <InputForm
@@ -360,20 +381,41 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               defaultValue={client.name}
             />
             <InputGroup>
-              <Select
-                name="civil_status"
-                options={optionsEstadoCivil}
-                nameLabel="Estado Civíl"
-                disabled={disabled}
-                defaultValue={client.civil_status}
-              />
-              <Select
-                name="gender"
-                options={optionsGenero}
-                nameLabel="Gênero"
-                disabled={disabled}
-                defaultValue={client.gender}
-              />
+              {disabled ? (
+                <>
+                  <InputForm
+                    label="Estado Civíl"
+                    name="civil_status"
+                    readOnly={disabled}
+                    defaultValue={client.civil_status}
+                  />
+                  <InputForm
+                    label="Gênero"
+                    name="gender"
+                    readOnly={disabled}
+                    defaultValue={client.gender}
+                  />
+                </>
+              ) : (
+                <>
+                  <Select
+                    name="civil_status"
+                    placeholder="Infome o Estado Civíl"
+                    options={optionsEstadoCivil}
+                    label="Estado Civíl"
+                    isDisabled={disabled}
+                    defaultInputValue={client.civil_status}
+                  />
+                  <Select
+                    name="gender"
+                    placeholder="Infome o Genêno"
+                    options={optionsGenero}
+                    label="Gênero"
+                    isDisabled={disabled}
+                    defaultInputValue={client.gender}
+                  />
+                </>
+              )}
             </InputGroup>
             <InputGroup>
               <InputForm
