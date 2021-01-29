@@ -103,6 +103,13 @@ export const Container = styled.div<ContainerProps>`
     }
   }
 
+  .select__clear-indicator {
+    color: #fff;
+    &:hover {
+      color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+
   ${props =>
     props.isErrored &&
     css`

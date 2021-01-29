@@ -9,7 +9,7 @@ import { currency, DateYMD } from '../../../utils/unMasked';
 import { money } from '../../../utils/masked';
 import api from '../../../services/api';
 
-import Select from '../../Select';
+import Select from '../../ReactSelect';
 import Button from '../../Button';
 import CheckBox from '../../CheckBox';
 
@@ -229,7 +229,8 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           <Select
             name="payment_type"
             options={optionsFormaPagamento}
-            nameLabel="Forma de pagamento"
+            label="Forma de pagamento"
+            placeholder="Selecione a forma de pagamento da comissão"
           />
         </InputGroup>
         <Plot>
@@ -255,7 +256,12 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           />
         </Plot>
 
-        <Select name="origin" options={optionsOptions} nameLabel="Origem" />
+        <Select
+          name="origin"
+          options={optionsOptions}
+          label="Origem"
+          placeholder="Selecione a origem"
+        />
         <BonusConatainer>
           <span>Bonus da Venda ?</span>
           <CheckBox options={optionsBonus} handleValue={handleValue} />
