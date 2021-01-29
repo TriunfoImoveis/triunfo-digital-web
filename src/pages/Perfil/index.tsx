@@ -17,12 +17,9 @@ import UserProfile from '../../components/Profile/UserProfile';
 import UserUpdate from '../../components/Profile/UserUpdate';
 import { useAuth } from '../../context/AuthContext';
 import UserFinances from '../../components/Profile/UserFinances';
-// import Select from '../../components/Select';
 
 const Perfil: React.FC = () => {
   const { signOut } = useAuth();
-
-  // const formBankRef = useRef<FormHandles>(null);
 
   return (
     <Container>
@@ -46,7 +43,7 @@ const Perfil: React.FC = () => {
           <Tabs
             id="tab-container"
             className="tab-container"
-            defaultActiveKey="finances"
+            defaultActiveKey="profile"
             variant="tabs"
           >
             <TabBootstrap eventKey="profile" title="Perfil">

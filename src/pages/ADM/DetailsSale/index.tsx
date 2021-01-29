@@ -722,7 +722,7 @@ const DetailsSale: React.FC = () => {
         return;
       }
       try {
-        await api.patch(`/sale/valid_signal/${idSale}`, {
+        await api.patch(`/sale/valid-signal/${idSale}`, {
           headers: {
             authorization: `Bearer ${token}`,
           },
@@ -1412,7 +1412,7 @@ const DetailsSale: React.FC = () => {
                       name="company"
                       options={optionsEmpresa}
                     />
-                    <Input name="porcent_company" label="% do Imposto" />
+                    <Input name="percentage_company" label="% do Imposto" />
                   </InputGroup>
                 )}
               </fieldset>
