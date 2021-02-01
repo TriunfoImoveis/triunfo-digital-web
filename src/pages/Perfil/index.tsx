@@ -20,7 +20,7 @@ import UserFinances from '../../components/Profile/UserFinances';
 import UserListSales from '../../components/Profile/UserListSales';
 
 const Perfil: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, userAuth } = useAuth();
 
   return (
     <Container>
@@ -57,7 +57,7 @@ const Perfil: React.FC = () => {
             </TabBootstrap>
             <TabBootstrap eventKey="sales" title="Vendas">
               <UserProfile />
-              <UserListSales />
+              <UserListSales id={userAuth.id} />
             </TabBootstrap>
           </Tabs>
         </TabWrapper>

@@ -3,6 +3,14 @@ interface OptionsData {
   value: string;
 }
 
+interface IUserSales {
+  id: string;
+  property: string;
+  date_sale: string;
+  vgv: string;
+  status: string;
+}
+
 export const filterOptions = (
   inputValue: string,
   options: OptionsData[],
@@ -10,4 +18,11 @@ export const filterOptions = (
   return options.filter(option =>
     option.label.toLowerCase().includes(inputValue.toLowerCase()),
   );
+};
+
+export const filterSalesForStatus = (
+  sales: IUserSales[],
+  selectedStatus: string,
+): IUserSales[] => {
+  return sales.filter(sale => sale.status === selectedStatus);
 };
