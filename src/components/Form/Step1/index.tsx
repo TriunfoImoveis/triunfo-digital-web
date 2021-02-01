@@ -67,10 +67,6 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   }, [selectedUf]);
 
   useEffect(() => {
-    let mounted = true;
-    if (typeSale === 'used') {
-      return;
-    }
     const loadBuilders = async () => {
       const response = await api.get('/builder', {
         params: {
@@ -81,19 +77,10 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     };
     const loadPropertyType = async () => {
       const response = await api.get('/property-type');
-      const options = response.data.map(data => ({
-        label: data.name,
-        value: data.id,
-      }));
-      setPropertyTypes(options);
+      setPropertyTypes(response.data);
     };
-    if (mounted) {
-      loadBuilders();
-      loadPropertyType();
-    }
-    return function cleanup() {
-      mounted = false;
-    };
+    loadBuilders();
+    loadPropertyType();
   }, [typeSale, selectedUf]);
   const optionsUFs = [
     { label: 'Ceará', value: 'CE' },
@@ -106,6 +93,11 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
     value: builder.id,
+  }));
+
+  const optionsPropertyType = propertyTypes.map(property => ({
+    label: property.name,
+    value: property.id,
   }));
 
   const optionsCity = cities.map(city => ({
@@ -205,7 +197,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           name="realty.property"
           label="Tipo de Imóvel"
           placeholder="Selecione o tipo do imovel"
-          options={propertyTypes}
+          options={optionsPropertyType}
         />
         <InputForm label="Unidade" name="realty.unit" placeholder="Unidade" />
         {typeSale === 'new' && (
