@@ -46,7 +46,7 @@ const UserListSales: React.FC<UserListSalesProps> = ({ id }) => {
         const { sales } = response.data;
         const salesFormated = sales.map(sale => ({
           id: sale.id,
-          propery: 'Condomínio Porto Seguro',
+          property: sale.realty.enterprise,
           date_sale: DateBRL(sale.sale_date),
           vgv: formatPrice(sale.realty_ammount),
           status: sale.status,
@@ -119,7 +119,7 @@ const UserListSales: React.FC<UserListSalesProps> = ({ id }) => {
           {userSalesFiltred.length > 0 ? (
             userSalesFiltred.map(sale => (
               <Item key={sale.id} status={sale.status}>
-                <span className="property">CONDOMÍNIO PORTO SEGURO</span>
+                <span className="property">{sale.property}</span>
                 <span className="date">{sale.date_sale}</span>
                 <span className="date">{sale.vgv}</span>
                 <span className="status">{formatTextStatus(sale.status)}</span>
