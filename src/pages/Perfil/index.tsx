@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 
+import { useAuth } from '../../context/AuthContext';
 import { LogoHeader } from '../../assets/images';
 import {
   Container,
@@ -15,11 +16,11 @@ import {
 } from './styles';
 import UserProfile from '../../components/Profile/UserProfile';
 import UserUpdate from '../../components/Profile/UserUpdate';
-import { useAuth } from '../../context/AuthContext';
 import UserFinances from '../../components/Profile/UserFinances';
+import UserListSales from '../../components/Profile/UserListSales';
 
 const Perfil: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, userAuth } = useAuth();
 
   return (
     <Container>
@@ -43,7 +44,7 @@ const Perfil: React.FC = () => {
           <Tabs
             id="tab-container"
             className="tab-container"
-            defaultActiveKey="profile"
+            defaultActiveKey="sales"
             variant="tabs"
           >
             <TabBootstrap eventKey="profile" title="Perfil">
@@ -56,6 +57,7 @@ const Perfil: React.FC = () => {
             </TabBootstrap>
             <TabBootstrap eventKey="sales" title="Vendas">
               <UserProfile />
+              <UserListSales id={userAuth.id} />
             </TabBootstrap>
           </Tabs>
         </TabWrapper>
