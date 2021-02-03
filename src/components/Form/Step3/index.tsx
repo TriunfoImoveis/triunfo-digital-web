@@ -39,7 +39,6 @@ interface IOptions {
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
-  const [realtors, setRealtors] = useState<IOptions[]>([]);
   const [allRealtors, setAllRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
@@ -50,17 +49,12 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
 
   const { city } = userAuth.subsidiary;
   useEffect(() => {
-    const loadRealtos = async () => {
-      const response = await api.get(`/users?city=${city}&office=Corretor`);
-      setRealtors(response.data);
-    };
     const loadAllRealtors = async () => {
       const response = await api.get(
         `/users?city=${city}&departament=Comercial`,
       );
       setAllRealtors(response.data);
     };
-    loadRealtos();
     loadAllRealtors();
   }, [city]);
   useEffect(() => {
@@ -91,11 +85,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     const direcs = D1.map(d => d.name).toString();
     return direcs;
   }, [directors]);
-
-  const optionsRealtors = realtors.map(realtor => ({
-    label: realtor.name,
-    value: realtor.id,
-  }));
 
   const optionsCoordenador = cordinators.map(coordinator => ({
     label: coordinator.name,
@@ -198,25 +187,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         {typeSale === 'new' && (
           <>
-            {userAuth.office.name === 'Presidente' ||
-            userAuth.office.name === 'Gerente' ||
-            userAuth.office.name === 'Diretor' ? (
-              <Select
-                name="users_sellers"
-                options={optionsAllRealtors}
-                label="Corretor Vendedor"
-                placeholder="Infome o corretor(es)"
-                isMulti
-              />
-            ) : (
-              <Select
-                name="users_sellers"
-                options={optionsRealtors}
-                label="Corretor Vendedor"
-                placeholder="Infome o corretor(es)"
-                isMulti
-              />
-            )}
+            <Select
+              name="users_sellers"
+              options={optionsAllRealtors}
+              label="Corretor Vendedor"
+              placeholder="Infome o corretor(es)"
+              isMulti
+            />
             <InputGroup>
               <Select
                 name="user_coordinator"
@@ -234,25 +211,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
           <>
             <InputGroup>
               <UserSallersContainer>
-                {userAuth.office.name === 'Presidente' ||
-                userAuth.office.name === 'Gerente' ||
-                userAuth.office.name === 'Diretor' ? (
-                  <Select
-                    name="users_sellers"
-                    options={optionsAllRealtors}
-                    label="Corretor Vendedor"
-                    placeholder="Infome o corretor(es)"
-                    isMulti
-                  />
-                ) : (
-                  <Select
-                    name="users_sellers"
-                    options={optionsRealtors}
-                    label="Corretor Vendedor"
-                    placeholder="Infome o corretor(es)"
-                    isMulti
-                  />
-                )}
+                <Select
+                  name="users_sellers"
+                  options={optionsAllRealtors}
+                  label="Corretor Vendedor"
+                  placeholder="Infome o corretor(es)"
+                  isMulti
+                />
               </UserSallersContainer>
 
               <UserCaptivators>
