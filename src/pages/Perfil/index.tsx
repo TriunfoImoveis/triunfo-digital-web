@@ -41,6 +41,7 @@ const Perfil: React.FC = () => {
       <Content>
         <h1>Perfil do Usuário</h1>
         <TabWrapper>
+          <UserProfile />
           <Tabs
             id="tab-container"
             className="tab-container"
@@ -48,15 +49,12 @@ const Perfil: React.FC = () => {
             variant="tabs"
           >
             <TabBootstrap eventKey="profile" title="Perfil">
-              <UserProfile />
               <UserUpdate />
             </TabBootstrap>
             <TabBootstrap eventKey="finances" title="Financeiro">
-              <UserProfile />
               <UserFinances />
             </TabBootstrap>
             <TabBootstrap eventKey="sales" title="Vendas">
-              <UserProfile />
               <UserListSales id={userAuth.id} />
             </TabBootstrap>
           </Tabs>

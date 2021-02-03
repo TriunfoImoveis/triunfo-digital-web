@@ -9,12 +9,13 @@ import {
   Container,
   Header,
   Filter,
-  ListSalesContainer,
-  LabelContainer,
-  LabelItems,
-  SalesContainer,
-  Item,
-  Text,
+  // ListSalesContainer,
+  // LabelContainer,
+  // LabelItems,
+  // SalesContainer,
+  // Item,
+  // Text,
+  TableContainer,
 } from './styles';
 
 interface IUserSales {
@@ -99,37 +100,31 @@ const UserListSales: React.FC<UserListSalesProps> = ({ id }) => {
           <DropDownIcon />
         </Filter>
       </Header>
-      <ListSalesContainer>
-        <LabelContainer>
-          <LabelItems>
-            <span className="label">Imóvel</span>
-          </LabelItems>
-          <LabelItems>
-            <span className="label">Data da Venda</span>
-          </LabelItems>
-          <LabelItems>
-            <span className="label">VGV</span>
-          </LabelItems>
-          <LabelItems>
-            <span className="label">Status</span>
-          </LabelItems>
-        </LabelContainer>
 
-        <SalesContainer>
-          {userSalesFiltred.length > 0 ? (
-            userSalesFiltred.map(sale => (
-              <Item key={sale.id} status={sale.status}>
-                <span className="property">{sale.property}</span>
-                <span className="date">{sale.date_sale}</span>
-                <span className="date">{sale.vgv}</span>
-                <span className="status">{formatTextStatus(sale.status)}</span>
-              </Item>
-            ))
-          ) : (
-            <Text>Não existem vendas cadastradas</Text>
-          )}
-        </SalesContainer>
-      </ListSalesContainer>
+      <TableContainer>
+        <table>
+          <thead>
+            <tr>
+              <th>Imóvel</th>
+              <th>Data da Venda</th>
+              <th>VGV</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {userSalesFiltred.map(sales => (
+              <tr key={sales.id}>
+                <td className="property">{sales.property}</td>
+                <td>{sales.date_sale}</td>
+                <td>{sales.vgv}</td>
+                <td className={sales.status}>
+                  {formatTextStatus(sales.status)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableContainer>
     </Container>
   );
 };
