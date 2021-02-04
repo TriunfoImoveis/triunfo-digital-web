@@ -120,7 +120,7 @@ export const TabWrapper = styled.div`
     }
   }
 
-  @media (max-width: 500px) {
+  @media screen and (max-width: 700px) {
     width: 100%;
     .nav-link {
       width: 100%;
