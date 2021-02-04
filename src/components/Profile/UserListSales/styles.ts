@@ -1,10 +1,11 @@
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 
-interface ItemsProps {
-  status: string;
-}
 export const Container = styled.div`
   padding: 3rem 2rem;
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 0;
+  }
 `;
 export const Header = styled.div`
   display: flex;
@@ -17,6 +18,15 @@ export const Header = styled.div`
     font-size: 2.4rem;
     line-height: 2.8rem;
     color: ${({ theme }) => theme.colors.textColor};
+  }
+
+  @media (max-width: 700px) {
+    margin-top: 2rem;
+    flex-direction: column;
+
+    > .title {
+      margin-bottom: 3rem;
+    }
   }
 `;
 export const Filter = styled.div`
@@ -49,84 +59,133 @@ export const Filter = styled.div`
 `;
 
 export const ListSalesContainer = styled.div`
+  width: 100%;
   margin-top: 3rem;
-`;
-export const LabelContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-`;
-export const LabelItems = styled.div`
-  text-align: center;
-  padding: 2rem 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
-  > .label {
-    font-family: Roboto;
-    font-style: normal;
-    font-weight: 500;
-    font-size: 2rem;
-    line-height: 2.3rem;
-    color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-export const SalesContainer = styled.div`
-  padding: 2rem 3rem;
-`;
-export const Item = styled.div<ItemsProps>`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  text-align: center;
-  padding: 2rem 3rem;
-  background: #fff8f8;
-  border: 1px solid rgba(121, 119, 119, 0.3);
-  box-sizing: border-box;
-  box-shadow: 0px 4px 4px rgba(137, 137, 137, 0.5);
-  border-radius: 100px;
-  transform: matrix(1, 0.01, 0, 1, 0, 0);
-  margin-bottom: 0.8rem;
-
-  > .property,
-  .date,
-  .status {
-    text-align: left;
-    font-family: Roboto;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 2rem;
-    line-height: 2.3rem;
-    color: #898989;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .date,
-  .status {
-    text-align: center;
-  }
-
-  .status {
-    font-size: 2.4rem;
-    color: #ec2527;
-    padding-left: 5rem;
-
-    ${props =>
-      props.status === 'PAGO_TOTAL' &&
-      css`
-        color: ${({ theme }) => theme.colors.success};
-      `}
-    ${props =>
-      props.status === 'PENDENTE' &&
-      css`
-        color: ${({ theme }) => theme.colors.warning};
-      `}
+  @media (max-width: 500px) {
+    width: 100%;
   }
 `;
 
 export const Text = styled.span`
+  display: block;
+  margin-top: 5rem;
   font-size: 3rem;
   text-align: center;
   color: ${({ theme }) => theme.colors.textColor};
+`;
+
+export const TableContainer = styled.section`
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 1rem;
+    th {
+      color: ${({ theme }) => theme.colors.primary};
+      font-weight: bold;
+      padding: 2rem;
+      text-align: center;
+      font-size: 2rem;
+      line-height: 2.4rem;
+    }
+    tbody {
+      tr {
+        box-shadow: 0px 4px 4px rgba(137, 137, 137, 0.5);
+        border-radius: 10rem;
+      }
+    }
+    td {
+      padding: 2rem;
+      background: #fff8f8;
+      font-size: 2rem;
+      font-weight: 500;
+      color: #969cb3;
+      text-align: center;
+      background: #fff8f8;
+      border-top: 1px solid #797777;
+      border-bottom: 1px solid #797777;
+
+      > .rLabel {
+        display: none;
+      }
+      &.property {
+        font-weight: 400;
+      }
+      &.PAGO_TOTAL {
+        color: ${({ theme }) => theme.colors.success};
+      }
+
+      &.CAIU {
+        color: ${({ theme }) => theme.colors.primary};
+      }
+      &.NAO_VALIDADO {
+        color: ${({ theme }) => theme.colors.primary};
+      }
+      &.PENDENTE {
+        color: ${({ theme }) => theme.colors.warning};
+      }
+    }
+    td:first-child {
+      border-radius: 10rem 0 0 10rem;
+      border-left: 1px solid #797777;
+    }
+    td:last-child {
+      border-radius: 0 10rem 10rem 0;
+      border-right: 1px solid #797777;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    table {
+      th {
+        display: none;
+      }
+
+      > tbody {
+        > tr {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 0.8rem;
+          box-shadow: none;
+
+          td {
+            position: relative;
+            > .rLabel {
+              display: initial;
+              position: absolute;
+              top: 0;
+              left: 0;
+              margin: 1rem;
+              font-size: 1.6rem;
+              color: ${({ theme }) => theme.colors.primary};
+              font-weight: bold;
+            }
+            border-right: 1px solid #797777;
+            border-left: 1px solid #797777;
+          }
+          td:first-child {
+            border-radius: 1rem 1rem 0 0;
+            border-top: 1px solid #000;
+          }
+          td:last-child {
+            border-radius: 0 0 1rem 1rem;
+            border-bottom: 1px solid #000;
+          }
+        }
+      }
+    }
+  }
+  @media screen and (max-width: 400px) {
+    table {
+      > tbody {
+        > tr {
+          td {
+            > .rLabel {
+              font-size: 1.2rem;
+            }
+          }
+        }
+      }
+    }
+  }
 `;

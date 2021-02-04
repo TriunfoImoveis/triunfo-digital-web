@@ -6,6 +6,7 @@ export const Container = styled.div`
   align-items: center;
 
   h2 {
+    margin-top: 2rem;
     color: ${({ theme }) => theme.colors.primary};
     font-size: 2rem;
     margin-bottom: 2rem;
@@ -49,6 +50,13 @@ export const FormContent = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 500px) {
+    .select__placeholder {
+      font-size: 1.2rem;
+      color: ${({ theme }) => theme.colors.textColorAlpha};
+    }
+  }
 `;
 
 export const InputGroup = styled.div`
@@ -58,6 +66,16 @@ export const InputGroup = styled.div`
     width: 50%;
     & + div {
       margin-left: 1.2rem;
+    }
+  }
+
+  @media (max-width: 500px) {
+    flex-direction: column;
+    > div {
+      width: 100%;
+      & + div {
+        margin-left: 0;
+      }
     }
   }
 `;

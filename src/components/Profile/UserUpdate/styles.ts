@@ -6,6 +6,7 @@ export const LogonInfo = styled.div`
   align-items: center;
   justify-content: center;
   h2 {
+    margin-top: 2rem;
     color: ${({ theme }) => theme.colors.primary};
     font-size: 2rem;
     margin-bottom: 2rem;

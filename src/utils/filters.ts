@@ -26,3 +26,24 @@ export const filterSalesForStatus = (
 ): IUserSales[] => {
   return sales.filter(sale => sale.status === selectedStatus);
 };
+
+export const formatTextStatus = (textStaus: string): string => {
+  let textFormatted = '';
+  switch (textStaus) {
+    case 'PENDENTE':
+      textFormatted = 'Pendente';
+      break;
+    case 'CAIU':
+      textFormatted = 'Caíu';
+      break;
+    case 'NAO_VALIDADO':
+      textFormatted = 'Não Validado';
+      break;
+    case 'PAGO_TOTAL':
+      textFormatted = 'Pago';
+      break;
+    default:
+      break;
+  }
+  return textFormatted;
+};
