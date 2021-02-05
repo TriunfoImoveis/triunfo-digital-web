@@ -1,0 +1,278 @@
+/* eslint-disable array-callback-return */
+import React, {
+  ChangeEvent,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
+
+import * as Yup from 'yup';
+
+import { FormHandles } from '@unform/core';
+
+import { BiEditAlt } from 'react-icons/bi';
+import { Form } from '@unform/web';
+import { BsCheckBox } from 'react-icons/bs';
+import { FaCheck, FaMinus, FaPlus } from 'react-icons/fa';
+import { VscEdit } from 'react-icons/vsc';
+import { useHistory, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
+import AdmLayout from '../../pages/Layouts/Adm';
+import Input from '../Input';
+import Select from '../Select';
+import Modal from '../Modal';
+import { Sync, Garb } from '../../assets/images';
+import { CPFMask, FoneMask, money } from '../../utils/masked';
+import { DateBRL, formatPrice } from '../../utils/format';
+import {
+  Container,
+  Content,
+  SaleData,
+  InputGroup,
+  ButtonGroup,
+  Legend,
+  PaymentInstallments,
+  Plot,
+  AddButton,
+  ButtonModal,
+  ModalFooter,
+  ContentFallForm,
+  BonusConatainer,
+} from './styles';
+import api from '../../services/api';
+import getValidationErros from '../../utils/getValidationErros';
+import { DateYMD, unMaked, currency } from '../../utils/unMasked';
+import TextArea from '../TextArea';
+import CheckboxInput from '../CheckBox';
+import InputDisable from '../InputDisabled';
+import { useAuth } from '../../context/AuthContext';
+import Property from './Property';
+
+interface IOptionsData {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface IParamsData {
+  id: string;
+}
+
+interface ISallers {
+  name: string;
+}
+interface ICoordinator {
+  id: string;
+  name: string;
+}
+interface ISaleData {
+  id: string;
+  bonus?: string;
+  builder: {
+    id: string;
+    name: string;
+  };
+  client_buyer: IClient;
+  installments: {
+    due_date: string;
+    id: string;
+    installment_number: number;
+    value: string;
+  }[];
+  client_seller?: IClient;
+  commission: string;
+  company?: {
+    id: string;
+    name: string;
+    percentage: number;
+  };
+  origin: {
+    id: string;
+    name: string;
+  };
+  payment_type: IPaymentType;
+  percentage_company: number;
+  percentage_sale: number;
+  realty: {
+    city: string;
+    enterprise: string;
+    id: string;
+    neighborhood: string;
+    property: {
+      id: string;
+      name: string;
+    };
+    state: string;
+    unit: string;
+  };
+  realty_ammount: string;
+  sale_date: string;
+  sale_has_captivators: Array<ISallers>;
+  sale_has_sellers: Array<ISallers>;
+  sale_type: string;
+  status: string;
+  user_coordinator?: {
+    id: string;
+    name: string;
+  };
+
+  users_directors: {
+    id: string;
+    name: string;
+  }[];
+
+  value_signal?: string | null;
+  payment_signal: boolean;
+  pay_date_signal?: string | null;
+}
+
+interface IBuilder {
+  id: string;
+  name: string;
+}
+
+interface IPaymentType {
+  id: string;
+  name: string;
+}
+interface IInstallments {
+  due_date: string;
+  id?: string;
+  installment_number: number;
+  value: string;
+  status?: 'PAGO' | 'PENDENTE';
+  pay_date?: string;
+}
+
+interface IRealty {
+  city: string;
+  enterprise: string;
+  id: string;
+  neighborhood: string;
+  property: ITypeProperty;
+  state: string;
+  unit: string;
+}
+
+interface ITypeProperty {
+  id: string;
+  name: string;
+}
+
+interface IClient {
+  civil_status: string;
+  cpf: string;
+  date_birth: string;
+  email: string;
+  gender: string;
+  id: string;
+  name: string;
+  number_children: string;
+  occupation: string;
+  phone: string;
+  whatsapp: string;
+}
+interface IInstallmentsData {
+  installments: {
+    installment_number: string;
+    value: string;
+    due_date: string;
+  }[];
+}
+
+const DetailsSale: React.FC = () => {
+  const [sale, setSale] = useState<ISaleData>({} as ISaleData);
+  const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
+  const { id } = useParams<IParamsData>();
+
+  useEffect(() => {
+    const loadSale = async () => {
+      try {
+        const response = await api.get(`/sale/${id}`, {
+          headers: {
+            auhorization: `Bearer ${token}`,
+          },
+        });
+        const sale = response.data;
+        const sallers = sale.sale_has_sellers;
+        const coordinator = sale.user_coordinator;
+        const captavators = sale.sale_has_captivators;
+        const directors = sale.users_directors;
+        if (sale.client_seller) {
+          const cpfSellerFormatted = CPFMask(sale.client_seller.cpf);
+          const dataSellerFormatted = DateBRL(sale.client_seller.date_birth);
+          const foneSellerFormatted = FoneMask(sale.client_seller.phone);
+          Object.assign(
+            sale,
+            (sale.client_seller.cpf = cpfSellerFormatted),
+            (sale.client_seller.date_birth = dataSellerFormatted),
+            (sale.client_seller.phone = foneSellerFormatted),
+          );
+        }
+        const cpfFormatted = CPFMask(sale.client_buyer.cpf);
+        const dataFormatted = DateBRL(sale.client_buyer.date_birth);
+        const foneFormatted = FoneMask(sale.client_buyer.phone);
+        const realtyAmmount = formatPrice(sale.realty_ammount);
+        const commission = formatPrice(sale.commission);
+        const saleDate = DateBRL(sale.sale_date);
+        const valueSignal = formatPrice(sale.value_signal);
+        const PayDateSignal = DateBRL(sale.pay_date_signal);
+        const installmentData = sale.installments;
+        const newInstallments = installmentData.map(i => ({
+          ...i,
+          due_date: DateBRL(i.due_date),
+          value: formatPrice(Number(i.value)),
+          pay_date: i.pay_date ? DateBRL(i.pay_date) : null,
+        }));
+
+        const saleFormatted = Object.assign(
+          sale,
+          (sale.client_buyer.cpf = cpfFormatted),
+          (sale.client_buyer.date_birth = dataFormatted),
+          (sale.client_buyer.phone = foneFormatted),
+          (sale.realty_ammount = realtyAmmount),
+          (sale.commission = commission),
+          (sale.sale_date = saleDate),
+          (sale.pay_date_signal = PayDateSignal),
+          (sale.value_signal = valueSignal),
+        );
+        const newSaleFormatted: ISaleData = {
+          ...saleFormatted,
+          installments: newInstallments,
+        };
+        const installmentPay = newInstallments.filter(
+          installment => installment.status === 'PAGO',
+        );
+
+        setSale(newSaleFormatted);
+      } catch (error) {
+        toast.error(
+          'Conexão do servidor falhou ! entre em contato com o suporte',
+        );
+      }
+    };
+  }, [id, token]);
+  return (
+    <AdmLayout>
+      <Container>
+        <h1>DETALHES DA VENDA</h1>
+        <Content>
+          <Tabs
+            id="tab-container"
+            className="tab-container"
+            defaultActiveKey="sales"
+            variant="tabs"
+          >
+            <TabBootstrap eventKey="property" title="Imóvel">
+              <Property realty={sale.realty} status={sale.status} />
+            </TabBootstrap>
+          </Tabs>
+        </Content>
+      </Container>
+    </AdmLayout>
+  );
+};
+
+export default DetailsSale;
