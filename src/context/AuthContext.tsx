@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
+import jwt from 'jsonwebtoken';
 import api from '../services/api';
 
 interface UserAuth {
@@ -50,8 +51,12 @@ const AuthProvider: React.FC = ({ children }) => {
     const userAuth = localStorage.getItem('@TriunfoDigital:user');
 
     if (token && userAuth) {
-      api.defaults.headers.authorization = `Bearer ${token}`;
-      return { token, userAuth: JSON.parse(userAuth) };
+      const decodedToken: any = jwt.decode(token, { complete: true });
+      const dateNow = new Date();
+      if (decodedToken.payload.exp < dateNow.getTime()) {
+        api.defaults.headers.authorization = `Bearer ${token}`;
+        return { token, userAuth: JSON.parse(userAuth) };
+      }
     }
 
     return {} as AuthState;
