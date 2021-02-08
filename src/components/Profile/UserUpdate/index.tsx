@@ -32,7 +32,9 @@ const UserUpdate: React.FC = () => {
       setLoading(true);
       const schema = Yup.object().shape({
         email: Yup.string().email('Digite um e-mail válido'),
-        oldPassword: Yup.string(),
+        oldPassword: Yup.string()
+          .min(6, 'senha tem que no mínimo 6 digitos')
+          .max(6, 'senha tem que no máximo de 6 digitos'),
         newPassword: Yup.string().when('oldPassword', {
           is: val => !!val.length,
           then: Yup.string().required('Campo obrigatório'),
@@ -44,7 +46,7 @@ const UserUpdate: React.FC = () => {
             then: Yup.string().required('Campo obrigatório'),
             otherwise: Yup.string(),
           })
-          .oneOf([Yup.ref('newPassword'), undefined], 'Confirmação incorreta'),
+          .oneOf([Yup.ref('newPassword'), undefined], 'Senhas não conferem'),
       });
 
       await schema.validate(data, {

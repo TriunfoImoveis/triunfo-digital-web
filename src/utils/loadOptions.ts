@@ -21,6 +21,7 @@ export const loadOptionsBank = (inputValue: string, callback: any): void => {
 const OptionsTypeAccount = [
   { label: 'POUPANÇA', value: 'POUPANÇA' },
   { label: 'CORRENTE', value: 'CORRENTE' },
+  { label: 'CONTA SÁLARIO', value: 'SALARIO' },
 ];
 
 export const loadOptionsTypeAccount = (inputValue: string, callback: any) => {

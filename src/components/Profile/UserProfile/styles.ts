@@ -128,7 +128,7 @@ export const LoadingContainer = styled.div`
 export const Separator = styled.div`
   z-index: 10;
   margin: 3.2rem 0;
-  border-top: 0.3rem solid ${({ theme }) => theme.colors.primary};
+  border-top: 0.3rem solid ${({ theme }) => theme.colors.background};
 
   @media (max-width: 500px) {
     width: 100%;
