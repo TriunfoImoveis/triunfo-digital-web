@@ -27,6 +27,7 @@ export const Content = styled.div`
 `;
 export const SaleData = styled.div`
   width: 100%;
+  margin-top: 2rem;
   display: flex;
   align-items: center;
   z-index: 10;

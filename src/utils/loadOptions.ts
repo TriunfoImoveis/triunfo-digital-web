@@ -41,3 +41,19 @@ export const loadStates = async (inputValue: string, callback: any) => {
     callback(filterOptions(inputValue, optionsStates));
   }, 1000);
 };
+
+// Genero
+
+export const optionsGenero: OptionsData[] = [
+  { label: 'Masculino', value: 'MASCULINO' },
+  { label: 'Femenino', value: 'FEMENINO' },
+  { label: 'Outros', value: 'OUTROS' },
+];
+
+// Estado Civíl
+export const optionsCivilStatus: OptionsData[] = [
+  { label: 'Casado(a)', value: 'CASADO(A)' },
+  { label: 'Solteiro(a)', value: 'SOLTEIRO(A)' },
+  { label: 'Divorciado(a)', value: 'DIVORCIADO(A)' },
+  { label: 'Viúvo(a)', value: 'VIUVO(A)' },
+];

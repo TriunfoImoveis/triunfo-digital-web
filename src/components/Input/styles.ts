@@ -32,7 +32,7 @@ export const Container = styled.div<ContainerProps>`
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 0.1rem solid ${({ theme }) => theme.colors.textColorAlpha};
   width: 100%;
-  height: 4.5rem;
+  height: 4rem;
   display: flex;
   align-items: center;
 

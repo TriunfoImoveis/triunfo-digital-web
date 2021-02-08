@@ -32,21 +32,28 @@ interface FormData {
 
 interface IPropertyProps {
   status: string;
+  propertyType: {
+    id: string;
+    name: string;
+  };
   realty: {
     enterprise: string;
     state: string;
     city: string;
     neighborhood: string;
-    property: ITypeProperty;
     unit: string;
   };
 }
 
-const Property: React.FC<IPropertyProps> = ({ realty, status }) => {
-  const [edit, setEdit] = useState(false);
+const Property: React.FC<IPropertyProps> = ({
+  realty,
+  propertyType,
+  status,
+}) => {
+  const [edit, setEdit] = useState(true);
   const [cities, setCities] = useState<string[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<ITypeProperty[]>([]);
-  const [selectedUf, setSelectedUf] = useState(realty.state);
+  const [selectedUf, setSelectedUf] = useState<string>(realty.state);
   const formRef = useRef<FormHandles>(null);
 
   useEffect(() => {
@@ -63,14 +70,11 @@ const Property: React.FC<IPropertyProps> = ({ realty, status }) => {
   useEffect(() => {
     const loadPropertyType = async () => {
       const response = await api.get('/property-type');
-      const options = response.data.map(data => ({
-        label: data.name,
-        value: data.id,
-      }));
-      setPropertyTypes(options);
+      setPropertyTypes(response.data);
     };
     loadPropertyType();
-  }, []);
+  }, [realty]);
+
   const optionsUFs = [
     { label: 'Ceará', value: 'CE' },
     { label: 'Maranhão', value: 'MA' },
@@ -88,6 +92,8 @@ const Property: React.FC<IPropertyProps> = ({ realty, status }) => {
     label: pt.name,
     value: pt.id,
   }));
+
+  console.log(propertyType);
 
   const handleSelectedUF = (inputValue, { action }) => {
     switch (action) {
@@ -126,7 +132,7 @@ const Property: React.FC<IPropertyProps> = ({ realty, status }) => {
               <InputGroup>
                 <InputDisable
                   label="Tipo do Imóvel"
-                  data={realty.property.name}
+                  data={propertyType?.name}
                 />
                 <InputDisable label="Unidade" data={realty.unit} />
               </InputGroup>
@@ -143,7 +149,8 @@ const Property: React.FC<IPropertyProps> = ({ realty, status }) => {
               <InputGroup>
                 <Select
                   name="realty.state"
-                  nameLabel="Estado"
+                  label="Estado"
+                  placeholder="Selecione o estado"
                   options={optionsUFs}
                   onChange={handleSelectedUF}
                   disabled={edit}
@@ -151,7 +158,8 @@ const Property: React.FC<IPropertyProps> = ({ realty, status }) => {
                 />
                 <Select
                   name="realty.city"
-                  nameLabel="Cidade"
+                  label="Cidade"
+                  placeholder="selecione a cidade"
                   options={optionsCity}
                   disabled={edit}
                   defaultInputValue={realty.city}
@@ -167,10 +175,11 @@ const Property: React.FC<IPropertyProps> = ({ realty, status }) => {
               <InputGroup>
                 <Select
                   name="realty.property"
-                  nameLabel="Tipo de Imóvel"
+                  label="Tipo de Imóvel"
+                  placeholder="Tipo do Imóvel"
                   options={optionsTypeImobille}
                   disabled={edit}
-                  defaultInputValue={realty.property.id}
+                  defaultInputValue={propertyType?.name}
                 />
 
                 <Input

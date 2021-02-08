@@ -49,6 +49,8 @@ import CheckboxInput from '../CheckBox';
 import InputDisable from '../InputDisabled';
 import { useAuth } from '../../context/AuthContext';
 import Property from './Property';
+import ClientBuyer from './ClientBuyer';
+import ClientSeller from './ClientSeller';
 
 interface IOptionsData {
   id: string;
@@ -184,6 +186,9 @@ interface IInstallmentsData {
 
 const DetailsSale: React.FC = () => {
   const [sale, setSale] = useState<ISaleData>({} as ISaleData);
+  const [realty, setRealty] = useState<IRealty>({} as IRealty);
+  const [client_buyer, setClientBuyer] = useState({} as IClient);
+  const [client_seller, setClientSeller] = useState({} as IClient);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { id } = useParams<IParamsData>();
 
@@ -247,12 +252,16 @@ const DetailsSale: React.FC = () => {
         );
 
         setSale(newSaleFormatted);
+        setRealty(newSaleFormatted.realty);
+        setClientBuyer(newSaleFormatted.client_buyer);
+        setClientSeller(newSaleFormatted?.client_seller || ({} as IClient));
       } catch (error) {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
         );
       }
     };
+    loadSale();
   }, [id, token]);
   return (
     <AdmLayout>
@@ -262,11 +271,21 @@ const DetailsSale: React.FC = () => {
           <Tabs
             id="tab-container"
             className="tab-container"
-            defaultActiveKey="sales"
+            defaultActiveKey="property"
             variant="tabs"
           >
             <TabBootstrap eventKey="property" title="Imóvel">
-              <Property realty={sale.realty} status={sale.status} />
+              <Property
+                realty={realty}
+                status={sale.status}
+                propertyType={realty.property}
+              />
+            </TabBootstrap>
+            <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
+              <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+            </TabBootstrap>
+            <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
+              <ClientSeller clientSeller={client_seller} status={sale.status} />
             </TabBootstrap>
           </Tabs>
         </Content>
