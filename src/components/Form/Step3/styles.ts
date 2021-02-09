@@ -158,3 +158,28 @@ export const Directors = styled.div`
     }
   }
 `;
+
+export const Coordinator = styled.div`
+  display: flex;
+  flex-direction: column;
+  > div {
+    width: 100%;
+  }
+
+  .not-coordinator {
+    display: flex;
+    align-items: center;
+
+    input[type='checkbox'] {
+      width: 2rem;
+      height: 2rem;
+      margin-left: 0;
+    }
+    > label {
+      margin-top: 0.5rem;
+      margin-left: 0.5rem;
+      font-size: 1.4rem;
+      color: ${({ theme }) => theme.colors.textColor};
+    }
+  }
+`;
