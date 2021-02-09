@@ -17,8 +17,10 @@ import {
   UserSallersContainer,
   UserCaptivators,
   Directors,
+  Coordinator,
 } from './styles';
 import api from '../../../services/api';
+import InputDisabled from '../../InputDisabled';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -43,6 +45,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
   const [user_directors, setUserDirectors] = useState([]);
+  const [isCoordinatorExist, setIsCoordinatorExist] = useState(true);
 
   const { updateFormData } = useForm();
   const { userAuth } = useAuth();
@@ -100,6 +103,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     value: all.id,
   }));
 
+  const handleNotCoordinator = () => {
+    setIsCoordinatorExist(!isCoordinatorExist);
+  };
+
   const handleSubmit = useCallback(
     async data => {
       const { users_sellers, users_captivators } = data;
@@ -142,7 +149,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 }),
               )
               .required('Vendedor(es) Obrigatório'),
-            user_coordinator: Yup.string().required('Coordenador Obrigatório'),
+            user_coordinator: Yup.string(),
           });
           await schema.validate(formData, {
             abortEarly: false,
@@ -194,17 +201,32 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               placeholder="Infome o corretor(es)"
               isMulti
             />
-            <InputGroup>
-              <Select
-                name="user_coordinator"
-                options={optionsCoordenador}
-                label="Coordenador"
-              />
-              <Directors>
-                <span>Diretores</span>
-                <input defaultValue={setDirector()} readOnly />
-              </Directors>
-            </InputGroup>
+            <Coordinator>
+              {isCoordinatorExist ? (
+                <Select
+                  name="user_coordinator"
+                  placeholder="Selecione o coordernador"
+                  options={optionsCoordenador}
+                  label="Coordenador"
+                />
+              ) : (
+                <InputDisabled label="Coordenador" data="Nenhum" />
+              )}
+
+              <div className="not-coordinator">
+                <input
+                  type="checkbox"
+                  name="not-coordinators"
+                  id="not-coordinators"
+                  onChange={handleNotCoordinator}
+                />
+                <label htmlFor="not-coordinators">Não Possuí Coordenação</label>
+              </div>
+            </Coordinator>
+            <Directors>
+              <span>Diretores</span>
+              <input defaultValue={setDirector()} readOnly />
+            </Directors>
           </>
         )}
         {typeSale === 'used' && (
@@ -231,17 +253,36 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               </UserCaptivators>
             </InputGroup>
             {userAuth.subsidiary.city === 'Teresina' ? (
-              <InputGroup>
-                <Select
-                  name="user_coordinator"
-                  options={optionsCoordenador}
-                  label="Coordenador"
-                />
+              <>
+                <Coordinator>
+                  {isCoordinatorExist ? (
+                    <Select
+                      name="user_coordinator"
+                      placeholder="Selecione o coordernador"
+                      options={optionsCoordenador}
+                      label="Coordenador"
+                    />
+                  ) : (
+                    <InputDisabled label="Coordenador" data="Nenhum" />
+                  )}
+
+                  <div className="not-coordinator">
+                    <input
+                      type="checkbox"
+                      name="not-coordinators"
+                      id="not-coordinators"
+                      onChange={handleNotCoordinator}
+                    />
+                    <label htmlFor="not-coordinators">
+                      Não Possuí Coordenação
+                    </label>
+                  </div>
+                </Coordinator>
                 <Directors>
                   <span>Diretores</span>
                   <input defaultValue={setDirector()} readOnly />
                 </Directors>
-              </InputGroup>
+              </>
             ) : (
               <Directors>
                 <span>Diretores</span>
