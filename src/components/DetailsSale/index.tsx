@@ -51,6 +51,8 @@ import { useAuth } from '../../context/AuthContext';
 import Property from './Property';
 import ClientBuyer from './ClientBuyer';
 import ClientSeller from './ClientSeller';
+import Builder from './Builder';
+import Realtors from './Realtors';
 
 interface IOptionsData {
   id: string;
@@ -63,13 +65,15 @@ interface IParamsData {
 }
 
 interface ISallers {
+  id: string;
   name: string;
 }
+
 interface ICoordinator {
   id: string;
   name: string;
 }
-interface ISaleData {
+export interface ISaleData {
   id: string;
   bonus?: string;
   builder: {
@@ -135,11 +139,11 @@ interface IBuilder {
   name: string;
 }
 
-interface IPaymentType {
+export interface IPaymentType {
   id: string;
   name: string;
 }
-interface IInstallments {
+export interface IInstallments {
   due_date: string;
   id?: string;
   installment_number: number;
@@ -189,6 +193,12 @@ const DetailsSale: React.FC = () => {
   const [realty, setRealty] = useState<IRealty>({} as IRealty);
   const [client_buyer, setClientBuyer] = useState({} as IClient);
   const [client_seller, setClientSeller] = useState({} as IClient);
+  const [realtorSellers, setRealtorSellers] = useState<ISallers[]>([]);
+  const [realtorCaptivators, setRealtorCaptivators] = useState<ISallers[]>([]);
+  const [coordinator, setCoordinator] = useState<ISallers>({} as ISallers);
+  const [directors, setDirectors] = useState<ISallers[]>([]);
+  const [instalments, setInstallments] = useState<IInstallments[]>([]);
+  const [instalmentsPay, setInstalmentPay] = useState<IInstallments[]>([]);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { id } = useParams<IParamsData>();
 
@@ -255,6 +265,12 @@ const DetailsSale: React.FC = () => {
         setRealty(newSaleFormatted.realty);
         setClientBuyer(newSaleFormatted.client_buyer);
         setClientSeller(newSaleFormatted?.client_seller || ({} as IClient));
+        setRealtorSellers(sallers);
+        setRealtorCaptivators(captavators);
+        setCoordinator(coordinator);
+        setDirectors(directors);
+        setInstallments(newInstallments);
+        setInstalmentPay(installmentPay);
       } catch (error) {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
@@ -271,7 +287,7 @@ const DetailsSale: React.FC = () => {
           <Tabs
             id="tab-container"
             className="tab-container"
-            defaultActiveKey="property"
+            defaultActiveKey="finances"
             variant="tabs"
           >
             <TabBootstrap eventKey="property" title="Imóvel">
@@ -286,6 +302,26 @@ const DetailsSale: React.FC = () => {
             </TabBootstrap>
             <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
               <ClientSeller clientSeller={client_seller} status={sale.status} />
+            </TabBootstrap>
+            <TabBootstrap eventKey="builder" title="Construtora">
+              <Builder
+                builder={sale.builder}
+                status={sale.status}
+                uf={realty.state}
+              />
+            </TabBootstrap>
+            <TabBootstrap eventKey="realtors" title="Corretores">
+              <Realtors
+                status={sale.status}
+                saleType={sale.sale_type}
+                sallers={realtorSellers}
+                captvators={realtorCaptivators}
+                coordinator={coordinator}
+                directors={directors}
+              />
+            </TabBootstrap>
+            <TabBootstrap eventKey="finances" title="Financeiro">
+              {/** */}
             </TabBootstrap>
           </Tabs>
         </Content>

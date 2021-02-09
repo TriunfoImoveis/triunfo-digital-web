@@ -1085,7 +1085,7 @@ const DetailsSale: React.FC = () => {
             <SaleData>
               <fieldset className="login">
                 <Legend>
-                  {/* <legend>CORRETORES</legend>
+                  <legend>CORRETORES</legend>
                   {sale.status !== 'CAIU' ? (
                     <button
                       type="button"
@@ -1094,7 +1094,7 @@ const DetailsSale: React.FC = () => {
                       <BiEditAlt size={20} color="#C32925" />
                       <span>editar</span>
                     </button>
-                  ) : null} */}
+                  ) : null}
                 </Legend>
                 {sallers.map((saller, index) =>
                   edits.realtos ? (
