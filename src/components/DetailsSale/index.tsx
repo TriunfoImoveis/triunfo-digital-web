@@ -7,8 +7,6 @@ import React, {
   useRef,
 } from 'react';
 
-import * as Yup from 'yup';
-
 import { FormHandles } from '@unform/core';
 
 import { BiEditAlt } from 'react-icons/bi';
@@ -53,6 +51,7 @@ import ClientBuyer from './ClientBuyer';
 import ClientSeller from './ClientSeller';
 import Builder from './Builder';
 import Realtors from './Realtors';
+import Finances from './Finances';
 
 interface IOptionsData {
   id: string;
@@ -134,11 +133,6 @@ export interface ISaleData {
   pay_date_signal?: string | null;
 }
 
-interface IBuilder {
-  id: string;
-  name: string;
-}
-
 export interface IPaymentType {
   id: string;
   name: string;
@@ -180,7 +174,7 @@ interface IClient {
   phone: string;
   whatsapp: string;
 }
-interface IInstallmentsData {
+export interface IInstallmentsData {
   installments: {
     installment_number: string;
     value: string;
@@ -271,6 +265,7 @@ const DetailsSale: React.FC = () => {
         setDirectors(directors);
         setInstallments(newInstallments);
         setInstalmentPay(installmentPay);
+        // setPaymentType(newSaleFormatted.payment_type);
       } catch (error) {
         toast.error(
           'Conexão do servidor falhou ! entre em contato com o suporte',
@@ -321,7 +316,13 @@ const DetailsSale: React.FC = () => {
               />
             </TabBootstrap>
             <TabBootstrap eventKey="finances" title="Financeiro">
-              {/** */}
+              <Finances
+                status={sale.status}
+                sale={sale}
+                installments={instalments}
+                installmentPay={instalmentsPay}
+                paymentType={sale.payment_type}
+              />
             </TabBootstrap>
           </Tabs>
         </Content>

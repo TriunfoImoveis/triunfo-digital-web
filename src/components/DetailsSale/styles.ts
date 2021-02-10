@@ -23,6 +23,13 @@ export const Content = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
+
+    > .modal-container {
+      align-items: flex-start;
+    }
+    .modal-wrapper {
+      margin-top: rem;
+    }
   }
 `;
 export const SaleData = styled.div`

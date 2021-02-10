@@ -57,3 +57,8 @@ export const optionsCivilStatus: OptionsData[] = [
   { label: 'Divorciado(a)', value: 'DIVORCIADO(A)' },
   { label: 'Viúvo(a)', value: 'VIUVO(A)' },
 ];
+
+export const optionsBonus = [
+  { id: '1', label: 'Sim', value: 'Y' },
+  { id: '2', label: 'Não', value: 'N' },
+];

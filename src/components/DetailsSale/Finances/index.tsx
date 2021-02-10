@@ -1,23 +1,38 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  ChangeEvent,
+} from 'react';
 import { FormHandles, SubmitHandler } from '@unform/core';
 import { Form } from '@unform/web';
+import * as Yup from 'yup';
 
 import { BiEditAlt } from 'react-icons/bi';
 import { VscEdit } from 'react-icons/vsc';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaPlus, FaMinus } from 'react-icons/fa';
+import { BsCheckBox } from 'react-icons/bs';
 
 import { toast } from 'react-toastify';
+import { useHistory } from 'react-router-dom';
+
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 
-import { ISaleData, IInstallments, IPaymentType } from '..';
-import { currency } from '../../../utils/unMasked';
+import { ISaleData, IInstallments, IPaymentType, IInstallmentsData } from '..';
+import { currency, unMaked, DateYMD } from '../../../utils/unMasked';
 import { money } from '../../../utils/masked';
+import { optionsBonus } from '../../../utils/loadOptions';
+import getValidationErros from '../../../utils/getValidationErros';
+import { Sync, Garb } from '../../../assets/images';
 
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../ReactSelect';
 import CheckboxInput from '../../CheckBox';
+import TextArea from '../../TextArea';
+import Modal from '../../Modal';
 
 import {
   SaleData,
@@ -28,6 +43,9 @@ import {
   AddButton,
   PaymentInstallments,
   BonusConatainer,
+  ModalFooter,
+  ButtonGroup,
+  ContentFallForm,
 } from '../styles';
 
 interface IFinancesProps {
@@ -40,6 +58,16 @@ interface IFinancesProps {
 interface FormData {
   name: string;
 }
+
+interface ICompany {
+  id: string;
+  name: string;
+}
+
+interface IMotives {
+  id: string;
+  description: string;
+}
 const Finances: React.FC<IFinancesProps> = ({
   status,
   sale,
@@ -48,11 +76,47 @@ const Finances: React.FC<IFinancesProps> = ({
   paymentType,
 }) => {
   const [edit, setEdit] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [motivies, setMotivies] = useState<IMotives[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisibleFall, setIsVisibleModalFall] = useState(false);
+  const [isNFRequired, setIsNFRequired] = useState(false);
   const [comissionValue, setcomissionValue] = useState('');
+  const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
+  const [companies, setCompanies] = useState<ICompany[]>([]);
+  const [newInstallements, setNewInstallments] = useState<IInstallments[]>([]);
+
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const formRef = useRef<FormHandles>(null);
+  const formModalRef = useRef<FormHandles>(null);
+  const formModalFallRef = useRef<FormHandles>(null);
+  const history = useHistory();
+
   const { userAuth } = useAuth();
+
+  useEffect(() => {
+    const loadPaymentType = async () => {
+      const response = await api.get(
+        `/payment-type/${sale.sale_type === 'NOVO' ? 'new' : 'used'}`,
+      );
+      setPaymentTypes(response.data);
+    };
+    const loadCompany = async () => {
+      const response = await api.get('/company');
+      setCompanies(response.data);
+    };
+    const loadMotivies = async () => {
+      try {
+        const response = await api.get('/motive');
+        setMotivies(response.data);
+      } catch (error) {
+        toast.error('Falha na conexão com o servidor contate o suporte');
+      }
+    };
+    loadMotivies();
+    loadPaymentType();
+    loadCompany();
+  }, [sale.sale_type]);
 
   const calcComission = useCallback(() => {
     const valueSale = formRef.current?.getFieldValue('realty_ammount');
@@ -61,8 +125,35 @@ const Finances: React.FC<IFinancesProps> = ({
     setcomissionValue(money(comission));
   }, []);
 
+  const handleValueIsNF = useCallback((value: string) => {
+    switch (value) {
+      case 'Y':
+        setIsNFRequired(true);
+        break;
+      case 'N':
+        setIsNFRequired(false);
+        break;
+      case '':
+        setIsNFRequired(false);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   const showModal = () => {
     setIsModalVisible(!isModalVisible);
+  };
+
+  const showModalFall = () => {
+    setIsVisibleModalFall(!isModalVisibleFall);
+  };
+
+  const onClose = () => {
+    setIsModalVisible(false);
+  };
+  const onCloseFall = () => {
+    setIsVisibleModalFall(false);
   };
 
   const handlePaySignal = useCallback(
@@ -92,10 +183,181 @@ const Finances: React.FC<IFinancesProps> = ({
     [token],
   );
 
+  const handlePayPlot = useCallback(
+    async idPlot => {
+      if (!idPlot) {
+        toast.error('Nao foi possivel validar a parcela');
+        return;
+      }
+      try {
+        await api.patch(`/installment/paid/${idPlot}`, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success('status do pagamento atualizado');
+        window.location.reload();
+      } catch (error) {
+        if (error.response) {
+          toast.error(`ERROR! ${error.response.message}`);
+        } else if (error.response) {
+          toast.error(`Erro interno do servidor contate o suporte`);
+        } else {
+          toast.error('Não foi possível confirmar o pagamento');
+        }
+      }
+    },
+    [token],
+  );
+
+  const optionsPaymentType = paymentTypes.map(payment => ({
+    label: payment.name,
+    value: payment.id,
+  }));
+
+  const optionsEmpresa = companies.map(company => ({
+    value: company.id,
+    label: company.name,
+  }));
+
+  const optionsMotive = motivies.map(motive => ({
+    label: motive.description,
+    value: motive.id,
+  }));
+
+  const addPlots = useCallback(() => {
+    console.log('entrou');
+    const listPlots = newInstallements.slice();
+    const numberPlot = Number(
+      formRef.current?.getFieldValue(
+        `installments[${newInstallements.length - 1}].installment_number`,
+      ),
+    );
+
+    listPlots.push({
+      installment_number: numberPlot + 1,
+      due_date: '',
+      value: '',
+    });
+    setNewInstallments(listPlots);
+  }, [newInstallements]);
+  const removePlots = useCallback(() => {
+    const listPlots = installments.slice();
+    listPlots.pop();
+
+    setNewInstallments(listPlots);
+  }, [installments]);
+
   const handleSubmit: SubmitHandler<FormData> = data => {
     console.log(formRef);
     console.log(data);
   };
+
+  const handleModalSubmit = async (data: IInstallmentsData) => {
+    formModalRef.current?.setErrors({});
+    try {
+      const schema = Yup.object({
+        installments: Yup.array().of(
+          Yup.object().shape({
+            value: Yup.string().required('Informe o valor da parcela'),
+            due_date: Yup.string().required('Informe a data de vencimento'),
+          }),
+        ),
+      });
+      await schema.validate(data, {
+        abortEarly: false,
+      });
+      const installments = data.installments.map(installment => ({
+        installment_number: installment.installment_number,
+        value: unMaked(installment.value),
+        due_date: DateYMD(installment.due_date),
+      }));
+      const newData = { installments };
+      await api.post(`installment/${sale.id}`, newData, {
+        headers: {
+          authorization: `Token ${token}`,
+        },
+      });
+      toast.success('Parcelas adicionadas!');
+      onClose();
+      window.location.reload();
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formModalRef.current?.setErrors(erros);
+      }
+
+      toast.error('ERROR ao adicionar as parcela!');
+    }
+  };
+
+  const handleValidSale = useCallback(async () => {
+    try {
+      await api.patch(`/sale/valid/${sale.id}`, {
+        headers: {
+          authorization: `Token ${token}`,
+        },
+      });
+      toast.success('Venda Validada com sucesso !');
+      history.push('/ranking');
+    } catch (error) {
+      if (error.response) {
+        toast.error(`${error.response.data.message}`);
+      } else if (error.request) {
+        toast.error(
+          'Erro de Conexão tente recarregar a página, contate o suporte',
+        );
+      } else {
+        toast.error(' Erro desconhecido, contate o suporte');
+      }
+    }
+  }, [sale.id, token, history]);
+
+  const handleFall = useCallback(
+    async data => {
+      formModalFallRef.current?.setErrors({});
+      try {
+        const schema = Yup.object({
+          motive: Yup.string().required('Selecione um Motivo'),
+        });
+        await schema.validate(data, { abortEarly: false });
+        await api.patch(`/sale/not-valid/${sale.id}`, data);
+        toast.success('Atualização Realizada');
+        history.push('/adm/lista-vendas');
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const erros = getValidationErros(err);
+          formModalRef.current?.setErrors(erros);
+        }
+
+        toast.error('ERROR ao validar os motivos da queda!');
+      }
+    },
+    [history, sale.id],
+  );
+
+  const handleSelectAnotherMotive = useCallback(
+    async (inputValue, { action }) => {
+      switch (action) {
+        case 'select-option':
+          {
+            const { value } = inputValue;
+            const response = await api.get('/motive');
+            const motives = response.data;
+            const motive = motives.filter(motive => {
+              if (motive.description === 'Outro Motivo') {
+                return { motive };
+              }
+            });
+            motive.map(m => (value === m.id ? setEdit(false) : setEdit(true)));
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [],
+  );
 
   return (
     <Form ref={formRef} onSubmit={handleSubmit}>
@@ -129,7 +391,7 @@ const Finances: React.FC<IFinancesProps> = ({
               <InputGroup className="paymment_form_container">
                 <InputDisable
                   label="Forma de Pagamento"
-                  data={paymentType.name}
+                  data={paymentType?.name}
                 />
                 <div className="button-modal">
                   <ButtonModal type="button" onClick={showModal}>
@@ -202,10 +464,11 @@ const Finances: React.FC<IFinancesProps> = ({
               <InputGroup className="paymment_form_container">
                 <Select
                   name="payment_type"
-                  nameLabel="Forma de Pagamento"
+                  label="Forma de Pagamento"
+                  placeholder="Forma de pagamento"
                   disabled={edit}
                   options={optionsPaymentType}
-                  defaultInputValue={paymentType.name}
+                  defaultInputValue={paymentType?.name}
                 />
 
                 {sale.status === 'NAO_VALIDADO' ? (
@@ -331,6 +594,149 @@ const Finances: React.FC<IFinancesProps> = ({
           )}
         </fieldset>
       </SaleData>
+      <SaleData>
+        <fieldset className="login">
+          <ButtonGroup>
+            <button type="button" onClick={() => formRef.current?.submitForm()}>
+              <Sync />
+              <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
+            </button>
+            {userAuth.office.name !== 'Diretor' ? (
+              <button type="button" onClick={showModalFall}>
+                <Garb />
+                <span>Caiu</span>
+              </button>
+            ) : null}
+          </ButtonGroup>
+          {sale.status === 'NAO_VALIDADO' && (
+            <button type="button" className="submit" onClick={handleValidSale}>
+              <BsCheckBox size={25} />
+              <span>Validar Venda</span>
+            </button>
+          )}
+        </fieldset>
+      </SaleData>
+      {isModalVisible ? (
+        <Modal
+          title="Detalhes de Pagamento"
+          value={sale.commission}
+          onClose={onClose}
+        >
+          <Form
+            ref={formModalRef}
+            onSubmit={handleModalSubmit}
+            initialData={installments}
+          >
+            {console.log(newInstallements)}
+            {installments.length !== 0 ? (
+              <PaymentInstallments>
+                {installments.map((installment, index) =>
+                  index === 0 ? (
+                    <Plot key={installment.installment_number}>
+                      <Input
+                        type="number"
+                        name={`installments[${index}].installment_number`}
+                        label="Parcela"
+                        min={1}
+                        readOnly
+                        defaultValue={installment.installment_number}
+                      />
+                      <Input
+                        mask="currency"
+                        name={`installments[${index}].value`}
+                        label="Valor da Parcela"
+                        placeholder="R$ 0,00"
+                        defaultValue={installment.value}
+                      />
+                      <Input
+                        mask="date"
+                        name={`installments[${index}].due_date`}
+                        label="Data de Vencimento"
+                        placeholder="07/01/2021"
+                        defaultValue={installment.due_date}
+                      />
+
+                      <AddButton type="button" onClick={addPlots}>
+                        <FaPlus size={20} color="#C32925" />
+                      </AddButton>
+                    </Plot>
+                  ) : (
+                    <Plot key={installment.installment_number}>
+                      <Input
+                        type="number"
+                        name={`installments[${index}].installment_number`}
+                        label="Parcela"
+                        min={1}
+                        readOnly
+                        defaultValue={index + 1}
+                      />
+                      <Input
+                        mask="currency"
+                        name={`installments[${index}].value`}
+                        label="Valor da Parcela"
+                        placeholder="R$ 0,00"
+                        defaultValue={installment.value}
+                      />
+                      <Input
+                        mask="date"
+                        name={`installments[${index}].due_date`}
+                        label="Data de Vencimento"
+                        placeholder="07/01/2021"
+                        defaultValue={installment.due_date}
+                      />
+
+                      <AddButton type="button" onClick={removePlots}>
+                        <FaMinus size={20} color="#C32925" />
+                      </AddButton>
+                    </Plot>
+                  ),
+                )}
+              </PaymentInstallments>
+            ) : null}
+
+            <ModalFooter>
+              <button
+                type="button"
+                onClick={() => formModalRef.current?.submitForm()}
+              >
+                <BsCheckBox size={25} />
+                Salvar
+              </button>
+            </ModalFooter>
+          </Form>
+        </Modal>
+      ) : null}
+      {isModalVisibleFall ? (
+        <Modal title="Venda Caida" onClose={onCloseFall}>
+          <ContentFallForm>
+            <Form ref={formModalFallRef} onSubmit={handleFall}>
+              <Select
+                nameLabel="Motivo da perda"
+                name="motive"
+                options={optionsMotive}
+                onInputChange={handleSelectAnotherMotive}
+              />
+              {!edit ? (
+                <TextArea
+                  name="another_motive"
+                  label="Outro motivo"
+                  placeholder="Adicone outro motivo"
+                />
+              ) : null}
+
+              <ModalFooter>
+                <button
+                  type="button"
+                  onClick={() => formModalFallRef.current?.submitForm()}
+                >
+                  <BsCheckBox size={25} />
+                  Confirmar
+                </button>
+              </ModalFooter>
+            </Form>
+          </ContentFallForm>
+        </Modal>
+      ) : null}
     </Form>
   );
 };
