@@ -29,7 +29,7 @@ import { Sync, Garb } from '../../../assets/images';
 
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
-import Select from '../../ReactSelect';
+import Select from '../../Select';
 import CheckboxInput from '../../CheckBox';
 import TextArea from '../../TextArea';
 import Modal from '../../Modal';
@@ -113,10 +113,14 @@ const Finances: React.FC<IFinancesProps> = ({
         toast.error('Falha na conexão com o servidor contate o suporte');
       }
     };
+    const newInstallments = () => {
+      setNewInstallments(installments);
+    };
     loadMotivies();
     loadPaymentType();
     loadCompany();
-  }, [sale.sale_type]);
+    newInstallments();
+  }, [sale.sale_type, installments]);
 
   const calcComission = useCallback(() => {
     const valueSale = formRef.current?.getFieldValue('realty_ammount');
@@ -226,7 +230,6 @@ const Finances: React.FC<IFinancesProps> = ({
   }));
 
   const addPlots = useCallback(() => {
-    console.log('entrou');
     const listPlots = newInstallements.slice();
     const numberPlot = Number(
       formRef.current?.getFieldValue(
@@ -242,11 +245,11 @@ const Finances: React.FC<IFinancesProps> = ({
     setNewInstallments(listPlots);
   }, [newInstallements]);
   const removePlots = useCallback(() => {
-    const listPlots = installments.slice();
+    const listPlots = newInstallements.slice();
     listPlots.pop();
 
     setNewInstallments(listPlots);
-  }, [installments]);
+  }, [newInstallements]);
 
   const handleSubmit: SubmitHandler<FormData> = data => {
     console.log(formRef);
@@ -336,142 +339,43 @@ const Finances: React.FC<IFinancesProps> = ({
     [history, sale.id],
   );
 
-  const handleSelectAnotherMotive = useCallback(
-    async (inputValue, { action }) => {
-      switch (action) {
-        case 'select-option':
-          {
-            const { value } = inputValue;
-            const response = await api.get('/motive');
-            const motives = response.data;
-            const motive = motives.filter(motive => {
-              if (motive.description === 'Outro Motivo') {
-                return { motive };
-              }
-            });
-            motive.map(m => (value === m.id ? setEdit(false) : setEdit(true)));
-          }
-          break;
-        default:
-          break;
-      }
-    },
-    [],
-  );
+  const handleSelectAnotherMotive = useCallback(() => {}, []);
 
   return (
-    <Form ref={formRef} onSubmit={handleSubmit}>
-      <SaleData>
-        <fieldset className="login">
-          <Legend>
-            <legend>FINANÇAS</legend>
-            {status !== 'CAIU' ? (
-              <button type="button" onClick={() => setEdit(!edit)}>
-                <BiEditAlt size={20} color="#C32925" />
-                <span>editar</span>
-              </button>
-            ) : null}
-          </Legend>
-          {edit ? (
-            <>
-              <InputGroup>
-                <InputDisable
-                  label="Valor da Venda"
-                  data={sale.realty_ammount}
-                />
-                <InputDisable label="Data da Venda" data={sale.sale_date} />
-              </InputGroup>
-              <InputGroup>
-                <InputDisable
-                  label="(%) da Venda"
-                  data={String(sale.percentage_sale)}
-                />
-                <InputDisable label="Comissão" data={sale.commission} />
-              </InputGroup>
-              <InputGroup className="paymment_form_container">
-                <InputDisable
-                  label="Forma de Pagamento"
-                  data={paymentType?.name}
-                />
-                <div className="button-modal">
-                  <ButtonModal type="button" onClick={showModal}>
-                    <VscEdit size={20} color="#C32925" />
-                    <span>
-                      {installments ? 'Editar Parcelas' : 'Adicionar Parcelas'}
-                    </span>
-                  </ButtonModal>
-                </div>
-              </InputGroup>
-              <InputGroup>
-                <Plot>
-                  <InputDisable label="Valor do Ato" data={sale.value_signal} />
+    <>
+      <Form ref={formRef} onSubmit={handleSubmit}>
+        <SaleData>
+          <fieldset className="login">
+            <Legend>
+              <legend>FINANÇAS</legend>
+              {status !== 'CAIU' ? (
+                <button type="button" onClick={() => setEdit(!edit)}>
+                  <BiEditAlt size={20} color="#C32925" />
+                  <span>editar</span>
+                </button>
+              ) : null}
+            </Legend>
+            {edit ? (
+              <>
+                <InputGroup>
                   <InputDisable
-                    label="Data de Vencimento"
-                    data={sale.pay_date_signal}
+                    label="Valor da Venda"
+                    data={sale.realty_ammount}
                   />
+                  <InputDisable label="Data da Venda" data={sale.sale_date} />
+                </InputGroup>
+                <InputGroup>
                   <InputDisable
-                    label="Status"
-                    data={sale.payment_signal ? 'PAGO' : 'PENDENTE'}
-                    status={sale.payment_signal ? 'PAGO' : 'PENDENTE'}
+                    label="(%) da Venda"
+                    data={String(sale.percentage_sale)}
                   />
-                </Plot>
-                {!sale.payment_signal && (
-                  <AddButton
-                    type="button"
-                    className="valid"
-                    onClick={() => handlePaySignal(sale.id)}
-                  >
-                    <FaCheck size={20} color="#FCF9F9" />
-                  </AddButton>
-                )}
-              </InputGroup>
-            </>
-          ) : (
-            <>
-              <InputGroup>
-                <Input
-                  mask="currency"
-                  name="realty_ammount"
-                  label="Valor da Venda"
-                  readOnly={edit}
-                  defaultValue={sale.realty_ammount}
-                />
-                <Input
-                  mask="date"
-                  name="sale_date"
-                  label="Data da Venda"
-                  readOnly={edit}
-                  defaultValue={sale.sale_date}
-                />
-              </InputGroup>
-              <InputGroup>
-                <Input
-                  name="percentage_sale"
-                  label="(%) da Venda"
-                  onChange={calcComission}
-                  readOnly={edit}
-                  defaultValue={sale.percentage_sale}
-                />
-                <Input
-                  mask="currency"
-                  name="commission"
-                  label="Comissão"
-                  value={comissionValue}
-                  defaultValue={sale.commission}
-                  readOnly
-                />
-              </InputGroup>
-              <InputGroup className="paymment_form_container">
-                <Select
-                  name="payment_type"
-                  label="Forma de Pagamento"
-                  placeholder="Forma de pagamento"
-                  disabled={edit}
-                  options={optionsPaymentType}
-                  defaultInputValue={paymentType?.name}
-                />
-
-                {sale.status === 'NAO_VALIDADO' ? (
+                  <InputDisable label="Comissão" data={sale.commission} />
+                </InputGroup>
+                <InputGroup className="paymment_form_container">
+                  <InputDisable
+                    label="Forma de Pagamento"
+                    data={paymentType?.name}
+                  />
                   <div className="button-modal">
                     <ButtonModal type="button" onClick={showModal}>
                       <VscEdit size={20} color="#C32925" />
@@ -482,35 +386,151 @@ const Finances: React.FC<IFinancesProps> = ({
                       </span>
                     </ButtonModal>
                   </div>
-                ) : null}
-              </InputGroup>
-              <InputGroup>
-                <Plot>
+                </InputGroup>
+                <InputGroup>
+                  <Plot>
+                    <InputDisable
+                      label="Valor do Ato"
+                      data={sale.value_signal}
+                    />
+                    <InputDisable
+                      label="Data de Vencimento"
+                      data={sale.pay_date_signal}
+                    />
+                    <InputDisable
+                      label="Status"
+                      data={sale.payment_signal ? 'PAGO' : 'PENDENTE'}
+                      status={sale.payment_signal ? 'PAGO' : 'PENDENTE'}
+                    />
+                  </Plot>
+                  {!sale.payment_signal && (
+                    <AddButton
+                      type="button"
+                      className="valid"
+                      onClick={() => handlePaySignal(sale.id)}
+                    >
+                      <FaCheck size={20} color="#FCF9F9" />
+                    </AddButton>
+                  )}
+                </InputGroup>
+              </>
+            ) : (
+              <>
+                <InputGroup>
                   <Input
-                    label="Valor do Ato"
-                    name="value_signal"
                     mask="currency"
-                    placeholder="R$ 00,00"
+                    name="realty_ammount"
+                    label="Valor da Venda"
+                    readOnly={edit}
+                    defaultValue={sale.realty_ammount}
                   />
                   <Input
-                    label="Data de Pagamento"
-                    name="pay_date_signal"
                     mask="date"
-                    placeholder="DD/MM/AAAA"
+                    name="sale_date"
+                    label="Data da Venda"
+                    readOnly={edit}
+                    defaultValue={sale.sale_date}
                   />
-                </Plot>
-              </InputGroup>
-            </>
-          )}
+                </InputGroup>
+                <InputGroup>
+                  <Input
+                    name="percentage_sale"
+                    label="(%) da Venda"
+                    onChange={calcComission}
+                    readOnly={edit}
+                    defaultValue={sale.percentage_sale}
+                  />
+                  <Input
+                    mask="currency"
+                    name="commission"
+                    label="Comissão"
+                    value={comissionValue}
+                    defaultValue={sale.commission}
+                    readOnly
+                  />
+                </InputGroup>
+                <InputGroup className="paymment_form_container">
+                  <Select
+                    name="payment_type"
+                    nameLabel="Forma de Pagamento"
+                    disabled={edit}
+                    options={optionsPaymentType}
+                    defaultValue={paymentType?.name}
+                  />
 
-          {installments ? (
-            <PaymentInstallments>
-              {userAuth.office.name !== 'Diretor' ? (
-                <>
-                  <span>Parcelas Pendentes</span>
-                  {installments.map(
-                    installment =>
-                      installment.status === 'PENDENTE' && (
+                  {sale.status === 'NAO_VALIDADO' ? (
+                    <div className="button-modal">
+                      <ButtonModal type="button" onClick={showModal}>
+                        <VscEdit size={20} color="#C32925" />
+                        <span>
+                          {installments
+                            ? 'Editar Parcelas'
+                            : 'Adicionar Parcelas'}
+                        </span>
+                      </ButtonModal>
+                    </div>
+                  ) : null}
+                </InputGroup>
+                <InputGroup>
+                  <Plot>
+                    <Input
+                      label="Valor do Ato"
+                      name="value_signal"
+                      mask="currency"
+                      placeholder="R$ 00,00"
+                    />
+                    <Input
+                      label="Data de Pagamento"
+                      name="pay_date_signal"
+                      mask="date"
+                      placeholder="DD/MM/AAAA"
+                    />
+                  </Plot>
+                </InputGroup>
+              </>
+            )}
+
+            {installments ? (
+              <PaymentInstallments>
+                {userAuth.office.name !== 'Diretor' ? (
+                  <>
+                    <span>Parcelas Pendentes</span>
+                    {installments.map(
+                      installment =>
+                        installment.status === 'PENDENTE' && (
+                          <Plot key={installment.installment_number}>
+                            <InputDisable
+                              label="Parcela"
+                              data={String(installment.installment_number)}
+                            />
+                            <InputDisable
+                              label="Valor da Parcela"
+                              data={installment.value}
+                            />
+                            <InputDisable
+                              label="Data de Vencimento"
+                              data={installment.due_date}
+                            />
+                            <InputDisable
+                              label="Status"
+                              data={installment.status}
+                              status={installment.status}
+                            />
+                            {!installment.pay_date && (
+                              <AddButton
+                                type="button"
+                                className="valid"
+                                onClick={() => handlePayPlot(installment.id)}
+                              >
+                                <FaCheck size={20} color="#FCF9F9" />
+                              </AddButton>
+                            )}
+                          </Plot>
+                        ),
+                    )}
+                    <span>Parcelas Pagas</span>
+                    {installmentPay.length > 0 ? (
+                      installmentPay.map(installment => (
                         <Plot key={installment.installment_number}>
                           <InputDisable
                             label="Parcela"
@@ -529,93 +549,68 @@ const Finances: React.FC<IFinancesProps> = ({
                             data={installment.status}
                             status={installment.status}
                           />
-                          {!installment.pay_date && (
-                            <AddButton
-                              type="button"
-                              className="valid"
-                              onClick={() => handlePayPlot(installment.id)}
-                            >
-                              <FaCheck size={20} color="#FCF9F9" />
-                            </AddButton>
-                          )}
                         </Plot>
-                      ),
-                  )}
-                  <span>Parcelas Pagas</span>
-                  {installmentPay.length > 0 ? (
-                    installmentPay.map(installment => (
-                      <Plot key={installment.installment_number}>
-                        <InputDisable
-                          label="Parcela"
-                          data={String(installment.installment_number)}
-                        />
-                        <InputDisable
-                          label="Valor da Parcela"
-                          data={installment.value}
-                        />
-                        <InputDisable
-                          label="Data de Vencimento"
-                          data={installment.due_date}
-                        />
-                        <InputDisable
-                          label="Status"
-                          data={installment.status}
-                          status={installment.status}
-                        />
-                      </Plot>
-                    ))
-                  ) : (
-                    <strong>Nehuma Parcela paga</strong>
-                  )}
-                </>
-              ) : null}
-            </PaymentInstallments>
-          ) : null}
-          {userAuth.office.name !== 'Diretor' ? (
-            <BonusConatainer>
-              <span>Nescessita Nota Fiscal ?</span>
-              <CheckboxInput
-                name="isNF"
-                options={optionsBonus}
-                handleValue={handleValueIsNF}
-              />
-            </BonusConatainer>
-          ) : null}
-
-          {isNFRequired && (
-            <InputGroup>
-              <Select
-                nameLabel="Empresa"
-                name="company"
-                options={optionsEmpresa}
-              />
-              <Input name="percentage_company" label="% do Imposto" />
-            </InputGroup>
-          )}
-        </fieldset>
-      </SaleData>
-      <SaleData>
-        <fieldset className="login">
-          <ButtonGroup>
-            <button type="button" onClick={() => formRef.current?.submitForm()}>
-              <Sync />
-              <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
-            </button>
-            {userAuth.office.name !== 'Diretor' ? (
-              <button type="button" onClick={showModalFall}>
-                <Garb />
-                <span>Caiu</span>
-              </button>
+                      ))
+                    ) : (
+                      <strong>Nehuma Parcela paga</strong>
+                    )}
+                  </>
+                ) : null}
+              </PaymentInstallments>
             ) : null}
-          </ButtonGroup>
-          {sale.status === 'NAO_VALIDADO' && (
-            <button type="button" className="submit" onClick={handleValidSale}>
-              <BsCheckBox size={25} />
-              <span>Validar Venda</span>
-            </button>
-          )}
-        </fieldset>
-      </SaleData>
+            {userAuth.office.name !== 'Diretor' ? (
+              <BonusConatainer>
+                <span>Nescessita Nota Fiscal ?</span>
+                <CheckboxInput
+                  name="isNF"
+                  options={optionsBonus}
+                  handleValue={handleValueIsNF}
+                />
+              </BonusConatainer>
+            ) : null}
+
+            {isNFRequired && (
+              <InputGroup>
+                <Select
+                  nameLabel="Empresa"
+                  name="company"
+                  options={optionsEmpresa}
+                />
+                <Input name="percentage_company" label="% do Imposto" />
+              </InputGroup>
+            )}
+          </fieldset>
+        </SaleData>
+        <SaleData>
+          <fieldset className="login">
+            <ButtonGroup>
+              <button
+                type="button"
+                onClick={() => formRef.current?.submitForm()}
+              >
+                <Sync />
+                <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
+              </button>
+              {userAuth.office.name !== 'Diretor' ? (
+                <button type="button" onClick={showModalFall}>
+                  <Garb />
+                  <span>Caiu</span>
+                </button>
+              ) : null}
+            </ButtonGroup>
+            {sale.status === 'NAO_VALIDADO' && (
+              <button
+                type="button"
+                className="submit"
+                onClick={handleValidSale}
+              >
+                <BsCheckBox size={25} />
+                <span>Validar Venda</span>
+              </button>
+            )}
+          </fieldset>
+        </SaleData>
+      </Form>
       {isModalVisible ? (
         <Modal
           title="Detalhes de Pagamento"
@@ -627,10 +622,9 @@ const Finances: React.FC<IFinancesProps> = ({
             onSubmit={handleModalSubmit}
             initialData={installments}
           >
-            {console.log(newInstallements)}
-            {installments.length !== 0 ? (
+            {newInstallements.length !== 0 ? (
               <PaymentInstallments>
-                {installments.map((installment, index) =>
+                {newInstallements.map((installment, index) =>
                   index === 0 ? (
                     <Plot key={installment.installment_number}>
                       <Input
@@ -714,7 +708,7 @@ const Finances: React.FC<IFinancesProps> = ({
                 nameLabel="Motivo da perda"
                 name="motive"
                 options={optionsMotive}
-                onInputChange={handleSelectAnotherMotive}
+                onChange={handleSelectAnotherMotive}
               />
               {!edit ? (
                 <TextArea
@@ -737,7 +731,7 @@ const Finances: React.FC<IFinancesProps> = ({
           </ContentFallForm>
         </Modal>
       ) : null}
-    </Form>
+    </>
   );
 };
 
