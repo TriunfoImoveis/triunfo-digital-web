@@ -86,3 +86,22 @@ export const ButtonGroup = styled.div`
     }
   }
 `;
+
+export const FailedRegisterSale = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  > h1 {
+    margin: 3rem 0;
+    font-family: Roboto;
+    font-weight: normal;
+    font-size: 2rem;
+    line-height: 3.5rem;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+  > svg {
+    width: 70%;
+    height: 240px;
+  }
+`;
