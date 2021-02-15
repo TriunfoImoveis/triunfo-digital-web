@@ -152,7 +152,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
 
   const handleSubmit = useCallback(async () => {
     formRef.current?.setErrors({});
-    unMaskValue();
+
     const data = formRef.current?.getData();
     try {
       setLoading(true);
@@ -161,7 +161,10 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           client_buyer: Yup.object().shape({
             name: Yup.string().required('Nome Obrigatório'),
             cpf: Yup.string()
-              .min(11, 'Informe o cpf corretamente, cpf deve conter 11 digitos')
+              .min(
+                11,
+                'Informe o cpf corretamente, cpf deve conter 11 digitos, sem traços ou pontos',
+              )
               .max(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
             date_birth: Yup.string()
@@ -180,12 +183,12 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
             ),
             occupation: Yup.string().required('Profissão Obrigatória'),
             phone: Yup.string()
-              .min(11, 'O numero precisa ter pelo menos 11 digitos')
-              .max(14, 'Digite um numero de telefone válido')
+              .min(11, 'O numero precisa ter pelo menos 11 números')
+              .max(15, 'Digite um numero de telefone válido')
               .required('Telefone obrigatório'),
             whatsapp: Yup.string()
               .min(11, 'O numero precisa ter pelo menos 11 digitos')
-              .max(14, 'Digite um numero de telefone válido')
+              .max(19, 'Digite um numero de telefone válido')
               .required('Whatsapp obrigatório'),
             email: Yup.string()
               .email('informe um email Válido')
@@ -200,10 +203,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           client_seller: Yup.object().shape({
             name: Yup.string().required('Nome Obrigatório'),
             cpf: Yup.string()
+              .min(
+                11,
+                'Informe o cpf corretamente, cpf deve conter 11 digitos, sem traços ou pontos',
+              )
               .max(14, 'Informe o cpf corretamente')
               .required('CPF obrigatório'),
             date_birth: Yup.string()
-              .max(12, 'Formato da Data DD/MM/AAAA')
               .test('validateDate', 'Data Invalida', function valid(value) {
                 const { path, createError } = this;
                 const isValid = valiateDate(value);
@@ -218,8 +224,14 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               'Quantidade de filhos Obrigatória',
             ),
             occupation: Yup.string().required('Profissão Obrigatória'),
-            phone: Yup.string().required('Telefone obrigatório'),
-            whatsapp: Yup.string().required('Whatsapp obrigatório'),
+            phone: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 números')
+              .max(15, 'Digite um numero de telefone válido')
+              .required('Telefone obrigatório'),
+            whatsapp: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 digitos')
+              .max(19, 'Digite um numero de telefone válido')
+              .required('Whatsapp obrigatório'),
             email: Yup.string()
               .email('informe um email Válido')
               .required('E-mail Obrigatório'),
@@ -229,6 +241,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           abortEarly: false,
         });
       }
+      unMaskValue();
       updateFormData(data || {});
       nextStep();
       setCliente({} as IClientData);
