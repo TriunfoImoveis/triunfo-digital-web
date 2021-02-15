@@ -30,13 +30,7 @@ const RegisterSaleUsed: React.FC = () => {
           <Step2 nextStep={nextSpeps} prevStep={prevSpeps} typeClient="buyer" />
         );
       case 3:
-        return (
-          <ClientSaller
-            nextStep={nextSpeps}
-            prevStep={prevSpeps}
-            typeClient="salesman"
-          />
-        );
+        return <ClientSaller nextStep={nextSpeps} prevStep={prevSpeps} />;
       case 4:
         return (
           <Step3 nextStep={nextSpeps} prevStep={prevSpeps} typeSale="used" />
