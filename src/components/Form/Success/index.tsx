@@ -4,28 +4,30 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
 
-import { SuccesImage } from '../../../assets/images';
-import { SuccessContainer, ButtonGroup } from './styles';
+import { SuccesImage, ErrorRegisterSale } from '../../../assets/images';
+import { SuccessContainer, ButtonGroup, FailedRegisterSale } from './styles';
+import api from '../../../services/api';
 
 interface ISuccessProps {
   typeSale: 'new' | 'used';
 }
 
 const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
-  const { submitFormNew, submitFormUsed } = useForm();
+  const { formData } = useForm();
   const [loading, setLoading] = useState(false);
   const [statusError, setStatusError] = useState(false);
+
   useEffect(() => {
-    const submitFom = () => {
-      setLoading(true);
+    const submitFom = async () => {
       if (typeSale === 'new') {
         try {
-          submitFormNew();
-
+          setLoading(true);
+          const response = await api.post('/sale/new', formData);
+          if (!response.data) {
+            throw new Error();
+          }
           toast.success('Venda cadastrada');
-          setLoading(false);
         } catch (err) {
-          setLoading(false);
           setStatusError(true);
           if (err.response) {
             toast.error(`${err.response.data.message}`);
@@ -34,15 +36,19 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           } else {
             toast.error('Erro interno do servidor, contate o suporte');
           }
+        } finally {
+          setLoading(false);
         }
       }
       if (typeSale === 'used') {
         try {
-          submitFormUsed();
-          setLoading(false);
+          setLoading(true);
+          const response = await api.post('/sale/used', formData);
+          if (!response.data) {
+            throw new Error();
+          }
           toast.success('Venda cadastrada');
         } catch (err) {
-          setLoading(false);
           setStatusError(true);
           if (err.response) {
             toast.error(`${err.response.data.message}`);
@@ -51,11 +57,13 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           } else {
             toast.error('Erro interno do servidor, contate o suporte');
           }
+        } finally {
+          setLoading(false);
         }
       }
     };
     submitFom();
-  }, [submitFormNew, submitFormUsed, typeSale]);
+  }, [typeSale, formData]);
   return (
     <SuccessContainer>
       {loading ? (
@@ -63,18 +71,15 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
       ) : (
         <>
           {statusError ? (
-            <>
+            <FailedRegisterSale>
               <h1>Falhou! Tente Novamente</h1>
-              <SuccesImage />
+              <ErrorRegisterSale />
               <ButtonGroup>
-                <Link to="/ranking" className="cancel">
-                  Ver o Ranking
-                </Link>
                 <Link to="/actions" className="next">
                   Tentar novamente
                 </Link>
               </ButtonGroup>
-            </>
+            </FailedRegisterSale>
           ) : (
             <>
               <h1>Cadastro concluído</h1>
