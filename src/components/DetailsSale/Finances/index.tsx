@@ -339,7 +339,19 @@ const Finances: React.FC<IFinancesProps> = ({
     [history, sale.id],
   );
 
-  const handleSelectAnotherMotive = useCallback(() => {}, []);
+  const handleSelectAnotherMotive = useCallback(
+    async (e: ChangeEvent<HTMLSelectElement>) => {
+      const { value } = e.target;
+      const response = await api.get('/motive');
+      const motives = response.data;
+      const motive = motives.filter(motive => {
+        if (motive.description === 'Outro Motivo') {
+          return { motive };
+        }
+      });
+    },
+    [],
+  );
 
   return (
     <>

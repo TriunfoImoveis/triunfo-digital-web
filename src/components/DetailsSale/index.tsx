@@ -1,63 +1,20 @@
 /* eslint-disable array-callback-return */
-import React, {
-  ChangeEvent,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { useState, useEffect } from 'react';
 
-import { FormHandles } from '@unform/core';
-
-import { BiEditAlt } from 'react-icons/bi';
-import { Form } from '@unform/web';
-import { BsCheckBox } from 'react-icons/bs';
-import { FaCheck, FaMinus, FaPlus } from 'react-icons/fa';
-import { VscEdit } from 'react-icons/vsc';
-import { useHistory, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import AdmLayout from '../../pages/Layouts/Adm';
-import Input from '../Input';
-import Select from '../Select';
-import Modal from '../Modal';
-import { Sync, Garb } from '../../assets/images';
-import { CPFMask, FoneMask, money } from '../../utils/masked';
+import { CPFMask, FoneMask } from '../../utils/masked';
 import { DateBRL, formatPrice } from '../../utils/format';
-import {
-  Container,
-  Content,
-  SaleData,
-  InputGroup,
-  ButtonGroup,
-  Legend,
-  PaymentInstallments,
-  Plot,
-  AddButton,
-  ButtonModal,
-  ModalFooter,
-  ContentFallForm,
-  BonusConatainer,
-} from './styles';
+import { Container, Content } from './styles';
 import api from '../../services/api';
-import getValidationErros from '../../utils/getValidationErros';
-import { DateYMD, unMaked, currency } from '../../utils/unMasked';
-import TextArea from '../TextArea';
-import CheckboxInput from '../CheckBox';
-import InputDisable from '../InputDisabled';
-import { useAuth } from '../../context/AuthContext';
 import Property from './Property';
 import ClientBuyer from './ClientBuyer';
 import ClientSeller from './ClientSeller';
 import Builder from './Builder';
 import Realtors from './Realtors';
 import Finances from './Finances';
-
-interface IOptionsData {
-  id: string;
-  name: string;
-  description?: string;
-}
 
 interface IParamsData {
   id: string;
@@ -68,10 +25,6 @@ interface ISallers {
   name: string;
 }
 
-interface ICoordinator {
-  id: string;
-  name: string;
-}
 export interface ISaleData {
   id: string;
   bonus?: string;
