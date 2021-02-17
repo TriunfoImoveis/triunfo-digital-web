@@ -23,14 +23,12 @@ import api from '../../../services/api';
 import { ISaleData, IInstallments, IPaymentType, IInstallmentsData } from '..';
 import { currency, unMaked, DateYMD } from '../../../utils/unMasked';
 import { money } from '../../../utils/masked';
-import { optionsBonus } from '../../../utils/loadOptions';
 import getValidationErros from '../../../utils/getValidationErros';
 import { Sync, Garb } from '../../../assets/images';
 
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../Select';
-import CheckboxInput from '../../CheckBox';
 import TextArea from '../../TextArea';
 import Modal from '../../Modal';
 
@@ -42,11 +40,11 @@ import {
   Plot,
   AddButton,
   PaymentInstallments,
-  BonusConatainer,
   ModalFooter,
   ButtonGroup,
   ContentFallForm,
 } from '../styles';
+import { valiateDate } from '../../../utils/validateDate';
 
 interface IFinancesProps {
   status: string;
@@ -56,12 +54,13 @@ interface IFinancesProps {
   paymentType: IPaymentType;
 }
 interface FormData {
-  name: string;
-}
-
-interface ICompany {
-  id: string;
-  name: string;
+  realty_ammount: string;
+  sale_date: string;
+  percentage_sale: string;
+  commission: string;
+  payment_type: string;
+  value_signal: string;
+  pay_date_signal: string;
 }
 
 interface IMotives {
@@ -80,11 +79,10 @@ const Finances: React.FC<IFinancesProps> = ({
   const [motivies, setMotivies] = useState<IMotives[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalVisibleFall, setIsVisibleModalFall] = useState(false);
-  const [isNFRequired, setIsNFRequired] = useState(false);
   const [comissionValue, setcomissionValue] = useState('');
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
-  const [companies, setCompanies] = useState<ICompany[]>([]);
   const [newInstallements, setNewInstallments] = useState<IInstallments[]>([]);
+  const [isOtherMotive, setIsOtherMotive] = useState(false);
 
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const formRef = useRef<FormHandles>(null);
@@ -97,13 +95,9 @@ const Finances: React.FC<IFinancesProps> = ({
   useEffect(() => {
     const loadPaymentType = async () => {
       const response = await api.get(
-        `/payment-type/${sale.sale_type === 'NOVO' ? 'new' : 'used'}`,
+        `/payment-type?type=${sale.sale_type === 'NOVO' ? 'NOVO' : 'USADO'}`,
       );
       setPaymentTypes(response.data);
-    };
-    const loadCompany = async () => {
-      const response = await api.get('/company');
-      setCompanies(response.data);
     };
     const loadMotivies = async () => {
       try {
@@ -118,7 +112,6 @@ const Finances: React.FC<IFinancesProps> = ({
     };
     loadMotivies();
     loadPaymentType();
-    loadCompany();
     newInstallments();
   }, [sale.sale_type, installments]);
 
@@ -127,22 +120,6 @@ const Finances: React.FC<IFinancesProps> = ({
     const portcent = formRef.current?.getFieldValue('percentage_sale');
     const comission = currency(valueSale) * (currency(portcent) / 100);
     setcomissionValue(money(comission));
-  }, []);
-
-  const handleValueIsNF = useCallback((value: string) => {
-    switch (value) {
-      case 'Y':
-        setIsNFRequired(true);
-        break;
-      case 'N':
-        setIsNFRequired(false);
-        break;
-      case '':
-        setIsNFRequired(false);
-        break;
-      default:
-        break;
-    }
   }, []);
 
   const showModal = () => {
@@ -159,6 +136,23 @@ const Finances: React.FC<IFinancesProps> = ({
   const onCloseFall = () => {
     setIsVisibleModalFall(false);
   };
+
+  const unMaskedValue = useCallback((data: FormData) => {
+    const vgv = formRef.current?.getFieldValue('realty_ammount');
+    const dateSale = formRef.current?.getFieldValue('sale_date');
+    const comission = formRef.current?.getFieldValue('commission');
+    const pay_date_signal = formRef.current?.getFieldValue('pay_date_signal');
+    const value_signal = formRef.current?.getFieldValue('value_signal');
+    const formData: FormData = Object.assign(
+      data,
+      (data.realty_ammount = unMaked(vgv)),
+      (data.value_signal = unMaked(value_signal)),
+      (data.sale_date = DateYMD(dateSale)),
+      (data.pay_date_signal = DateYMD(pay_date_signal)),
+      (data.commission = unMaked(comission)),
+    );
+    return formData;
+  }, []);
 
   const handlePaySignal = useCallback(
     async idSale => {
@@ -219,11 +213,6 @@ const Finances: React.FC<IFinancesProps> = ({
     value: payment.id,
   }));
 
-  const optionsEmpresa = companies.map(company => ({
-    value: company.id,
-    label: company.name,
-  }));
-
   const optionsMotive = motivies.map(motive => ({
     label: motive.description,
     value: motive.id,
@@ -251,9 +240,69 @@ const Finances: React.FC<IFinancesProps> = ({
     setNewInstallments(listPlots);
   }, [newInstallements]);
 
-  const handleSubmit: SubmitHandler<FormData> = data => {
-    console.log(formRef);
-    console.log(data);
+  const handleSubmit: SubmitHandler<FormData> = async data => {
+    formModalRef.current?.setErrors({});
+    try {
+      setLoading(true);
+      const schema = Yup.object().shape({
+        realty_ammount: Yup.string().required('Valor da Venda Obrigatório'),
+        sale_date: Yup.string()
+          .min(10, 'Formato da Data DD/MM/AAAA')
+          .test('validateDate', 'Data Invalida', function valid(value) {
+            const { path, createError } = this;
+            const isValid = valiateDate(value);
+            return isValid || createError({ path, message: 'Data Invalida' });
+          })
+          .required('Data da venda'),
+        percentage_sale: Yup.string().required(
+          'Porcetagem Total da venda Obrigatória',
+        ),
+        commission: Yup.string().required('comissão da venda Obrigatória'),
+        payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
+        value_signal: Yup.string().required('Valor do Ato Obrigatório'),
+        pay_date_signal: Yup.string()
+          .min(10, 'Formato da Data DD/MM/AAAA')
+          .test('validateDate', 'Data Invalida', function valid(value) {
+            const { path, createError } = this;
+            const isValid = valiateDate(value);
+            return isValid || createError({ path, message: 'Data Invalida' });
+          })
+          .required('Data do pagamento do sinal'),
+      });
+
+      await schema.validate(data, {
+        abortEarly: false,
+      });
+      const formData = unMaskedValue(data);
+      delete formData[0];
+      delete formData[1];
+      delete formData[2];
+      delete formData[3];
+      delete formData[4];
+      delete formData[5];
+      delete formData[6];
+      delete formData[7];
+      delete formData[8];
+      delete formData[9];
+      await api.put(`/sale/${sale.id}`, formData, {
+        headers: {
+          authorization: `Bearer ${localStorage.getItem(
+            '@TriunfoDigital:token',
+          )}`,
+        },
+      });
+      toast.success('Dados da Venda atualizadas!');
+      history.push('/adm/lista-vendas');
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formRef.current?.setErrors(erros);
+      }
+
+      toast.error('ERROR!, verifique as informações e tente novamente');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleModalSubmit = async (data: IInstallmentsData) => {
@@ -344,11 +393,15 @@ const Finances: React.FC<IFinancesProps> = ({
       const { value } = e.target;
       const response = await api.get('/motive');
       const motives = response.data;
-      const motive = motives.filter(motive => {
-        if (motive.description === 'Outro Motivo') {
-          return { motive };
-        }
-      });
+      const outherMotive: IMotives[] = motives.filter(
+        motive => motive.description === 'Outro Motivo',
+      );
+      outherMotive.map(otherMotive =>
+        otherMotive.id === value
+          ? setIsOtherMotive(true)
+          : setIsOtherMotive(false),
+      );
+      return;
     },
     [],
   );
@@ -570,27 +623,6 @@ const Finances: React.FC<IFinancesProps> = ({
                 ) : null}
               </PaymentInstallments>
             ) : null}
-            {userAuth.office.name !== 'Diretor' ? (
-              <BonusConatainer>
-                <span>Nescessita Nota Fiscal ?</span>
-                <CheckboxInput
-                  name="isNF"
-                  options={optionsBonus}
-                  handleValue={handleValueIsNF}
-                />
-              </BonusConatainer>
-            ) : null}
-
-            {isNFRequired && (
-              <InputGroup>
-                <Select
-                  nameLabel="Empresa"
-                  name="company"
-                  options={optionsEmpresa}
-                />
-                <Input name="percentage_company" label="% do Imposto" />
-              </InputGroup>
-            )}
           </fieldset>
         </SaleData>
         <SaleData>
@@ -722,7 +754,7 @@ const Finances: React.FC<IFinancesProps> = ({
                 options={optionsMotive}
                 onChange={handleSelectAnotherMotive}
               />
-              {!edit ? (
+              {isOtherMotive ? (
                 <TextArea
                   name="another_motive"
                   label="Outro motivo"
