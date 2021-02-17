@@ -137,6 +137,7 @@ export const InputGroup = styled.div`
 
 export const ButtonGroup = styled.div`
   display: flex;
+  z-index: -1;
 
   button + button {
     margin-left: 0.8rem;

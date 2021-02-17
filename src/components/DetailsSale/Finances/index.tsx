@@ -79,7 +79,7 @@ const Finances: React.FC<IFinancesProps> = ({
   const [motivies, setMotivies] = useState<IMotives[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalVisibleFall, setIsVisibleModalFall] = useState(false);
-  const [comissionValue, setcomissionValue] = useState('');
+  const [comissionValue, setcomissionValue] = useState(sale.commission);
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
   const [newInstallements, setNewInstallments] = useState<IInstallments[]>([]);
   const [isOtherMotive, setIsOtherMotive] = useState(false);
@@ -523,18 +523,16 @@ const Finances: React.FC<IFinancesProps> = ({
                     defaultValue={paymentType?.name}
                   />
 
-                  {sale.status === 'NAO_VALIDADO' ? (
-                    <div className="button-modal">
-                      <ButtonModal type="button" onClick={showModal}>
-                        <VscEdit size={20} color="#C32925" />
-                        <span>
-                          {installments
-                            ? 'Editar Parcelas'
-                            : 'Adicionar Parcelas'}
-                        </span>
-                      </ButtonModal>
-                    </div>
-                  ) : null}
+                  <div className="button-modal">
+                    <ButtonModal type="button" onClick={showModal}>
+                      <VscEdit size={20} color="#C32925" />
+                      <span>
+                        {installments
+                          ? 'Editar Parcelas'
+                          : 'Adicionar Parcelas'}
+                      </span>
+                    </ButtonModal>
+                  </div>
                 </InputGroup>
                 <InputGroup>
                   <Plot>
@@ -543,12 +541,14 @@ const Finances: React.FC<IFinancesProps> = ({
                       name="value_signal"
                       mask="currency"
                       placeholder="R$ 00,00"
+                      defaultValue={sale.value_signal}
                     />
                     <Input
                       label="Data de Pagamento"
                       name="pay_date_signal"
                       mask="date"
                       placeholder="DD/MM/AAAA"
+                      defaultValue={sale.pay_date_signal}
                     />
                   </Plot>
                 </InputGroup>

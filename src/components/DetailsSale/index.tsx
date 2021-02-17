@@ -81,9 +81,9 @@ export interface ISaleData {
     name: string;
   }[];
 
-  value_signal?: string | null;
+  value_signal: string;
   payment_signal: boolean;
-  pay_date_signal?: string | null;
+  pay_date_signal: string;
 }
 
 export interface IPaymentType {
