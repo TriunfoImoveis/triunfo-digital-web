@@ -42,6 +42,7 @@ export const ModalHeader = styled.div`
 
 export const Title = styled.span`
   font-size: 2rem;
+  font-weight: 500;
   color: ${({ theme }) => theme.colors.primary};
 `;
 export const ModalBody = styled.div`
