@@ -21,6 +21,7 @@ import {
   NavBarContainer,
   NavItemContent,
 } from './styles';
+// import Notifications from '../../components/Notifications';
 
 const Menu: React.FC = () => {
   const { signOut, userAuth } = useAuth();
@@ -50,6 +51,7 @@ const Menu: React.FC = () => {
             <span className="office">{userAuth.office.name}</span>
           </InfoContainer>
         </UserContainer>
+        {/* <Notifications /> */}
         <OptionsContainer>
           {userAuth.office.name === 'Presidente' ||
           userAuth.office.name === 'Gerente' ? (

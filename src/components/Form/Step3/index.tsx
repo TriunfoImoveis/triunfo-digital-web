@@ -17,8 +17,10 @@ import {
   UserSallersContainer,
   UserCaptivators,
   Directors,
+  Coordinator,
 } from './styles';
 import api from '../../../services/api';
+import InputDisabled from '../../InputDisabled';
 
 interface ISaleNewData {
   nextStep: () => void;
@@ -39,28 +41,23 @@ interface IOptions {
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
-  const [realtors, setRealtors] = useState<IOptions[]>([]);
   const [allRealtors, setAllRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
   const [user_directors, setUserDirectors] = useState([]);
+  const [isCoordinatorExist, setIsCoordinatorExist] = useState(true);
 
   const { updateFormData } = useForm();
   const { userAuth } = useAuth();
 
   const { city } = userAuth.subsidiary;
   useEffect(() => {
-    const loadRealtos = async () => {
-      const response = await api.get(`/users?city=${city}&office=Corretor`);
-      setRealtors(response.data);
-    };
     const loadAllRealtors = async () => {
       const response = await api.get(
         `/users?city=${city}&departament=Comercial`,
       );
       setAllRealtors(response.data);
     };
-    loadRealtos();
     loadAllRealtors();
   }, [city]);
   useEffect(() => {
@@ -92,11 +89,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     return direcs;
   }, [directors]);
 
-  const optionsRealtors = realtors.map(realtor => ({
-    label: realtor.name,
-    value: realtor.id,
-  }));
-
   const optionsCoordenador = cordinators.map(coordinator => ({
     label: coordinator.name,
     value: coordinator.id,
@@ -110,6 +102,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     label: all.name,
     value: all.id,
   }));
+
+  const handleNotCoordinator = () => {
+    setIsCoordinatorExist(!isCoordinatorExist);
+  };
 
   const handleSubmit = useCallback(
     async data => {
@@ -153,7 +149,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 }),
               )
               .required('Vendedor(es) Obrigatório'),
-            user_coordinator: Yup.string().required('Coordenador Obrigatório'),
+            user_coordinator: Yup.string(),
           });
           await schema.validate(formData, {
             abortEarly: false,
@@ -198,61 +194,52 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
       <Form ref={formRef} onSubmit={handleSubmit}>
         {typeSale === 'new' && (
           <>
-            {userAuth.office.name === 'Presidente' ||
-            userAuth.office.name === 'Gerente' ||
-            userAuth.office.name === 'Diretor' ? (
-              <Select
-                name="users_sellers"
-                options={optionsAllRealtors}
-                label="Corretor Vendedor"
-                placeholder="Infome o corretor(es)"
-                isMulti
-              />
-            ) : (
-              <Select
-                name="users_sellers"
-                options={optionsRealtors}
-                label="Corretor Vendedor"
-                placeholder="Infome o corretor(es)"
-                isMulti
-              />
-            )}
-            <InputGroup>
-              <Select
-                name="user_coordinator"
-                options={optionsCoordenador}
-                label="Coordenador"
-              />
-              <Directors>
-                <span>Diretores</span>
-                <input defaultValue={setDirector()} readOnly />
-              </Directors>
-            </InputGroup>
+            <Select
+              name="users_sellers"
+              options={optionsAllRealtors}
+              label="Corretor Vendedor"
+              placeholder="Infome o corretor(es)"
+              isMulti
+            />
+            <Coordinator>
+              {isCoordinatorExist ? (
+                <Select
+                  name="user_coordinator"
+                  placeholder="Selecione o coordernador"
+                  options={optionsCoordenador}
+                  label="Coordenador"
+                />
+              ) : (
+                <InputDisabled label="Coordenador" data="Nenhum" />
+              )}
+
+              <div className="not-coordinator">
+                <input
+                  type="checkbox"
+                  name="not-coordinators"
+                  id="not-coordinators"
+                  onChange={handleNotCoordinator}
+                />
+                <label htmlFor="not-coordinators">Não Possuí Coordenação</label>
+              </div>
+            </Coordinator>
+            <Directors>
+              <span>Diretores</span>
+              <input defaultValue={setDirector()} readOnly />
+            </Directors>
           </>
         )}
         {typeSale === 'used' && (
           <>
             <InputGroup>
               <UserSallersContainer>
-                {userAuth.office.name === 'Presidente' ||
-                userAuth.office.name === 'Gerente' ||
-                userAuth.office.name === 'Diretor' ? (
-                  <Select
-                    name="users_sellers"
-                    options={optionsAllRealtors}
-                    label="Corretor Vendedor"
-                    placeholder="Infome o corretor(es)"
-                    isMulti
-                  />
-                ) : (
-                  <Select
-                    name="users_sellers"
-                    options={optionsRealtors}
-                    label="Corretor Vendedor"
-                    placeholder="Infome o corretor(es)"
-                    isMulti
-                  />
-                )}
+                <Select
+                  name="users_sellers"
+                  options={optionsAllRealtors}
+                  label="Corretor Vendedor"
+                  placeholder="Infome o corretor(es)"
+                  isMulti
+                />
               </UserSallersContainer>
 
               <UserCaptivators>
@@ -266,17 +253,36 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               </UserCaptivators>
             </InputGroup>
             {userAuth.subsidiary.city === 'Teresina' ? (
-              <InputGroup>
-                <Select
-                  name="user_coordinator"
-                  options={optionsCoordenador}
-                  label="Coordenador"
-                />
+              <>
+                <Coordinator>
+                  {isCoordinatorExist ? (
+                    <Select
+                      name="user_coordinator"
+                      placeholder="Selecione o coordernador"
+                      options={optionsCoordenador}
+                      label="Coordenador"
+                    />
+                  ) : (
+                    <InputDisabled label="Coordenador" data="Nenhum" />
+                  )}
+
+                  <div className="not-coordinator">
+                    <input
+                      type="checkbox"
+                      name="not-coordinators"
+                      id="not-coordinators"
+                      onChange={handleNotCoordinator}
+                    />
+                    <label htmlFor="not-coordinators">
+                      Não Possuí Coordenação
+                    </label>
+                  </div>
+                </Coordinator>
                 <Directors>
                   <span>Diretores</span>
                   <input defaultValue={setDirector()} readOnly />
                 </Directors>
-              </InputGroup>
+              </>
             ) : (
               <Directors>
                 <span>Diretores</span>

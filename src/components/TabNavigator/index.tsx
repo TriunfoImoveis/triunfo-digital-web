@@ -26,7 +26,7 @@ const TabNavigator: React.FC<ITabNavigatorContainer> = ({ step, typeSale }) => {
           setTextStep('Finanças');
           break;
         case 5:
-          setTextStep('Parabéns!!');
+          setTextStep('Venda!!');
           break;
         default:
           break;
@@ -50,7 +50,7 @@ const TabNavigator: React.FC<ITabNavigatorContainer> = ({ step, typeSale }) => {
           setTextStep('Finanças');
           break;
         case 6:
-          setTextStep('Parabéns!!');
+          setTextStep('Venda!!');
           break;
         default:
           break;

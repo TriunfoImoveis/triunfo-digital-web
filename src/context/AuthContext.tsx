@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
+import { isExpired } from 'react-jwt';
 import api from '../services/api';
 
 interface UserAuth {
@@ -50,8 +51,11 @@ const AuthProvider: React.FC = ({ children }) => {
     const userAuth = localStorage.getItem('@TriunfoDigital:user');
 
     if (token && userAuth) {
-      api.defaults.headers.authorization = `Bearer ${token}`;
-      return { token, userAuth: JSON.parse(userAuth) };
+      const isMyTokenExpired = isExpired(token);
+      if (!isMyTokenExpired) {
+        api.defaults.headers.authorization = `Bearer ${token}`;
+        return { token, userAuth: JSON.parse(userAuth) };
+      }
     }
 
     return {} as AuthState;

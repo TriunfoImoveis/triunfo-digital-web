@@ -157,7 +157,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
 
   const handleSubmit = useCallback(async () => {
     formRef.current?.setErrors({});
-    unMaskValue();
+
     const data = formRef.current?.getData();
     try {
       setLoading(true);
@@ -189,11 +189,11 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
             occupation: Yup.string().required('Profissão Obrigatória'),
             phone: Yup.string()
               .min(11, 'O numero precisa ter pelo menos 11 números')
-              .max(14, 'Digite um numero de telefone válido')
+              .max(15, 'Digite um numero de telefone válido')
               .required('Telefone obrigatório'),
             whatsapp: Yup.string()
               .min(11, 'O numero precisa ter pelo menos 11 digitos')
-              .max(14, 'Digite um numero de telefone válido')
+              .max(19, 'Digite um numero de telefone válido')
               .required('Whatsapp obrigatório'),
             email: Yup.string()
               .email('informe um email Válido')
@@ -226,8 +226,14 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
               'Quantidade de filhos Obrigatória',
             ),
             occupation: Yup.string().required('Profissão Obrigatória'),
-            phone: Yup.string().required('Telefone obrigatório'),
-            whatsapp: Yup.string().required('Whatsapp obrigatório'),
+            phone: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 números')
+              .max(15, 'Digite um numero de telefone válido')
+              .required('Telefone obrigatório'),
+            whatsapp: Yup.string()
+              .min(11, 'O numero precisa ter pelo menos 11 digitos')
+              .max(19, 'Digite um numero de telefone válido')
+              .required('Whatsapp obrigatório'),
             email: Yup.string()
               .email('informe um email Válido')
               .required('E-mail Obrigatório'),
@@ -237,7 +243,9 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
           abortEarly: false,
         });
       }
-      updateFormData(data || {});
+      unMaskValue();
+      const unmaskedFormData = formRef.current?.getData();
+      updateFormData(unmaskedFormData || {});
       nextStep();
       setCliente({} as IClientData);
       setLoading(false);
