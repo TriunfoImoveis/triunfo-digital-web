@@ -14,7 +14,7 @@ import ListRealtors from '../pages/ADM/ListRealtors';
 import ListColab from '../pages/ADM/ListColab';
 import ListBuilders from '../pages/ADM/ListBuilders';
 import NewColab from '../pages/ADM/NewColab';
-import DatailSale from '../pages/ADM/DetailsSale';
+import DatailSale from '../components/DetailsSale';
 import ReportSale from '../pages/ADM/ReportSale';
 import NewBuilders from '../pages/ADM/NewBuilder';
 import Perfil from '../pages/Perfil';

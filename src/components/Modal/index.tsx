@@ -19,7 +19,7 @@ const Modal: React.FC<ModalProps> = ({ title, onClose, value, children }) => {
   return (
     <ModalContainer className="modal-container">
       <ModalWrapper className="modal-wrapper">
-        <ModalHeader className="modal-header">
+        <ModalHeader>
           <Title>{title}</Title>
           {value && <span className="value">{`Valor total: ${value}`}</span>}
           <button type="button" onClick={onClose}>
