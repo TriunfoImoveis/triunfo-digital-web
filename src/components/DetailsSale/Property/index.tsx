@@ -3,13 +3,17 @@ import { Form } from '@unform/web';
 import { FormHandles, SubmitHandler } from '@unform/core';
 
 import axios from 'axios';
+import * as Yup from 'yup';
 import { BiEditAlt } from 'react-icons/bi';
+import { useHistory, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../ReactSelect';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import api from '../../../services/api';
+import getValidationErros from '../../../utils/getValidationErros';
 
 interface IBGECityResponse {
   nome: string;
@@ -46,6 +50,10 @@ interface IPropertyProps {
   };
 }
 
+interface Params {
+  id: string;
+}
+
 const Property: React.FC<IPropertyProps> = ({
   realty,
   propertyType,
@@ -57,6 +65,8 @@ const Property: React.FC<IPropertyProps> = ({
   const [propertyTypes, setPropertyTypes] = useState<ITypeProperty[]>([]);
   const [selectedUf, setSelectedUf] = useState<string>(realty.state);
   const formRef = useRef<FormHandles>(null);
+  const history = useHistory();
+  const { id } = useParams<Params>();
 
   useEffect(() => {
     axios
@@ -104,9 +114,44 @@ const Property: React.FC<IPropertyProps> = ({
         break;
     }
   };
-  const handleSubmit: SubmitHandler<FormData> = data => {
-    console.log(formRef);
-    console.log(data);
+  const handleSubmit: SubmitHandler<FormData> = async data => {
+    formRef.current?.setErrors({});
+    try {
+      setLoading(true);
+      const schema = Yup.object().shape({
+        realty: Yup.object().shape({
+          enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+          state: Yup.string().required('Informe o Estado'),
+          city: Yup.string().required('Informe o Cidade'),
+          neighborhood: Yup.string().required('Informe o bairrro'),
+          property: Yup.string().required('Selecione o tipo do imóvel'),
+          unit: Yup.string().required('Infome a unidade'),
+        }),
+      });
+
+      await schema.validate(data, {
+        abortEarly: false,
+      });
+
+      await api.put(`/sale/${id}`, data, {
+        headers: {
+          authorization: `Bearer ${localStorage.getItem(
+            '@TriunfoDigital:token',
+          )}`,
+        },
+      });
+
+      toast.success('Dados da Venda atualizadas!');
+      history.push('/adm/lista-vendas');
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formRef.current?.setErrors(erros);
+      }
+      toast.error('ERROR!, verifique as informações e tente novamente');
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <Form ref={formRef} onSubmit={handleSubmit}>
