@@ -26,7 +26,7 @@ const Modal: React.FC<ModalProps> = ({ title, onClose, value, children }) => {
             <AiOutlineClose size={20} color="#000" />
           </button>
         </ModalHeader>
-        <ModalBody className="modal-body">{children}</ModalBody>
+        <ModalBody>{children}</ModalBody>
       </ModalWrapper>
     </ModalContainer>
   );
