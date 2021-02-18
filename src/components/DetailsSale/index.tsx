@@ -232,52 +232,95 @@ const DetailsSale: React.FC = () => {
       <Container>
         <h1>DETALHES DA VENDA</h1>
         <Content>
-          <Tabs
-            id="tab-container"
-            className="tab-container"
-            defaultActiveKey="finances"
-            variant="tabs"
-          >
-            <TabBootstrap eventKey="property" title="Imóvel">
-              <Property
-                realty={realty}
-                status={sale.status}
-                propertyType={realty.property}
-              />
-            </TabBootstrap>
-            <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
-              <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
-            </TabBootstrap>
-            <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
-              <ClientSeller clientSeller={client_seller} status={sale.status} />
-            </TabBootstrap>
-            <TabBootstrap eventKey="builder" title="Construtora">
-              <Builder
-                builder={sale.builder}
-                status={sale.status}
-                uf={realty.state}
-              />
-            </TabBootstrap>
-            <TabBootstrap eventKey="realtors" title="Corretores">
-              <Realtors
-                status={sale.status}
-                saleType={sale.sale_type}
-                sallers={realtorSellers}
-                captvators={realtorCaptivators}
-                coordinator={coordinator}
-                directors={directors}
-              />
-            </TabBootstrap>
-            <TabBootstrap eventKey="finances" title="Financeiro">
-              <Finances
-                status={sale.status}
-                sale={sale}
-                installments={instalments}
-                installmentPay={instalmentsPay}
-                paymentType={sale.payment_type}
-              />
-            </TabBootstrap>
-          </Tabs>
+          {sale.sale_type === 'NOVO' && (
+            <Tabs
+              id="tab-container"
+              className="tab-container"
+              defaultActiveKey="finances"
+              variant="tabs"
+            >
+              <TabBootstrap eventKey="property" title="Imóvel">
+                <Property
+                  realty={realty}
+                  status={sale.status}
+                  propertyType={realty.property}
+                />
+              </TabBootstrap>
+              <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
+                <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+              </TabBootstrap>
+              <TabBootstrap eventKey="builder" title="Construtora">
+                <Builder
+                  builder={sale.builder}
+                  status={sale.status}
+                  uf={realty.state}
+                />
+              </TabBootstrap>
+              <TabBootstrap eventKey="realtors" title="Corretores">
+                <Realtors
+                  status={sale.status}
+                  saleType={sale.sale_type}
+                  sallers={realtorSellers}
+                  captvators={realtorCaptivators}
+                  coordinator={coordinator}
+                  directors={directors}
+                />
+              </TabBootstrap>
+              <TabBootstrap eventKey="finances" title="Financeiro">
+                <Finances
+                  status={sale.status}
+                  sale={sale}
+                  installments={instalments}
+                  installmentPay={instalmentsPay}
+                  paymentType={sale.payment_type}
+                />
+              </TabBootstrap>
+            </Tabs>
+          )}
+          {sale.sale_type === 'USADO' && (
+            <Tabs
+              id="tab-container"
+              className="tab-container"
+              defaultActiveKey="finances"
+              variant="tabs"
+            >
+              <TabBootstrap eventKey="property" title="Imóvel">
+                <Property
+                  realty={realty}
+                  status={sale.status}
+                  propertyType={realty.property}
+                />
+              </TabBootstrap>
+              <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
+                <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+              </TabBootstrap>
+              <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
+                <ClientSeller
+                  clientSeller={client_seller}
+                  status={sale.status}
+                />
+              </TabBootstrap>
+              <TabBootstrap eventKey="realtors" title="Corretores">
+                <Realtors
+                  status={sale.status}
+                  saleType={sale.sale_type}
+                  sallers={realtorSellers}
+                  captvators={realtorCaptivators}
+                  coordinator={coordinator}
+                  directors={directors}
+                />
+              </TabBootstrap>
+              <TabBootstrap eventKey="finances" title="Financeiro">
+                <Finances
+                  status={sale.status}
+                  sale={sale}
+                  installments={instalments}
+                  installmentPay={instalmentsPay}
+                  paymentType={sale.payment_type}
+                />
+              </TabBootstrap>
+            </Tabs>
+          )}
         </Content>
       </Container>
     </AdmLayout>

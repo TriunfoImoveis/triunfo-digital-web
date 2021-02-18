@@ -4,10 +4,11 @@ import { FormHandles, SubmitHandler } from '@unform/core';
 
 import axios from 'axios';
 import { BiEditAlt } from 'react-icons/bi';
+import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../ReactSelect';
-import { SaleData, Legend, InputGroup } from '../styles';
+import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import api from '../../../services/api';
 
 interface IBGECityResponse {
@@ -51,6 +52,7 @@ const Property: React.FC<IPropertyProps> = ({
   status,
 }) => {
   const [edit, setEdit] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<ITypeProperty[]>([]);
   const [selectedUf, setSelectedUf] = useState<string>(realty.state);
@@ -92,8 +94,6 @@ const Property: React.FC<IPropertyProps> = ({
     label: pt.name,
     value: pt.id,
   }));
-
-  console.log(propertyType);
 
   const handleSelectedUF = (inputValue, { action }) => {
     switch (action) {
@@ -190,6 +190,12 @@ const Property: React.FC<IPropertyProps> = ({
                   defaultValue={realty.unit}
                 />
               </InputGroup>
+              <ButtonGroup>
+                <button type="submit">
+                  <Sync />
+                  <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
+                </button>
+              </ButtonGroup>
             </>
           )}
         </fieldset>

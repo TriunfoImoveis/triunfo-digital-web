@@ -135,7 +135,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 }),
               )
               .required('Vendedor(es) Obrigatório'),
-            user_coordinator: Yup.string().required('Coordenador Obrigatório'),
+            user_coordinator: Yup.string(),
           });
           await schema.validate(formData, {
             abortEarly: false,
@@ -240,6 +240,14 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 />
               ))}
             </InputGroup>
+            {!edit && (
+              <ButtonGroup>
+                <button type="submit">
+                  <Sync />
+                  <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
+                </button>
+              </ButtonGroup>
+            )}
           </fieldset>
         </SaleData>
       ) : (
@@ -319,19 +327,18 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 />
               ))}
             </InputGroup>
+            <ButtonGroup>
+              <button
+                type="button"
+                onClick={() => formRef.current?.submitForm()}
+              >
+                <Sync />
+                <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
+              </button>
+            </ButtonGroup>
           </fieldset>
         </SaleData>
       )}
-      <SaleData>
-        <fieldset className="login">
-          <ButtonGroup>
-            <button type="button" onClick={() => formRef.current?.submitForm()}>
-              <Sync />
-              <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
-            </button>
-          </ButtonGroup>
-        </fieldset>
-      </SaleData>
     </Form>
   );
 };

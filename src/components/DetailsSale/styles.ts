@@ -23,12 +23,26 @@ export const Content = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
+  }
 
-    > .modal-container {
-      align-items: flex-start;
-    }
-    .modal-wrapper {
-      margin-top: rem;
+  .nav-tabs {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+  .nav-tabs .nav-link.active {
+    color: ${({ theme }) => theme.colors.primary};
+    background-color: transparent;
+    border-color: ${({ theme }) => theme.colors.primary}
+      ${({ theme }) => theme.colors.primary} #fff;
+  }
+
+  .nav-tabs .nav-link {
+    padding: 0.5rem 3rem;
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: 1.8rem;
+    border-radius: 1rem 1rem 0 0;
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.primaryAlpha}
+        ${({ theme }) => theme.colors.primaryAlpha} #fff;
     }
   }
 `;
@@ -137,7 +151,6 @@ export const InputGroup = styled.div`
 
 export const ButtonGroup = styled.div`
   display: flex;
-  z-index: -1;
 
   button + button {
     margin-left: 0.8rem;

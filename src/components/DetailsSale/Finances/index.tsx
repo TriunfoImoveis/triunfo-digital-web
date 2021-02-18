@@ -628,13 +628,16 @@ const Finances: React.FC<IFinancesProps> = ({
         <SaleData>
           <fieldset className="login">
             <ButtonGroup>
-              <button
-                type="button"
-                onClick={() => formRef.current?.submitForm()}
-              >
-                <Sync />
-                <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
-              </button>
+              {!edit && (
+                <button
+                  type="button"
+                  onClick={() => formRef.current?.submitForm()}
+                >
+                  <Sync />
+                  <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
+                </button>
+              )}
+
               {userAuth.office.name !== 'Diretor' ? (
                 <button type="button" onClick={showModalFall}>
                   <Garb />

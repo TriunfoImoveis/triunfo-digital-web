@@ -3,11 +3,12 @@ import { Form } from '@unform/web';
 import { FormHandles, SubmitHandler } from '@unform/core';
 
 import { BiEditAlt } from 'react-icons/bi';
+import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../ReactSelect';
 import { optionsCivilStatus, optionsGenero } from '../../../utils/loadOptions';
-import { SaleData, Legend, InputGroup } from '../styles';
+import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 
 interface IPropertyProps {
   status: string;
@@ -39,6 +40,7 @@ interface FormData {
 }
 const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
   const [edit, setEdit] = useState(true);
+  const [loading, setLoading] = useState(false);
   const formRef = useRef<FormHandles>(null);
 
   const handleSubmit: SubmitHandler<FormData> = data => {
@@ -150,6 +152,13 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                   defaultValue={clientBuyer.number_children}
                 />
               </InputGroup>
+
+              <ButtonGroup>
+                <button type="submit">
+                  <Sync />
+                  <span>{loading ? 'Atualizando...' : 'Atualizar'}</span>
+                </button>
+              </ButtonGroup>
             </>
           )}
         </fieldset>
