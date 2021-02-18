@@ -64,3 +64,18 @@ export const ForgotPassword = styled(Link)`
     text-decoration: none;
   }
 `;
+
+export const ForgotDescrption = styled.div`
+  width: 37rem;
+  height: 5rem;
+  background-color: ${({ theme }) => theme.colors.primaryAlpha};
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 0.8rem;
+
+  p {
+    font-size: 1.4rem;
+    font-style: italic;
+    text-align: justify;
+  }
+`;
