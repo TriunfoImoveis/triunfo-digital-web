@@ -19,6 +19,8 @@ import ReportSale from '../pages/ADM/ReportSale';
 import NewBuilders from '../pages/ADM/NewBuilder';
 import Perfil from '../pages/Perfil';
 import RankingCapture from '../pages/RankingCapture';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -48,6 +50,8 @@ const Routes: React.FC = () => (
       isPrivate
     />
     <Route path="/adm/relatorio-vendas" component={ReportSale} isPrivate />
+    <Route path="/recuperar-senha" component={ForgotPassword} />
+    <Route path="/password/reset/:id" component={ResetPassword} />
   </Switch>
 );
 
