@@ -44,6 +44,7 @@ export const Container = styled.div<ContainerProps>`
     border: none;
     box-shadow: none;
     font-size: 1.4rem;
+    z-index: 10;
   }
 
   .css-2b097c-container {
@@ -67,6 +68,7 @@ export const Container = styled.div<ContainerProps>`
   } */
 
   .select__menu {
+    z-index: 10;
     border: 0.1rem solid ${({ theme }) => theme.colors.textColorAlpha};
   }
   .select__option {
