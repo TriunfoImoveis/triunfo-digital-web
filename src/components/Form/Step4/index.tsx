@@ -137,6 +137,13 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
       'value_signal',
       currency(formRef.current.getFieldValue('value_signal')),
     );
+
+    if (formRef.current?.getFieldValue('bonus')) {
+      formRef.current?.setFieldValue(
+        'bonus',
+        currency(formRef.current.getFieldValue('bonus')),
+      );
+    }
   }, []);
 
   const handleSubmit = useCallback(
