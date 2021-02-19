@@ -24,3 +24,5 @@ export { ReactComponent as Funnel } from './funnel.svg';
 export { ReactComponent as DropDownIcon } from './dropdown-icon.svg';
 export { ReactComponent as Plot } from './plot.svg';
 export { ReactComponent as ErrorRegisterSale } from './erro.svg';
+export { ReactComponent as FinancesIcons } from './finances.svg';
+export { ReactComponent as Arrow } from './arrow-down.svg';
