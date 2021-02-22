@@ -9,6 +9,7 @@ import {
   Perfil,
   LogoHeader,
   AdmLogo,
+  FinancesIcons,
 } from '../../assets/images';
 import {
   Container,
@@ -75,6 +76,10 @@ const Menu: React.FC = () => {
               <Option to="/#top">
                 <DashboardIcon />
                 <span>Dashboard</span>
+              </Option>
+              <Option to="/financeiro/caixa">
+                <FinancesIcons />
+                <span>Financeiro</span>
               </Option>
               <Option to="/perfil">
                 <Perfil />
