@@ -309,7 +309,7 @@ const Balance: React.FC = () => {
         </Content>
         <Footer>
           <ButtonGroup>
-            <Link to="#top">
+            <Link to="/financeiro/contas">
               <FinancesIcons />
               <span>Contas</span>
             </Link>
