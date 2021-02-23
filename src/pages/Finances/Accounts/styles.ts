@@ -8,13 +8,13 @@ export const Background = styled.div`
   height: 100vh;
   background: #fff;
   padding: 0 2rem;
-  z-index: 100;
+  z-index: 1;
 `;
 
 export const Container = styled.div`
   margin-top: 3rem;
   width: 100%;
-  z-index: 100;
+  z-index: 1;
 `;
 export const Header = styled.div`
   width: 100%;
@@ -177,7 +177,12 @@ export const ButtonGroup = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  > a {
+  > button {
+    border: 0;
+    background: transparent;
+  }
+  > a,
+  button {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -187,6 +192,7 @@ export const ButtonGroup = styled.div`
     > svg {
       width: 5rem;
       height: 5rem;
+      color: ${({ theme }) => theme.colors.primary};
     }
 
     > span {
@@ -196,7 +202,8 @@ export const ButtonGroup = styled.div`
       font-weight: 500;
     }
 
-    & + a {
+    & + a,
+    & + button {
       margin-left: 6rem;
     }
     &:hover {

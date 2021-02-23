@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { SiOneplus } from 'react-icons/si';
 import {
   FinancesIcons,
   CalculatorIcon,
@@ -7,6 +8,8 @@ import {
   Filter as FilterIcon,
   DropDownIcon,
 } from '../../../assets/images';
+
+import ModalAddAccount from '../../../components/ReactModal/AddAccount';
 
 import AdmLayout from '../../Layouts/Adm';
 
@@ -25,7 +28,13 @@ import {
   ButtonGroup,
 } from './styles';
 
-const Balance: React.FC = () => {
+const Account: React.FC = () => {
+  const [modalOpen, setModalOpen] = useState(true);
+
+  function toggleModal(): void {
+    setModalOpen(!modalOpen);
+  }
+
   return (
     <AdmLayout>
       <Background>
@@ -149,12 +158,18 @@ const Balance: React.FC = () => {
                 <CalculatorIcon />
                 <span>Calculadora</span>
               </Link>
+
+              <button type="button" onClick={toggleModal}>
+                <SiOneplus />
+                <span>Adiconar nova conta</span>
+              </button>
             </ButtonGroup>
           </Footer>
+          <ModalAddAccount isOpen={modalOpen} setIsOpen={toggleModal} />
         </Container>
       </Background>
     </AdmLayout>
   );
 };
 
-export default Balance;
+export default Account;
