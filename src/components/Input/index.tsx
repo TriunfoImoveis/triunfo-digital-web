@@ -36,6 +36,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   readOnly?: boolean | undefined;
   status?: 'PAGO' | 'PENDENTE';
+  containerStyle?: React.CSSProperties;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -46,6 +47,7 @@ const Input: React.FC<InputProps> = ({
   label,
   readOnly,
   status,
+  containerStyle,
   ...rest
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -118,6 +120,7 @@ const Input: React.FC<InputProps> = ({
     <ContainerWrapper>
       <span className="label">{label}</span>
       <Container
+        style={containerStyle}
         isErrored={errorField}
         isFilled={isFilled}
         isFocused={isFocused}
@@ -131,6 +134,7 @@ const Input: React.FC<InputProps> = ({
         {mask ? (
           <input
             ref={inputRef}
+            name={name}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             defaultValue={defaultValue}
@@ -141,6 +145,7 @@ const Input: React.FC<InputProps> = ({
           />
         ) : (
           <input
+            name={name}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             ref={inputRef}
