@@ -29,7 +29,7 @@ import {
 } from './styles';
 
 const Account: React.FC = () => {
-  const [modalOpen, setModalOpen] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
 
   function toggleModal(): void {
     setModalOpen(!modalOpen);

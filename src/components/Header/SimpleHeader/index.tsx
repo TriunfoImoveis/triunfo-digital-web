@@ -8,7 +8,7 @@ import LogoutModal from '../../ReactModal/LogoutModal';
 import { Container, NavBarContainer, NavItemContent } from './styles';
 
 const SimpleHeader: React.FC = () => {
-  const [logoutModal, setLogoutModal] = useState(true);
+  const [logoutModal, setLogoutModal] = useState(false);
   const toggleLogoutModal = useCallback(() => {
     setLogoutModal(!logoutModal);
   }, [logoutModal]);

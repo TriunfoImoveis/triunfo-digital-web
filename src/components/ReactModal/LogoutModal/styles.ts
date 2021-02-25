@@ -36,6 +36,10 @@ export const Container = styled.div`
   @media (max-width: 350px) {
     display: flex;
     flex-direction: column;
+
+    button + button {
+      margin-top: 1rem;
+    }
   }
 `;
 export const CancelButton = styled.button`
