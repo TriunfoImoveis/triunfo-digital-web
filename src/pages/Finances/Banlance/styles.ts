@@ -146,13 +146,10 @@ export const Filter = styled.div`
 `;
 
 export const BalanceContainer = styled.div`
-  width: 100%;
   padding: 2rem 4rem;
-  display: flex;
 
   .tab-container,
   .tab-content {
-    max-width: 435px;
     width: 100%;
   }
 
@@ -185,6 +182,16 @@ export const TitlePane = styled.div`
 
 export const Table = styled.table<TableProps>`
   width: 100%;
+  border-collapse: collapse;
+  thead,
+  tbody {
+    display: block;
+  }
+
+  tbody {
+    overflow-y: auto;
+    height: 200px;
+  }
   > thead {
     text-align: center;
     > tr {
@@ -193,7 +200,10 @@ export const Table = styled.table<TableProps>`
       border: 1px solid #504c4c;
 
       > th {
-        font-size: 1.6rem;
+        display: block;
+        width: 140px;
+        font-size: 1.4rem;
+        font-weight: 500;
         color: #504c4c;
         & + th {
           border-left: 1px solid #504c4c;
@@ -203,9 +213,10 @@ export const Table = styled.table<TableProps>`
   }
   > tbody {
     text-align: center;
+
     > tr {
       display: grid;
-      grid-template-columns: repeat(${props => props.cols}, 140px);
+      grid-template-columns: repeat(${props => props.cols}, 1fr);
       border-left: 1px solid #504c4c;
       border-right: 1px solid #504c4c;
       border-bottom: 1px solid #504c4c;
@@ -286,3 +297,5 @@ export const ButtonGroup = styled.div`
     }
   }
 `;
+
+export const BalanceAmount = styled.div``;

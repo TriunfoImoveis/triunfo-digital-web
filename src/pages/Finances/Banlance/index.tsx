@@ -25,9 +25,9 @@ import {
   BalanceContainer,
   TitlePane,
   Table,
-  Entry,
   Footer,
   ButtonGroup,
+  BalanceAmount,
 } from './styles';
 
 const Balance: React.FC = () => {
@@ -168,143 +168,54 @@ const Balance: React.FC = () => {
             </Filter>
           </Filters>
           <BalanceContainer>
-            <div>
-              <Tabs
-                id="tab-container"
-                className="tab-container"
-                defaultActiveKey="sales"
-                variant="tabs"
-              >
-                <TabBootstrap eventKey="sales" title="Vendas">
-                  <TitlePane>Recebimentos Futuros</TitlePane>
-                  <Table cols={3}>
-                    <thead>
-                      <tr>
-                        <th>Vendedor</th>
-                        <th>Data</th>
-                        <th>Valor</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr>
-                        <td>Corretor</td>
-                        <td>29/11/2021</td>
-                        <td>R$ 25.0000,00</td>
-                      </tr>
-                      <tr className="total-row">
-                        <td className="border-none" />
-                        <td className="border-none">Saldo total</td>
-                        <td className="total">R$ 25.0000,00</td>
-                      </tr>
-                    </tbody>
-                  </Table>
-                </TabBootstrap>
-                <TabBootstrap eventKey="forwardingAgent" title="Despachante">
-                  <TitlePane>Recebimentos Futuros</TitlePane>
-                </TabBootstrap>
-                <TabBootstrap eventKey="credit" title="Crédito">
-                  <TitlePane>Recebimentos Futuros</TitlePane>
-                </TabBootstrap>
-              </Tabs>
-            </div>
-            <Entry>
-              <TitlePane>Entradas</TitlePane>
-              <Table cols={4}>
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Valor</th>
-                    <th>Vendedor</th>
-                    <th>Imovel</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>29/11/2021</td>
-                    <td>R$ 25.0000,00</td>
-                    <td>Corretor</td>
-                    <td>Imovel</td>
-                  </tr>
-                  <tr>
-                    <td>29/11/2021</td>
-                    <td>R$ 25.0000,00</td>
-                    <td>Corretor</td>
-                    <td>Imovel</td>
-                  </tr>
-                  <tr>
-                    <td>29/11/2021</td>
-                    <td>R$ 25.0000,00</td>
-                    <td>Corretor</td>
-                    <td>Imovel</td>
-                  </tr>
-                  <tr>
-                    <td>29/11/2021</td>
-                    <td>R$ 25.0000,00</td>
-                    <td>Corretor</td>
-                    <td>Imovel</td>
-                  </tr>
-                  <tr>
-                    <td>29/11/2021</td>
-                    <td>R$ 25.0000,00</td>
-                    <td>Corretor</td>
-                    <td>Imovel</td>
-                  </tr>
-                  <tr>
-                    <td>29/11/2021</td>
-                    <td>R$ 25.0000,00</td>
-                    <td>Corretor</td>
-                    <td>Imovel</td>
-                  </tr>
-                  <tr>
-                    <td>29/11/2021</td>
-                    <td>R$ 25.0000,00</td>
-                    <td>Corretor</td>
-                    <td>Imovel</td>
-                  </tr>
-                  <tr className="total-row">
-                    <td className="border-none" />
-                    <td className="border-none" />
-                    <td className="border-none">Saldo total</td>
-                    <td className="total">R$ 25.0000,00</td>
-                  </tr>
-                </tbody>
-              </Table>
-            </Entry>
+            <Tabs
+              id="tab-container"
+              className="tab-container"
+              defaultActiveKey="sales"
+              variant="tabs"
+            >
+              <TabBootstrap eventKey="sales" title="Vendas">
+                <TitlePane>Caixa de Entrada</TitlePane>
+                <Table cols={8}>
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Filial</th>
+                      <th>Descrição</th>
+                      <th>Nome do Cliente</th>
+                      <th>Valor bruto</th>
+                      <th>Valor da nota</th>
+                      <th>Taxa de imposto</th>
+                      <th>Conta de entrada</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>29/11/2021</td>
+                      <td>São Luis</td>
+                      <td>Ilha Prime</td>
+                      <td>---</td>
+                      <td>R$ 10.000,00</td>
+                      <td>---</td>
+                      <td>---</td>
+                      <td>578769-6</td>
+                    </tr>
+                  </tbody>
+                </Table>
+                <BalanceAmount>
+                  <p>
+                    <span>Saldo Total R$ </span>
+                    <strong>50.000,00</strong>
+                  </p>
+                </BalanceAmount>
+              </TabBootstrap>
+              <TabBootstrap eventKey="forwardingAgent" title="Despachante">
+                <TitlePane>Recebimentos Futuros</TitlePane>
+              </TabBootstrap>
+              <TabBootstrap eventKey="credit" title="Crédito">
+                <TitlePane>Recebimentos Futuros</TitlePane>
+              </TabBootstrap>
+            </Tabs>
           </BalanceContainer>
         </Content>
         <Footer>
