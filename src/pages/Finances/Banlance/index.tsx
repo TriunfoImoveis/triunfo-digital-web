@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { IoMdArrowDropup, IoMdArrowDropdown } from 'react-icons/io';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -13,6 +13,9 @@ import {
 } from '../../../assets/images';
 
 import AdmLayout from '../../Layouts/Adm';
+import ModalAddEntrySale from '../../../components/ReactModal/AddEntrySales';
+import ModalAddEntryCredit from '../../../components/ReactModal/AddEntryCredit';
+import ModalAddEntryDesp from '../../../components/ReactModal/AddEntryDesp';
 
 import {
   Container,
@@ -33,6 +36,49 @@ import {
 
 const Balance: React.FC = () => {
   const [isBankVisible, setIsBankVisible] = useState(true);
+  const [modalSaleEntry, setModalSaleEnrey] = useState(false);
+  const [modalCreditEntry, setModalCreditEnrey] = useState(false);
+  const [modalDespEntry, setModalDespEnrey] = useState(false);
+  const [typeTab, setTypeTab] = useState('sales');
+
+  const toogleModalSaleEntry = useCallback(() => {
+    setModalSaleEnrey(!modalSaleEntry);
+  }, [modalSaleEntry]);
+  const toogleModalDespEntry = useCallback(() => {
+    setModalDespEnrey(!modalDespEntry);
+  }, [modalDespEntry]);
+  const toogleModalCreditEntry = useCallback(() => {
+    setModalCreditEnrey(!modalCreditEntry);
+  }, [modalCreditEntry]);
+  const handleSetTab = (tabName: string | null) => {
+    if (tabName) {
+      setTypeTab(tabName);
+    }
+  };
+  const handleSelectModalAddEntry = useCallback(() => {
+    switch (typeTab) {
+      case 'sales': {
+        toogleModalSaleEntry();
+        break;
+      }
+      case 'credit': {
+        toogleModalCreditEntry();
+        break;
+      }
+      case 'forwardingAgent': {
+        toogleModalDespEntry();
+        break;
+      }
+
+      default:
+        break;
+    }
+  }, [
+    typeTab,
+    toogleModalSaleEntry,
+    toogleModalDespEntry,
+    toogleModalCreditEntry,
+  ]);
 
   return (
     <AdmLayout>
@@ -172,7 +218,8 @@ const Balance: React.FC = () => {
             <Tabs
               id="tab-container"
               className="tab-container"
-              defaultActiveKey="sales"
+              activeKey={typeTab}
+              onSelect={tab => handleSetTab(tab)}
               variant="tabs"
             >
               <TabBootstrap eventKey="sales" title="Vendas">
@@ -490,13 +537,25 @@ const Balance: React.FC = () => {
               <CalculatorIcon />
               <span>Calculadora</span>
             </Link>
-            <button type="button">
+            <button type="button" onClick={handleSelectModalAddEntry}>
               <AddEntry />
               <span>Nova Entrada</span>
             </button>
           </ButtonGroup>
         </Footer>
       </Container>
+      <ModalAddEntrySale
+        isOpen={modalSaleEntry}
+        setIsOpen={toogleModalSaleEntry}
+      />
+      <ModalAddEntryDesp
+        isOpen={modalDespEntry}
+        setIsOpen={toogleModalDespEntry}
+      />
+      <ModalAddEntryCredit
+        isOpen={modalCreditEntry}
+        setIsOpen={toogleModalCreditEntry}
+      />
     </AdmLayout>
   );
 };
