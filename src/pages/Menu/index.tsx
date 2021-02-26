@@ -1,46 +1,29 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { IoIosLogOut } from 'react-icons/io';
 import { useAuth } from '../../context/AuthContext';
+import Header from '../../components/Header/SimpleHeader';
 import {
   RegisterSellIcon,
   DashboardIcon,
   RankingIcon,
   Perfil,
-  LogoHeader,
   AdmLogo,
   FinancesIcons,
 } from '../../assets/images';
 import {
   Container,
-  Header,
   Content,
   UserContainer,
   InfoContainer,
   OptionsContainer,
   Option,
-  NavBarContainer,
-  NavItemContent,
 } from './styles';
 // import Notifications from '../../components/Notifications';
 
 const Menu: React.FC = () => {
-  const { signOut, userAuth } = useAuth();
+  const { userAuth } = useAuth();
   return (
     <Container>
-      <Header>
-        <Link to="/menu">
-          <LogoHeader />
-        </Link>
-        <NavBarContainer>
-          <NavItemContent>
-            <button type="button" onClick={signOut}>
-              <IoIosLogOut size={30} color="#C32925" />
-              <span>Sair</span>
-            </button>
-          </NavItemContent>
-        </NavBarContainer>
-      </Header>
+      <Header />
       <Content>
         <UserContainer>
           <img

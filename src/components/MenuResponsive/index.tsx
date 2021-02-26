@@ -1,18 +1,21 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 
 import { IoIosLogOut } from 'react-icons/io';
-import { useAuth } from '../../context/AuthContext';
+import LogoutModal from '../ReactModal/LogoutModal';
 
 import { Container } from './styles';
 
 const MenuResponsive: React.FC = () => {
-  const { signOut } = useAuth();
-
+  const [logoutModal, setLogoutModal] = useState(false);
+  const toggleLogoutModal = useCallback(() => {
+    setLogoutModal(!logoutModal);
+  }, [logoutModal]);
   return (
     <Container>
-      <button type="button" onClick={signOut}>
+      <button type="button" onClick={toggleLogoutModal}>
         <IoIosLogOut size={30} color="#C32925" />
       </button>
+      <LogoutModal isOpen={logoutModal} setIsOpen={toggleLogoutModal} />
     </Container>
   );
 };

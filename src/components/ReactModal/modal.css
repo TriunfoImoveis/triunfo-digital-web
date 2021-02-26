@@ -1,0 +1,37 @@
+.my-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  background: #F0F0F5;
+  color: #000000;
+  border-radius: 8px;
+  width: 736px;
+  border: none;
+  padding: 3rem;
+}
+
+.my-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #121214e6;
+  z-index: 10;
+}
+
+
+@media (max-width: 450px) {
+  .my-modal {
+    width: 350px;
+  }
+}
+@media (max-width: 350px) {
+  .my-modal {
+    width: 250px;
+  }
+}
