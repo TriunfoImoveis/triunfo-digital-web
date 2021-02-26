@@ -182,7 +182,6 @@ export const TitlePane = styled.div`
 
 export const Table = styled.table<TableProps>`
   width: 100%;
-  border-collapse: collapse;
   thead,
   tbody {
     display: block;
@@ -191,6 +190,10 @@ export const Table = styled.table<TableProps>`
   tbody {
     overflow-y: auto;
     height: 200px;
+    ::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
   }
   > thead {
     text-align: center;
@@ -262,7 +265,12 @@ export const ButtonGroup = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  > a {
+  > button {
+    background: transparent;
+    border: 0;
+  }
+  > a,
+  button {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -284,6 +292,9 @@ export const ButtonGroup = styled.div`
     & + a {
       margin-left: 6rem;
     }
+    & + button {
+      margin-left: 6rem;
+    }
     &:hover {
       > svg {
         > path {
@@ -298,4 +309,22 @@ export const ButtonGroup = styled.div`
   }
 `;
 
-export const BalanceAmount = styled.div``;
+export const BalanceAmount = styled.div`
+  width: 100%;
+
+  > p {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    > span {
+      font-size: 2.4rem;
+      margin-right: 1rem;
+    }
+
+    strong {
+      font-size: 3.2rem;
+      color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+`;
