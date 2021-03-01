@@ -29,6 +29,12 @@ export const Container = styled.div<ContainerProps>`
       background-color: ${({ theme }) => theme.colors.successAlpha};
       border-color: ${({ theme }) => theme.colors.successAlpha};
     `}
+  ${props =>
+    props.status === 'VENCIDO' &&
+    css`
+      background-color: ${({ theme }) => theme.colors.danger};
+      border-color: ${({ theme }) => theme.colors.danger};
+    `}
 `;
 export const Label = styled.span`
   margin-top: 0.8rem;
@@ -38,7 +44,7 @@ export const Label = styled.span`
   line-height: 1.9rem;
   color: #898989;
 `;
-export const Content = styled.div`
+export const Content = styled.div<ContainerProps>`
   > span {
     padding-left: 1.2rem;
     height: 100%;
@@ -46,5 +52,11 @@ export const Content = styled.div`
     border: 0;
     color: ${({ theme }) => theme.colors.textColor};
     font-size: 1.6rem;
+
+    ${props =>
+      props.status === 'VENCIDO' &&
+      css`
+        color: #fff;
+      `}
   }
 `;

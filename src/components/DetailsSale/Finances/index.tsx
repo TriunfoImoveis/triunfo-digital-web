@@ -92,6 +92,10 @@ const Finances: React.FC<IFinancesProps> = ({
 
   const { userAuth } = useAuth();
 
+  const installmentsUnsuccessful = installments.filter(
+    installment => installment.status === 'VENCIDO',
+  );
+
   useEffect(() => {
     const loadPaymentType = async () => {
       const response = await api.get(
@@ -559,6 +563,43 @@ const Finances: React.FC<IFinancesProps> = ({
               <PaymentInstallments>
                 {userAuth.office.name !== 'Diretor' ? (
                   <>
+                    <span>Parcelas Vencidas</span>
+                    {installmentsUnsuccessful.length > 0 ? (
+                      <>
+                        {installmentsUnsuccessful.map(installment => (
+                          <Plot key={installment.installment_number}>
+                            <InputDisable
+                              label="Parcela"
+                              data={String(installment.installment_number)}
+                            />
+                            <InputDisable
+                              label="Valor da Parcela"
+                              data={installment.value}
+                            />
+                            <InputDisable
+                              label="Data de Vencimento"
+                              data={installment.due_date}
+                            />
+                            <InputDisable
+                              label="Status"
+                              data={installment.status}
+                              status={installment.status}
+                            />
+                            {!installment.pay_date && (
+                              <AddButton
+                                type="button"
+                                className="valid"
+                                onClick={() => handlePayPlot(installment.id)}
+                              >
+                                <FaCheck size={20} color="#FCF9F9" />
+                              </AddButton>
+                            )}
+                          </Plot>
+                        ))}
+                      </>
+                    ) : (
+                      <strong>Nehuma parcela vencida</strong>
+                    )}
                     <span>Parcelas Pendentes</span>
                     {installments.map(
                       installment =>

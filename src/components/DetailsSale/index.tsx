@@ -95,7 +95,7 @@ export interface IInstallments {
   id?: string;
   installment_number: number;
   value: string;
-  status?: 'PAGO' | 'PENDENTE';
+  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO';
   pay_date?: string;
 }
 
@@ -207,7 +207,6 @@ const DetailsSale: React.FC = () => {
         const installmentPay = newInstallments.filter(
           installment => installment.status === 'PAGO',
         );
-
         setSale(newSaleFormatted);
         setRealty(newSaleFormatted.realty);
         setClientBuyer(newSaleFormatted.client_buyer);
