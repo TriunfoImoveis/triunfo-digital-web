@@ -12,15 +12,18 @@ import { FormProvider } from './context/FormContext';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { FilterProvider } from './context/FilterContext';
 
 const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>
         <FormProvider>
-          <Router>
-            <Routes />
-          </Router>
+          <FilterProvider>
+            <Router>
+              <Routes />
+            </Router>
+          </FilterProvider>
         </FormProvider>
         <ToastContainer autoClose={3000} />
       </AuthProvider>

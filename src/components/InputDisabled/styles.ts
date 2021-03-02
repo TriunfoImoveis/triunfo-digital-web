@@ -32,8 +32,8 @@ export const Container = styled.div<ContainerProps>`
   ${props =>
     props.status === 'VENCIDO' &&
     css`
-      background-color: ${({ theme }) => theme.colors.danger};
-      border-color: ${({ theme }) => theme.colors.danger};
+      background-color: ${({ theme }) => theme.colors.primaryAlpha};
+      border-color: ${({ theme }) => theme.colors.primaryAlpha};
     `}
 `;
 export const Label = styled.span`
@@ -52,11 +52,5 @@ export const Content = styled.div<ContainerProps>`
     border: 0;
     color: ${({ theme }) => theme.colors.textColor};
     font-size: 1.6rem;
-
-    ${props =>
-      props.status === 'VENCIDO' &&
-      css`
-        color: #fff;
-      `}
   }
 `;
