@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState, useCallback } from 'react';
+import React, { ChangeEvent, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
 import Loader from 'react-loader-spinner';
@@ -20,8 +20,9 @@ import {
   LoadingContainer,
   FilterButtonGroup,
 } from './styles';
-import api from '../../../services/api';
 import { formatPrice, DateBRL } from '../../../utils/format';
+import { useFilter } from '../../../context/FilterContext';
+import { useFindSaleByCityAndStatus } from '../../../hooks/findSale';
 
 interface ISale {
   id: string;
@@ -45,77 +46,60 @@ interface ISaleData {
 }
 
 const ListSales: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [city, setCity] = useState<string>('São Luís');
-  const [status, setStatus] = useState<string>('NAO_VALIDADO');
-  const [name, setName] = useState('');
-  const [sales, setSales] = useState<ISaleData[]>([]);
+  const {
+    city,
+    status,
+    name,
+    handleSetCity,
+    handleSetStatus,
+    handleSetName,
+  } = useFilter();
+  const { data } = useFindSaleByCityAndStatus<ISale[]>({ city, status });
 
-  useEffect(() => {
-    const loadSales = async () => {
-      setLoading(true);
-      const response = await api.get('/sale', {
-        params: {
-          city,
-          status,
-        },
-      });
-      const listSales: ISale[] = response.data;
-      const salesFormatted: ISaleData[] = listSales.map(s => ({
-        id: s.id,
-        name: 'Teste',
-        vgv: formatPrice(Number(s.realty_ammount)),
-        dateSale: DateBRL(s.sale_date),
-        sallers: {
-          name: s.sale_has_sellers[0].name,
-          avatar_url: s.sale_has_sellers[0].avatar_url,
-        },
-      }));
-      setSales(salesFormatted);
-      setLoading(false);
-    };
-    loadSales();
-  }, [city, status]);
+  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetCity(event.target.value);
+  };
+  const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetStatus(event.target.value);
+  };
 
-  const handleSelectCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      setCity(event.target.value);
-    },
-    [],
-  );
-  const handleSelectedStatus = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      setStatus(event.target.value);
-    },
-    [],
-  );
+  const listSales = useMemo(() => {
+    if (name !== '') {
+      return data
+        ?.map(s => ({
+          id: s.id,
+          name: 'Teste',
+          vgv: formatPrice(Number(s.realty_ammount)),
+          dateSale: DateBRL(s.sale_date),
+          sallers: {
+            name: s.sale_has_sellers[0].name,
+            avatar_url: s.sale_has_sellers[0].avatar_url,
+          },
+        }))
+        .filter(
+          sale => sale.sallers.name.toLowerCase().includes(name) === true,
+        );
+    }
+    return data?.map(s => ({
+      id: s.id,
+      name: 'Teste',
+      vgv: formatPrice(Number(s.realty_ammount)),
+      dateSale: DateBRL(s.sale_date),
+      sallers: {
+        name: s.sale_has_sellers[0].name,
+        avatar_url: s.sale_has_sellers[0].avatar_url,
+      },
+    }));
+  }, [name, data]);
 
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
-      const name = event.target.value;
-      const response = await api.get('/sale', {
-        params: {
-          city,
-          status,
-          name: event.target.value,
-        },
-      });
-      setName(name);
-      const listSales: ISale[] = response.data;
-      const salesFormatted: ISaleData[] = listSales.map(s => ({
-        id: s.id,
-        name: 'Teste',
-        vgv: formatPrice(Number(s.realty_ammount)),
-        dateSale: DateBRL(s.sale_date),
-        sallers: {
-          name: s.sale_has_sellers[0].name,
-          avatar_url: s.sale_has_sellers[0].avatar_url,
-        },
-      }));
-      setSales(salesFormatted);
+      const name = event.target.value.toLowerCase();
+      handleSetName(name);
     },
-    [city, status],
+    [handleSetName],
   );
+
   return (
     <AdmLayout>
       <form>
@@ -176,7 +160,7 @@ const ListSales: React.FC = () => {
         </FiltersContainer>
       </form>
       <Content>
-        {loading ? (
+        {!data ? (
           <LoadingContainer>
             <Loader type="Bars" color="#c32925" height={100} width={100} />
           </LoadingContainer>
@@ -187,7 +171,7 @@ const ListSales: React.FC = () => {
               <HeaderItem>Nome</HeaderItem>
               <HeaderItem>Valor</HeaderItem>
             </SaleHeader>
-            {sales.map(sale => (
+            {listSales?.map(sale => (
               <SaleBody key={sale.id}>
                 <SaleItem className="avatar">
                   <img

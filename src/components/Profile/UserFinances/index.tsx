@@ -4,18 +4,17 @@ import { FormHandles, Scope, SubmitHandler } from '@unform/core';
 import { Form } from '@unform/web';
 import Loader from 'react-loader-spinner';
 import { toast } from 'react-toastify';
+import { BiEditAlt } from 'react-icons/bi';
 import { Sync } from '../../../assets/images';
 import Input from '../../Input';
 import Button from '../../Button';
-import AsyncSelect from '../../AsyncSelect';
-import {
-  loadOptionsBank,
-  loadOptionsTypeAccount,
-} from '../../../utils/loadOptions';
+import ReactSelect from '../../ReactSelect';
+import { opionsBanks, OptionsTypeAccount } from '../../../utils/loadOptions';
 import { useAuth } from '../../../context/AuthContext';
-import { Container, FormContent, InputGroup } from './styles';
+import { Container, FormContent, InputGroup, Header } from './styles';
 import getValidationErros from '../../../utils/getValidationErros';
 import api from '../../../services/api';
+import InputDisabled from '../../InputDisabled';
 
 interface BankData {
   bank_data: {
@@ -28,6 +27,7 @@ interface BankData {
 
 const UserFinances: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [edit, setEdit] = useState(false);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { userAuth, upadatedUser } = useAuth();
   const formRef = useRef<FormHandles>(null);
@@ -86,40 +86,78 @@ const UserFinances: React.FC = () => {
 
   return (
     <Container>
-      <h2>Dados Bancários</h2>
+      <Header>
+        <h2>Dados Bancários</h2>
+        <div>
+          <button type="button" onClick={() => setEdit(!edit)}>
+            <BiEditAlt />
+            editar
+          </button>
+        </div>
+      </Header>
       <Form ref={formRef} onSubmit={handleSubmit}>
-        <FormContent>
-          <Scope path="bank_data">
-            <AsyncSelect
-              name="bank_name"
+        {edit ? (
+          <>
+            <FormContent>
+              <Scope path="bank_data">
+                <ReactSelect
+                  name="bank_name"
+                  label="Instituição Financeira"
+                  options={opionsBanks}
+                  placeholder="Digite o código ou o nome do banco"
+                />
+                <InputGroup>
+                  <Input
+                    name="agency"
+                    label="Agência"
+                    defaultValue={userAuth.bank_data.agency}
+                  />
+                  <Input
+                    name="account"
+                    label="Número da Conta"
+                    defaultValue={userAuth.bank_data.account}
+                  />
+                </InputGroup>
+                <ReactSelect
+                  name="account_type"
+                  label="Tipo da Conta"
+                  loadOptions={OptionsTypeAccount}
+                  placeholder="Informe o tipo da conta"
+                  defaultOptions
+                  defaultInputValue={userAuth.bank_data.account_type}
+                />
+              </Scope>
+            </FormContent>
+            <Button>
+              {loading ? (
+                <Loader type="Bars" color="#C32925" height={30} width={30} />
+              ) : (
+                <>
+                  <span>Atualizar</span>
+                  <Sync />
+                </>
+              )}
+            </Button>
+          </>
+        ) : (
+          <FormContent>
+            <InputDisabled
               label="Instituição Financeira"
-              loadOptions={loadOptionsBank}
-              placeholder="Digite o código ou o nome do banco"
-              defaultOptions
+              data={userAuth.bank_data.bank_name}
             />
             <InputGroup>
-              <Input name="agency" label="Agência" />
-              <Input name="account" label="Número da Conta" />
+              <InputDisabled label="Agência" data={userAuth.bank_data.agency} />
+              <InputDisabled
+                label="Número da Conta"
+                data={userAuth.bank_data.account}
+              />
             </InputGroup>
-            <AsyncSelect
-              name="account_type"
+            <InputDisabled
               label="Tipo da Conta"
-              loadOptions={loadOptionsTypeAccount}
-              placeholder="Informe o tipo da conta"
-              defaultOptions
+              data={userAuth.bank_data.account_type}
             />
-          </Scope>
-        </FormContent>
-        <Button>
-          {loading ? (
-            <Loader type="Bars" color="#C32925" height={30} width={30} />
-          ) : (
-            <>
-              <span>Atualizar</span>
-              <Sync />
-            </>
-          )}
-        </Button>
+          </FormContent>
+        )}
       </Form>
     </Container>
   );

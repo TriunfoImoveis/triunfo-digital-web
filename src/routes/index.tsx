@@ -21,6 +21,8 @@ import Perfil from '../pages/Perfil';
 import RankingCapture from '../pages/RankingCapture';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
+import Balance from '../pages/Finances/Banlance';
+import Accounts from '../pages/Finances/Accounts';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -52,6 +54,9 @@ const Routes: React.FC = () => (
     <Route path="/adm/relatorio-vendas" component={ReportSale} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
+
+    <Route path="/financeiro/caixa" component={Balance} isPrivate />
+    <Route path="/financeiro/contas" component={Accounts} isPrivate />
   </Switch>
 );
 
