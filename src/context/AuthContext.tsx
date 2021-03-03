@@ -7,9 +7,6 @@ interface UserAuth {
   name: string;
   avatar: string | null;
   email: string;
-  phone: string;
-  admission_date: string;
-  goal: string;
   subsidiary: {
     id: string;
     name: string;
@@ -21,7 +18,12 @@ interface UserAuth {
   office: {
     id: string;
     name: string;
-    active: true;
+  };
+  bank_data: {
+    account: string;
+    account_type: string;
+    agency: string;
+    bank_name: string;
   };
   avatar_url: string | null;
 }
