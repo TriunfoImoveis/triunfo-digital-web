@@ -5,7 +5,7 @@ import { ContainerWrapper, Container, Label, Content } from './styles';
 interface IInputDisableProps {
   label: string;
   data?: string | null;
-  status?: 'PAGO' | 'PENDENTE';
+  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO';
 }
 
 const InputDisabled: React.FC<IInputDisableProps> = ({
@@ -17,7 +17,7 @@ const InputDisabled: React.FC<IInputDisableProps> = ({
     <ContainerWrapper>
       <Label>{label}</Label>
       <Container status={status}>
-        <Content>
+        <Content status={status}>
           <span>{data}</span>
         </Content>
       </Container>
