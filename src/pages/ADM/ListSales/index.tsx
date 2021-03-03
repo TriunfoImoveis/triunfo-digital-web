@@ -34,17 +34,6 @@ interface ISale {
   }[];
 }
 
-interface ISaleData {
-  id: string;
-  name: string;
-  vgv: string;
-  dateSale: string;
-  sallers: {
-    name: string;
-    avatar_url: string;
-  };
-}
-
 const ListSales: React.FC = () => {
   const {
     city,
@@ -54,7 +43,7 @@ const ListSales: React.FC = () => {
     handleSetStatus,
     handleSetName,
   } = useFilter();
-  const { data } = useFindSaleByCityAndStatus<ISale[]>({ city, status });
+  const { data: sales } = useFindSaleByCityAndStatus<ISale[]>({ city, status });
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetCity(event.target.value);
@@ -65,7 +54,7 @@ const ListSales: React.FC = () => {
 
   const listSales = useMemo(() => {
     if (name !== '') {
-      return data
+      return sales
         ?.map(s => ({
           id: s.id,
           name: 'Teste',
@@ -80,7 +69,7 @@ const ListSales: React.FC = () => {
           sale => sale.sallers.name.toLowerCase().includes(name) === true,
         );
     }
-    return data?.map(s => ({
+    return sales?.map(s => ({
       id: s.id,
       name: 'Teste',
       vgv: formatPrice(Number(s.realty_ammount)),
@@ -90,7 +79,7 @@ const ListSales: React.FC = () => {
         avatar_url: s.sale_has_sellers[0].avatar_url,
       },
     }));
-  }, [name, data]);
+  }, [name, sales]);
 
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -160,7 +149,7 @@ const ListSales: React.FC = () => {
         </FiltersContainer>
       </form>
       <Content>
-        {!data ? (
+        {!sales ? (
           <LoadingContainer>
             <Loader type="Bars" color="#c32925" height={100} width={100} />
           </LoadingContainer>

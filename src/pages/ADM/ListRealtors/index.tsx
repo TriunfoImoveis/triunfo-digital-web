@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
@@ -20,6 +20,8 @@ import {
 } from './styles';
 import api from '../../../services/api';
 import { formatPrice } from '../../../utils/format';
+import { useFindRealtor } from '../../../hooks/findRealtor';
+import { useFilter } from '../../../context/FilterContext';
 
 interface IRealtorData {
   id: string;
@@ -29,69 +31,40 @@ interface IRealtorData {
 }
 
 const ListRealtors: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [city, setCity] = useState<string>('São Luís');
-  const [realtors, setRealtors] = useState<IRealtorData[]>([]);
-  const token = localStorage.getItem('@TriunfoDigital:token');
   const history = useHistory();
+  const { city, handleSetCity, name, handleSetName } = useFilter();
+  const { data: realtors } = useFindRealtor<IRealtorData[]>({ city });
 
-  useEffect(() => {
-    const loadRealtors = async () => {
-      setLoading(true);
-      const response = await api.get('/ranking', {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-        params: {
-          city,
-          user: 'Corretor',
-          type: 'ANUAL',
-        },
-      });
-      const listRealtors = response.data;
-      const realtorsFormatted = listRealtors.map(realtor => ({
-        id: realtor.id,
-        name: realtor.name,
-        avatar_url: realtor.avatar_url,
-        vgv: formatPrice(realtor.vgv),
-      }));
-      setRealtors(realtorsFormatted);
-      setLoading(false);
-    };
-    loadRealtors();
-  }, [city, token]);
+  const listRealtors = useMemo(() => {
+    if (name !== '') {
+      return realtors
+        ?.map(realtor => ({
+          id: realtor.id,
+          name: realtor.name,
+          avatar_url: realtor.avatar_url,
+          vgv: formatPrice(Number(realtor.vgv)),
+        }))
+        .filter(realtor => realtor.name.toLowerCase().includes(name) === true);
+    }
+    return realtors?.map(realtor => ({
+      id: realtor.id,
+      name: realtor.name,
+      avatar_url: realtor.avatar_url,
+      vgv: formatPrice(Number(realtor.vgv)),
+    }));
+  }, [realtors, name]);
   const handleSelectCity = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
-      setCity(event.target.value);
+      handleSetCity(event.target.value);
     },
-    [],
+    [handleSetCity],
   );
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
-      if (event.target.value === '') {
-        setLoading(true);
-        const response = await api.get('/users', {
-          params: {
-            city,
-            office: 'Corretor',
-          },
-        });
-        setRealtors(response.data);
-        setLoading(false);
-      } else {
-        setLoading(true);
-        const response = await api.get('/users', {
-          params: {
-            city,
-            name: event.target.value,
-            office: 'Corretor',
-          },
-        });
-        setRealtors(response.data);
-        setLoading(false);
-      }
+      const name = event.target.value.toLowerCase();
+      handleSetName(name);
     },
-    [city],
+    [handleSetName],
   );
 
   const handleNavigateToNewRealtor = useCallback(() => {
@@ -139,8 +112,8 @@ const ListRealtors: React.FC = () => {
             <HeaderItem>Nome</HeaderItem>
             <HeaderItem>VGV</HeaderItem>
           </SaleHeader>
-          {realtors.map(realtor =>
-            loading ? (
+          {listRealtors?.map(realtor =>
+            !realtors ? (
               <LoadingContainer>
                 <Loader type="Bars" color="#c32925" height={100} width={100} />
               </LoadingContainer>

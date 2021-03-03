@@ -1,5 +1,4 @@
-import useSWR from 'swr';
-import api from '../services/api';
+import { useFetch } from './useFetch';
 
 interface filtersData {
   city: string;
@@ -12,10 +11,7 @@ export function useFindSaleByCityAndStatus<Data = any, Error = any>({
   status,
 }: filtersData) {
   const url = `/sale?city=${city}&status=${status}`;
-  const { data, error } = useSWR<Data, Error>(url, async url => {
-    const response = await api.get(url);
-    return response.data;
-  });
+  const { data, error } = useFetch<Data, Error>(url);
 
   return { data, error };
 }

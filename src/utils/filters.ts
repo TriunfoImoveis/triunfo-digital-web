@@ -1,3 +1,21 @@
+interface IUser {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  departament: {
+    id: string;
+    name: string;
+  };
+  subsidiary: {
+    id: string;
+    name: string;
+  };
+  office: {
+    id: string;
+    name: string;
+  };
+}
+
 interface OptionsData {
   label: string;
   value: string;
@@ -25,6 +43,25 @@ export const filterSalesForStatus = (
   selectedStatus: string,
 ): IUserSales[] => {
   return sales.filter(sale => sale.status === selectedStatus);
+};
+
+export const filterUserForSubsidiary = (
+  users: IUser[],
+  subsidiary: string,
+): IUser[] => {
+  return users.filter(user => user.subsidiary.id === subsidiary);
+};
+export const filterUserForDepartament = (
+  users: IUser[],
+  departament: string,
+): IUser[] => {
+  return users.filter(user => user.departament.id === departament);
+};
+export const filterUserForOffice = (
+  users: IUser[],
+  office: string,
+): IUser[] => {
+  return users.filter(user => user.office.id === office);
 };
 
 export const formatTextStatus = (textStaus: string): string => {
