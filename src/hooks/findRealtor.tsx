@@ -1,4 +1,3 @@
-import api from '../services/api';
 import { useFetch } from './useFetch';
 
 interface filtersData {

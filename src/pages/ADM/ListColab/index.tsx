@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
-import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
 import { Search } from '../../../assets/images';
 import {
@@ -19,7 +18,6 @@ import {
   SaleItem,
   LoadingContainer,
 } from './styles';
-import api from '../../../services/api';
 import { useFetch } from '../../../hooks/useFetch';
 import { useLoadDepartament } from '../../../hooks/loadDepartaments';
 import {

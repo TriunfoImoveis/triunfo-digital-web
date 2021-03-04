@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import React, { ChangeEvent, useCallback, useMemo } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
@@ -18,7 +18,6 @@ import {
   SaleItem,
   LoadingContainer,
 } from './styles';
-import api from '../../../services/api';
 import { formatPrice } from '../../../utils/format';
 import { useFindRealtor } from '../../../hooks/findRealtor';
 import { useFilter } from '../../../context/FilterContext';
