@@ -83,12 +83,29 @@ export const Filter = styled.div`
 `;
 
 export const AccountContainer = styled.div`
-  width: 100%;
-  display: flex;
-  margin-top: 6rem;
+  padding: 2rem 4rem;
 
-  > div + div {
-    margin-left: 2rem;
+  .tab-container,
+  .tab-content {
+    width: 100%;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: ${({ theme }) => theme.colors.primary};
+    /* border-width: 4px; */
+    background-color: ${({ theme }) => theme.colors.primaryAlpha};
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  .nav-tabs .nav-link {
+    padding: 0.5rem 3rem;
+    color: #504c4c;
+    font-size: 1.2rem;
+    border-radius: 1rem 1rem 0 0;
+    border-color: rgba(195, 41, 37, 0.3);
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
   }
 `;
 

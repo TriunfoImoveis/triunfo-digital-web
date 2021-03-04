@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { SiOneplus } from 'react-icons/si';
 import {
   FinancesIcons,
@@ -23,17 +24,23 @@ import {
   AccountContainer,
   TitlePane,
   Table,
-  Entry,
   Footer,
   ButtonGroup,
 } from './styles';
 
 const Account: React.FC = () => {
+  const [typeTab, setTypeTab] = useState('fix');
   const [modalOpen, setModalOpen] = useState(false);
 
   function toggleModal(): void {
     setModalOpen(!modalOpen);
   }
+
+  const handleSetTab = (tabName: string | null) => {
+    if (tabName) {
+      setTypeTab(tabName);
+    }
+  };
 
   return (
     <AdmLayout>
@@ -66,85 +73,110 @@ const Account: React.FC = () => {
               </Filter>
             </Filters>
             <AccountContainer>
-              <Entry>
-                <TitlePane>Contas Fixas</TitlePane>
-                <Table cols={4}>
-                  <thead>
-                    <tr>
-                      <th>Conta</th>
-                      <th>Data de Pag.</th>
-                      <th>Valor</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Energia</td>
-                      <td>06/03/2021</td>
-                      <td>R$ 1.000,00</td>
-                      <td className="PAGO">Pago</td>
-                    </tr>
-                    <tr>
-                      <td>Energia</td>
-                      <td>06/03/2021</td>
-                      <td>R$ 1.000,00</td>
-                      <td className="VENCIDA">Pago</td>
-                    </tr>
-                    <tr>
-                      <td>Energia</td>
-                      <td>06/03/2021</td>
-                      <td>R$ 1.000,00</td>
-                      <td className="PENDENTE">Pago</td>
-                    </tr>
-                    <tr className="total-row">
-                      <td className="border-none" />
-                      <td className="border-none">Saldo total</td>
-                      <td className="total">R$ 25.0000,00</td>
-                      <td className="border-none" />
-                    </tr>
-                  </tbody>
-                </Table>
-              </Entry>
-
-              <Entry>
-                <TitlePane>Contas Variáveis</TitlePane>
-                <Table cols={4}>
-                  <thead>
-                    <tr>
-                      <th>Conta</th>
-                      <th>Data de Pag.</th>
-                      <th>Valor</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Energia</td>
-                      <td>06/03/2021</td>
-                      <td>R$ 1.000,00</td>
-                      <td className="PAGO">Pago</td>
-                    </tr>
-                    <tr>
-                      <td>Energia</td>
-                      <td>06/03/2021</td>
-                      <td>R$ 1.000,00</td>
-                      <td className="VENCIDA">Pago</td>
-                    </tr>
-                    <tr>
-                      <td>Energia</td>
-                      <td>06/03/2021</td>
-                      <td>R$ 1.000,00</td>
-                      <td className="PENDENTE">Pago</td>
-                    </tr>
-                    <tr className="total-row">
-                      <td className="border-none" />
-                      <td className="border-none">Saldo total</td>
-                      <td className="total">R$ 25.0000,00</td>
-                      <td className="border-none" />
-                    </tr>
-                  </tbody>
-                </Table>
-              </Entry>
+              <Tabs
+                id="tab-container"
+                className="tab-container"
+                activeKey={typeTab}
+                onSelect={tab => handleSetTab(tab)}
+                variant="tabs"
+              >
+                <TabBootstrap eventKey="fix" title="Contas Fixas">
+                  <TitlePane>Contas Fixas</TitlePane>
+                  <Table cols={6}>
+                    <thead>
+                      <tr>
+                        <th>Filial</th>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                        <th>Conta de Saída</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>São Luís</td>
+                        <td>Conta de Energia</td>
+                        <td>04/03/2021</td>
+                        <td>7824587-8</td>
+                        <td>R$ 180,00</td>
+                        <td className="PAGO">Pago</td>
+                      </tr>
+                      <tr>
+                        <td>São Luís</td>
+                        <td>Conta de Energia</td>
+                        <td>04/03/2021</td>
+                        <td>7824587-8</td>
+                        <td>R$ 180,00</td>
+                        <td className="PAGO">Pago</td>
+                      </tr>
+                      <tr>
+                        <td>São Luís</td>
+                        <td>Conta de Energia</td>
+                        <td>04/03/2021</td>
+                        <td>7824587-8</td>
+                        <td>R$ 180,00</td>
+                        <td className="PAGO">Pago</td>
+                      </tr>
+                      <tr className="total-row">
+                        <td>São Luís</td>
+                        <td>Conta de Energia</td>
+                        <td>04/03/2021</td>
+                        <td>7824587-8</td>
+                        <td>R$ 180,00</td>
+                        <td className="PAGO">Pago</td>
+                      </tr>
+                      <tr className="total-row">
+                        <td className="border-none" />
+                        <td className="border-none" />
+                        <td className="border-none" />
+                        <td className="border-none">Saldo total</td>
+                        <td className="total">R$ 25.0000,00</td>
+                        <td className="border-none" />
+                      </tr>
+                    </tbody>
+                  </Table>
+                </TabBootstrap>
+                <TabBootstrap eventKey="variable" title="Contas Variáveis">
+                  <TitlePane>Contas Variáveis</TitlePane>
+                  <Table cols={4}>
+                    <thead>
+                      <tr>
+                        <th>Conta</th>
+                        <th>Data de Pag.</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Energia</td>
+                        <td>06/03/2021</td>
+                        <td>R$ 1.000,00</td>
+                        <td className="PAGO">Pago</td>
+                      </tr>
+                      <tr>
+                        <td>Energia</td>
+                        <td>06/03/2021</td>
+                        <td>R$ 1.000,00</td>
+                        <td className="VENCIDA">Pago</td>
+                      </tr>
+                      <tr>
+                        <td>Energia</td>
+                        <td>06/03/2021</td>
+                        <td>R$ 1.000,00</td>
+                        <td className="PENDENTE">Pago</td>
+                      </tr>
+                      <tr className="total-row">
+                        <td className="border-none" />
+                        <td className="border-none">Saldo total</td>
+                        <td className="total">R$ 25.0000,00</td>
+                        <td className="border-none" />
+                      </tr>
+                    </tbody>
+                  </Table>
+                </TabBootstrap>
+              </Tabs>
             </AccountContainer>
           </Content>
           <Footer>
