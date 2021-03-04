@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useMemo } from 'react';
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
 import Loader from 'react-loader-spinner';
@@ -22,7 +22,7 @@ import {
 } from './styles';
 import { formatPrice, DateBRL } from '../../../utils/format';
 import { useFilter } from '../../../context/FilterContext';
-import { useFindSaleByCityAndStatus } from '../../../hooks/findSale';
+import { useFetch } from '../../../hooks/useFetch';
 
 interface ISale {
   id: string;
@@ -34,17 +34,6 @@ interface ISale {
   }[];
 }
 
-interface ISaleData {
-  id: string;
-  name: string;
-  vgv: string;
-  dateSale: string;
-  sallers: {
-    name: string;
-    avatar_url: string;
-  };
-}
-
 const ListSales: React.FC = () => {
   const {
     city,
@@ -53,34 +42,14 @@ const ListSales: React.FC = () => {
     handleSetCity,
     handleSetStatus,
     handleSetName,
+    month,
+    handleSetMonth,
   } = useFilter();
-  const { data } = useFindSaleByCityAndStatus<ISale[]>({ city, status });
-
-  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetCity(event.target.value);
-  };
-  const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetStatus(event.target.value);
-  };
+  const [url, setUrl] = useState(`/sale?city=${city}&status=${status}`);
+  const { data: sales } = useFetch<ISale[]>(url);
 
   const listSales = useMemo(() => {
-    if (name !== '') {
-      return data
-        ?.map(s => ({
-          id: s.id,
-          name: 'Teste',
-          vgv: formatPrice(Number(s.realty_ammount)),
-          dateSale: DateBRL(s.sale_date),
-          sallers: {
-            name: s.sale_has_sellers[0].name,
-            avatar_url: s.sale_has_sellers[0].avatar_url,
-          },
-        }))
-        .filter(
-          sale => sale.sallers.name.toLowerCase().includes(name) === true,
-        );
-    }
-    return data?.map(s => ({
+    return sales?.map(s => ({
       id: s.id,
       name: 'Teste',
       vgv: formatPrice(Number(s.realty_ammount)),
@@ -90,15 +59,32 @@ const ListSales: React.FC = () => {
         avatar_url: s.sale_has_sellers[0].avatar_url,
       },
     }));
-  }, [name, data]);
+  }, [sales]);
+
+  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetCity(event.target.value);
+    setUrl(`/sale?city=${event.target.value}&status=${status}`);
+  };
+  const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetStatus(event.target.value);
+    setUrl(`/sale?city=${city}&status=${event.target.value}`);
+  };
 
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
-      const name = event.target.value.toLowerCase();
+      const name = event.target.value;
       handleSetName(name);
+      if (name.length > 0) {
+        setUrl(`/sale?city=${city}&status=${status}&name=${name}`);
+      }
+      return;
     },
-    [handleSetName],
+    [handleSetName, city, status],
   );
+
+  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetMonth(event.currentTarget.value);
+  };
 
   return (
     <AdmLayout>
@@ -147,6 +133,16 @@ const ListSales: React.FC = () => {
                   <option value="CAIU">CAIU</option>
                 </select>
               </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Mês: </span>
+                <select value={month} onChange={handleSelectDate}>
+                  <option value="">Todas</option>
+                  <option value="0">Janeiro</option>
+                  <option value="1">Fevereiro</option>
+                  <option value="2">Março</option>
+                  <option value="3">Abril</option>
+                </select>
+              </FiltersBottonItems>
             </FilterButtonGroup>
             <FiltersBottonItems>
               <Link
@@ -160,7 +156,7 @@ const ListSales: React.FC = () => {
         </FiltersContainer>
       </form>
       <Content>
-        {!data ? (
+        {!sales ? (
           <LoadingContainer>
             <Loader type="Bars" color="#c32925" height={100} width={100} />
           </LoadingContainer>

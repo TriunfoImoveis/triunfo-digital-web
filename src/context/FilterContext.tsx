@@ -4,9 +4,11 @@ interface FilterContextData {
   city: string;
   status: string;
   name: string;
+  month: string;
   handleSetCity: (city: string) => void;
   handleSetStatus: (status: string) => void;
   handleSetName: (name: string) => void;
+  handleSetMonth: (name: string) => void;
 }
 
 const FilterContext = createContext({} as FilterContextData);
@@ -15,6 +17,7 @@ const FilterProvider: React.FC = ({ children }) => {
   const [city, setCity] = useState<string>('São Luís');
   const [status, setStatus] = useState<string>('NAO_VALIDADO');
   const [name, setName] = useState('');
+  const [month, setMonth] = useState('');
 
   const handleSetCity = (city: string) => {
     setCity(city);
@@ -25,15 +28,20 @@ const FilterProvider: React.FC = ({ children }) => {
   const handleSetName = (name: string) => {
     setName(name);
   };
+  const handleSetMonth = (month: string) => {
+    setMonth(month);
+  };
   return (
     <FilterContext.Provider
       value={{
         city,
         status,
         name,
+        month,
         handleSetCity,
         handleSetName,
         handleSetStatus,
+        handleSetMonth,
       }}
     >
       {children}
