@@ -276,12 +276,12 @@ const Account: React.FC = () => {
           </Content>
           <Footer>
             <ButtonGroup>
-              <Link to="#top">
+              <Link to="/financeiro/caixa">
                 <FinancesIcons />
-                <span>Contas</span>
+                <span>Caixa</span>
               </Link>
 
-              <Link to="#top">
+              <Link to="/financeiro/calculadora">
                 <CalculatorIcon />
                 <span>Calculadora</span>
               </Link>

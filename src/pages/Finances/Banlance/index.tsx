@@ -533,7 +533,7 @@ const Balance: React.FC = () => {
               <span>Contas</span>
             </Link>
 
-            <Link to="#top">
+            <Link to="/financeiro/calculadora">
               <CalculatorIcon />
               <span>Calculadora</span>
             </Link>
