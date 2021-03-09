@@ -12,7 +12,7 @@ export const Container = styled.div`
   margin-top: 2rem;
 `;
 export const Asaid = styled.aside`
-  width: 30%;
+  width: 20%;
   padding: 0 0.5rem;
 
   > span {
@@ -25,7 +25,7 @@ export const Asaid = styled.aside`
     margin-bottom: 2rem;
   }
 
-  > div {
+  > form {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -35,41 +35,47 @@ export const Asaid = styled.aside`
       flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      text-align: right;
 
       > span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: normal;
-        font-size: 1.6rem;
+        font-size: 1.2rem;
         line-height: 2rem;
 
         color: #4f4f4f;
       }
 
-      > input {
-        width: 12.5rem;
-        height: 4rem;
+      > .inputContainer {
+        > div {
+          width: 11rem;
+          height: 4rem;
 
-        background: rgba(196, 196, 196, 0.7);
-        border-radius: 4px;
-        border: 0;
-        padding-left: 1.2rem;
-        font-size: 16px;
-        line-height: 19px;
+          background: rgba(196, 196, 196, 0.7);
+          border-radius: 4px;
+          border: 0;
+          font-size: 16px;
+          line-height: 19px;
 
-        color: #4f4f4f;
-        margin-right: 1rem;
+          color: #4f4f4f;
+          margin-right: 1rem;
+
+          > input {
+            width: 100%;
+          }
+        }
       }
 
       & + div {
-        margin-top: 1.5rem;
+        margin-top: 0.8rem;
       }
     }
   }
 `;
 
 export const Main = styled.main`
-  flex: 1;
+  width: 80%;
   padding: 0 1rem;
 `;
 export const Table = styled.table<TableProps>`
@@ -82,16 +88,21 @@ export const Table = styled.table<TableProps>`
     margin-bottom: 2rem;
     > tr {
       display: grid;
-      grid-template-columns: repeat(${props => props.cols}, 140px);
+      grid-template-columns: repeat(${props => props.cols}, 125px);
+      grid-gap: 0.8rem;
 
       > th {
         display: block;
-        width: 140px;
+        width: 100px;
         font-weight: 500;
-        font-size: 1.6rem;
+        font-size: 1.4rem;
         line-height: 2.3rem;
 
         color: #4f4f4f;
+
+        &.comission-header {
+          padding-left: 2.8rem;
+        }
       }
     }
   }
@@ -100,10 +111,10 @@ export const Table = styled.table<TableProps>`
 
     > tr {
       display: grid;
-      grid-template-columns: repeat(${props => props.cols}, 1fr);
+      grid-template-columns: repeat(${props => props.cols}, 125px);
       border-collapse: collapse;
       border-spacing: 8px;
-
+      grid-gap: 0.8rem;
       > td {
         display: flex;
         flex-direction: column;
@@ -111,7 +122,7 @@ export const Table = styled.table<TableProps>`
 
         > strong {
           font-weight: normal;
-          font-size: 2rem;
+          font-size: 1.6rem;
           line-height: 2.3rem;
 
           color: #4f4f4f;
@@ -125,13 +136,13 @@ export const Table = styled.table<TableProps>`
           color: ${({ theme }) => theme.colors.primary};
         }
         > input {
-          width: 100px;
+          width: 70px;
           height: 40px;
           background: rgba(196, 196, 196, 0.3);
           border-radius: 4px;
 
           border: 0;
-          padding-left: 1.2rem;
+          padding-left: 1rem;
           font-size: 16px;
           line-height: 19px;
 
@@ -147,6 +158,21 @@ export const Table = styled.table<TableProps>`
             line-height: 19px;
 
             color: #4f4f4f;
+          }
+        }
+        &.comission {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          padding-left: 0.4rem;
+          border-left: 1px solid ${({ theme }) => theme.colors.primaryAlpha};
+          border-bottom: 1px solid ${({ theme }) => theme.colors.primaryAlpha};
+
+          > span {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: ${({ theme }) => theme.colors.primary};
           }
         }
       }
@@ -174,35 +200,51 @@ export const Table = styled.table<TableProps>`
 
 export const Footer = styled.section`
   margin-top: 2rem;
-  > .header {
-    display: grid;
-    grid-template-columns: repeat(7, 150px);
-    gap: 0.8rem;
+  padding: 0 8rem;
 
-    border-bottom: 1px solid ${({ theme }) => theme.colors.primary};
+  > table {
+    width: 80%;
 
-    > input {
-      border: 0;
-      text-align: center;
-      font-weight: normal;
-      font-size: 1.6rem;
-      line-height: 2.3rem;
-
-      color: #4f4f4f;
+    thead {
+      border-bottom: 1px solid ${({ theme }) => theme.colors.primaryAlpha};
+      > tr {
+        text-align: center;
+      }
     }
-    > span {
-      text-align: center;
-      vertical-align: bottom;
-      font-weight: normal;
-      font-size: 1.6rem;
-      line-height: 2.3rem;
+
+    tbody {
+      tr {
+        td {
+          input {
+            height: 3rem;
+            &.porcent {
+              height: 2rem;
+              background: rgba(196, 196, 196, 0.7);
+              border-radius: 4px 4px 0px 0px;
+            }
+            &.disabled {
+              background: transparent;
+            }
+          }
+        }
+      }
     }
   }
 
-  .content {
-    display: grid;
-    grid-template-columns: repeat(7, 125px);
-    column-gap: 0.8rem;
-    padding: 0.8rem 0;
+  > div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    > button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      > svg {
+        margin-right: 0.8rem;
+      }
+    }
   }
 `;

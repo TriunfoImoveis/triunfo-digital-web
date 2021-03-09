@@ -117,8 +117,8 @@ const Input: React.FC<InputProps> = ({
   );
 
   return (
-    <ContainerWrapper>
-      <span className="label">{label}</span>
+    <ContainerWrapper className="inputContainer">
+      {label && <span className="label">{label}</span>}
       <Container
         style={containerStyle}
         isErrored={errorField}
