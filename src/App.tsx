@@ -13,17 +13,20 @@ import { DivisionProvider } from './context/DivisionComissionContext';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { FilterProvider } from './context/FilterContext';
 
 const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>
         <FormProvider>
-          <DivisionProvider>
+          <FilterProvider>
+           <DivisionProvider>
             <Router>
               <Routes />
             </Router>
-          </DivisionProvider>
+           </DivisionProvider>
+          </FilterProvider>
         </FormProvider>
         <ToastContainer autoClose={3000} />
       </AuthProvider>

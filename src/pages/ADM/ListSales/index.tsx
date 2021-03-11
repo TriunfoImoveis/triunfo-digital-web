@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState, useCallback } from 'react';
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
 import Loader from 'react-loader-spinner';
@@ -20,8 +20,9 @@ import {
   LoadingContainer,
   FilterButtonGroup,
 } from './styles';
-import api from '../../../services/api';
 import { formatPrice, DateBRL } from '../../../utils/format';
+import { useFilter } from '../../../context/FilterContext';
+import { useFetch } from '../../../hooks/useFetch';
 
 interface ISale {
   id: string;
@@ -33,89 +34,58 @@ interface ISale {
   }[];
 }
 
-interface ISaleData {
-  id: string;
-  name: string;
-  vgv: string;
-  dateSale: string;
-  sallers: {
-    name: string;
-    avatar_url: string;
-  };
-}
-
 const ListSales: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [city, setCity] = useState<string>('São Luís');
-  const [status, setStatus] = useState<string>('NAO_VALIDADO');
-  const [name, setName] = useState('');
-  const [sales, setSales] = useState<ISaleData[]>([]);
+  const {
+    city,
+    status,
+    name,
+    handleSetCity,
+    handleSetStatus,
+    handleSetName,
+    month,
+    handleSetMonth,
+  } = useFilter();
+  const [url, setUrl] = useState(`/sale?city=${city}&status=${status}`);
+  const { data: sales } = useFetch<ISale[]>(url);
 
-  useEffect(() => {
-    const loadSales = async () => {
-      setLoading(true);
-      const response = await api.get('/sale', {
-        params: {
-          city,
-          status,
-        },
-      });
-      const listSales: ISale[] = response.data;
-      const salesFormatted: ISaleData[] = listSales.map(s => ({
-        id: s.id,
-        name: 'Teste',
-        vgv: formatPrice(Number(s.realty_ammount)),
-        dateSale: DateBRL(s.sale_date),
-        sallers: {
-          name: s.sale_has_sellers[0].name,
-          avatar_url: s.sale_has_sellers[0].avatar_url,
-        },
-      }));
-      setSales(salesFormatted);
-      setLoading(false);
-    };
-    loadSales();
-  }, [city, status]);
+  const listSales = useMemo(() => {
+    return sales?.map(s => ({
+      id: s.id,
+      name: 'Teste',
+      vgv: formatPrice(Number(s.realty_ammount)),
+      dateSale: DateBRL(s.sale_date),
+      sallers: {
+        name: s.sale_has_sellers[0].name,
+        avatar_url: s.sale_has_sellers[0].avatar_url,
+      },
+    }));
+  }, [sales]);
 
-  const handleSelectCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      setCity(event.target.value);
-    },
-    [],
-  );
-  const handleSelectedStatus = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      setStatus(event.target.value);
-    },
-    [],
-  );
+  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetCity(event.target.value);
+    setUrl(`/sale?city=${event.target.value}&status=${status}`);
+  };
+  const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetStatus(event.target.value);
+    setUrl(`/sale?city=${city}&status=${event.target.value}`);
+  };
 
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const name = event.target.value;
-      const response = await api.get('/sale', {
-        params: {
-          city,
-          status,
-          name: event.target.value,
-        },
-      });
-      setName(name);
-      const listSales: ISale[] = response.data;
-      const salesFormatted: ISaleData[] = listSales.map(s => ({
-        id: s.id,
-        name: 'Teste',
-        vgv: formatPrice(Number(s.realty_ammount)),
-        dateSale: DateBRL(s.sale_date),
-        sallers: {
-          name: s.sale_has_sellers[0].name,
-          avatar_url: s.sale_has_sellers[0].avatar_url,
-        },
-      }));
-      setSales(salesFormatted);
+      handleSetName(name);
+      if (name.length > 0) {
+        setUrl(`/sale?city=${city}&status=${status}&name=${name}`);
+      }
+      return;
     },
-    [city, status],
+    [handleSetName, city, status],
   );
+
+  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetMonth(event.currentTarget.value);
+  };
+
   return (
     <AdmLayout>
       <form>
@@ -163,6 +133,16 @@ const ListSales: React.FC = () => {
                   <option value="CAIU">CAIU</option>
                 </select>
               </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Mês: </span>
+                <select value={month} onChange={handleSelectDate}>
+                  <option value="">Todas</option>
+                  <option value="0">Janeiro</option>
+                  <option value="1">Fevereiro</option>
+                  <option value="2">Março</option>
+                  <option value="3">Abril</option>
+                </select>
+              </FiltersBottonItems>
             </FilterButtonGroup>
             <FiltersBottonItems>
               <Link
@@ -176,7 +156,7 @@ const ListSales: React.FC = () => {
         </FiltersContainer>
       </form>
       <Content>
-        {loading ? (
+        {!sales ? (
           <LoadingContainer>
             <Loader type="Bars" color="#c32925" height={100} width={100} />
           </LoadingContainer>
@@ -187,7 +167,7 @@ const ListSales: React.FC = () => {
               <HeaderItem>Nome</HeaderItem>
               <HeaderItem>Valor</HeaderItem>
             </SaleHeader>
-            {sales.map(sale => (
+            {listSales?.map(sale => (
               <SaleBody key={sale.id}>
                 <SaleItem className="avatar">
                   <img

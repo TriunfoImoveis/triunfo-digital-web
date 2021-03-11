@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useCallback, ChangeEvent, useMemo } from 'react';
 import Loader from 'react-loader-spinner';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/Header';
@@ -26,7 +26,7 @@ import {
   SelectSubsidiary,
 } from './styles';
 import { formatPrice } from '../../utils/format';
-import api from '../../services/api';
+import { useFetch } from '../../hooks/useFetch';
 
 interface IRealtorData {
   id: string;
@@ -36,148 +36,62 @@ interface IRealtorData {
 }
 
 const Ranking: React.FC = () => {
-  const [realtors, setRealtors] = useState<IRealtorData[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(false);
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('São Luís');
-  const [token] = useState(() => localStorage.getItem('@TriunfoDigital:token'));
   const { userAuth } = useAuth();
+  const [url, setUrl] = useState(
+    `/ranking?city=${userAuth.subsidiary.city}&type=ANUAL&user=Corretor`,
+  );
+  const { data: realtors } = useFetch<IRealtorData[]>(url);
 
-  useEffect(() => {
-    const loadRanking = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get('/ranking', {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-          params: {
-            city: userAuth.subsidiary.city,
-            user: 'Corretor',
-          },
-        });
-        const ranking = response.data;
-        const rankingFormatted = ranking.map(r => ({
-          id: r.id,
-          avatar_url: r.avatar_url,
-          name: r.name,
-          vgv: formatPrice(r.vgv),
-        }));
-        setRealtors(rankingFormatted);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-    const loadRankingAdm = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get('/ranking', {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-          params: {
-            city: selectedSubsidiary,
-            user: 'Corretor',
-          },
-        });
-        const ranking = response.data;
-        const rankingFormatted = ranking.map(r => ({
-          id: r.id,
-          avatar_url: r.avatar_url,
-          name: r.name,
-          vgv: formatPrice(r.vgv),
-        }));
-        setRealtors(rankingFormatted);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
+  const ranking = useMemo(() => {
+    return realtors?.map(r => ({
+      id: r.id,
+      avatar_url: r.avatar_url,
+      name: r.name,
+      vgv: formatPrice(Number(r.vgv)),
+    }));
+  }, [realtors]);
 
-    userAuth.office.name === 'Presidente' || userAuth.office.name === 'Gerente'
-      ? loadRankingAdm()
-      : loadRanking();
-  }, [
-    token,
-    userAuth.subsidiary.city,
-    selectedSubsidiary,
-    userAuth.office.name,
-  ]);
-
-  const handleSwichVGVToYear = async (filter: string) => {
-    setSelected(!selected);
-    switch (filter) {
-      case 'month': {
-        setLoading(true);
-        try {
-          const response = await api.get('/ranking', {
-            headers: {
-              authorization: `Bearer ${token}`,
-            },
-            params: {
-              city:
-                userAuth.office.name === 'Presidente' ||
-                userAuth.office.name === 'Gerente'
-                  ? selectedSubsidiary
-                  : userAuth.subsidiary.city,
-              type: 'MENSAL',
-              user: 'Corretor',
-            },
-          });
-          const ranking = response.data;
-          const rankingFormatted = ranking.map(r => ({
-            id: r.id,
-            avatar_url: r.avatar_url,
-            name: r.name,
-            vgv: formatPrice(r.vgv),
-          }));
-          setRealtors(rankingFormatted);
-          setLoading(false);
-        } catch (error) {
-          setLoading(false);
+  const handleSwichVGVToYear = useCallback(
+    async (filter: string) => {
+      setSelected(!selected);
+      switch (filter) {
+        case 'month': {
+          const city =
+            userAuth.office.name === 'Presidente' ||
+            userAuth.office.name === 'Gerente'
+              ? selectedSubsidiary
+              : userAuth.subsidiary.city;
+          setUrl(`/ranking?city=${city}&type=MENSAL&user=Corretor`);
+          break;
         }
-        break;
-      }
-      case 'year': {
-        setLoading(true);
-        try {
-          const response = await api.get('/ranking', {
-            headers: {
-              authorization: `Bearer ${token}`,
-            },
-            params: {
-              city:
-                userAuth.office.name === 'Presidente' ||
-                userAuth.office.name === 'Gerente'
-                  ? selectedSubsidiary
-                  : userAuth.subsidiary.city,
-              user: 'Corretor',
-            },
-          });
-          const ranking = response.data;
-          const rankingFormatted = ranking.map(r => ({
-            id: r.id,
-            avatar_url: r.avatar_url,
-            name: r.name,
-            vgv: formatPrice(r.vgv),
-          }));
-          setRealtors(rankingFormatted);
-          setLoading(false);
-        } catch (error) {
-          setLoading(false);
+        case 'year': {
+          const city =
+            userAuth.office.name === 'Presidente' ||
+            userAuth.office.name === 'Gerente'
+              ? selectedSubsidiary
+              : userAuth.subsidiary.city;
+          setUrl(`/ranking?city=${city}&user=Corretor`);
+          break;
         }
-        break;
+        default:
+          break;
       }
-      default:
-        break;
-    }
-  };
+    },
+    [
+      selected,
+      selectedSubsidiary,
+      userAuth.subsidiary.city,
+      userAuth.office.name,
+    ],
+  );
 
   const handleSelectSubsidiary = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const subsidiaryCity = event.target.value;
       setSelectedSubsidiary(subsidiaryCity);
+      setUrl(`/ranking?city=${subsidiaryCity}&type=ANUAL&user=Corretor`);
     },
     [],
   );
@@ -238,14 +152,14 @@ const Ranking: React.FC = () => {
               </ButtonGroup>
             </LabelItems>
           </LabelContainer>
-          {loading ? (
+          {!ranking ? (
             <LoadingContainer>
               <Loader type="Bars" color="#c32925" height={100} width={100} />
             </LoadingContainer>
           ) : (
             <>
               <PodiumContainer>
-                {realtors.map((realtor, i) => {
+                {ranking.map((realtor, i) => {
                   return i <= 4 ? (
                     <PositionItem key={realtor.id}>
                       <Position>{`${i + 1}°`}</Position>
@@ -270,7 +184,7 @@ const Ranking: React.FC = () => {
               </PodiumContainer>
               <Separator />
               <RealtorContainer>
-                {realtors.map((realtor, i) => {
+                {realtors?.map((realtor, i) => {
                   return i >= 5 ? (
                     <PositionItem key={realtor.id}>
                       <Position>{`${i + 1}°`}</Position>

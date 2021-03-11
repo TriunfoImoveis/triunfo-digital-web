@@ -5,13 +5,6 @@ export const Container = styled.div`
   flex-direction: column;
   align-items: center;
 
-  h2 {
-    margin-top: 2rem;
-    color: ${({ theme }) => theme.colors.primary};
-    font-size: 2rem;
-    margin-bottom: 2rem;
-  }
-
   > form {
     width: 100%;
     display: flex;
@@ -46,6 +39,40 @@ export const Container = styled.div`
   }
 `;
 
+export const Header = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  width: 100%;
+  > div {
+    button {
+      margin-left: 30rem;
+      border: 0;
+      background: transparent;
+      color: ${({ theme }) => theme.colors.primary};
+
+      > svg {
+        margin-right: 1rem;
+        color: ${({ theme }) => theme.colors.primary};
+      }
+    }
+  }
+
+  h2 {
+    margin-top: 2rem;
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 500px) {
+    width: 100%;
+    h2 {
+      font-size: 1.6rem;
+    }
+  }
+`;
 export const FormContent = styled.div`
   width: 100%;
   display: flex;

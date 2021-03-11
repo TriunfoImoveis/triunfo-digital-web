@@ -7,18 +7,20 @@ interface OptionsData {
 }
 
 // Bancos
-const opionsBanks = banks.map(bank => ({
+export const opionsBanks = banks.map(bank => ({
   label: `${bank.code} - ${bank.fullName}`,
   value: bank.fullName,
 }));
-export const loadOptionsBank = (inputValue: string, callback: any): void => {
-  setTimeout(() => {
-    callback(filterOptions(inputValue, opionsBanks));
-  }, 1000);
-};
+// export const loadOptionsBank = (inputValue: string, callback: any): void => {
+//   setTimeout(() => {
+//     callback(filterOptions(inputValue, opionsBanks));
+//   }, 1000);
+// };
+
+export const months = ['Janeiro'];
 
 // TIPO DE CONTA DE BANCO
-const OptionsTypeAccount = [
+export const OptionsTypeAccount = [
   { label: 'POUPANÇA', value: 'POUPANÇA' },
   { label: 'CORRENTE', value: 'CORRENTE' },
   { label: 'CONTA SÁLARIO', value: 'SALARIO' },

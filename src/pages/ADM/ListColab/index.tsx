@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
-import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
 import { Search } from '../../../assets/images';
 import {
@@ -19,7 +18,13 @@ import {
   SaleItem,
   LoadingContainer,
 } from './styles';
-import api from '../../../services/api';
+import { useFetch } from '../../../hooks/useFetch';
+import { useLoadDepartament } from '../../../hooks/loadDepartaments';
+import {
+  filterUserForDepartament,
+  filterUserForOffice,
+  filterUserForSubsidiary,
+} from '../../../utils/filters';
 
 interface IDepartament {
   id: string;
@@ -40,103 +45,75 @@ interface IUser {
   name: string;
   avatar_url: string | null;
   departament: {
+    id: string;
+    name: string;
+  };
+  subsidiary: {
+    id: string;
     name: string;
   };
   office: {
+    id: string;
     name: string;
   };
 }
 const ListColab: React.FC = () => {
-  const token = localStorage.getItem('@TriunfoDigital:token');
-  const [loading, setLoading] = useState(false);
-  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
-  const [selectedSubsidiary, setSelectedSubsidiary] = useState<ISubsidiary>(
-    {} as ISubsidiary,
-  );
-  const [departament, setDepartament] = useState<IDepartament[]>([]);
-  const [officies, setOfficies] = useState<IOffice[]>([]);
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState('');
   const [selectedOffice, setSelectedOffice] = useState('Corretor');
-  const [users, setUsers] = useState<IUser[]>([]);
+  const { data: users } = useFetch<IUser[]>('/users');
+  const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
+  const { data: officies } = useFetch<IOffice[]>(`/office`);
+  const { data: departaments } = useLoadDepartament<IDepartament[]>({
+    subsidiary: selectedSubsidiary,
+  });
+  const [listUsers, setListUsers] = useState<IUser[] | undefined>([]);
 
   useEffect(() => {
-    const loadSubsidiaries = async () => {
-      const response = await api.get('/subsidiary');
-      setSubsidiaries(response.data);
-    };
-    const loadOfficies = async () => {
-      const response = await api.get('/office');
-      setOfficies(response.data);
-    };
-    const loadDepartament = async () => {
-      const response = await api.get('/departament', {
-        params: {
-          subsidiary: selectedSubsidiary.id,
-        },
-      });
-      setDepartament(response.data);
-    };
-    const loadUsers = async () => {
-      const response = await api.get('/users', {
-        params: {
-          city: selectedSubsidiary.city,
-          office: selectedOffice,
-        },
-      });
-      setUsers(response.data);
-    };
-
-    loadSubsidiaries();
-    loadOfficies();
-    loadUsers();
-    if (selectedSubsidiary) {
-      loadDepartament();
+    users && setListUsers(users);
+  }, [users]);
+  const filterUsers = (
+    users: IUser[],
+    typeFilter: 'office' | 'departament' | 'subsidiary',
+  ) => {
+    switch (typeFilter) {
+      case 'office': {
+        return filterUserForOffice(users, typeFilter);
+      }
+      case 'departament': {
+        return filterUserForDepartament(users, typeFilter);
+      }
+      case 'subsidiary': {
+        return filterUserForSubsidiary(users, typeFilter);
+      }
+      default:
+        break;
     }
-  }, [selectedSubsidiary, selectedOffice]);
+  };
 
-  const handleSelectedSubsidiary = useCallback(
-    async (event: ChangeEvent<HTMLSelectElement>) => {
-      const { value } = event.target;
-      try {
-        const response = await api.get(`/subsidiary/${value}`, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        });
-        setSelectedSubsidiary(response.data);
-      } catch (error) {
-        toast.error('Error ao connectar ao servidor, Contate o suporte');
-      }
-    },
-    [token],
-  );
-  const handleSelectedOffice = useCallback(
-    async (event: ChangeEvent<HTMLSelectElement>) => {
-      const { value } = event.target;
-      setSelectedOffice(value);
-    },
-    [],
-  );
+  const handleSelectedSubsidiary = async (
+    event: ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const { value } = event.target;
+    setSelectedSubsidiary(value);
+    if (users) {
+      const list = filterUsers(users, 'subsidiary');
+      setListUsers(list);
+    }
+  };
+  const handleSelectedOffice = async (
+    event: ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const { value } = event.target;
+    setSelectedOffice(value);
+    if (users) {
+      const list = filterUsers(users, 'office');
+      setListUsers(list);
+    }
+  };
 
-  const searchUserByName = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      if (event.target.value === '') {
-        setLoading(true);
-        const response = await api.get('/users');
-        setUsers(response.data);
-        setLoading(false);
-      } else {
-        setLoading(true);
-        const response = await api.get('/users', {
-          params: {
-            name: event.target.value,
-          },
-        });
-        setUsers(response.data);
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const searchUserByName = async (event: ChangeEvent<HTMLInputElement>) => {
+    console.log(event.target.value);
+  };
 
   return (
     <AdmLayout>
@@ -158,7 +135,7 @@ const ListColab: React.FC = () => {
               <option value="0" disabled>
                 Todas
               </option>
-              {subsidiaries.map(subsidary => (
+              {subsidiaries?.map(subsidary => (
                 <option key={subsidary.id} value={subsidary.id}>
                   {subsidary.city}
                 </option>
@@ -172,7 +149,7 @@ const ListColab: React.FC = () => {
               <option value="0" disabled>
                 Todas
               </option>
-              {departament.map(depart => (
+              {departaments?.map(depart => (
                 <option key={depart.id} value={depart.id}>
                   {depart.name}
                 </option>
@@ -188,7 +165,7 @@ const ListColab: React.FC = () => {
               <option value="0" disabled>
                 Todas
               </option>
-              {officies.map(office => (
+              {officies?.map(office => (
                 <option key={office.id} value={office.name}>
                   {office.name}
                 </option>
@@ -208,12 +185,12 @@ const ListColab: React.FC = () => {
             <HeaderItem>Departamento</HeaderItem>
             <HeaderItem>Cargo</HeaderItem>
           </SaleHeader>
-          {users.map(user =>
-            loading ? (
-              <LoadingContainer>
-                <Loader type="Bars" color="#c32925" height={100} width={100} />
-              </LoadingContainer>
-            ) : (
+          {!users ? (
+            <LoadingContainer>
+              <Loader type="Bars" color="#c32925" height={100} width={100} />
+            </LoadingContainer>
+          ) : (
+            listUsers?.map(user => (
               <SaleBody key={user.id}>
                 <SaleItem className="avatar">
                   <img
@@ -231,7 +208,7 @@ const ListColab: React.FC = () => {
                   </Link>
                 </SaleItem>
               </SaleBody>
-            ),
+            ))
           )}
         </SaleTableContainer>
       </Content>
