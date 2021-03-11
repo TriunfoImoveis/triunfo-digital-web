@@ -9,6 +9,7 @@ import Routes from './routes';
 
 import { AuthProvider } from './context/AuthContext';
 import { FormProvider } from './context/FormContext';
+import { DivisionProvider } from './context/DivisionComissionContext';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -18,9 +19,11 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <AuthProvider>
         <FormProvider>
-          <Router>
-            <Routes />
-          </Router>
+          <DivisionProvider>
+            <Router>
+              <Routes />
+            </Router>
+          </DivisionProvider>
         </FormProvider>
         <ToastContainer autoClose={3000} />
       </AuthProvider>

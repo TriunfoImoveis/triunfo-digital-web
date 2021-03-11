@@ -2,11 +2,11 @@ import React, {
   ChangeEvent,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 import { RiSave3Fill } from 'react-icons/ri';
+import { MdEdit } from 'react-icons/md';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import Button from '../../Button';
@@ -15,14 +15,8 @@ import Input from '../../Input';
 import { Container, Asaid, Main, Table, Wrapper, Footer } from './styles';
 import { currency } from '../../../utils/unMasked';
 import { formatPrice } from '../../../utils/format';
-
-interface NFProps {
-  valuePlot: number;
-  porcentIss: number;
-  issValue: number;
-  porcentImpostTotal: number;
-  sald: number;
-}
+import EditComissionDivision from '../../ReactModal/EditDivisionComission';
+import { useDivision } from '../../../context/DivisionComissionContext';
 
 interface Sale {
   id: string;
@@ -67,6 +61,14 @@ const WhithNF: React.FC = () => {
     director: '',
     subsidiary: '',
   } as Comission);
+  const [netCommission, setNetComission] = useState({
+    realtor: '',
+    coordinator: '',
+    director: '',
+    subsidiary: '',
+  } as Comission);
+  const [editDivisionModal, setEditDivisionModal] = useState(true);
+  const { divisionData, calcDivision, sald } = useDivision();
 
   useEffect(() => {
     setSale({
@@ -88,6 +90,10 @@ const WhithNF: React.FC = () => {
   //   };
   // }, [sale]);
 
+  const toogleEditDivisionModal = useCallback(() => {
+    setEditDivisionModal(!editDivisionModal);
+  }, [editDivisionModal]);
+
   const calcIss = () => {
     const valuePlot = currency(formRef.current?.getFieldValue('valuePlot'));
     const porcentIss = formRef.current?.getFieldValue('porcentIss') / 100;
@@ -105,17 +111,77 @@ const WhithNF: React.FC = () => {
   }, []);
 
   const calcBruteValue = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>, participant: string) => {
       const { value } = event.target;
       const calcBrute = currency(sale.value) * (Number(value) / 100);
       const valueImpost = calcBrute * (currency(porcentImpost) / 100);
+      const total = formatPrice(calcBrute - valueImpost);
 
-      setPorcentComissionData({
-        ...porcentComissionData,
-        realtor: value,
-      });
-      setcomissionBrute({ ...comissionBrute, realtor: formatPrice(calcBrute) });
-      setImpostValue({ ...impostValue, realtor: formatPrice(valueImpost) });
+      switch (participant) {
+        case 'realtor':
+          setPorcentComissionData({
+            ...porcentComissionData,
+            realtor: value,
+          });
+          setcomissionBrute({
+            ...comissionBrute,
+            realtor: formatPrice(calcBrute),
+          });
+          setImpostValue({ ...impostValue, realtor: formatPrice(valueImpost) });
+          setNetComission({ ...netCommission, realtor: total });
+          break;
+        case 'coordinator':
+          setPorcentComissionData({
+            ...porcentComissionData,
+            coordinator: value,
+          });
+          setcomissionBrute({
+            ...comissionBrute,
+            coordinator: formatPrice(calcBrute),
+          });
+          setImpostValue({
+            ...impostValue,
+            coordinator: formatPrice(valueImpost),
+          });
+          setNetComission({
+            ...netCommission,
+            coordinator: total,
+          });
+          break;
+        case 'director':
+          setPorcentComissionData({
+            ...porcentComissionData,
+            director: value,
+          });
+          setcomissionBrute({
+            ...comissionBrute,
+            director: formatPrice(calcBrute),
+          });
+          setImpostValue({
+            ...impostValue,
+            director: formatPrice(valueImpost),
+          });
+          setNetComission({ ...netCommission, director: total });
+          break;
+        case 'subsiadiary':
+          setPorcentComissionData({
+            ...porcentComissionData,
+            subsidiary: value,
+          });
+          setcomissionBrute({
+            ...comissionBrute,
+            subsidiary: formatPrice(calcBrute),
+          });
+          setImpostValue({
+            ...impostValue,
+            subsidiary: formatPrice(valueImpost),
+          });
+          setNetComission({ ...netCommission, subsidiary: total });
+          calcDivision(total);
+          break;
+        default:
+          break;
+      }
     },
     [
       porcentComissionData,
@@ -123,6 +189,9 @@ const WhithNF: React.FC = () => {
       sale.value,
       impostValue,
       porcentImpost,
+      netCommission,
+      setNetComission,
+      calcDivision,
     ],
   );
   return (
@@ -208,7 +277,7 @@ const WhithNF: React.FC = () => {
                       className="input-background-dark"
                       placeholder="%"
                       defaultValue={porcentComissionData.realtor}
-                      onChange={e => calcBruteValue(e)}
+                      onChange={e => calcBruteValue(e, 'realtor')}
                     />
                   </td>
                   <td>
@@ -236,7 +305,11 @@ const WhithNF: React.FC = () => {
                     />
                   </td>
                   <td className="comission">
-                    <span>R$ 1000,00</span>
+                    <span>
+                      {netCommission.realtor === ''
+                        ? 'R$ 0,00'
+                        : netCommission.realtor}
+                    </span>
                   </td>
                 </tr>
                 <tr>
@@ -246,10 +319,19 @@ const WhithNF: React.FC = () => {
                   </td>
                   <td>
                     <Input
+                      name="porcentComission"
+                      type="text"
+                      className="input-background-dark"
+                      defaultValue={comissionBrute.coordinator}
+                      onChange={e => calcBruteValue(e, 'coordinator')}
+                    />
+                  </td>
+                  <td>
+                    <Input
                       name="impostCoordinator"
                       type="text"
                       className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      defaultValue={comissionBrute.coordinator}
                     />
                   </td>
                   <td>
@@ -265,18 +347,15 @@ const WhithNF: React.FC = () => {
                       name="impostCoordinator"
                       type="text"
                       className="input-background-dark"
-                      defaultValue={porcentImpost}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      className="input-background-dark"
+                      defaultValue={impostValue.coordinator}
                     />
                   </td>
                   <td className="comission">
-                    <span>R$ 1000,00</span>
+                    <span>
+                      {netCommission.coordinator === ''
+                        ? 'R$ 0,00'
+                        : netCommission.coordinator}
+                    </span>
                   </td>
                 </tr>
                 <tr>
@@ -289,13 +368,20 @@ const WhithNF: React.FC = () => {
                       name="impostCoordinator"
                       type="text"
                       className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      onChange={e => calcBruteValue(e, 'director')}
                     />
                   </td>
                   <td>
                     <Input
                       name="impostCoordinator"
                       type="text"
+                      defaultValue={comissionBrute.director}
+                    />
+                  </td>
+                  <td>
+                    <Input
+                      name="impostDirector"
+                      type="text"
                       className="input-background-dark"
                       defaultValue={porcentImpost}
                     />
@@ -305,18 +391,15 @@ const WhithNF: React.FC = () => {
                       name="impostDirector"
                       type="text"
                       className="input-background-dark"
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostDirector"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      defaultValue={impostValue.director}
                     />
                   </td>
                   <td className="comission">
-                    <span>R$ 1000,00</span>
+                    <span>
+                      {netCommission.director === ''
+                        ? 'R$ 0,00'
+                        : netCommission.director}
+                    </span>
                   </td>
                 </tr>
                 <tr>
@@ -329,13 +412,20 @@ const WhithNF: React.FC = () => {
                       name="impostCoordinator"
                       type="text"
                       className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      onChange={e => calcBruteValue(e, 'director')}
                     />
                   </td>
                   <td>
                     <Input
                       name="impostCoordinator"
                       type="text"
+                      defaultValue={comissionBrute.director}
+                    />
+                  </td>
+                  <td>
+                    <Input
+                      name="impostDirector"
+                      type="text"
                       className="input-background-dark"
                       defaultValue={porcentImpost}
                     />
@@ -345,18 +435,15 @@ const WhithNF: React.FC = () => {
                       name="impostDirector"
                       type="text"
                       className="input-background-dark"
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostDirector"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      defaultValue={impostValue.director}
                     />
                   </td>
                   <td className="comission">
-                    <span>R$ 1000,00</span>
+                    <span>
+                      {netCommission.director === ''
+                        ? 'R$ 0,00'
+                        : netCommission.director}
+                    </span>
                   </td>
                 </tr>
                 <tr>
@@ -369,7 +456,7 @@ const WhithNF: React.FC = () => {
                       name="impostCoordinator"
                       type="text"
                       className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      onChange={e => calcBruteValue(e, 'subsiadiary')}
                     />
                   </td>
                   <td>
@@ -377,7 +464,7 @@ const WhithNF: React.FC = () => {
                       name="impostDirector"
                       type="text"
                       className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      defaultValue={comissionBrute.subsidiary}
                     />
                   </td>
                   <td>
@@ -385,6 +472,7 @@ const WhithNF: React.FC = () => {
                       name="impostSubsidary"
                       type="text"
                       className="input-background-dark"
+                      defaultValue={porcentImpost}
                     />
                   </td>
                   <td>
@@ -392,11 +480,15 @@ const WhithNF: React.FC = () => {
                       name="impostCoordinator"
                       type="text"
                       className="input-background-dark"
-                      defaultValue={porcentImpost}
+                      defaultValue={impostValue.subsidiary}
                     />
                   </td>
                   <td className="comission">
-                    <span>R$ 1000,00</span>
+                    <span>
+                      {netCommission.subsidiary === ''
+                        ? 'R$ 0,00'
+                        : netCommission.subsidiary}
+                    </span>
                   </td>
                 </tr>
               </tbody>
@@ -405,58 +497,55 @@ const WhithNF: React.FC = () => {
         </Main>
       </Container>
       <Footer>
-        <Table cols={7}>
+        <div className="edit">
+          <Button onClick={toogleEditDivisionModal}>
+            <MdEdit />
+            editar divisão
+          </Button>
+        </div>
+        <Table cols={divisionData.length + 1}>
           <thead>
             <tr>
-              <th>PL</th>
-              <th>Lucro</th>
-              <th>Imposto</th>
-              <th>Construção</th>
-              <th>Salário</th>
-              <th>Dev Danielle</th>
-              <th>Saldo</th>
+              {divisionData.map(division => (
+                <th>{division.name}</th>
+              ))}
+              <th>SALDO</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>
-                <input type="text" className="porcent" />
-                <input type="text" defaultValue="R$" />
-              </td>
-              <td>
-                <input type="text" className="porcent" />
-                <input type="text" defaultValue="R$" />
-              </td>
-              <td>
-                <input type="text" className="porcent" />
-                <input type="text" defaultValue="R$" />
-              </td>
-              <td>
-                <input type="text" className="porcent" />
-                <input type="text" defaultValue="R$" />
-              </td>
-              <td>
-                <input type="text" className="porcent" />
-                <input type="text" defaultValue="R$" />
-              </td>
-              <td>
-                <input type="text" className="porcent" />
-                <input type="text" defaultValue="R$" />
-              </td>
+              {divisionData.map(division => (
+                <td>
+                  <input
+                    type="text"
+                    className="porcent"
+                    defaultValue={division.porcent}
+                  />
+                  <input
+                    type="text"
+                    placeholder="R$"
+                    defaultValue={division.total}
+                  />
+                </td>
+              ))}
               <td>
                 <input type="text" className="porcent disabled" />
-                <input type="text" defaultValue="R$" />
+                <input type="text" placeholder="R$" defaultValue={sald} />
               </td>
             </tr>
           </tbody>
         </Table>
-        <div>
+        <div className="save">
           <Button type="button">
             <RiSave3Fill />
             Salvar cálculo!
           </Button>
         </div>
       </Footer>
+      <EditComissionDivision
+        isOpen={editDivisionModal}
+        setIsOpen={toogleEditDivisionModal}
+      />
     </Wrapper>
   );
 };

@@ -85,7 +85,6 @@ export const Table = styled.table<TableProps>`
   }
   > thead {
     text-align: left;
-    margin-bottom: 2rem;
     > tr {
       display: grid;
       grid-template-columns: repeat(${props => props.cols}, 125px);
@@ -136,7 +135,7 @@ export const Table = styled.table<TableProps>`
           color: ${({ theme }) => theme.colors.primary};
         }
         > input {
-          width: 70px;
+          width: 113px;
           height: 40px;
           background: rgba(196, 196, 196, 0.3);
           border-radius: 4px;
@@ -202,6 +201,24 @@ export const Footer = styled.section`
   margin-top: 2rem;
   padding: 0 8rem;
 
+  .edit {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    > button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 100px;
+      height: 30px;
+      font-size: 12px;
+
+      > svg {
+        margin-right: 5px;
+      }
+    }
+  }
   > table {
     width: 80%;
 
@@ -231,7 +248,7 @@ export const Footer = styled.section`
     }
   }
 
-  > div {
+  > .save {
     flex: 1;
     display: flex;
     align-items: center;
