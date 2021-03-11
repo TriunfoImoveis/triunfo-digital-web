@@ -28,3 +28,4 @@ export { ReactComponent as FinancesIcons } from './finances.svg';
 export { ReactComponent as Arrow } from './arrow-down.svg';
 export { ReactComponent as BradescoIcon } from './banco-bradesco.svg';
 export { ReactComponent as CalculatorIcon } from './calculator.svg';
+export { ReactComponent as AddEntry } from './add-entry.svg';

@@ -1,17 +1,11 @@
-import React, {
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-  ChangeEvent,
-} from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { FormHandles, SubmitHandler } from '@unform/core';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
 
 import { BiEditAlt } from 'react-icons/bi';
 import { VscEdit } from 'react-icons/vsc';
-import { FaCheck, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaCheck } from 'react-icons/fa';
 import { BsCheckBox } from 'react-icons/bs';
 
 import { toast } from 'react-toastify';
@@ -26,11 +20,11 @@ import { money } from '../../../utils/masked';
 import getValidationErros from '../../../utils/getValidationErros';
 import { Sync, Garb } from '../../../assets/images';
 
+import EditInstallmentModal from '../../ReactModal/EditInstallments';
+
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../Select';
-import TextArea from '../../TextArea';
-import Modal from '../../Modal';
 
 import {
   SaleData,
@@ -40,10 +34,9 @@ import {
   Plot,
   AddButton,
   PaymentInstallments,
-  ModalFooter,
   ButtonGroup,
-  ContentFallForm,
 } from '../styles';
+import FallSale from '../../ReactModal/FallSale';
 import { valiateDate } from '../../../utils/validateDate';
 
 interface IFinancesProps {
@@ -63,10 +56,6 @@ interface FormData {
   pay_date_signal: string;
 }
 
-interface IMotives {
-  id: string;
-  description: string;
-}
 const Finances: React.FC<IFinancesProps> = ({
   status,
   sale,
@@ -74,22 +63,15 @@ const Finances: React.FC<IFinancesProps> = ({
   installmentPay,
   paymentType,
 }) => {
+  const formRef = useRef<FormHandles>(null);
+
   const [edit, setEdit] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [motivies, setMotivies] = useState<IMotives[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModalVisibleFall, setIsVisibleModalFall] = useState(false);
   const [comissionValue, setcomissionValue] = useState(sale.commission);
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
-  const [newInstallements, setNewInstallments] = useState<IInstallments[]>([]);
-  const [isOtherMotive, setIsOtherMotive] = useState(false);
-
-  const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
-  const formRef = useRef<FormHandles>(null);
-  const formModalRef = useRef<FormHandles>(null);
-  const formModalFallRef = useRef<FormHandles>(null);
+  const [editInstallments, setEditInstallments] = useState(false);
+  const [modalFallSale, setModalFallSale] = useState(false);
   const history = useHistory();
-
   const { userAuth } = useAuth();
 
   const installmentsUnsuccessful = installments.filter(
@@ -103,20 +85,8 @@ const Finances: React.FC<IFinancesProps> = ({
       );
       setPaymentTypes(response.data);
     };
-    const loadMotivies = async () => {
-      try {
-        const response = await api.get('/motive');
-        setMotivies(response.data);
-      } catch (error) {
-        toast.error('Falha na conexão com o servidor contate o suporte');
-      }
-    };
-    const newInstallments = () => {
-      setNewInstallments(installments);
-    };
-    loadMotivies();
+
     loadPaymentType();
-    newInstallments();
   }, [sale.sale_type, installments]);
 
   const calcComission = useCallback(() => {
@@ -126,20 +96,12 @@ const Finances: React.FC<IFinancesProps> = ({
     setcomissionValue(money(comission));
   }, []);
 
-  const showModal = () => {
-    setIsModalVisible(!isModalVisible);
-  };
-
-  const showModalFall = () => {
-    setIsVisibleModalFall(!isModalVisibleFall);
-  };
-
-  const onClose = () => {
-    setIsModalVisible(false);
-  };
-  const onCloseFall = () => {
-    setIsVisibleModalFall(false);
-  };
+  const toogleEditInstallments = useCallback(() => {
+    setEditInstallments(!editInstallments);
+  }, [editInstallments]);
+  const toogleModalFallSale = useCallback(() => {
+    setModalFallSale(!modalFallSale);
+  }, [modalFallSale]);
 
   const unMaskedValue = useCallback((data: FormData) => {
     const vgv = formRef.current?.getFieldValue('realty_ammount');
@@ -158,94 +120,53 @@ const Finances: React.FC<IFinancesProps> = ({
     return formData;
   }, []);
 
-  const handlePaySignal = useCallback(
-    async idSale => {
-      if (!idSale) {
-        toast.error('Nao foi possivel validar a parcela');
-        return;
+  const handlePaySignal = useCallback(async idSale => {
+    if (!idSale) {
+      toast.error('Nao foi possivel validar a parcela');
+      return;
+    }
+    try {
+      await api.patch(`/sale/valid-signal/${idSale}`);
+      toast.success('status do pagamento atualizado');
+      window.location.reload();
+    } catch (error) {
+      if (error.response) {
+        toast.error(`ERROR! ${error.response.message}`);
+      } else if (error.response) {
+        toast.error(`Erro interno do servidor contate o suporte`);
+      } else {
+        toast.error('Não foi possível confirmar o pagamento');
       }
-      try {
-        await api.patch(`/sale/valid-signal/${idSale}`, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        });
-        toast.success('status do pagamento atualizado');
-        window.location.reload();
-      } catch (error) {
-        if (error.response) {
-          toast.error(`ERROR! ${error.response.message}`);
-        } else if (error.response) {
-          toast.error(`Erro interno do servidor contate o suporte`);
-        } else {
-          toast.error('Não foi possível confirmar o pagamento');
-        }
-      }
-    },
-    [token],
-  );
+    }
+  }, []);
 
-  const handlePayPlot = useCallback(
-    async idPlot => {
-      if (!idPlot) {
-        toast.error('Nao foi possivel validar a parcela');
-        return;
+  const handlePayPlot = useCallback(async idPlot => {
+    if (!idPlot) {
+      toast.error('Nao foi possivel validar a parcela');
+      return;
+    }
+    try {
+      await api.patch(`/installment/paid/${idPlot}`);
+      toast.success('status do pagamento atualizado');
+      window.location.reload();
+    } catch (error) {
+      if (error.response) {
+        toast.error(`ERROR! ${error.response.message}`);
+      } else if (error.response) {
+        toast.error(`Erro interno do servidor contate o suporte`);
+      } else {
+        toast.error('Não foi possível confirmar o pagamento');
       }
-      try {
-        await api.patch(`/installment/paid/${idPlot}`, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        });
-        toast.success('status do pagamento atualizado');
-        window.location.reload();
-      } catch (error) {
-        if (error.response) {
-          toast.error(`ERROR! ${error.response.message}`);
-        } else if (error.response) {
-          toast.error(`Erro interno do servidor contate o suporte`);
-        } else {
-          toast.error('Não foi possível confirmar o pagamento');
-        }
-      }
-    },
-    [token],
-  );
+    }
+  }, []);
 
   const optionsPaymentType = paymentTypes.map(payment => ({
     label: payment.name,
     value: payment.id,
   }));
 
-  const optionsMotive = motivies.map(motive => ({
-    label: motive.description,
-    value: motive.id,
-  }));
-
-  const addPlots = useCallback(() => {
-    const listPlots = newInstallements.slice();
-    const numberPlot = Number(
-      formRef.current?.getFieldValue(
-        `installments[${newInstallements.length - 1}].installment_number`,
-      ),
-    );
-
-    listPlots.push({
-      installment_number: numberPlot + 1,
-      due_date: '',
-      value: '',
-    });
-    setNewInstallments(listPlots);
-  }, [newInstallements]);
-  const removePlots = useCallback(() => {
-    const listPlots = newInstallements.slice();
-    listPlots.pop();
-
-    setNewInstallments(listPlots);
-  }, [newInstallements]);
-
   const handleSubmit: SubmitHandler<FormData> = async data => {
-    formModalRef.current?.setErrors({});
+    formRef.current?.setErrors({});
     try {
       setLoading(true);
       const schema = Yup.object().shape({
@@ -288,13 +209,7 @@ const Finances: React.FC<IFinancesProps> = ({
       delete formData[7];
       delete formData[8];
       delete formData[9];
-      await api.put(`/sale/${sale.id}`, formData, {
-        headers: {
-          authorization: `Bearer ${localStorage.getItem(
-            '@TriunfoDigital:token',
-          )}`,
-        },
-      });
+      await api.put(`/sale/${sale.id}`, formData);
       toast.success('Dados da Venda atualizadas!');
       history.push('/adm/lista-vendas');
     } catch (err) {
@@ -310,50 +225,23 @@ const Finances: React.FC<IFinancesProps> = ({
   };
 
   const handleModalSubmit = async (data: IInstallmentsData) => {
-    formModalRef.current?.setErrors({});
     try {
-      const schema = Yup.object({
-        installments: Yup.array().of(
-          Yup.object().shape({
-            value: Yup.string().required('Informe o valor da parcela'),
-            due_date: Yup.string().required('Informe a data de vencimento'),
-          }),
-        ),
-      });
-      await schema.validate(data, {
-        abortEarly: false,
-      });
-      const installments = data.installments.map(installment => ({
-        installment_number: installment.installment_number,
-        value: unMaked(installment.value),
-        due_date: DateYMD(installment.due_date),
-      }));
-      const newData = { installments };
-      await api.post(`installment/${sale.id}`, newData, {
-        headers: {
-          authorization: `Token ${token}`,
-        },
-      });
+      await api.post(`installment/${sale.id}`, data);
       toast.success('Parcelas adicionadas!');
-      onClose();
+      toogleEditInstallments();
       window.location.reload();
     } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const erros = getValidationErros(err);
-        formModalRef.current?.setErrors(erros);
+      if (err.response) {
+        toast.error(`${err.response.data.message}`);
+      } else {
+        toast.error('ERROR ao adicionar as parcela!');
       }
-
-      toast.error('ERROR ao adicionar as parcela!');
     }
   };
 
   const handleValidSale = useCallback(async () => {
     try {
-      await api.patch(`/sale/valid/${sale.id}`, {
-        headers: {
-          authorization: `Token ${token}`,
-        },
-      });
+      await api.patch(`/sale/valid/${sale.id}`);
       toast.success('Venda Validada com sucesso !');
       history.push('/ranking');
     } catch (error) {
@@ -367,47 +255,23 @@ const Finances: React.FC<IFinancesProps> = ({
         toast.error(' Erro desconhecido, contate o suporte');
       }
     }
-  }, [sale.id, token, history]);
+  }, [sale.id, history]);
 
   const handleFall = useCallback(
     async data => {
-      formModalFallRef.current?.setErrors({});
       try {
-        const schema = Yup.object({
-          motive: Yup.string().required('Selecione um Motivo'),
-        });
-        await schema.validate(data, { abortEarly: false });
         await api.patch(`/sale/not-valid/${sale.id}`, data);
         toast.success('Atualização Realizada');
         history.push('/adm/lista-vendas');
       } catch (err) {
-        if (err instanceof Yup.ValidationError) {
-          const erros = getValidationErros(err);
-          formModalRef.current?.setErrors(erros);
+        if (err.response.data) {
+          toast.error(`${err.response.data.message}`);
+        } else {
+          toast.error('Erro ao desativar a venda');
         }
-
-        toast.error('ERROR ao validar os motivos da queda!');
       }
     },
     [history, sale.id],
-  );
-
-  const handleSelectAnotherMotive = useCallback(
-    async (e: ChangeEvent<HTMLSelectElement>) => {
-      const { value } = e.target;
-      const response = await api.get('/motive');
-      const motives = response.data;
-      const outherMotive: IMotives[] = motives.filter(
-        motive => motive.description === 'Outro Motivo',
-      );
-      outherMotive.map(otherMotive =>
-        otherMotive.id === value
-          ? setIsOtherMotive(true)
-          : setIsOtherMotive(false),
-      );
-      return;
-    },
-    [],
   );
 
   return (
@@ -446,7 +310,7 @@ const Finances: React.FC<IFinancesProps> = ({
                     data={paymentType?.name}
                   />
                   <div className="button-modal">
-                    <ButtonModal type="button" onClick={showModal}>
+                    <ButtonModal type="button" onClick={toogleEditInstallments}>
                       <VscEdit size={20} color="#C32925" />
                       <span>
                         {installments
@@ -528,7 +392,7 @@ const Finances: React.FC<IFinancesProps> = ({
                   />
 
                   <div className="button-modal">
-                    <ButtonModal type="button" onClick={showModal}>
+                    <ButtonModal type="button" onClick={toogleEditInstallments}>
                       <VscEdit size={20} color="#C32925" />
                       <span>
                         {installments
@@ -680,7 +544,7 @@ const Finances: React.FC<IFinancesProps> = ({
               )}
 
               {userAuth.office.name !== 'Diretor' ? (
-                <button type="button" onClick={showModalFall}>
+                <button type="button" onClick={toogleModalFallSale}>
                   <Garb />
                   <span>Caiu</span>
                 </button>
@@ -699,96 +563,19 @@ const Finances: React.FC<IFinancesProps> = ({
           </fieldset>
         </SaleData>
       </Form>
-      {isModalVisible ? (
-        <Modal
-          title="Detalhes de Pagamento"
-          value={sale.commission}
-          onClose={onClose}
-        >
-          <Form
-            ref={formModalRef}
-            onSubmit={handleModalSubmit}
-            initialData={installments}
-          >
-            {newInstallements.length !== 0 ? (
-              <PaymentInstallments>
-                {newInstallements.map((installment, index) =>
-                  index === 0 ? (
-                    <Plot key={installment.installment_number}>
-                      <Input
-                        type="number"
-                        name={`installments[${index}].installment_number`}
-                        label="Parcela"
-                        min={1}
-                        readOnly
-                        defaultValue={installment.installment_number}
-                      />
-                      <Input
-                        mask="currency"
-                        name={`installments[${index}].value`}
-                        label="Valor da Parcela"
-                        placeholder="R$ 0,00"
-                        defaultValue={installment.value}
-                      />
-                      <Input
-                        mask="date"
-                        name={`installments[${index}].due_date`}
-                        label="Data de Vencimento"
-                        placeholder="07/01/2021"
-                        defaultValue={installment.due_date}
-                      />
-
-                      <AddButton type="button" onClick={addPlots}>
-                        <FaPlus size={20} color="#C32925" />
-                      </AddButton>
-                    </Plot>
-                  ) : (
-                    <Plot key={installment.installment_number}>
-                      <Input
-                        type="number"
-                        name={`installments[${index}].installment_number`}
-                        label="Parcela"
-                        min={1}
-                        readOnly
-                        defaultValue={index + 1}
-                      />
-                      <Input
-                        mask="currency"
-                        name={`installments[${index}].value`}
-                        label="Valor da Parcela"
-                        placeholder="R$ 0,00"
-                        defaultValue={installment.value}
-                      />
-                      <Input
-                        mask="date"
-                        name={`installments[${index}].due_date`}
-                        label="Data de Vencimento"
-                        placeholder="07/01/2021"
-                        defaultValue={installment.due_date}
-                      />
-
-                      <AddButton type="button" onClick={removePlots}>
-                        <FaMinus size={20} color="#C32925" />
-                      </AddButton>
-                    </Plot>
-                  ),
-                )}
-              </PaymentInstallments>
-            ) : null}
-
-            <ModalFooter>
-              <button
-                type="button"
-                onClick={() => formModalRef.current?.submitForm()}
-              >
-                <BsCheckBox size={25} />
-                Salvar
-              </button>
-            </ModalFooter>
-          </Form>
-        </Modal>
-      ) : null}
-      {isModalVisibleFall ? (
+      <EditInstallmentModal
+        isOpen={editInstallments}
+        setIsOpen={toogleEditInstallments}
+        valueComission={sale.commission}
+        handleEditInstallments={handleModalSubmit}
+        installments={installments}
+      />
+      <FallSale
+        isOpen={modalFallSale}
+        setIsOpen={toogleModalFallSale}
+        handleFallSale={handleFall}
+      />
+      {/* {isModalVisibleFall ? (
         <Modal title="Venda Caida" onClose={onCloseFall}>
           <ContentFallForm>
             <Form ref={formModalFallRef} onSubmit={handleFall}>
@@ -818,7 +605,7 @@ const Finances: React.FC<IFinancesProps> = ({
             </Form>
           </ContentFallForm>
         </Modal>
-      ) : null}
+      ) : null} */}
     </>
   );
 };

@@ -8,7 +8,7 @@ export const Container = styled.div`
   margin-top: 3rem;
   max-width: 1280px;
   width: 100%;
-  z-index: 100;
+  z-index: 10;
 `;
 export const Header = styled.div`
   width: 100%;
@@ -146,13 +146,10 @@ export const Filter = styled.div`
 `;
 
 export const BalanceContainer = styled.div`
-  width: 100%;
   padding: 2rem 4rem;
-  display: flex;
 
   .tab-container,
   .tab-content {
-    max-width: 435px;
     width: 100%;
   }
 
@@ -185,6 +182,19 @@ export const TitlePane = styled.div`
 
 export const Table = styled.table<TableProps>`
   width: 100%;
+  thead,
+  tbody {
+    display: block;
+  }
+
+  tbody {
+    overflow-y: auto;
+    height: 200px;
+    ::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
+  }
   > thead {
     text-align: center;
     > tr {
@@ -193,7 +203,10 @@ export const Table = styled.table<TableProps>`
       border: 1px solid #504c4c;
 
       > th {
-        font-size: 1.6rem;
+        display: block;
+        width: 140px;
+        font-size: 1.4rem;
+        font-weight: 500;
         color: #504c4c;
         & + th {
           border-left: 1px solid #504c4c;
@@ -203,9 +216,10 @@ export const Table = styled.table<TableProps>`
   }
   > tbody {
     text-align: center;
+
     > tr {
       display: grid;
-      grid-template-columns: repeat(${props => props.cols}, 140px);
+      grid-template-columns: repeat(${props => props.cols}, 1fr);
       border-left: 1px solid #504c4c;
       border-right: 1px solid #504c4c;
       border-bottom: 1px solid #504c4c;
@@ -251,7 +265,12 @@ export const ButtonGroup = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  > a {
+  > button {
+    background: transparent;
+    border: 0;
+  }
+  > a,
+  button {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -273,6 +292,9 @@ export const ButtonGroup = styled.div`
     & + a {
       margin-left: 6rem;
     }
+    & + button {
+      margin-left: 6rem;
+    }
     &:hover {
       > svg {
         > path {
@@ -283,6 +305,26 @@ export const ButtonGroup = styled.div`
       > span {
         color: ${({ theme }) => theme.colors.primaryAlpha};
       }
+    }
+  }
+`;
+
+export const BalanceAmount = styled.div`
+  width: 100%;
+
+  > p {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    > span {
+      font-size: 2.4rem;
+      margin-right: 1rem;
+    }
+
+    strong {
+      font-size: 3.2rem;
+      color: ${({ theme }) => theme.colors.primary};
     }
   }
 `;
