@@ -24,7 +24,7 @@ export interface IInstallments {
   id?: string;
   installment_number: number;
   value: string;
-  status?: 'PAGO' | 'PENDENTE';
+  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO';
   pay_date?: string;
 }
 
