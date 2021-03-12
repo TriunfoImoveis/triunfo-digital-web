@@ -38,7 +38,7 @@ interface Comission {
   director: string;
   subsidiary: string;
 }
-const WhithNF: React.FC = () => {
+const Bonus: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const formRealtors = useRef<FormHandles>(null);
   const [sale, setSale] = useState<Sale>({} as Sale);
@@ -83,33 +83,9 @@ const WhithNF: React.FC = () => {
     });
   }, []);
 
-  // const saleFormated = useMemo(() => {
-  //   return {
-  //     ...sale,
-  //     value: formatPrice(Number(sale.value)),
-  //   };
-  // }, [sale]);
-
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
-
-  const calTotalImpost = () => {
-    const porcentImpostTotal =
-      currency(formRef.current?.getFieldValue('porcentImpostTotal')) / 100;
-    const valuePlot = currency(formRef.current?.getFieldValue('valuePlot'));
-    const iss = currency(formRef.current?.getFieldValue('issValue'));
-    const total = formatPrice(valuePlot * porcentImpostTotal - iss);
-    formRef.current?.setFieldValue('sald', total);
-    setPorcentImpost(formRef.current?.getFieldValue('porcentImpostTotal'));
-  };
-
-  const calcIss = () => {
-    const valuePlot = currency(formRef.current?.getFieldValue('valuePlot'));
-    const porcentIss = formRef.current?.getFieldValue('porcentIss') / 100;
-    const iss = formatPrice(valuePlot * porcentIss);
-    formRef.current?.setFieldValue('issValue', iss);
-  };
 
   const calcBruteValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>, participant: string) => {
@@ -199,56 +175,17 @@ const WhithNF: React.FC = () => {
     <Wrapper>
       <Container>
         <Asaid>
-          <span>Imóveis com NF</span>
+          <span>Imóveis Usado</span>
 
           <Form ref={formRef} onSubmit={() => console.log('ok')}>
             <div>
-              <span>Construtora</span>
-              <Input name="builder" type="text" />
-            </div>
-            <div>
-              <span>N° NF</span>
-              <Input name="numberNF" type="text" />
-            </div>
-            <div>
-              <span>Valor total NF</span>
+              <span>Bônus</span>
               <Input
                 mask="currency"
                 name="valuePlot"
                 type="text"
                 defaultValue={sale.value}
               />
-            </div>
-            <div>
-              <span>Taxa de ISS imposto NF</span>
-              <Input
-                name="porcentIss"
-                type="text"
-                placeholder="%"
-                onChange={calcIss}
-              />
-            </div>
-            <div>
-              <span>Debito ISS</span>
-              <Input
-                mask="currency"
-                name="issValue"
-                type="text"
-                defaultValue="R$ 0,00"
-              />
-            </div>
-            <div>
-              <span>Taxa total do Imposto NF</span>
-              <Input
-                name="porcentImpostTotal"
-                type="text"
-                placeholder="%"
-                onChange={calTotalImpost}
-              />
-            </div>
-            <div>
-              <span>Recolhimento de Imposto</span>
-              <Input name="sald" type="text" defaultValue="R$ 0,00" />
             </div>
           </Form>
         </Asaid>
@@ -551,4 +488,4 @@ const WhithNF: React.FC = () => {
   );
 };
 
-export default WhithNF;
+export default Bonus;

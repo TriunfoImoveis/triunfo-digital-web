@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
+import Bonus from '../../../components/Calculators/Bonus';
+import Used from '../../../components/Calculators/Used';
 import WhithNF from '../../../components/Calculators/WhithNF';
 import AdmLayout from '../../Layouts/Adm';
 
@@ -33,7 +35,9 @@ const Calculator: React.FC = () => {
                   </select>
                 </div>
               </HeaderCalc>
-              <WhithNF />
+              {/* <WhithNF /> */}
+              {/* <Used /> */}
+              <Bonus />
             </TabBootstrap>
             <TabBootstrap eventKey="calc-ftlz" title="Fortaleza">
               <HeaderCalc>

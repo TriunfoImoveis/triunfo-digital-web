@@ -56,6 +56,7 @@ const EditComissionDivision: React.FC<IModalProps> = ({
 
   const handleSubmit = useCallback(
     async (data: FormData) => {
+      console.log(data.division);
       handleSetDivision(data.division);
       setIsOpen();
     },
