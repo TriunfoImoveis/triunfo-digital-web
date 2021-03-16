@@ -179,8 +179,14 @@ const DetailsSale: React.FC = () => {
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = formatPrice(sale.commission);
         const saleDate = DateBRL(sale.sale_date);
-        const valueSignal = formatPrice(sale.value_signal);
-        const PayDateSignal = DateBRL(sale.pay_date_signal);
+        const valueSignal =
+          sale.value_signal === null
+            ? 'R$ 0,00'
+            : formatPrice(sale.value_signal);
+        const PayDateSignal =
+          sale.pay_date_signal === null
+            ? '00/00/00'
+            : DateBRL(sale.pay_date_signal);
         const installmentData = sale.installments;
         const newInstallments = installmentData.map(i => ({
           ...i,

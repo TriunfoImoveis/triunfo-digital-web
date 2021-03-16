@@ -17,6 +17,8 @@ export const opionsBanks = banks.map(bank => ({
 //   }, 1000);
 // };
 
+export const months = ['Janeiro'];
+
 // TIPO DE CONTA DE BANCO
 export const OptionsTypeAccount = [
   { label: 'POUPANÇA', value: 'POUPANÇA' },

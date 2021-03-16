@@ -1,26 +1,18 @@
 import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-import { IoIosLogOut } from 'react-icons/io';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
-
 import { toast } from 'react-toastify';
+
+import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { LogoHeader } from '../../assets/images';
-import {
-  Container,
-  Header,
-  NavBarContainer,
-  NavItemContent,
-  Content,
-  TabWrapper,
-} from './styles';
+import { DateBRL, formatPrice } from '../../utils/format';
+
+import Header from '../../components/Header/SimpleHeader';
 import UserProfile from '../../components/Profile/UserProfile';
 import UserUpdate from '../../components/Profile/UserUpdate';
 import UserFinances from '../../components/Profile/UserFinances';
 import UserListSales from '../../components/Profile/UserListSales';
-import api from '../../services/api';
-import { DateBRL, formatPrice } from '../../utils/format';
+
+import { Container, Content, TabWrapper } from './styles';
 
 interface IUserSales {
   id: string;
@@ -37,7 +29,7 @@ const Perfil: React.FC = () => {
   >([]);
   const [token] = useState(() => localStorage.getItem('@TriunfoDigital:token'));
 
-  const { signOut, userAuth } = useAuth();
+  const { userAuth } = useAuth();
 
   useEffect(() => {
     const loadUserSales = async () => {
@@ -85,19 +77,7 @@ const Perfil: React.FC = () => {
 
   return (
     <Container>
-      <Header>
-        <Link to="/menu">
-          <LogoHeader />
-        </Link>
-        <NavBarContainer>
-          <NavItemContent>
-            <button type="button" onClick={signOut}>
-              <IoIosLogOut size={30} color="#C32925" />
-              <span>Sair</span>
-            </button>
-          </NavItemContent>
-        </NavBarContainer>
-      </Header>
+      <Header />
 
       <Content>
         <h1>Perfil do Usuário</h1>

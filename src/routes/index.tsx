@@ -23,6 +23,7 @@ import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
 import Balance from '../pages/Finances/Banlance';
 import Accounts from '../pages/Finances/Accounts';
+import Calculator from '../pages/Finances/Calculator';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -57,6 +58,7 @@ const Routes: React.FC = () => (
 
     <Route path="/financeiro/caixa" component={Balance} isPrivate />
     <Route path="/financeiro/contas" component={Accounts} isPrivate />
+    <Route path="/financeiro/calculadora" component={Calculator} isPrivate />
   </Switch>
 );
 

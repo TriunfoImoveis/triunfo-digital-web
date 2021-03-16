@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
@@ -18,13 +18,19 @@ import {
 import MenuResponsive from '../MenuResponsive';
 
 import { Container, NavBarContainer, NavItemContent } from './styles';
+import LogoutModal from '../ReactModal/LogoutModal';
 
 interface IHeaderProps {
   type?: string;
 }
 
 const Header: React.FC<IHeaderProps> = ({ type }) => {
-  const { signOut, userAuth } = useAuth();
+  const [logoutModal, setLogoutModal] = useState(false);
+  const { userAuth } = useAuth();
+
+  const toggleLogoutModal = useCallback(() => {
+    setLogoutModal(!logoutModal);
+  }, [logoutModal]);
   return (
     <Container>
       <Link to="/menu">
@@ -44,7 +50,7 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
               </NavItemContent>
               <NavItemContent>
                 <IoIosLogOut size={30} color="#fff" />
-                <button type="button" onClick={signOut}>
+                <button type="button" onClick={toggleLogoutModal}>
                   Sair
                 </button>
               </NavItemContent>
@@ -67,7 +73,7 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
                   </NavItemContent>
                   <NavItemContent>
                     <IoIosLogOut size={30} color="#fff" />
-                    <button type="button" onClick={signOut}>
+                    <button type="button" onClick={toggleLogoutModal}>
                       Sair
                     </button>
                   </NavItemContent>
@@ -92,7 +98,7 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
                   </NavItemContent>
                   <NavItemContent>
                     <IoIosLogOut size={30} color="#fff" />
-                    <button type="button" onClick={signOut}>
+                    <button type="button" onClick={toggleLogoutModal}>
                       Sair
                     </button>
                   </NavItemContent>
@@ -124,13 +130,14 @@ const Header: React.FC<IHeaderProps> = ({ type }) => {
           </NavItemContent>
           <NavItemContent>
             <IoIosLogOut size={40} color="#fff" />
-            <button type="button" onClick={signOut}>
+            <button type="button" onClick={toggleLogoutModal}>
               Sair
             </button>
           </NavItemContent>
         </NavBarContainer>
       )}
       <MenuResponsive />
+      <LogoutModal isOpen={logoutModal} setIsOpen={toggleLogoutModal} />
     </Container>
   );
 };
