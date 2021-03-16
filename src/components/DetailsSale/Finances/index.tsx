@@ -42,7 +42,7 @@ import { valiateDate } from '../../../utils/validateDate';
 interface IFinancesProps {
   status: string;
   sale: ISaleData;
-  installments: IInstallments[];
+  installments: Array<IInstallments>;
   installmentPay: Array<IInstallments>;
   paymentType: IPaymentType;
 }
@@ -575,37 +575,6 @@ const Finances: React.FC<IFinancesProps> = ({
         setIsOpen={toogleModalFallSale}
         handleFallSale={handleFall}
       />
-      {/* {isModalVisibleFall ? (
-        <Modal title="Venda Caida" onClose={onCloseFall}>
-          <ContentFallForm>
-            <Form ref={formModalFallRef} onSubmit={handleFall}>
-              <Select
-                nameLabel="Motivo da perda"
-                name="motive"
-                options={optionsMotive}
-                onChange={handleSelectAnotherMotive}
-              />
-              {isOtherMotive ? (
-                <TextArea
-                  name="another_motive"
-                  label="Outro motivo"
-                  placeholder="Adicone outro motivo"
-                />
-              ) : null}
-
-              <ModalFooter>
-                <button
-                  type="button"
-                  onClick={() => formModalFallRef.current?.submitForm()}
-                >
-                  <BsCheckBox size={25} />
-                  Confirmar
-                </button>
-              </ModalFooter>
-            </Form>
-          </ContentFallForm>
-        </Modal>
-      ) : null} */}
     </>
   );
 };
