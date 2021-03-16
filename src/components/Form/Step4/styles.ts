@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import Input from '../../Input';
-import InputMask from '../../Input/InputMask';
 
 export const Container = styled.div`
   padding-bottom: 1.6rem;
@@ -9,10 +8,6 @@ export const Container = styled.div`
   }
 `;
 export const InputForm = styled(Input)`
-  padding: 0 0.8rem;
-`;
-
-export const InputFormMask = styled(InputMask)`
   padding: 0 0.8rem;
 `;
 

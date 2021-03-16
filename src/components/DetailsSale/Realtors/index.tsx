@@ -24,11 +24,11 @@ interface IRealtorsProps {
     id: string;
     name: string;
   }[];
-  captvators: {
+  captvators?: {
     id: string;
     name: string;
   }[];
-  coordinator: {
+  coordinator?: {
     id: string;
     name: string;
   };
@@ -286,11 +286,11 @@ const Realtors: React.FC<IRealtorsProps> = ({
               />
             )}
             {edit ? (
-              captvators.map((captvator, index) => (
+              captvators?.map((captvator, index) => (
                 <InputDisable
                   key={captvator.name}
                   label={
-                    captvators.length === 1
+                    captvators?.length === 1
                       ? 'Corretor Captador'
                       : `Vendedor ${index + 1}`
                   }
