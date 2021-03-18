@@ -15,6 +15,7 @@ import ClientSeller from './ClientSeller';
 import Builder from './Builder';
 import Realtors from './Realtors';
 import Finances from './Finances';
+import StatusSale from './StatusSale';
 
 interface IParamsData {
   id: string;
@@ -280,6 +281,9 @@ const DetailsSale: React.FC = () => {
                   paymentType={sale.payment_type}
                 />
               </TabBootstrap>
+              <TabBootstrap eventKey="staus" title="Status">
+                <StatusSale statusSale={sale.status} />
+              </TabBootstrap>
             </Tabs>
           )}
           {sale.sale_type === 'USADO' && (
@@ -323,6 +327,9 @@ const DetailsSale: React.FC = () => {
                   installmentPay={instalmentsPay}
                   paymentType={sale.payment_type}
                 />
+              </TabBootstrap>
+              <TabBootstrap eventKey="staus" title="Status">
+                <StatusSale statusSale={sale.status} />
               </TabBootstrap>
             </Tabs>
           )}
