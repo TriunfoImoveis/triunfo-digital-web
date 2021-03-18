@@ -6,9 +6,9 @@ export const Export = styled.div`
   display: flex;
   justify-content: flex-end;
 
-  > button {
+  > a {
     position: relative;
-    width: 17.1rem;
+    width: 19.1rem;
     height: 4.8rem;
 
     margin: 0.8rem;
@@ -21,6 +21,10 @@ export const Export = styled.div`
     line-height: 1.9rem;
     color: #fff;
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
 
     &:hover {
       background-color: ${({ theme }) => theme.colors.buttonAddColorAlpha};
