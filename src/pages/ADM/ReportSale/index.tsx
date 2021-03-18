@@ -116,6 +116,7 @@ interface ISaleData {
 
 const ReportSale: React.FC = () => {
   const [reports, setReports] = useState<IReport[]>([]);
+  const [linkDownloadReport, setLinkDownloadReport] = useState();
   const location = useLocation();
   const queries = useCallback(() => {
     const query = new URLSearchParams(location.search);
@@ -173,12 +174,26 @@ const ReportSale: React.FC = () => {
     loadSale();
   }, [queries]);
 
+  useEffect(() => {
+    const report = async () => {
+      try {
+        const response = await api.get('/sale/export/excel');
+        setLinkDownloadReport(response.data.link_url);
+      } catch (error) {
+        if (error.response) {
+          toast.error('error na conexão! contate o suporte');
+        }
+      }
+    };
+
+    report();
+  }, []);
   return (
     <AdmLayout>
       <Export>
-        <button type="button" onClick={() => window.print()}>
-          Exportar para PDF
-        </button>
+        <a href={linkDownloadReport} target="_blank" rel="noopener noreferrer">
+          Baixar relatório completo em Excel
+        </a>
       </Export>
       <TableSaleWrapper>
         <Table>
