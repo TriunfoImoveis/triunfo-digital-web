@@ -281,9 +281,11 @@ const DetailsSale: React.FC = () => {
                   paymentType={sale.payment_type}
                 />
               </TabBootstrap>
-              <TabBootstrap eventKey="staus" title="Status">
-                <StatusSale statusSale={sale.status} />
-              </TabBootstrap>
+              {sale.status === 'PENDENTE' || sale.status === 'PAGO_TOTAL' ? (
+                <TabBootstrap eventKey="staus" title="Status">
+                  <StatusSale statusSale={sale.status} />
+                </TabBootstrap>
+              ) : null}
             </Tabs>
           )}
           {sale.sale_type === 'USADO' && (
@@ -328,9 +330,11 @@ const DetailsSale: React.FC = () => {
                   paymentType={sale.payment_type}
                 />
               </TabBootstrap>
-              <TabBootstrap eventKey="staus" title="Status">
-                <StatusSale statusSale={sale.status} />
-              </TabBootstrap>
+              {sale.status === 'PENDENTE' || sale.status === 'PAGO_TOTAL' ? (
+                <TabBootstrap eventKey="staus" title="Status">
+                  <StatusSale statusSale={sale.status} />
+                </TabBootstrap>
+              ) : null}
             </Tabs>
           )}
         </Content>
