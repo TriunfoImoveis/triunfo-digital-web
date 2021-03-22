@@ -38,6 +38,8 @@ import {
 } from '../styles';
 import FallSale from '../../ReactModal/FallSale';
 import { valiateDate } from '../../../utils/validateDate';
+import ValidAct from '../../ReactModal/ValidAct';
+import ValidInstallment from '../../ReactModal/ValidInstallment';
 
 interface IFinancesProps {
   status: string;
@@ -71,6 +73,9 @@ const Finances: React.FC<IFinancesProps> = ({
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
   const [editInstallments, setEditInstallments] = useState(false);
   const [modalFallSale, setModalFallSale] = useState(false);
+  const [modalValidAct, setModalValidAct] = useState(true);
+  const [modalValidInstallments, setModalValidInstallments] = useState(true);
+  const [selectedInstallment, setSelectedInstalment] = useState('');
   const history = useHistory();
   const { userAuth } = useAuth();
 
@@ -102,6 +107,16 @@ const Finances: React.FC<IFinancesProps> = ({
   const toogleModalFallSale = useCallback(() => {
     setModalFallSale(!modalFallSale);
   }, [modalFallSale]);
+  const toogleModalValidAct = useCallback(() => {
+    setModalValidAct(!modalValidAct);
+  }, [modalValidAct]);
+  const toogleModalValidInstallments = useCallback(
+    (idInstallments: string) => {
+      setModalValidInstallments(!modalValidInstallments);
+      setSelectedInstalment(idInstallments);
+    },
+    [modalValidInstallments],
+  );
 
   const unMaskedValue = useCallback((data: FormData) => {
     const vgv = formRef.current?.getFieldValue('realty_ammount');
@@ -118,26 +133,6 @@ const Finances: React.FC<IFinancesProps> = ({
       (data.commission = unMaked(comission)),
     );
     return formData;
-  }, []);
-
-  const handlePaySignal = useCallback(async idSale => {
-    if (!idSale) {
-      toast.error('Nao foi possivel validar a parcela');
-      return;
-    }
-    try {
-      await api.patch(`/sale/valid-signal/${idSale}`);
-      toast.success('status do pagamento atualizado');
-      window.location.reload();
-    } catch (error) {
-      if (error.response) {
-        toast.error(`ERROR! ${error.response.message}`);
-      } else if (error.response) {
-        toast.error(`Erro interno do servidor contate o suporte`);
-      } else {
-        toast.error('Não foi possível confirmar o pagamento');
-      }
-    }
   }, []);
 
   const handlePayPlot = useCallback(async idPlot => {
@@ -340,7 +335,7 @@ const Finances: React.FC<IFinancesProps> = ({
                     <AddButton
                       type="button"
                       className="valid"
-                      onClick={() => handlePaySignal(sale.id)}
+                      onClick={toogleModalValidAct}
                     >
                       <FaCheck size={20} color="#FCF9F9" />
                     </AddButton>
@@ -569,6 +564,16 @@ const Finances: React.FC<IFinancesProps> = ({
         valueComission={sale.commission}
         handleEditInstallments={handleModalSubmit}
         installments={installments}
+      />
+      <ValidAct
+        isOpen={modalValidAct}
+        setIsOpen={toogleModalValidAct}
+        idSale={sale.id}
+      />
+      <ValidInstallment
+        isOpen={modalValidInstallments}
+        setIsOpen={toogleModalValidInstallments}
+        idPlot={selectedInstallment}
       />
       <FallSale
         isOpen={modalFallSale}
