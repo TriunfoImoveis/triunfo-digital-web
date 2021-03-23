@@ -73,8 +73,8 @@ const Finances: React.FC<IFinancesProps> = ({
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
   const [editInstallments, setEditInstallments] = useState(false);
   const [modalFallSale, setModalFallSale] = useState(false);
-  const [modalValidAct, setModalValidAct] = useState(true);
-  const [modalValidInstallments, setModalValidInstallments] = useState(true);
+  const [modalValidAct, setModalValidAct] = useState(false);
+  const [modalValidInstallments, setModalValidInstallments] = useState(false);
   const [selectedInstallment, setSelectedInstalment] = useState('');
   const history = useHistory();
   const { userAuth } = useAuth();
@@ -110,13 +110,9 @@ const Finances: React.FC<IFinancesProps> = ({
   const toogleModalValidAct = useCallback(() => {
     setModalValidAct(!modalValidAct);
   }, [modalValidAct]);
-  const toogleModalValidInstallments = useCallback(
-    (idInstallments: string) => {
-      setModalValidInstallments(!modalValidInstallments);
-      setSelectedInstalment(idInstallments);
-    },
-    [modalValidInstallments],
-  );
+  const toogleModalValidInstallments = useCallback(() => {
+    setModalValidInstallments(!modalValidInstallments);
+  }, [modalValidInstallments]);
 
   const unMaskedValue = useCallback((data: FormData) => {
     const vgv = formRef.current?.getFieldValue('realty_ammount');
@@ -135,30 +131,18 @@ const Finances: React.FC<IFinancesProps> = ({
     return formData;
   }, []);
 
-  const handlePayPlot = useCallback(async idPlot => {
-    if (!idPlot) {
-      toast.error('Nao foi possivel validar a parcela');
-      return;
-    }
-    try {
-      await api.patch(`/installment/paid/${idPlot}`);
-      toast.success('status do pagamento atualizado');
-      window.location.reload();
-    } catch (error) {
-      if (error.response) {
-        toast.error(`ERROR! ${error.response.message}`);
-      } else if (error.response) {
-        toast.error(`Erro interno do servidor contate o suporte`);
-      } else {
-        toast.error('Não foi possível confirmar o pagamento');
-      }
-    }
-  }, []);
-
   const optionsPaymentType = paymentTypes.map(payment => ({
     label: payment.name,
     value: payment.id,
   }));
+
+  const handleSetDataMadalValidInstallmet = (id: string | undefined) => {
+    if (!id) {
+      return;
+    }
+    toogleModalValidInstallments();
+    setSelectedInstalment(id);
+  };
 
   const handleSubmit: SubmitHandler<FormData> = async data => {
     formRef.current?.setErrors({});
@@ -448,7 +432,11 @@ const Finances: React.FC<IFinancesProps> = ({
                               <AddButton
                                 type="button"
                                 className="valid"
-                                onClick={() => handlePayPlot(installment.id)}
+                                onClick={() =>
+                                  handleSetDataMadalValidInstallmet(
+                                    installment?.id,
+                                  )
+                                }
                               >
                                 <FaCheck size={20} color="#FCF9F9" />
                               </AddButton>
@@ -485,7 +473,11 @@ const Finances: React.FC<IFinancesProps> = ({
                               <AddButton
                                 type="button"
                                 className="valid"
-                                onClick={() => handlePayPlot(installment.id)}
+                                onClick={() =>
+                                  handleSetDataMadalValidInstallmet(
+                                    installment.id,
+                                  )
+                                }
                               >
                                 <FaCheck size={20} color="#FCF9F9" />
                               </AddButton>

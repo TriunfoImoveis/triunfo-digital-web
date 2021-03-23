@@ -12,7 +12,30 @@ interface ModalProps {
   idPlot: string;
 }
 
-const ValidInstallment: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
+const ValidInstallment: React.FC<ModalProps> = ({
+  isOpen,
+  idPlot,
+  setIsOpen,
+}) => {
+  const handlePayPlot = useCallback(async () => {
+    if (!idPlot) {
+      toast.error('Nao foi possivel validar a parcela');
+      return;
+    }
+    try {
+      await api.patch(`/installment/paid/${idPlot}`);
+      toast.success('status do pagamento atualizado');
+      window.location.reload();
+    } catch (error) {
+      if (error.response) {
+        toast.error(`ERROR! ${error.response.message}`);
+      } else if (error.response) {
+        toast.error(`Erro interno do servidor contate o suporte`);
+      } else {
+        toast.error('Não foi possível confirmar o pagamento');
+      }
+    }
+  }, [idPlot]);
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
       <ContainerWrapper>
@@ -21,7 +44,9 @@ const ValidInstallment: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
           <strong>ATENÇÃO!!</strong>
           <p>Você esta realizando um operação inreverssível, tem certeza?</p>
           <ButtonGroup>
-            <Button color="#40B236">Sim</Button>
+            <Button color="#40B236" onClick={handlePayPlot}>
+              Sim
+            </Button>
             <Button onClick={setIsOpen}>Não</Button>
           </ButtonGroup>
         </Container>
