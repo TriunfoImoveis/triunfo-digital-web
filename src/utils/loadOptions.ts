@@ -60,6 +60,13 @@ export const optionsCivilStatus: OptionsData[] = [
   { label: 'Viúvo(a)', value: 'VIUVO(A)' },
 ];
 
+export const statusSaleOptions: OptionsData[] = [
+  { label: 'Não Validado', value: 'NAO_VALIDADO' },
+  { label: 'Pendente', value: 'PENDENTE' },
+  { label: 'Pago Total', value: 'PAGO_TOTAL' },
+  { label: 'Caíu', value: 'CAIU' },
+];
+
 export const optionsBonus = [
   { id: '1', label: 'Sim', value: 'Y' },
   { id: '2', label: 'Não', value: 'N' },
