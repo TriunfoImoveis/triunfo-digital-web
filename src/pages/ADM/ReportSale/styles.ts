@@ -6,7 +6,8 @@ export const Export = styled.div`
   display: flex;
   justify-content: flex-end;
 
-  > a {
+  > a,
+  button {
     position: relative;
     width: 19.1rem;
     height: 4.8rem;

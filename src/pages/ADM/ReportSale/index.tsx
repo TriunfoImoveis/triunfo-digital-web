@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import ExportReport from '../../../components/ReactModal/ExportReport';
 import api from '../../../services/api';
 import { DateBRL, formatPrice } from '../../../utils/format';
 import AdmLayout from '../../Layouts/Adm';
@@ -116,7 +117,7 @@ interface ISaleData {
 
 const ReportSale: React.FC = () => {
   const [reports, setReports] = useState<IReport[]>([]);
-  const [linkDownloadReport, setLinkDownloadReport] = useState();
+  const [modalCreateReoport, setModalCreateReoport] = useState(false);
   const location = useLocation();
   const queries = useCallback(() => {
     const query = new URLSearchParams(location.search);
@@ -174,26 +175,16 @@ const ReportSale: React.FC = () => {
     loadSale();
   }, [queries]);
 
-  useEffect(() => {
-    const report = async () => {
-      try {
-        const response = await api.get('/sale/export/excel');
-        setLinkDownloadReport(response.data.link_url);
-      } catch (error) {
-        if (error.response) {
-          toast.error('error na conexão! contate o suporte');
-        }
-      }
-    };
+  const toogleCreateReportModal = useCallback(() => {
+    setModalCreateReoport(!modalCreateReoport);
+  }, [modalCreateReoport]);
 
-    report();
-  }, []);
   return (
     <AdmLayout>
       <Export>
-        <a href={linkDownloadReport} target="_blank" rel="noopener noreferrer">
-          Baixar relatório completo em Excel
-        </a>
+        <button type="button" onClick={toogleCreateReportModal}>
+          gerar relatório completo
+        </button>
       </Export>
       <TableSaleWrapper>
         <Table>
@@ -229,6 +220,10 @@ const ReportSale: React.FC = () => {
       <Footer>
         <button type="button">Voltar</button>
       </Footer>
+      <ExportReport
+        isOpen={modalCreateReoport}
+        setIsOpen={toogleCreateReportModal}
+      />
     </AdmLayout>
   );
 };
