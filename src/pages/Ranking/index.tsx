@@ -86,7 +86,6 @@ const Ranking: React.FC = () => {
       userAuth.office.name,
     ],
   );
-
   const handleSelectSubsidiary = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const subsidiaryCity = event.target.value;
@@ -184,7 +183,7 @@ const Ranking: React.FC = () => {
               </PodiumContainer>
               <Separator />
               <RealtorContainer>
-                {realtors?.map((realtor, i) => {
+                {ranking?.map((realtor, i) => {
                   return i >= 5 ? (
                     <PositionItem key={realtor.id}>
                       <Position>{`${i + 1}°`}</Position>
