@@ -27,6 +27,7 @@ import {
 } from './styles';
 import Input from '../../Input';
 import { valiateDate } from '../../../utils/validateDate';
+import TextArea from '../../TextArea';
 
 interface ISaleNewData {
   prevStep: () => void;
@@ -189,6 +190,9 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             }),
           ),
           bonus: Yup.string(),
+          observation: Yup.string().required(
+            'Informe uma obrservação, se não houver digite nenhuma observação',
+          ),
         });
 
         await schema.validate(data, {
@@ -303,8 +307,8 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           <Select
             name="payment_type"
             options={optionsFormaPagamento}
-            label="Forma de pagamento"
-            placeholder="Selecione a forma de pagamento da comissão"
+            label="Forma de pagamento dos honorários"
+            placeholder="Selecione a forma de pagamento dos honorários"
           />
         </InputGroup>
         {installments.length !== 0 ? (
@@ -391,6 +395,11 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             placeholder="Bônus"
           />
         )}
+        <TextArea
+          name="observation"
+          label="Observação"
+          placeholder="Coloque infomações extras sobre a venda!"
+        />
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>
             Voltar
