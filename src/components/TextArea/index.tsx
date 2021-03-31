@@ -59,6 +59,7 @@ const TextArea: React.FC<InputProps> = ({
         isFocused={isFocused}
       >
         <textarea
+          name={name}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           ref={textAreaRef}
