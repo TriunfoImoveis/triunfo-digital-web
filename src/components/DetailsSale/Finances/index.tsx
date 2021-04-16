@@ -25,6 +25,7 @@ import EditInstallmentModal from '../../ReactModal/EditInstallments';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../Select';
+import TextArea from '../../TextArea';
 
 import {
   SaleData,
@@ -172,6 +173,7 @@ const Finances: React.FC<IFinancesProps> = ({
             return isValid || createError({ path, message: 'Data Invalida' });
           })
           .required('Data do pagamento do sinal'),
+        observation: Yup.string().required('Observação nescessária'),
       });
 
       await schema.validate(data, {
@@ -515,6 +517,12 @@ const Finances: React.FC<IFinancesProps> = ({
                 ) : null}
               </PaymentInstallments>
             ) : null}
+            <TextArea
+              name="observation"
+              label="Observação"
+              defaultValue={sale.observation}
+              disabled={edit}
+            />
           </fieldset>
         </SaleData>
         <SaleData>
