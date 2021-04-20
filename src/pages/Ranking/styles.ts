@@ -74,6 +74,7 @@ export const Filters = styled.div`
   display: flex;
   flex: 1;
   justify-content: space-between;
+  z-index: 10;
 `;
 export const MonthlyFilter = styled.div`
   display: flex;
@@ -81,6 +82,7 @@ export const MonthlyFilter = styled.div`
   div + div {
     margin-left: 0.8rem;
   }
+  z-index: 10;
 `;
 
 export const RankingContainer = styled.div`
