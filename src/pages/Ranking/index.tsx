@@ -1,6 +1,7 @@
 import React, { useState, useCallback, ChangeEvent, useMemo } from 'react';
 import Loader from 'react-loader-spinner';
 import { useAuth } from '../../context/AuthContext';
+import { months } from '../../utils/months';
 import Header from '../../components/Header';
 
 import { BackgroundImage } from '../../assets/images';
@@ -21,9 +22,11 @@ import {
   Separator,
   Name,
   VGV,
-  ButtonGroup,
   LoadingContainer,
   SelectSubsidiary,
+  Filters,
+  Bar,
+  MonthlyFilter,
 } from './styles';
 import { formatPrice } from '../../utils/format';
 import { useFetch } from '../../hooks/useFetch';
@@ -36,6 +39,7 @@ interface IRealtorData {
 }
 
 const Ranking: React.FC = () => {
+  const currentMonth = new Date().getMonth() + 1;
   const [selected, setSelected] = useState(false);
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('São Luís');
   const { userAuth } = useAuth();
@@ -43,7 +47,7 @@ const Ranking: React.FC = () => {
     `/ranking?city=${userAuth.subsidiary.city}&type=ANUAL&user=Corretor`,
   );
   const { data: realtors } = useFetch<IRealtorData[]>(url);
-
+  const optionsMonth = months.filter(month => month.value <= currentMonth);
   const ranking = useMemo(() => {
     return realtors?.map(r => ({
       id: r.id,
@@ -54,7 +58,7 @@ const Ranking: React.FC = () => {
   }, [realtors]);
 
   const handleSwichVGVToYear = useCallback(
-    async (filter: string) => {
+    async (filter: string, month?: number) => {
       setSelected(!selected);
       switch (filter) {
         case 'month': {
@@ -63,7 +67,9 @@ const Ranking: React.FC = () => {
             userAuth.office.name === 'Gerente'
               ? selectedSubsidiary
               : userAuth.subsidiary.city;
-          setUrl(`/ranking?city=${city}&type=MENSAL&user=Corretor`);
+          setUrl(
+            `/ranking?city=${city}&month=${month}&type=MENSAL&user=Corretor`,
+          );
           break;
         }
         case 'year': {
@@ -95,60 +101,76 @@ const Ranking: React.FC = () => {
     [],
   );
 
+  const handleSelectMonth = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      if (event.target.value === '0') {
+        handleSwichVGVToYear('year');
+      } else {
+        const month = Number(event.target.value);
+        handleSwichVGVToYear('month', month);
+      }
+    },
+    [handleSwichVGVToYear],
+  );
+
+  // useEffect(() => {
+  //   handleSwichVGVToYear('month');
+  // }, [setSelectedMonth, handleSwichVGVToYear]);
+
   return (
     <Container>
       <Header />
       <BackgroundImage />
       <Content>
         <Title>Top Five</Title>
-        {userAuth.office.name === 'Presidente' && (
-          <SelectSubsidiary>
-            <select
-              defaultValue={selectedSubsidiary}
-              onChange={handleSelectSubsidiary}
-            >
-              <option value="São Luís">São Luís</option>
-              <option value="Fortaleza">Fortaleza</option>
-              <option value="Teresina">Teresina</option>
-            </select>
-          </SelectSubsidiary>
-        )}
-        {userAuth.office.name === 'Gerente' && (
-          <SelectSubsidiary>
-            <select
-              defaultValue={selectedSubsidiary}
-              onChange={handleSelectSubsidiary}
-            >
-              <option value="São Luís">São Luís</option>
-              <option value="Fortaleza">Fortaleza</option>
-              <option value="Teresina">Teresina</option>
-            </select>
-          </SelectSubsidiary>
-        )}
+        <Filters>
+          {userAuth.office.name === 'Presidente' && (
+            <SelectSubsidiary>
+              <select
+                defaultValue={selectedSubsidiary}
+                onChange={handleSelectSubsidiary}
+              >
+                <option value="São Luís">São Luís</option>
+                <option value="Fortaleza">Fortaleza</option>
+                <option value="Teresina">Teresina</option>
+              </select>
+            </SelectSubsidiary>
+          )}
+          {userAuth.office.name === 'Gerente' && (
+            <SelectSubsidiary>
+              <select
+                defaultValue={selectedSubsidiary}
+                onChange={handleSelectSubsidiary}
+              >
+                <option value="São Luís">São Luís</option>
+                <option value="Fortaleza">Fortaleza</option>
+                <option value="Teresina">Teresina</option>
+              </select>
+            </SelectSubsidiary>
+          )}
+
+          <MonthlyFilter>
+            <SelectSubsidiary>
+              <select defaultValue="0" onChange={handleSelectMonth}>
+                <option value="0">ANUAL</option>
+                <optgroup label="MESES">
+                  {optionsMonth.map(month => (
+                    <option value={month.value}>{month.label}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </SelectSubsidiary>
+          </MonthlyFilter>
+        </Filters>
 
         <RankingContainer>
+          <Bar />
           <LabelContainer>
             <div />
             <LabelItems>
               <img src={Crown} alt="Campeão" />
               <span className="nameTitle">Nome</span>
               <span className="vgvTitle">VGV</span>
-              <ButtonGroup>
-                <button
-                  type="button"
-                  className={selected ? 'selected' : undefined}
-                  onClick={() => handleSwichVGVToYear('month')}
-                >
-                  Mês
-                </button>
-                <button
-                  type="button"
-                  className={!selected ? 'selected' : undefined}
-                  onClick={() => handleSwichVGVToYear('year')}
-                >
-                  Ano
-                </button>
-              </ButtonGroup>
             </LabelItems>
           </LabelContainer>
           {!ranking ? (
