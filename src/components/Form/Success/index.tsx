@@ -15,7 +15,7 @@ interface ISuccessProps {
 const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
   const { formData } = useForm();
   const [loading, setLoading] = useState(false);
-  const [statusError, setStatusError] = useState(false);
+  const [statusError, setStatusError] = useState(true);
 
   useEffect(() => {
     const submitFom = async () => {
@@ -84,9 +84,12 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
             <>
               <h1>Cadastro concluído</h1>
               <SuccesImage />
+              <strong>Agora é so aguardar!</strong>
+              <p>O nosso financeiro veficar as informções e validar a venda!</p>
+              <p>Aguarde em ate 48h úteis, para a confirmação!</p>
               <ButtonGroup>
-                <Link to="/ranking" className="cancel">
-                  Ver o Ranking
+                <Link to="/actions" className="cancel">
+                  cadastrar nova venda
                 </Link>
                 <Link to="/menu" className="next">
                   Sair
