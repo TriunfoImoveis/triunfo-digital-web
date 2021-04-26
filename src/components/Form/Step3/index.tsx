@@ -53,9 +53,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const { city } = userAuth.subsidiary;
   useEffect(() => {
     const loadAllRealtors = async () => {
-      const response = await api.get(
-        `/users?city=${city}&departament=Comercial`,
-      );
+      const response = await api.get(`/users?departament=Comercial`);
       setAllRealtors(response.data);
     };
     loadAllRealtors();

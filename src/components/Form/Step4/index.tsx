@@ -376,6 +376,10 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             )}
           </PaymentInstallments>
         ) : null}
+        <span className="help">
+          Caso o pagamento for integral, coloque no campo parcela, o mesmo valor
+          do comissionamento!
+        </span>
 
         <Select
           name="origin"
