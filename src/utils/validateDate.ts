@@ -8,9 +8,10 @@ export const valiateDate = (value: string | null | undefined): boolean => {
   const dtDay = Number(dtArray[0]);
   const dtMonth = Number(dtArray[1]);
   const dtYear = Number(dtArray[2]);
-
+  const yearSystem = new Date().getFullYear() + 10;
   if (dtMonth < 1 || dtMonth > 12) return false;
   if (dtDay < 1 || dtDay > 31) return false;
+  if (dtYear < 1900 || dtYear > yearSystem) return false;
   if (
     (dtMonth === 4 || dtMonth === 6 || dtMonth === 9 || dtMonth === 11) &&
     dtDay === 31

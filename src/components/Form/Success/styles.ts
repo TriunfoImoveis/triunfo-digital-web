@@ -14,6 +14,18 @@ export const SuccessContainer = styled.div`
     line-height: 3.5rem;
     color: #40b336;
   }
+
+  strong {
+    margin-top: 1rem;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #40b336;
+  }
+
+  p {
+    color: #40b336;
+    font-size: 1.2rem;
+  }
   > svg {
     width: 100%;
   }
