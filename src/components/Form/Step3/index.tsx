@@ -68,7 +68,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
 
   useEffect(() => {
     const loadDirector = async () => {
-      const response = await api.get(`/users?city=${city}&office=Diretor`);
+      const response = await api.get(`/users?office=Diretor`);
       const directors = response.data.map((response: any) => ({
         id: response.id,
       }));
@@ -86,6 +86,11 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     const direcs = D1.map(d => d.name).toString();
     return direcs;
   }, [directors]);
+
+  const optionsDirectores = directors.map(director => ({
+    label: director.name,
+    value: director.id,
+  }));
 
   const optionsCoordenador = cordinators.map(coordinator => ({
     label: coordinator.name,
@@ -110,7 +115,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
       const { users_sellers, users_captivators } = data;
       let formData = {};
       formRef.current?.setErrors({});
-      formRef.current?.setFieldValue('user_director', user_directors);
       if (users_sellers) {
         const newUsersSellers = users_sellers.map((saller: any) => ({
           id: saller,
@@ -118,7 +122,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         formData = {
           ...data,
           users_sellers: newUsersSellers,
-          users_directors: user_directors,
         };
       }
       if (users_captivators) {
@@ -132,7 +135,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
           ...data,
           users_sellers: newUsersSellers,
           users_captivators: newUsersCap,
-          users_directors: user_directors,
         };
       }
 
@@ -222,8 +224,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               </div>
             </Coordinator>
             <Directors>
-              <span>Diretores</span>
-              <input defaultValue={setDirector()} readOnly />
+              <Select
+                name="users_directors"
+                options={optionsDirectores}
+                label="Diretoria"
+                placeholder="Selecione 2 diretores"
+                isMulti
+              />
             </Directors>
           </>
         )}
@@ -283,8 +290,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               </>
             ) : (
               <Directors>
-                <span>Diretores</span>
-                <input defaultValue={setDirector()} readOnly />
+                <Select
+                  name="users_directors"
+                  options={optionsDirectores}
+                  label="Diretoria"
+                  placeholder="Selecione 2 diretores"
+                  isMulti
+                />
               </Directors>
             )}
           </>
