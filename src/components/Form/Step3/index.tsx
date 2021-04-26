@@ -44,7 +44,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const [allRealtors, setAllRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
-  const [user_directors, setUserDirectors] = useState([]);
   const [isCoordinatorExist, setIsCoordinatorExist] = useState(true);
 
   const { updateFormData } = useForm();
@@ -69,10 +68,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   useEffect(() => {
     const loadDirector = async () => {
       const response = await api.get(`/users?office=Diretor`);
-      const directors = response.data.map((response: any) => ({
-        id: response.id,
-      }));
-      setUserDirectors(directors);
       setDirectors(response.data);
     };
     loadDirector();
