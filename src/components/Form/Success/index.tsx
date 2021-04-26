@@ -15,7 +15,7 @@ interface ISuccessProps {
 const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
   const { formData } = useForm();
   const [loading, setLoading] = useState(false);
-  const [statusError, setStatusError] = useState(true);
+  const [statusError, setStatusError] = useState(false);
 
   useEffect(() => {
     const submitFom = async () => {
