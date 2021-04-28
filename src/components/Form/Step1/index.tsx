@@ -44,13 +44,17 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const { userAuth } = useAuth();
   const [loading, setLoading] = useState(false);
-  const { updateFormData } = useForm();
+  const { updateFormData, initialFormData } = useForm();
 
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<IOptionsData[]>([]);
   const [selectedUf, setSelectedUf] = useState(userAuth.subsidiary.state);
   const [cities, setCities] = useState<string[]>([]);
 
+  useEffect(() => {
+    initialFormData();
+    // eslint-disable-next-line
+  }, []);
   useEffect(() => {
     if (selectedUf === '0') {
       return;
@@ -166,7 +170,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [nextStep, updateFormData, typeSale],
+    [nextStep, typeSale, updateFormData],
   );
 
   return (
