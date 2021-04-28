@@ -7,6 +7,40 @@ export const Container = styled.div`
     margin-top: 1.2rem;
   }
 `;
+
+export const FilterCity = styled.div`
+  display: flex;
+
+  div + div {
+    margin-left: 0.8rem;
+  }
+  z-index: 10;
+`;
+
+export const SelectedCity = styled.div`
+  margin-top: 1rem;
+  span {
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+  select {
+    border: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 500px) {
+    select {
+      font-size: 1.4rem;
+    }
+  }
+  @media (max-width: 375px) {
+    select {
+      font-size: 1.2rem;
+    }
+  }
+`;
 export const InputForm = styled(Input)`
   padding: 0 0.8rem;
 `;

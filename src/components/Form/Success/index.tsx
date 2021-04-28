@@ -44,6 +44,7 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
         try {
           setLoading(true);
           const response = await api.post('/sale/used', formData);
+
           if (!response.data) {
             throw new Error();
           }
