@@ -2,6 +2,8 @@ import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
 import Loader from 'react-loader-spinner';
+import { getMonth, parseISO } from 'date-fns';
+import { zonedTimeToUtc } from 'date-fns-tz';
 import AdmLayout from '../../Layouts/Adm';
 import { Search, Filter } from '../../../assets/images';
 import {
@@ -53,7 +55,7 @@ const ListSales: React.FC = () => {
     if (!sales) {
       return [];
     }
-    return sales?.map(s => ({
+    const salesFormatted = sales?.map(s => ({
       id: s.id,
       name: 'Teste',
       vgv: formatPrice(Number(s.realty_ammount)),
@@ -63,7 +65,36 @@ const ListSales: React.FC = () => {
         avatar_url: s.sale_has_sellers[0].avatar_url,
       },
     }));
-  }, [sales]);
+    if (month === 0) {
+      return salesFormatted;
+    }
+    const salesFiltredMonth = sales.filter(sale => {
+      const parsedDate = parseISO(sale.sale_date);
+      const znDate = zonedTimeToUtc(parsedDate, 'Europe/Berlin');
+      const monthDateSale = getMonth(znDate) + 1;
+      if (!(monthDateSale === month)) {
+        // eslint-disable-next-line
+        return;
+      }
+      return {
+        ...sale,
+        sale_date: znDate,
+      };
+    });
+
+    const salesFiltred = salesFiltredMonth.map(s => ({
+      id: s.id,
+      name: 'Teste',
+      vgv: formatPrice(Number(s.realty_ammount)),
+      dateSale: DateBRL(s.sale_date),
+      sallers: {
+        name: s.sale_has_sellers[0].name,
+        avatar_url: s.sale_has_sellers[0].avatar_url,
+      },
+    }));
+
+    return salesFiltred;
+  }, [sales, month]);
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetCity(event.target.value);
@@ -87,7 +118,7 @@ const ListSales: React.FC = () => {
   );
 
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetMonth(event.currentTarget.value);
+    handleSetMonth(Number(event.currentTarget.value));
   };
 
   return (
@@ -122,7 +153,7 @@ const ListSales: React.FC = () => {
             <FilterButtonGroup>
               <FiltersBottonItems>
                 <span>Cidade: </span>
-                <select value={city} onChange={handleSelectCity}>
+                <select defaultValue={city} onChange={handleSelectCity}>
                   <option value="São Luís">São Luís</option>
                   <option value="Fortaleza">Fortaleza</option>
                   <option value="Teresina">Teresina</option>
@@ -130,7 +161,7 @@ const ListSales: React.FC = () => {
               </FiltersBottonItems>
               <FiltersBottonItems>
                 <span>Status da Venda: </span>
-                <select value={status} onChange={handleSelectedStatus}>
+                <select defaultValue={status} onChange={handleSelectedStatus}>
                   <option value="NAO_VALIDADO">NÃO VALIDADO</option>
                   <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
                   <option value="PAGO_TOTAL">PAGO</option>
@@ -139,12 +170,12 @@ const ListSales: React.FC = () => {
               </FiltersBottonItems>
               <FiltersBottonItems>
                 <span>Mês: </span>
-                <select value={month} onChange={handleSelectDate}>
-                  <option value="">Todas</option>
-                  <option value="0">Janeiro</option>
-                  <option value="1">Fevereiro</option>
-                  <option value="2">Março</option>
-                  <option value="3">Abril</option>
+                <select defaultValue={month} onChange={handleSelectDate}>
+                  <option value={0}>Todas</option>
+                  <option value={1}>Janeiro</option>
+                  <option value={2}>Fevereiro</option>
+                  <option value={3}>Março</option>
+                  <option value={4}>Abril</option>
                 </select>
               </FiltersBottonItems>
             </FilterButtonGroup>
