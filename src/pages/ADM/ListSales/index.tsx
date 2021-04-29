@@ -23,6 +23,7 @@ import {
 import { formatPrice, DateBRL } from '../../../utils/format';
 import { useFilter } from '../../../context/FilterContext';
 import { useFetch } from '../../../hooks/useFetch';
+import NotFound from '../../../components/Errors/NotFound';
 
 interface ISale {
   id: string;
@@ -49,6 +50,9 @@ const ListSales: React.FC = () => {
   const { data: sales } = useFetch<ISale[]>(url);
 
   const listSales = useMemo(() => {
+    if (!sales) {
+      return [];
+    }
     return sales?.map(s => ({
       id: s.id,
       name: 'Teste',
@@ -160,6 +164,8 @@ const ListSales: React.FC = () => {
           <LoadingContainer>
             <Loader type="Bars" color="#c32925" height={100} width={100} />
           </LoadingContainer>
+        ) : listSales.length === 0 ? (
+          <NotFound />
         ) : (
           <SaleTableContainer>
             <SaleHeader>
