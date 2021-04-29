@@ -10,7 +10,7 @@ export function useFetch<Data = any, Error = any>(url: string) {
     },
     {
       revalidateOnFocus: true,
-      refreshInterval: 1000,
+      refreshInterval: 10000,
       revalidateOnReconnect: true,
     },
   );
