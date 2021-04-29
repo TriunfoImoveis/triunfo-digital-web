@@ -145,6 +145,21 @@ export const Filter = styled.div`
   }
 `;
 
+export const SwitchButton = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  span {
+    margin: 0 0.5rem;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.textColor};
+  }
+`;
+
 export const BalanceContainer = styled.div`
   padding: 2rem 4rem;
 
@@ -305,26 +320,6 @@ export const ButtonGroup = styled.div`
       > span {
         color: ${({ theme }) => theme.colors.primaryAlpha};
       }
-    }
-  }
-`;
-
-export const BalanceAmount = styled.div`
-  width: 100%;
-
-  > p {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    > span {
-      font-size: 2.4rem;
-      margin-right: 1rem;
-    }
-
-    strong {
-      font-size: 3.2rem;
-      color: ${({ theme }) => theme.colors.primary};
     }
   }
 `;
