@@ -1,11 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { IoMdArrowDropup, IoMdArrowDropdown } from 'react-icons/io';
 import { Link } from 'react-router-dom';
 import Switch from 'react-switch';
 import {
   FinancesIcons,
   CalculatorIcon,
-  BradescoIcon,
   Search,
   Filter as FilterIcon,
   DropDownIcon,
@@ -20,9 +18,6 @@ import ModalAddEntryDesp from '../../../components/ReactModal/AddEntryDesp';
 import {
   Container,
   Header,
-  SaldBanks,
-  SaldBanksHeader,
-  SaldBanksContainer,
   Content,
   Filters,
   Filter,
@@ -32,10 +27,11 @@ import {
   SwitchButton,
 } from './styles';
 import TableBoxFinances from '../../../components/Finances/TableBoxFinances';
+import SaldAccountBanks from '../../../components/Finances/SaldAccountBanks';
 
 const Balance: React.FC = () => {
   const [typeTab, setTypeTab] = useState('sales');
-  const [isBankVisible, setIsBankVisible] = useState(true);
+
   const [modalSaleEntry, setModalSaleEnrey] = useState(false);
   const [modalCreditEntry, setModalCreditEnrey] = useState(false);
   const [modalDespEntry, setModalDespEnrey] = useState(false);
@@ -88,112 +84,7 @@ const Balance: React.FC = () => {
     <AdmLayout>
       <Container>
         <Header>
-          <SaldBanksContainer>
-            <SaldBanksHeader>
-              <h1>Saldo dos Bancos</h1>
-              <button
-                type="button"
-                onClick={() => setIsBankVisible(!isBankVisible)}
-              >
-                {isBankVisible ? (
-                  <IoMdArrowDropup size={30} color="#C32925" />
-                ) : (
-                  <IoMdArrowDropdown size={30} color="#C32925" />
-                )}
-              </button>
-            </SaldBanksHeader>
-            {isBankVisible && (
-              <SaldBanks>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </SaldBanks>
-            )}
-          </SaldBanksContainer>
+          <SaldAccountBanks />
         </Header>
         <Content>
           <Filters>
