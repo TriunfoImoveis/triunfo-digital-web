@@ -8,6 +8,7 @@ export const FiltersContainer = styled.div`
 export const FiltersTop = styled.div`
   display: flex;
   align-items: center;
+  width: 100%;
 
   div + div {
     margin-left: 0.8rem;
@@ -31,7 +32,7 @@ export const Input = styled.div`
   align-items: center;
   background-color: rgba(196, 196, 196, 0.2);
 
-  width: 80rem;
+  width: 100%;
   height: 4.4rem;
   padding: 0 0.5rem;
 
@@ -142,6 +143,7 @@ export const FiltersBottonItems = styled.div`
     border: 0;
     color: #fff;
     transition: background 0.2s;
+    margin-left: 0.8rem;
 
     &:hover {
       background: ${darken(0.05, '#2d9cdb')};
