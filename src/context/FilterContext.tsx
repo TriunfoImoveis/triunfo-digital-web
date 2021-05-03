@@ -1,14 +1,24 @@
 import React, { createContext, useContext, useState } from 'react';
 
+type ListSales = {
+  id: string;
+  name: string;
+  vgv: string;
+  dateSale: string;
+  sallers: {
+    name: string;
+    avatar_url: string;
+  };
+};
 interface FilterContextData {
   city: string;
   status: string;
   name: string;
-  month: string;
+  month: number;
   handleSetCity: (city: string) => void;
   handleSetStatus: (status: string) => void;
   handleSetName: (name: string) => void;
-  handleSetMonth: (name: string) => void;
+  handleSetMonth: (name: number) => void;
 }
 
 const FilterContext = createContext({} as FilterContextData);
@@ -17,7 +27,7 @@ const FilterProvider: React.FC = ({ children }) => {
   const [city, setCity] = useState<string>('São Luís');
   const [status, setStatus] = useState<string>('NAO_VALIDADO');
   const [name, setName] = useState('');
-  const [month, setMonth] = useState('');
+  const [month, setMonth] = useState(0);
 
   const handleSetCity = (city: string) => {
     setCity(city);
@@ -28,7 +38,7 @@ const FilterProvider: React.FC = ({ children }) => {
   const handleSetName = (name: string) => {
     setName(name);
   };
-  const handleSetMonth = (month: string) => {
+  const handleSetMonth = (month: number) => {
     setMonth(month);
   };
   return (

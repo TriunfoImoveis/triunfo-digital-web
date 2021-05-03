@@ -2,15 +2,15 @@ import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
 import Loader from 'react-loader-spinner';
+import { getMonth, parseISO } from 'date-fns';
 import AdmLayout from '../../Layouts/Adm';
-import { Search, Filter } from '../../../assets/images';
+import { Search } from '../../../assets/images';
 import {
   FiltersContainer,
   FiltersTop,
   FiltersBotton,
   FiltersBottonItems,
   Input,
-  FilterDiv,
   Content,
   SaleTableContainer,
   HeaderItem,
@@ -53,7 +53,7 @@ const ListSales: React.FC = () => {
     if (!sales) {
       return [];
     }
-    return sales?.map(s => ({
+    const salesFormatted = sales?.map(s => ({
       id: s.id,
       name: 'Teste',
       vgv: formatPrice(Number(s.realty_ammount)),
@@ -63,7 +63,35 @@ const ListSales: React.FC = () => {
         avatar_url: s.sale_has_sellers[0].avatar_url,
       },
     }));
-  }, [sales]);
+    if (month === 0) {
+      return salesFormatted;
+    }
+    const salesFiltredMonth = sales.filter(sale => {
+      const parsedDate = parseISO(sale.sale_date);
+      const monthDateSale = getMonth(parsedDate) + 1;
+      if (!(monthDateSale === month)) {
+        // eslint-disable-next-line
+        return;
+      }
+      return {
+        ...sale,
+        sale_date: parsedDate,
+      };
+    });
+
+    const salesFiltred = salesFiltredMonth.map(s => ({
+      id: s.id,
+      name: 'Teste',
+      vgv: formatPrice(Number(s.realty_ammount)),
+      dateSale: DateBRL(s.sale_date),
+      sallers: {
+        name: s.sale_has_sellers[0].name,
+        avatar_url: s.sale_has_sellers[0].avatar_url,
+      },
+    }));
+
+    return salesFiltred;
+  }, [sales, month]);
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetCity(event.target.value);
@@ -80,6 +108,8 @@ const ListSales: React.FC = () => {
       handleSetName(name);
       if (name.length > 0) {
         setUrl(`/sale?city=${city}&status=${status}&name=${name}`);
+      } else {
+        setUrl(`/sale?city=${city}&status=${status}`);
       }
       return;
     },
@@ -87,7 +117,7 @@ const ListSales: React.FC = () => {
   );
 
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetMonth(event.currentTarget.value);
+    handleSetMonth(Number(event.currentTarget.value));
   };
 
   return (
@@ -103,26 +133,12 @@ const ListSales: React.FC = () => {
                 onChange={searchRealtorByName}
               />
             </Input>
-            <FilterDiv>
-              <Filter />
-              <select>
-                <option selected disabled>
-                  Filtar por
-                </option>
-                <option>Construtora</option>
-              </select>
-            </FilterDiv>
-            <FilterDiv>
-              <select>
-                <option>Dimensão</option>
-              </select>
-            </FilterDiv>
           </FiltersTop>
           <FiltersBotton>
             <FilterButtonGroup>
               <FiltersBottonItems>
                 <span>Cidade: </span>
-                <select value={city} onChange={handleSelectCity}>
+                <select defaultValue={city} onChange={handleSelectCity}>
                   <option value="São Luís">São Luís</option>
                   <option value="Fortaleza">Fortaleza</option>
                   <option value="Teresina">Teresina</option>
@@ -130,7 +146,7 @@ const ListSales: React.FC = () => {
               </FiltersBottonItems>
               <FiltersBottonItems>
                 <span>Status da Venda: </span>
-                <select value={status} onChange={handleSelectedStatus}>
+                <select defaultValue={status} onChange={handleSelectedStatus}>
                   <option value="NAO_VALIDADO">NÃO VALIDADO</option>
                   <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
                   <option value="PAGO_TOTAL">PAGO</option>
@@ -139,12 +155,20 @@ const ListSales: React.FC = () => {
               </FiltersBottonItems>
               <FiltersBottonItems>
                 <span>Mês: </span>
-                <select value={month} onChange={handleSelectDate}>
-                  <option value="">Todas</option>
-                  <option value="0">Janeiro</option>
-                  <option value="1">Fevereiro</option>
-                  <option value="2">Março</option>
-                  <option value="3">Abril</option>
+                <select defaultValue={month} onChange={handleSelectDate}>
+                  <option value={0}>Todas</option>
+                  <option value={1}>Janeiro</option>
+                  <option value={2}>Fevereiro</option>
+                  <option value={3}>Março</option>
+                  <option value={4}>Abril</option>
+                  <option value={5}>Maio</option>
+                  <option value={6}>Junho</option>
+                  <option value={7}>Julho</option>
+                  <option value={8}>Agosto</option>
+                  <option value={9}>Setembro</option>
+                  <option value={10}>Outubro</option>
+                  <option value={11}>Novembro</option>
+                  <option value={12}>Dezembro</option>
                 </select>
               </FiltersBottonItems>
             </FilterButtonGroup>
@@ -153,7 +177,7 @@ const ListSales: React.FC = () => {
                 to={`/adm/relatorio-vendas?city=${city}&status=${status}&name=${name}`}
                 target="_blank"
               >
-                Adicionar ao relatório
+                Ir ao relatório
               </Link>
             </FiltersBottonItems>
           </FiltersBotton>
