@@ -37,6 +37,14 @@ const Balance: React.FC = () => {
   const [modalDespEntry, setModalDespEnrey] = useState(false);
   const [checked, setChecked] = useState(false);
 
+  // useEffect(() => {
+  //   const loadRevenue = async () => {
+  //     const response = await api.get('/expense');
+  //     console.log(response.data);
+  //   };
+  //   loadRevenue();
+  // }, []);
+
   const handleSetTab = (tabName: string | null) => {
     if (tabName) {
       setTypeTab(tabName);
