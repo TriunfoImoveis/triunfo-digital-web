@@ -39,7 +39,7 @@ const SaldAccountBanks: React.FC = () => {
   return (
     <SaldBanksContainer>
       <SaldBanksHeader>
-        <h1>Saldo dos Bancos</h1>
+        <h1>Saldo das Contas</h1>
         <button type="button" onClick={() => setIsBankVisible(!isBankVisible)}>
           {isBankVisible ? (
             <IoMdArrowDropup size={30} color="#C32925" />
