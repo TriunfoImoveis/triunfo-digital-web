@@ -27,7 +27,7 @@ const Menu: React.FC = () => {
           <span>{currentDate}</span>
         </UserContainer>
         <OptionsContainer>
-          <Option to="/financeiro/caixa">
+          <Option to="/financeiro/futuro">
             <FinancesIcons />
             <span>Recebimentos Futuros</span>
           </Option>
