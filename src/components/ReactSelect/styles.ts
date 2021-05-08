@@ -68,7 +68,7 @@ export const Container = styled.div<ContainerProps>`
   } */
 
   .select__menu {
-    z-index: 10;
+    z-index: 100;
     border: 0.1rem solid ${({ theme }) => theme.colors.textColorAlpha};
   }
   .select__option {
