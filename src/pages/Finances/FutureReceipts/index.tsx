@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { AiOutlinePlus } from 'react-icons/ai';
 
@@ -6,7 +6,7 @@ import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
 import AdmLayout from '../../Layouts/Adm';
-
+import DetailsInstalments from '../../../components/ReactModal/DetailsInstalments';
 import {
   Container,
   Background,
@@ -27,12 +27,17 @@ type FutureReceiptsType = {
   status: string;
   city: string;
   realtors: string;
+  sale_type: string;
 };
 const FutureReceipts: React.FC = () => {
   const [typeTab, setTypeTab] = useState('fix');
+  const [modalDetails, setModalDetails] = useState(false);
   const [city, setCity] = useState('São Luís');
   const [total, setTotal] = useState('R$ 0,00');
   const [future, setFuture] = useState<FutureReceiptsType[]>([]);
+  const [selectedInstallment, setSelectedInstalment] = useState(
+    {} as FutureReceiptsType,
+  );
 
   useEffect(() => {
     const loadingFutureReceipts = async () => {
@@ -45,7 +50,6 @@ const FutureReceipts: React.FC = () => {
       );
 
       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
       const dataFormated = data.map(item => {
         return {
           id: item.id,
@@ -60,6 +64,7 @@ const FutureReceipts: React.FC = () => {
           realtors: item.sale.sale_has_sellers
             .map(realtor => realtor.name)
             .toString(),
+          sale_type: item.sale.sale_type,
         };
       });
       if (data.length > 0) {
@@ -79,6 +84,18 @@ const FutureReceipts: React.FC = () => {
       setTypeTab(tabName);
     }
   };
+
+  const toogleModalSaleDetails = useCallback(() => {
+    setModalDetails(!modalDetails);
+  }, [modalDetails]);
+
+  const handleOpenModal = useCallback(
+    (item: FutureReceiptsType) => {
+      setSelectedInstalment(item);
+      toogleModalSaleDetails();
+    },
+    [toogleModalSaleDetails],
+  );
   return (
     <AdmLayout>
       <Background>
@@ -111,19 +128,25 @@ const FutureReceipts: React.FC = () => {
                     </thead>
                     <tbody>
                       {future.map(item => (
-                        <tr key={item.id}>
-                          <td>{item.city}</td>
-                          <td>{item.due_date}</td>
-                          <td>{item.description}</td>
-                          <td>{item.valueBRL}</td>
-                          <td>{item.realtors}</td>
-                          <td className={item.status}>{item.status}</td>
-                          <td>
-                            <button type="button" className="details">
-                              <AiOutlinePlus color="#C32925" />
-                            </button>
-                          </td>
-                        </tr>
+                        <>
+                          <tr key={item.id}>
+                            <td>{item.city}</td>
+                            <td>{item.due_date}</td>
+                            <td>{item.description}</td>
+                            <td>{item.valueBRL}</td>
+                            <td>{item.realtors}</td>
+                            <td className={item.status}>{item.status}</td>
+                            <td>
+                              <button
+                                type="button"
+                                className="details"
+                                onClick={() => handleOpenModal(item)}
+                              >
+                                <AiOutlinePlus color="#C32925" />
+                              </button>
+                            </td>
+                          </tr>
+                        </>
                       ))}
                     </tbody>
                   </Table>
@@ -234,6 +257,11 @@ const FutureReceipts: React.FC = () => {
           </Content>
         </Container>
       </Background>
+      <DetailsInstalments
+        isOpen={modalDetails}
+        setIsOpen={toogleModalSaleDetails}
+        installment={selectedInstallment}
+      />
     </AdmLayout>
   );
 };

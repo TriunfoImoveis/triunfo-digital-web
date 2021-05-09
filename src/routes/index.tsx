@@ -62,7 +62,11 @@ const Routes: React.FC = () => (
     <Route path="/financeiro/futuro" component={FutureReceipts} isPrivate />
     <Route path="/financeiro/caixa" component={Balance} isPrivate />
     <Route path="/financeiro/contas" component={Accounts} isPrivate />
-    <Route path="/financeiro/calculadora" component={Calculator} isPrivate />
+    <Route
+      path="/financeiro/calculadora/:id"
+      component={Calculator}
+      isPrivate
+    />
   </Switch>
 );
 
