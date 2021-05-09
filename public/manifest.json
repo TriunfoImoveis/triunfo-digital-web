@@ -1,0 +1,21 @@
+{
+  "name": "Super App Triunfo",
+  "short_name": "TriunfoSuperApp",
+  "theme_color": "#c32925",
+  "background_color": "#f8f8f8",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "https://app.triunfodigital.com.br",
+    "icons": [
+        {
+            "src": "./assets/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "./assets/android-chrome-256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        }
+    ]
+}
