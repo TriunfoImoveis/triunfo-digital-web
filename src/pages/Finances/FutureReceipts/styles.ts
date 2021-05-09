@@ -67,6 +67,7 @@ export const Table = styled.table<TableProps>`
         font-size: 1.4rem;
         font-weight: 500;
         color: #504c4c;
+
         & + th {
           border-left: 1px solid #504c4c;
         }
@@ -92,6 +93,16 @@ export const Table = styled.table<TableProps>`
         text-overflow: ellipsis;
         & + td {
           border-left: 1px solid #504c4c;
+        }
+      }
+      .details {
+        width: 100%;
+        border: none;
+        background: transparent;
+        transition: filter 0.2s;
+
+        &:hover {
+          filter: brightness(0.1);
         }
       }
       .border-none {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
+import { AiOutlinePlus } from 'react-icons/ai';
 
 import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
@@ -29,7 +30,7 @@ type FutureReceiptsType = {
 };
 const FutureReceipts: React.FC = () => {
   const [typeTab, setTypeTab] = useState('fix');
-  const [city, setCity] = useState('Fortaleza');
+  const [city, setCity] = useState('São Luís');
   const [total, setTotal] = useState('R$ 0,00');
   const [future, setFuture] = useState<FutureReceiptsType[]>([]);
 
@@ -105,7 +106,7 @@ const FutureReceipts: React.FC = () => {
                         <th>Valor Bruto</th>
                         <th>Corretor</th>
                         <th>Status</th>
-                        <th>Ações</th>
+                        <th>Detalhes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -117,6 +118,11 @@ const FutureReceipts: React.FC = () => {
                           <td>{item.valueBRL}</td>
                           <td>{item.realtors}</td>
                           <td className={item.status}>{item.status}</td>
+                          <td>
+                            <button type="button" className="details">
+                              <AiOutlinePlus color="#C32925" />
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
