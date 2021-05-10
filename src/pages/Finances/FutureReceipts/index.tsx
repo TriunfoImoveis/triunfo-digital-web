@@ -1,11 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { AiOutlinePlus } from 'react-icons/ai';
+import Switch from 'react-switch';
 
+import { getMonth, isToday, parseISO } from 'date-fns';
 import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
 import AdmLayout from '../../Layouts/Adm';
+
 import DetailsInstalments from '../../../components/ReactModal/DetailsInstalments';
 import {
   Container,
@@ -16,7 +19,13 @@ import {
   TitlePane,
   Table,
   BalanceAmount,
+  FiltersContainer,
+  FiltersBotton,
+  FilterButtonGroup,
+  FiltersBottonItems,
 } from './styles';
+import NotFound from '../../../components/Errors/NotFound';
+import EntryRevenue from '../../../components/ReactModal/EntryRevenue';
 
 type FutureReceiptsType = {
   id: string;
@@ -29,65 +38,529 @@ type FutureReceiptsType = {
   realtors: string;
   sale_type: string;
 };
+type RevenueType = {
+  id: string;
+  revenue_type: string;
+  due_date: string;
+  description: string;
+  value: number;
+  tax_rate: number;
+  invoice_value: number;
+  invoiceValueBRL: string;
+  valueBRL: string;
+  status: string;
+  city: string;
+  cliente_name: string;
+};
 const FutureReceipts: React.FC = () => {
-  const [typeTab, setTypeTab] = useState('fix');
+  const [typeTab, setTypeTab] = useState('VENDAS');
   const [modalDetails, setModalDetails] = useState(false);
+  const [modalEntryRevenue, setModalEntryRevenue] = useState(true);
   const [city, setCity] = useState('São Luís');
   const [total, setTotal] = useState('R$ 0,00');
+  const [totalDespachante, setTotalDespachante] = useState('R$ 0,00');
+  const [totalCredit, setTotalCredit] = useState('R$ 0,00');
   const [future, setFuture] = useState<FutureReceiptsType[]>([]);
+  const [futureDespachante, setFutureDespachante] = useState<RevenueType[]>([]);
+  const [futureCredit, setFutureCredit] = useState<RevenueType[]>([]);
   const [selectedInstallment, setSelectedInstalment] = useState(
     {} as FutureReceiptsType,
   );
+  const [selectedRevenue, setSelectedRevenue] = useState({} as RevenueType);
+  const [month, setMonth] = useState(0);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     const loadingFutureReceipts = async () => {
       const response = await api.get(`/installment?city=${city}`);
-      const futureReceiptsPending = response.data.filter(
-        item => item.status.includes('PENDENTE') && item,
-      );
-      const futureReceiptsExpired = response.data.filter(
-        item => item.status.includes('VENCIDO') && item,
-      );
+      if (checked) {
+        const futureReceiptsPending = response.data
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const today = isToday(parsedDate);
+            if (!today) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+        const futureReceiptsExpired = response.data
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const today = isToday(parsedDate);
+            if (!today) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
 
-      const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-      const dataFormated = data.map(item => {
-        return {
-          id: item.id,
-          due_date: DateBRL(item.due_date),
-          description: `${item.installment_number}° Parcela, ${
-            item.sale.realty.enterprise
-          }, ${money(Number(item.sale.realty_ammount))}`,
-          value: Number(item.value),
-          valueBRL: money(Number(item.value)),
-          status: item.status,
-          city: item.sale.realty.city,
-          realtors: item.sale.sale_has_sellers
-            .map(realtor => realtor.name)
-            .toString(),
-          sale_type: item.sale.sale_type,
-        };
-      });
-      if (data.length > 0) {
-        const arrayValues = dataFormated.map(item => item.value);
-        const reducer = (accumulator, currentValue) =>
-          accumulator + currentValue;
-        const total = arrayValues.reduce(reducer);
-        setTotal(money(total));
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.due_date),
+            description: `${item.installment_number}° Parcela, ${
+              item.sale.realty.enterprise
+            }, ${money(Number(item.sale.realty_ammount))}`,
+            value: Number(item.value),
+            valueBRL: money(Number(item.value)),
+            status: item.status,
+            city: item.sale.realty.city,
+            realtors: item.sale.sale_has_sellers
+              .map(realtor => realtor.name)
+              .toString(),
+            sale_type: item.sale.sale_type,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotal(money(total));
+        } else {
+          setTotal(money(0));
+        }
+
+        setFuture(dataFormated);
+      } else if (month > 0) {
+        const futureReceiptsPending = response.data
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+        const futureReceiptsExpired = response.data
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.due_date),
+            description: `${item.installment_number}° Parcela, ${
+              item.sale.realty.enterprise
+            }, ${money(Number(item.sale.realty_ammount))}`,
+            value: Number(item.value),
+            valueBRL: money(Number(item.value)),
+            status: item.status,
+            city: item.sale.realty.city,
+            realtors: item.sale.sale_has_sellers
+              .map(realtor => realtor.name)
+              .toString(),
+            sale_type: item.sale.sale_type,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotal(money(total));
+        } else {
+          setTotal(money(0));
+        }
+
+        setFuture(dataFormated);
+      } else {
+        const futureReceiptsPending = response.data.filter(
+          item => item.status.includes('PENDENTE') && item,
+        );
+        const futureReceiptsExpired = response.data.filter(
+          item => item.status.includes('VENCIDO') && item,
+        );
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.due_date),
+            description: `${item.installment_number}° Parcela, ${
+              item.sale.realty.enterprise
+            }, ${money(Number(item.sale.realty_ammount))}`,
+            value: Number(item.value),
+            valueBRL: money(Number(item.value)),
+            status: item.status,
+            city: item.sale.realty.city,
+            realtors: item.sale.sale_has_sellers
+              .map(realtor => realtor.name)
+              .toString(),
+            sale_type: item.sale.sale_type,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotal(money(total));
+        } else {
+          setTotal(money(0));
+        }
+
+        setFuture(dataFormated);
       }
-
-      setFuture(dataFormated);
     };
     loadingFutureReceipts();
-  }, [city]);
+  }, [city, month, checked]);
+  useEffect(() => {
+    const loadingFutureReceiptsDespachante = async () => {
+      const response = await api.get(`/revenue`);
+      if (checked) {
+        const futureReceiptsPending = response.data
+          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const today = isToday(parsedDate);
+            if (!today) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+        const futureReceiptsExpired = response.data
+          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const today = isToday(parsedDate);
+            if (!today) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            revenue_type: item.revenue_type,
+            due_date: DateBRL(item.due_date),
+            description: item.description,
+            cliente_name: item.client,
+            value: Number(item.value_integral),
+            valueBRL: money(Number(item.value_integral)),
+            tax_rate: item.tax_rate,
+            invoice_value: Number(item.invoice_value),
+            invoiceValueBRL: money(Number(item.invoice_value)),
+            status: item.status,
+            city: item.subsidiary.city,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalDespachante(money(total));
+        } else {
+          setTotalDespachante(money(0));
+        }
+
+        setFutureDespachante(dataFormated);
+      } else if (month > 0) {
+        const futureReceiptsPending = response.data
+          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+        const futureReceiptsExpired = response.data
+          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            revenue_type: item.revenue_type,
+            due_date: DateBRL(item.due_date),
+            description: item.description,
+            cliente_name: item.client,
+            value: Number(item.value_integral),
+            valueBRL: money(Number(item.value_integral)),
+            tax_rate: item.tax_rate,
+            invoice_value: Number(item.invoice_value),
+            invoiceValueBRL: money(Number(item.invoice_value)),
+            status: item.status,
+            city: item.subsidiary.city,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalDespachante(money(total));
+        } else {
+          setTotalDespachante(money(0));
+        }
+
+        setFutureDespachante(dataFormated);
+      } else {
+        const futureReceiptsPending = response.data
+          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => item.subsidiary.city === city && item);
+        const futureReceiptsExpired = response.data
+          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => item.subsidiary.city === city && item);
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            revenue_type: item.revenue_type,
+            due_date: DateBRL(item.due_date),
+            description: item.description,
+            cliente_name: item.client,
+            value: Number(item.value_integral),
+            valueBRL: money(Number(item.value_integral)),
+            tax_rate: item.tax_rate,
+            invoice_value: Number(item.invoice_value),
+            invoiceValueBRL: money(Number(item.invoice_value)),
+            status: item.status,
+            city: item.subsidiary.city,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalDespachante(money(total));
+        } else {
+          setTotalDespachante(money(0));
+        }
+
+        setFutureDespachante(dataFormated);
+      }
+    };
+    loadingFutureReceiptsDespachante();
+  }, [city, month, checked]);
+  useEffect(() => {
+    const loadingFutureReceiptsCredit = async () => {
+      const response = await api.get(`/revenue`);
+      if (checked) {
+        const futureReceiptsPending = response.data
+          .filter(item => item.revenue_type.includes('CREDITO') && item)
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+        const futureReceiptsExpired = response.data
+          .filter(item => item.revenue_type.includes('CREDITO') && item)
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const today = isToday(parsedDate);
+            if (!today) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            revenue_type: item.revenue_type,
+            due_date: DateBRL(item.due_date),
+            description: item.description,
+            cliente_name: item.client,
+            value: Number(item.value_integral),
+            valueBRL: money(Number(item.value_integral)),
+            tax_rate: item.tax_rate,
+            invoice_value: Number(item.invoice_value),
+            invoiceValueBRL: money(Number(item.invoice_value)),
+            status: item.status,
+            city: item.subsidiary.city,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalCredit(money(total));
+        } else {
+          setTotalCredit(money(0));
+        }
+
+        setFutureCredit(dataFormated);
+      } else if (month > 0) {
+        const futureReceiptsPending = response.data
+          .filter(item => item.revenue_type.includes('CREDITO') && item)
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+        const futureReceiptsExpired = response.data
+          .filter(item => item.revenue_type.includes('CREDITO') && item)
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => item.subsidiary.city === city && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          });
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            revenue_type: item.revenue_type,
+            due_date: DateBRL(item.due_date),
+            description: item.description,
+            cliente_name: item.client,
+            value: Number(item.value_integral),
+            valueBRL: money(Number(item.value_integral)),
+            tax_rate: item.tax_rate,
+            invoice_value: Number(item.invoice_value),
+            invoiceValueBRL: money(Number(item.invoice_value)),
+            status: item.status,
+            city: item.subsidiary.city,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalCredit(money(total));
+        } else {
+          setTotalCredit(money(0));
+        }
+
+        setFutureCredit(dataFormated);
+      } else {
+        const futureReceiptsPending = response.data
+          .filter(item => item.revenue_type.includes('CREDITO') && item)
+          .filter(item => item.status.includes('PENDENTE') && item)
+          .filter(item => item.subsidiary.city === city && item);
+        const futureReceiptsExpired = response.data
+          .filter(item => item.revenue_type.includes('CREDITO') && item)
+          .filter(item => item.status.includes('VENCIDO') && item)
+          .filter(item => item.subsidiary.city === city && item);
+
+        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+
+        const dataFormated = data.map(item => {
+          return {
+            id: item.id,
+            revenue_type: item.revenue_type,
+            due_date: DateBRL(item.due_date),
+            description: item.description,
+            cliente_name: item.client,
+            value: Number(item.value_integral),
+            valueBRL: money(Number(item.value_integral)),
+            tax_rate: item.tax_rate,
+            invoice_value: Number(item.invoice_value),
+            invoiceValueBRL: money(Number(item.invoice_value)),
+            status: item.status,
+            city: item.subsidiary.city,
+          };
+        });
+        if (data.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalCredit(money(total));
+        } else {
+          setTotalCredit(money(0));
+        }
+
+        setFutureCredit(dataFormated);
+      }
+    };
+    loadingFutureReceiptsCredit();
+  }, [city, month, checked]);
   const handleSetTab = (tabName: string | null) => {
     if (tabName) {
       setTypeTab(tabName);
     }
   };
 
+  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
+    setCity(event.target.value);
+  };
+  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
+    setMonth(Number(event.target.value));
+  };
   const toogleModalSaleDetails = useCallback(() => {
     setModalDetails(!modalDetails);
   }, [modalDetails]);
+  const toogleModalEntryRevenue = useCallback(() => {
+    setModalEntryRevenue(!modalEntryRevenue);
+  }, [modalEntryRevenue]);
 
   const handleOpenModal = useCallback(
     (item: FutureReceiptsType) => {
@@ -96,6 +569,17 @@ const FutureReceipts: React.FC = () => {
     },
     [toogleModalSaleDetails],
   );
+  const handleOpenModalEntryRevenue = useCallback(
+    (item: RevenueType) => {
+      setSelectedRevenue(item);
+      toogleModalEntryRevenue();
+    },
+    [toogleModalEntryRevenue],
+  );
+
+  const handleChange = () => {
+    setChecked(!checked);
+  };
   return (
     <AdmLayout>
       <Background>
@@ -103,6 +587,47 @@ const FutureReceipts: React.FC = () => {
           <Header>
             <h1>Recebimentos Futuros</h1>
           </Header>
+          <FiltersContainer>
+            <FiltersBotton>
+              <FilterButtonGroup>
+                <FiltersBottonItems>
+                  <span>Cidade: </span>
+                  <select defaultValue={city} onChange={handleSelectCity}>
+                    <option value="São Luís">São Luís</option>
+                    <option value="Fortaleza">Fortaleza</option>
+                    <option value="Teresina">Teresina</option>
+                  </select>
+                </FiltersBottonItems>
+
+                <FiltersBottonItems>
+                  <span>Mês: </span>
+                  <select
+                    defaultValue={month}
+                    onChange={handleSelectDate}
+                    disabled={checked}
+                  >
+                    <option value={0}>Todas</option>
+                    <option value={1}>Janeiro</option>
+                    <option value={2}>Fevereiro</option>
+                    <option value={3}>Março</option>
+                    <option value={4}>Abril</option>
+                    <option value={5}>Maio</option>
+                    <option value={6}>Junho</option>
+                    <option value={7}>Julho</option>
+                    <option value={8}>Agosto</option>
+                    <option value={9}>Setembro</option>
+                    <option value={10}>Outubro</option>
+                    <option value={11}>Novembro</option>
+                    <option value={12}>Dezembro</option>
+                  </select>
+                </FiltersBottonItems>
+                <FiltersBottonItems>
+                  <span>Dia: </span>
+                  <Switch onChange={handleChange} checked={checked} />
+                </FiltersBottonItems>
+              </FilterButtonGroup>
+            </FiltersBotton>
+          </FiltersContainer>
           <Content>
             <AccountContainer>
               <Tabs
@@ -112,8 +637,8 @@ const FutureReceipts: React.FC = () => {
                 onSelect={tab => handleSetTab(tab)}
                 variant="tabs"
               >
-                <TabBootstrap eventKey="fix" title="Contas Fixas">
-                  <TitlePane>Contas Fixas</TitlePane>
+                <TabBootstrap eventKey="VENDAS" title="Vendas">
+                  <TitlePane>Entradas Futuras</TitlePane>
                   <Table cols={6}>
                     <thead>
                       <tr>
@@ -127,27 +652,31 @@ const FutureReceipts: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {future.map(item => (
-                        <>
-                          <tr key={item.id}>
-                            <td>{item.city}</td>
-                            <td>{item.due_date}</td>
-                            <td>{item.description}</td>
-                            <td>{item.valueBRL}</td>
-                            <td>{item.realtors}</td>
-                            <td className={item.status}>{item.status}</td>
-                            <td>
-                              <button
-                                type="button"
-                                className="details"
-                                onClick={() => handleOpenModal(item)}
-                              >
-                                <AiOutlinePlus color="#C32925" />
-                              </button>
-                            </td>
-                          </tr>
-                        </>
-                      ))}
+                      {future.length === 0 ? (
+                        <NotFound />
+                      ) : (
+                        future.map(item => (
+                          <>
+                            <tr key={item.id}>
+                              <td>{item.city}</td>
+                              <td>{item.due_date}</td>
+                              <td>{item.description}</td>
+                              <td>{item.valueBRL}</td>
+                              <td>{item.realtors}</td>
+                              <td className={item.status}>{item.status}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="details"
+                                  onClick={() => handleOpenModal(item)}
+                                >
+                                  <AiOutlinePlus color="#C32925" />
+                                </button>
+                              </td>
+                            </tr>
+                          </>
+                        ))
+                      )}
                     </tbody>
                   </Table>
                   <BalanceAmount>
@@ -157,98 +686,105 @@ const FutureReceipts: React.FC = () => {
                     </p>
                   </BalanceAmount>
                 </TabBootstrap>
-                <TabBootstrap eventKey="variable" title="Contas Variáveis">
-                  <TitlePane>Contas Variáveis</TitlePane>
-                  <Table cols={6}>
+                <TabBootstrap eventKey="DESPACHANTE" title="Despachante">
+                  <TitlePane>Entradas Futuras</TitlePane>
+                  <Table cols={7}>
                     <thead>
                       <tr>
                         <th>Filial</th>
-                        <th>Descrição</th>
                         <th>Vencimento</th>
-                        <th>Conta de saída</th>
+                        <th>Descrição</th>
+                        <th>Cliente</th>
                         <th>Valor</th>
                         <th>Status</th>
+                        <th>Detalhes</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>São Luís</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>Fortaleza</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>Teresina</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>São Luís</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>Fortaleza</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>Teresina</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>São Luís</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>Fortaleza</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
-                      <tr>
-                        <td>Teresina</td>
-                        <td>Energia</td>
-                        <td>10/03/2021</td>
-                        <td>84548-8</td>
-                        <td>R$ 1.400.00</td>
-                        <td className="PAGO">PAGO</td>
-                      </tr>
+                      {futureDespachante.length === 0 ? (
+                        <NotFound />
+                      ) : (
+                        futureDespachante.map(item => (
+                          <>
+                            <tr key={item.id}>
+                              <td>{item.city}</td>
+                              <td>{item.due_date}</td>
+                              <td>{item.description}</td>
+                              <td>{item.cliente_name || '-------'}</td>
+                              <td>{item.valueBRL}</td>
+                              <td className={item.status}>{item.status}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="details"
+                                  onClick={() =>
+                                    handleOpenModalEntryRevenue(item)
+                                  }
+                                >
+                                  <AiOutlinePlus color="#C32925" />
+                                </button>
+                              </td>
+                            </tr>
+                          </>
+                        ))
+                      )}
                     </tbody>
                   </Table>
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
-                      <strong>R$ 50.000,00</strong>
+                      <strong>{totalDespachante}</strong>
+                    </p>
+                  </BalanceAmount>
+                </TabBootstrap>
+                <TabBootstrap eventKey="CREDITO" title="Crédito">
+                  <TitlePane>Entradas Futuras</TitlePane>
+                  <Table cols={7}>
+                    <thead>
+                      <tr>
+                        <th>Filial</th>
+                        <th>Vencimento</th>
+                        <th>Descrição</th>
+                        <th>Cliente</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {futureCredit.length === 0 ? (
+                        <NotFound />
+                      ) : (
+                        futureCredit.map(item => (
+                          <>
+                            <tr key={item.id}>
+                              <td>{item.city}</td>
+                              <td>{item.due_date}</td>
+                              <td>{item.description}</td>
+                              <td>{item.cliente_name || '-------'}</td>
+                              <td>{item.valueBRL}</td>
+                              <td className={item.status}>{item.status}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="details"
+                                  onClick={() =>
+                                    handleOpenModalEntryRevenue(item)
+                                  }
+                                >
+                                  <AiOutlinePlus color="#C32925" />
+                                </button>
+                              </td>
+                            </tr>
+                          </>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
+                  <BalanceAmount>
+                    <p>
+                      <span>Total</span>
+                      <strong>{totalCredit}</strong>
                     </p>
                   </BalanceAmount>
                 </TabBootstrap>
@@ -261,6 +797,11 @@ const FutureReceipts: React.FC = () => {
         isOpen={modalDetails}
         setIsOpen={toogleModalSaleDetails}
         installment={selectedInstallment}
+      />
+      <EntryRevenue
+        isOpen={modalEntryRevenue}
+        setIsOpen={toogleModalEntryRevenue}
+        revenue={selectedRevenue}
       />
     </AdmLayout>
   );
