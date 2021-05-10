@@ -1,10 +1,4 @@
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
 import { RiSave3Fill } from 'react-icons/ri';
 import { MdEdit } from 'react-icons/md';
 import { Form } from '@unform/web';
@@ -16,80 +10,49 @@ import { Container, Asaid, Main, Table, Wrapper, Footer } from './styles';
 import { currency } from '../../../utils/unMasked';
 import { formatPrice } from '../../../utils/format';
 import EditComissionDivision from '../../ReactModal/EditDivisionComission';
-import { useDivision } from '../../../context/DivisionComissionContext';
-
-interface Sale {
-  id: string;
-  sallers: {
-    id: string;
-    name: string;
-  }[];
-  cordinators?: string;
-  directors: {
-    id: string;
-    name: string;
-  }[];
-  value: string;
-}
+import { useCalculator } from '../../../context/CalculatorContext';
 
 interface Comission {
   realtor: string;
   coordinator: string;
   director: string;
   subsidiary: string;
+  cap: string;
 }
 const WhithNF: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const formRealtors = useRef<FormHandles>(null);
-  const [sale, setSale] = useState<Sale>({} as Sale);
   const [porcentImpost, setPorcentImpost] = useState('');
   const [porcentComissionData, setPorcentComissionData] = useState<Comission>({
     realtor: '',
     coordinator: '',
     director: '',
     subsidiary: '',
+    cap: '',
   } as Comission);
   const [comissionBrute, setcomissionBrute] = useState({
     realtor: '',
     coordinator: '',
     director: '',
     subsidiary: '',
+    cap: '',
   } as Comission);
   const [impostValue, setImpostValue] = useState({
     realtor: '',
     coordinator: '',
     director: '',
     subsidiary: '',
+    cap: '',
   } as Comission);
   const [netCommission, setNetComission] = useState({
     realtor: '',
     coordinator: '',
     director: '',
     subsidiary: '',
+    cap: '',
   } as Comission);
-  const [editDivisionModal, setEditDivisionModal] = useState(true);
-  const { divisionData, calcDivision, sald } = useDivision();
-
-  useEffect(() => {
-    setSale({
-      id: 'dsdsadasda',
-      sallers: [{ id: 'qwqwqwqw', name: 'Rafael' }],
-      cordinators: 'Gregory',
-      directors: [
-        { id: 'qwqwqwqw', name: 'Cristiane' },
-        { id: 'rewrwerew', name: 'Raunin' },
-      ],
-      value: 'R$ 10.518,78',
-    });
-  }, []);
-
-  // const saleFormated = useMemo(() => {
-  //   return {
-  //     ...sale,
-  //     value: formatPrice(Number(sale.value)),
-  //   };
-  // }, [sale]);
-
+  const [editDivisionModal, setEditDivisionModal] = useState(false);
+  const { divisionData, calcDivision, sald, comission } = useCalculator();
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
@@ -113,7 +76,7 @@ const WhithNF: React.FC = () => {
   const calcBruteValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>, participant: string) => {
       const { value } = event.target;
-      const calcBrute = currency(sale.value) * (Number(value) / 100);
+      const calcBrute = comission.value * (Number(value) / 100);
       const valueImpost = calcBrute * (currency(porcentImpost) / 100);
       const total = formatPrice(calcBrute - valueImpost);
 
@@ -129,6 +92,18 @@ const WhithNF: React.FC = () => {
           });
           setImpostValue({ ...impostValue, realtor: formatPrice(valueImpost) });
           setNetComission({ ...netCommission, realtor: total });
+          break;
+        case 'captvator':
+          setPorcentComissionData({
+            ...porcentComissionData,
+            cap: value,
+          });
+          setcomissionBrute({
+            ...comissionBrute,
+            cap: formatPrice(calcBrute),
+          });
+          setImpostValue({ ...impostValue, cap: formatPrice(valueImpost) });
+          setNetComission({ ...netCommission, cap: total });
           break;
         case 'coordinator':
           setPorcentComissionData({
@@ -186,7 +161,7 @@ const WhithNF: React.FC = () => {
     [
       porcentComissionData,
       comissionBrute,
-      sale.value,
+      comission.value,
       impostValue,
       porcentImpost,
       netCommission,
@@ -201,10 +176,16 @@ const WhithNF: React.FC = () => {
           <span>Imóveis com NF</span>
 
           <Form ref={formRef} onSubmit={() => console.log('ok')}>
-            <div>
-              <span>Construtora</span>
-              <Input name="builder" type="text" />
-            </div>
+            {comission && comission.type_sale === 'NOVO' && comission.builder && (
+              <div>
+                <span>Construtora</span>
+                <Input
+                  name="builder"
+                  type="text"
+                  defaultValue={comission.builder}
+                />
+              </div>
+            )}
             <div>
               <span>N° NF</span>
               <Input name="numberNF" type="text" />
@@ -215,7 +196,7 @@ const WhithNF: React.FC = () => {
                 mask="currency"
                 name="valuePlot"
                 type="text"
-                defaultValue={sale.value}
+                defaultValue={comission.valueBRL}
               />
             </div>
             <div>
@@ -265,191 +246,208 @@ const WhithNF: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>
-                    <strong>Corretor</strong>
-                    <span>Rafael Serejo</span>
-                  </td>
-                  <td>
-                    <Input
-                      name="porcentComission"
-                      type="text"
-                      className="input-background-dark"
-                      placeholder="%"
-                      defaultValue={porcentComissionData.realtor}
-                      onChange={e => calcBruteValue(e, 'realtor')}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="comissionBrute"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={comissionBrute.realtor}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impost"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={porcentImpost}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="valueImpost"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={impostValue.realtor}
-                    />
-                  </td>
-                  <td className="comission">
-                    <span>
-                      {netCommission.realtor === ''
-                        ? 'R$ 0,00'
-                        : netCommission.realtor}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Coordenador</strong>
-                    <span>Gregory Mike</span>
-                  </td>
-                  <td>
-                    <Input
-                      name="porcentComission"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={comissionBrute.coordinator}
-                      onChange={e => calcBruteValue(e, 'coordinator')}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={comissionBrute.coordinator}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={porcentImpost}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={impostValue.coordinator}
-                    />
-                  </td>
-                  <td className="comission">
-                    <span>
-                      {netCommission.coordinator === ''
-                        ? 'R$ 0,00'
-                        : netCommission.coordinator}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Diretor</strong>
-                    <span>Cristiane Sipaúba</span>
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      className="input-background-dark"
-                      onChange={e => calcBruteValue(e, 'director')}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      defaultValue={comissionBrute.director}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostDirector"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={porcentImpost}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostDirector"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={impostValue.director}
-                    />
-                  </td>
-                  <td className="comission">
-                    <span>
-                      {netCommission.director === ''
-                        ? 'R$ 0,00'
-                        : netCommission.director}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Diretor</strong>
-                    <span>Raunin Fernandes</span>
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      className="input-background-dark"
-                      onChange={e => calcBruteValue(e, 'director')}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      defaultValue={comissionBrute.director}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostDirector"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={porcentImpost}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostDirector"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={impostValue.director}
-                    />
-                  </td>
-                  <td className="comission">
-                    <span>
-                      {netCommission.director === ''
-                        ? 'R$ 0,00'
-                        : netCommission.director}
-                    </span>
-                  </td>
-                </tr>
+                {comission.sellers &&
+                  comission.sellers.map(seller => (
+                    <tr key={seller.id}>
+                      <td>
+                        <strong>Vendedor</strong>
+                        <span>{seller.name}</span>
+                      </td>
+                      <td>
+                        <Input
+                          name="porcentComission"
+                          type="text"
+                          className="input-background-dark"
+                          placeholder="%"
+                          defaultValue={porcentComissionData.realtor}
+                          onChange={e => calcBruteValue(e, 'realtor')}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="comissionBrute"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={comissionBrute.realtor}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="impost"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={porcentImpost}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="valueImpost"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={impostValue.realtor}
+                        />
+                      </td>
+                      <td className="comission">
+                        <span>
+                          {netCommission.realtor === ''
+                            ? 'R$ 0,00'
+                            : netCommission.realtor}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                {comission.captvators &&
+                  comission.captvators.map(cap => (
+                    <tr key={cap.id}>
+                      <td>
+                        <strong>Captador</strong>
+                        <span>{cap.name}</span>
+                      </td>
+                      <td>
+                        <Input
+                          name="porcentComission"
+                          type="text"
+                          className="input-background-dark"
+                          placeholder="%"
+                          defaultValue={porcentComissionData.cap}
+                          onChange={e => calcBruteValue(e, 'captvator')}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="comissionBrute"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={comissionBrute.cap}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="impost"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={porcentImpost}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="valueImpost"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={impostValue.cap}
+                        />
+                      </td>
+                      <td className="comission">
+                        <span>
+                          {netCommission.cap === ''
+                            ? 'R$ 0,00'
+                            : netCommission.cap}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+
+                {comission.coordinator && (
+                  <tr>
+                    <td>
+                      <strong>Coordenador</strong>
+                      <span>{comission.coordinator.name}</span>
+                    </td>
+                    <td>
+                      <Input
+                        name="porcentComission"
+                        type="text"
+                        className="input-background-dark"
+                        defaultValue={comissionBrute.coordinator}
+                        onChange={e => calcBruteValue(e, 'coordinator')}
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        name="impostCoordinator"
+                        type="text"
+                        className="input-background-dark"
+                        defaultValue={comissionBrute.coordinator}
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        name="impostCoordinator"
+                        type="text"
+                        className="input-background-dark"
+                        defaultValue={porcentImpost}
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        name="impostCoordinator"
+                        type="text"
+                        className="input-background-dark"
+                        defaultValue={impostValue.coordinator}
+                      />
+                    </td>
+                    <td className="comission">
+                      <span>
+                        {netCommission.coordinator === ''
+                          ? 'R$ 0,00'
+                          : netCommission.coordinator}
+                      </span>
+                    </td>
+                  </tr>
+                )}
+
+                {comission.directors &&
+                  comission.directors.map(director => (
+                    <tr key={director.id}>
+                      <td>
+                        <strong>Diretor</strong>
+                        <span>{director.name}</span>
+                      </td>
+                      <td>
+                        <Input
+                          name="impostCoordinator"
+                          type="text"
+                          className="input-background-dark"
+                          onChange={e => calcBruteValue(e, 'director')}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="impostCoordinator"
+                          type="text"
+                          defaultValue={comissionBrute.director}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="impostDirector"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={porcentImpost}
+                        />
+                      </td>
+                      <td>
+                        <Input
+                          name="impostDirector"
+                          type="text"
+                          className="input-background-dark"
+                          defaultValue={impostValue.director}
+                        />
+                      </td>
+                      <td className="comission">
+                        <span>
+                          {netCommission.director === ''
+                            ? 'R$ 0,00'
+                            : netCommission.director}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+
                 <tr>
                   <td>
                     <strong>Empresa</strong>
-                    <span>Filial São Luís</span>
+                    <span>{`Filial ${comission.subsidiary}`}</span>
                   </td>
                   <td>
                     <Input
@@ -507,7 +505,7 @@ const WhithNF: React.FC = () => {
           <thead>
             <tr>
               {divisionData.map(division => (
-                <th>{division.name}</th>
+                <th key={division.id}>{division.name}</th>
               ))}
               <th>SALDO</th>
             </tr>
@@ -515,7 +513,7 @@ const WhithNF: React.FC = () => {
           <tbody>
             <tr>
               {divisionData.map(division => (
-                <td>
+                <td key={division.id}>
                   <input
                     type="text"
                     className="porcent"

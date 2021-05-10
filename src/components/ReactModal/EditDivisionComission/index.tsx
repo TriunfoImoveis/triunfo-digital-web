@@ -8,7 +8,7 @@ import Input from '../../Input';
 
 import { Container, InputGroup } from './styles';
 import Button from '../../Button';
-import { useDivision } from '../../../context/DivisionComissionContext';
+import { useCalculator } from '../../../context/CalculatorContext';
 
 interface IModalProps {
   isOpen: boolean;
@@ -31,7 +31,7 @@ const EditComissionDivision: React.FC<IModalProps> = ({
 }) => {
   const formRef = useRef<FormHandles>(null);
   const [newPartDivision, setNewPartDivision] = useState<PartDivision[]>([]);
-  const { divisionData, handleSetDivision } = useDivision();
+  const { divisionData, handleSetDivision } = useCalculator();
 
   useEffect(() => {
     setNewPartDivision(divisionData);

@@ -9,7 +9,7 @@ import Routes from './routes';
 
 import { AuthProvider } from './context/AuthContext';
 import { FormProvider } from './context/FormContext';
-import { DivisionProvider } from './context/DivisionComissionContext';
+import { CalculatorProvider } from './context/CalculatorContext';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -21,11 +21,11 @@ const App: React.FC = () => {
       <AuthProvider>
         <FormProvider>
           <FilterProvider>
-           <DivisionProvider>
-            <Router>
-              <Routes />
-            </Router>
-           </DivisionProvider>
+            <CalculatorProvider>
+              <Router>
+                <Routes />
+              </Router>
+            </CalculatorProvider>
           </FilterProvider>
         </FormProvider>
         <ToastContainer autoClose={3000} />

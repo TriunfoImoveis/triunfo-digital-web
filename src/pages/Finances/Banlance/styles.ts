@@ -13,77 +13,6 @@ export const Container = styled.div`
 export const Header = styled.div`
   width: 100%;
 `;
-export const SaldBanksContainer = styled.div`
-  width: 100%;
-`;
-export const SaldBanksHeader = styled.div`
-  display: flex;
-  align-items: center;
-  h1 {
-    font-size: 2.4rem;
-    color: #504c4c;
-    margin-right: 0.8rem;
-  }
-
-  button {
-    border: 0;
-    background: transparent;
-  }
-`;
-export const SaldBanks = styled.div`
-  table {
-    width: 100%;
-    thead {
-      border: 1px solid #000;
-      tr {
-        display: grid;
-        grid-template-columns: repeat(11, 1fr);
-
-        > th {
-          padding: 0.5rem;
-
-          & + th {
-            border-left: 1px solid #000;
-          }
-          div {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            > span {
-              font-size: 1.2rem;
-              color: #504c4c;
-            }
-          }
-        }
-      }
-    }
-
-    tbody {
-      tr {
-        display: grid;
-        grid-template-columns: repeat(11, 1fr);
-        > td {
-          & + td {
-            border-left: 1px solid #000;
-            border-bottom: 1px solid #000;
-          }
-          text-align: center;
-          font-size: 1.2rem;
-          color: #504c4c;
-          font-weight: bold;
-        }
-        > td:first-child {
-          border-left: 1px solid #000;
-          border-bottom: 1px solid #000;
-        }
-        > td:last-child {
-          border-right: 1px solid #000;
-        }
-      }
-    }
-  }
-`;
 
 export const Content = styled.main`
   margin-top: 3rem;
@@ -142,6 +71,21 @@ export const Filter = styled.div`
     text-indent: 1px;
     text-overflow: '';
     margin-right: 0.8rem;
+  }
+`;
+
+export const SwitchButton = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  span {
+    margin: 0 0.5rem;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.textColor};
   }
 `;
 
@@ -305,26 +249,6 @@ export const ButtonGroup = styled.div`
       > span {
         color: ${({ theme }) => theme.colors.primaryAlpha};
       }
-    }
-  }
-`;
-
-export const BalanceAmount = styled.div`
-  width: 100%;
-
-  > p {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    > span {
-      font-size: 2.4rem;
-      margin-right: 1rem;
-    }
-
-    strong {
-      font-size: 3.2rem;
-      color: ${({ theme }) => theme.colors.primary};
     }
   }
 `;

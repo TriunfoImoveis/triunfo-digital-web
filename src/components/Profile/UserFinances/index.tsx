@@ -107,24 +107,14 @@ const UserFinances: React.FC = () => {
                   placeholder="Digite o código ou o nome do banco"
                 />
                 <InputGroup>
-                  <Input
-                    name="agency"
-                    label="Agência"
-                    defaultValue={userAuth.bank_data.agency}
-                  />
-                  <Input
-                    name="account"
-                    label="Número da Conta"
-                    defaultValue={userAuth.bank_data.account}
-                  />
+                  <Input name="agency" label="Agência" />
+                  <Input name="account" label="Número da Conta" />
                 </InputGroup>
                 <ReactSelect
                   name="account_type"
                   label="Tipo da Conta"
                   loadOptions={OptionsTypeAccount}
                   placeholder="Informe o tipo da conta"
-                  defaultOptions
-                  defaultInputValue={userAuth.bank_data.account_type}
                 />
               </Scope>
             </FormContent>
@@ -143,18 +133,21 @@ const UserFinances: React.FC = () => {
           <FormContent>
             <InputDisabled
               label="Instituição Financeira"
-              data={userAuth.bank_data.bank_name}
+              data={userAuth.bank_data[0].bank_name}
             />
             <InputGroup>
-              <InputDisabled label="Agência" data={userAuth.bank_data.agency} />
+              <InputDisabled
+                label="Agência"
+                data={userAuth.bank_data[0].agency}
+              />
               <InputDisabled
                 label="Número da Conta"
-                data={userAuth.bank_data.account}
+                data={userAuth.bank_data[0].account}
               />
             </InputGroup>
             <InputDisabled
               label="Tipo da Conta"
-              data={userAuth.bank_data.account_type}
+              data={userAuth.bank_data[0].account_type}
             />
           </FormContent>
         )}

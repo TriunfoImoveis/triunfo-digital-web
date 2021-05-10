@@ -24,6 +24,8 @@ import ResetPassword from '../pages/ResetPassword';
 import Balance from '../pages/Finances/Banlance';
 import Accounts from '../pages/Finances/Accounts';
 import Calculator from '../pages/Finances/Calculator';
+import MenuFinances from '../pages/Finances/Menu';
+import FutureReceipts from '../pages/Finances/FutureReceipts';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -56,9 +58,15 @@ const Routes: React.FC = () => (
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 
+    <Route path="/financeiro/menu" component={MenuFinances} isPrivate />
+    <Route path="/financeiro/futuro" component={FutureReceipts} isPrivate />
     <Route path="/financeiro/caixa" component={Balance} isPrivate />
     <Route path="/financeiro/contas" component={Accounts} isPrivate />
-    <Route path="/financeiro/calculadora" component={Calculator} isPrivate />
+    <Route
+      path="/financeiro/calculadora/:id"
+      component={Calculator}
+      isPrivate
+    />
   </Switch>
 );
 

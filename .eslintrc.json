@@ -48,6 +48,7 @@
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
     "no-nested-ternary": "off",
+    "import/no-duplicates": "off",
     "react/jsx-filename-extension": [
       1,
       {
