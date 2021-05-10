@@ -1,10 +1,10 @@
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
 import { CgSync } from 'react-icons/cg';
 import { GrFormEdit } from 'react-icons/gr';
-import { FaPlus, FaMinus } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import Modal from '..';
 import Input from '../../Input';
 
@@ -16,6 +16,8 @@ import { Container, Header, InputGroup } from './styles';
 import InputDisabled from '../../InputDisabled';
 import api from '../../../services/api';
 import ReactSelect from '../../ReactSelect';
+import { valiateDate } from '../../../utils/validateDate';
+import { useAuth } from '../../../context/AuthContext';
 
 type RevenueType = {
   id: string;
@@ -52,6 +54,26 @@ const EntryRevenue: React.FC<IModalProps> = ({
   const [edit, setEdit] = useState(false);
   const [pay, setPay] = useState(false);
   const [cities, setCities] = useState<Cities[]>([]);
+  const { userAuth } = useAuth();
+
+  const unmaskedFormData = () => {
+    formRef.current?.setFieldValue(
+      'due_date',
+      DateYMD(formRef.current?.getFieldValue('due_date')),
+    );
+    formRef.current?.setFieldValue(
+      'value_integral',
+      unMaked(formRef.current?.getFieldValue('value_integral')),
+    );
+    formRef.current?.setFieldValue(
+      'tax_rate',
+      unMaked(formRef.current?.getFieldValue('tax_rate') || '0'),
+    );
+    formRef.current?.setFieldValue(
+      'invoice_value',
+      unMaked(formRef.current?.getFieldValue('invoice_value') || '0'),
+    );
+  };
   useEffect(() => {
     const loadCity = async () => {
       const response = await api.get('/subsidiary');
@@ -73,36 +95,77 @@ const EntryRevenue: React.FC<IModalProps> = ({
       value: city.name,
     };
   });
+  const optionsbank = userAuth.bank_data.map(bank => {
+    return {
+      label: bank.bank_name,
+      value: bank.id,
+    };
+  });
 
-  const handleSubmit = useCallback(async data => {
-    console.log(data);
+  const handleSubmit = async data => {
     formRef.current?.setErrors({});
-    // try {
-    //   const schema = Yup.object({
-    //     installments: Yup.array().of(
-    //       Yup.object().shape({
-    //         value: Yup.string().required('Informe o valor da parcela'),
-    //         due_date: Yup.string().required('Informe a data de vencimento'),
-    //       }),
-    //     ),
-    //   });
-    //   await schema.validate(data, {
-    //     abortEarly: false,
-    //   });
-    //   const installments = data.installments.map(installment => ({
-    //     installment_number: installment.installment_number,
-    //     value: unMaked(installment.value),
-    //     due_date: DateYMD(installment.due_date),
-    //   }));
-    //   const newData = { installments };
-    //   handleEditInstallments(newData);
-    // } catch (err) {
-    //   if (err instanceof Yup.ValidationError) {
-    //     const erros = getValidationErros(err);
-    //     formRef.current?.setErrors(erros);
-    //   }
-    // }
-  }, []);
+    try {
+      if (pay) {
+        const schema = Yup.object({
+          pay_date: Yup.string()
+            .test('validateDate', 'Data Invalida', function valid(value) {
+              const { path, createError } = this;
+              const isValid = valiateDate(value);
+              return isValid || createError({ path, message: 'Data Invalida' });
+            })
+            .required('Informe a data de vencimento'),
+          bank_data: Yup.string().required('Selecione a conta bancária'),
+        });
+        await schema.validate(data, {
+          abortEarly: false,
+        });
+        formRef.current?.setFieldValue(
+          'pay_date',
+          DateYMD(formRef.current?.getFieldValue('pay_date')),
+        );
+        const dateForm = formRef.current?.getData();
+        await api.patch(`/revenue/paid/${revenue.id}`, dateForm);
+        toast.success('Entrada cadastrada com sucesso!');
+        window.location.reload();
+      } else {
+        const schema = Yup.object({
+          revenue_type: Yup.string().required('Tipo Obrigatório'),
+          description: Yup.string().required('Descrição Obrigatória'),
+          due_date: Yup.string()
+            .min(12, 'Formato da Data DD/MM/AAAA')
+            .test('validateDate', 'Data Invalida', function valid(value) {
+              const { path, createError } = this;
+              const isValid = valiateDate(value);
+              return isValid || createError({ path, message: 'Data Invalida' });
+            })
+            .required('Informe a data de vencimento'),
+          value_integral: Yup.string().required('valor Obrigatório'),
+          tax_rate: Yup.string(),
+          invoice_value: Yup.string(),
+          client: Yup.string().required('valor Obrigatório'),
+          subsidiary: Yup.string().required('Selecione a cidade'),
+        });
+        await schema.validate(data, {
+          abortEarly: false,
+        });
+        unmaskedFormData();
+        const dateForm = formRef.current?.getData();
+        await api.put(`/revenue/paid/${revenue.id}`, dateForm);
+        toast.success('Entrada cadastrada com sucesso!');
+        window.location.reload();
+      }
+    } catch (err) {
+      if (err.request) {
+        toast.error('Erro no servidor');
+      } else if (err.response) {
+        toast.error('Erro no servidor');
+      }
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formRef.current?.setErrors(erros);
+      }
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
@@ -141,7 +204,18 @@ const EntryRevenue: React.FC<IModalProps> = ({
 
               <InputDisabled label="Filial" data={revenue.city} />
               {pay && (
-                <Input mask="date" name="pay_date" label="Data do pagamento" />
+                <InputGroup>
+                  <Input
+                    mask="date"
+                    name="pay_date"
+                    label="Data do pagamento"
+                  />
+                  <ReactSelect
+                    label="Conta de Entrada"
+                    name="bank_data"
+                    options={optionsbank}
+                  />
+                </InputGroup>
               )}
             </>
           ) : (
@@ -204,10 +278,18 @@ const EntryRevenue: React.FC<IModalProps> = ({
             <CgSync />
             Atualizar
           </Button>
+        ) : pay ? (
+          <Button
+            className="add-button"
+            onClick={() => formRef.current?.submitForm()}
+          >
+            <CgSync />
+            Confirmar
+          </Button>
         ) : (
           <Button className="add-button" onClick={() => setPay(!pay)}>
             <CgSync />
-            {pay ? 'Confirmar' : 'Dar baixa'}
+            Dar baixa
           </Button>
         )}
       </Container>
