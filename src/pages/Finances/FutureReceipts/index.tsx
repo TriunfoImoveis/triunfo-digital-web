@@ -55,7 +55,7 @@ type RevenueType = {
 const FutureReceipts: React.FC = () => {
   const [typeTab, setTypeTab] = useState('VENDAS');
   const [modalDetails, setModalDetails] = useState(false);
-  const [modalEntryRevenue, setModalEntryRevenue] = useState(true);
+  const [modalEntryRevenue, setModalEntryRevenue] = useState(false);
   const [city, setCity] = useState('São Luís');
   const [total, setTotal] = useState('R$ 0,00');
   const [totalDespachante, setTotalDespachante] = useState('R$ 0,00');
