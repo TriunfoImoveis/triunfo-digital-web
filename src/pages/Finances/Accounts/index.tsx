@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { SiOneplus } from 'react-icons/si';
 import { FinancesIcons } from '../../../assets/images';
 
-import ModalAddAccount from '../../../components/ReactModal/AddAccount';
 import AdmLayout from '../../Layouts/Adm';
 import {
   Container,
@@ -17,11 +16,6 @@ import ChartAccounts from '../../../components/Finances/ChartAccounts';
 
 const Account: React.FC = () => {
   const [typeTab, setTypeTab] = useState('fix');
-  const [modalOpen, setModalOpen] = useState(false);
-
-  function toggleModal(): void {
-    setModalOpen(!modalOpen);
-  }
 
   const handleSetTab = (tabName: string | null) => {
     if (tabName) {
@@ -45,13 +39,13 @@ const Account: React.FC = () => {
                 <FinancesIcons />
                 <span>Caixa</span>
               </Link>
-              <button type="button" onClick={toggleModal}>
+
+              <Link to="/financeiro/adicionanovaconta">
                 <SiOneplus />
                 <span>Adiconar nova conta</span>
-              </button>
+              </Link>
             </ButtonGroup>
           </Footer>
-          <ModalAddAccount isOpen={modalOpen} setIsOpen={toggleModal} />
         </Container>
       </Background>
     </AdmLayout>
