@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { SiOneplus } from 'react-icons/si';
 import { FinancesIcons } from '../../../assets/images';
 
-import AdmLayout from '../../Layouts/Adm';
+import FinancesLayout from '../../Layouts/FinancesLayout';
 import {
   Container,
   Header,
@@ -24,7 +24,7 @@ const Account: React.FC = () => {
   };
 
   return (
-    <AdmLayout>
+    <FinancesLayout>
       <Background>
         <Container>
           <Header>
@@ -48,7 +48,7 @@ const Account: React.FC = () => {
           </Footer>
         </Container>
       </Background>
-    </AdmLayout>
+    </FinancesLayout>
   );
 };
 

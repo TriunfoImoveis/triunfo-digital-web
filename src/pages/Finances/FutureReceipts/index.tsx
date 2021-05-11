@@ -7,7 +7,7 @@ import { getMonth, isToday, parseISO } from 'date-fns';
 import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
-import AdmLayout from '../../Layouts/Adm';
+import FinancesLayout from '../../Layouts/FinancesLayout';
 
 import DetailsInstalments from '../../../components/ReactModal/DetailsInstalments';
 import {
@@ -581,7 +581,7 @@ const FutureReceipts: React.FC = () => {
     setChecked(!checked);
   };
   return (
-    <AdmLayout>
+    <FinancesLayout>
       <Background>
         <Container>
           <Header>
@@ -803,7 +803,7 @@ const FutureReceipts: React.FC = () => {
         setIsOpen={toogleModalEntryRevenue}
         revenue={selectedRevenue}
       />
-    </AdmLayout>
+    </FinancesLayout>
   );
 };
 

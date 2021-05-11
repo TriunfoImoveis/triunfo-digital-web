@@ -10,7 +10,7 @@ import {
   AddEntry,
 } from '../../../assets/images';
 
-import AdmLayout from '../../Layouts/Adm';
+import FinancesLayout from '../../Layouts/FinancesLayout';
 import ModalAddEntrySale from '../../../components/ReactModal/AddEntrySales';
 import ModalAddEntryCredit from '../../../components/ReactModal/AddEntryCredit';
 import ModalAddEntryDesp from '../../../components/ReactModal/AddEntryDesp';
@@ -89,7 +89,7 @@ const Balance: React.FC = () => {
   ]);
 
   return (
-    <AdmLayout>
+    <FinancesLayout>
       <Container>
         <Header>
           <SaldAccountBanks />
@@ -175,7 +175,7 @@ const Balance: React.FC = () => {
         isOpen={modalCreditEntry}
         setIsOpen={toogleModalCreditEntry}
       />
-    </AdmLayout>
+    </FinancesLayout>
   );
 };
 

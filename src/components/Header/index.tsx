@@ -24,7 +24,7 @@ interface IHeaderProps {
   type?: string;
 }
 
-const Header: React.FC<IHeaderProps> = ({ type }) => {
+const Header: React.FC<IHeaderProps> = ({ type = 'realtor' }) => {
   const [logoutModal, setLogoutModal] = useState(false);
   const { userAuth } = useAuth();
 

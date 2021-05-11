@@ -3,7 +3,8 @@ import AccountFixed from '../../../components/AccountFixed/AccountFixed';
 import AccountVariable from '../../../components/AccountVariable';
 import Button from '../../../components/Button';
 
-import AdmLayout from '../../Layouts/Adm';
+import FinancesLayout from '../../Layouts/FinancesLayout';
+
 import { Background, Container, Content, Header } from './styles';
 
 const AddAccount: React.FC = () => {
@@ -13,7 +14,7 @@ const AddAccount: React.FC = () => {
     VARIAVEL: <AccountVariable />,
   };
   return (
-    <AdmLayout>
+    <FinancesLayout>
       <Background>
         <Container>
           <h2>Adiciona contas</h2>
@@ -34,7 +35,7 @@ const AddAccount: React.FC = () => {
           <Content>{forms[typeAccount]}</Content>
         </Container>
       </Background>
-    </AdmLayout>
+    </FinancesLayout>
   );
 };
 

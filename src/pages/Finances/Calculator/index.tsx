@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import WhithNF from '../../../components/Calculators/WhithNF';
-import AdmLayout from '../../Layouts/Adm';
+import FinancesLayout from '../../Layouts/FinancesLayout';
 import { Container, CalculatorContainer, HeaderCalc } from './styles';
 import api from '../../../services/api';
 import { money } from '../../../utils/masked';
@@ -42,7 +42,7 @@ const Calculator: React.FC = () => {
     // eslint-disable-next-line
   }, [id]);
   return (
-    <AdmLayout>
+    <FinancesLayout>
       <Container>
         <CalculatorContainer>
           <HeaderCalc>
@@ -57,7 +57,7 @@ const Calculator: React.FC = () => {
           <WhithNF />
         </CalculatorContainer>
       </Container>
-    </AdmLayout>
+    </FinancesLayout>
   );
 };
 
