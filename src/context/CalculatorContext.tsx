@@ -40,19 +40,9 @@ const CalculatorContext = createContext({} as CalculatorContextData);
 const CalculatorProvider: React.FC = ({ children }) => {
   const [divisionData, setDivisionData] = useState<Division[]>([
     {
-      id: Math.random().toString(16),
-      name: 'PL',
-      porcent: '10',
-    },
-    {
-      id: Math.random().toString(16),
-      name: 'LUCRO',
-      porcent: '8',
-    },
-    {
-      id: Math.random().toString(16),
-      name: 'IMPOSTO',
-      porcent: '5',
+      id: '',
+      name: '',
+      porcent: '0',
     },
   ]);
   const [sald, setSald] = useState('');

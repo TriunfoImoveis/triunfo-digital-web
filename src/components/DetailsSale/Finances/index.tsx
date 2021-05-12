@@ -40,7 +40,6 @@ import {
 import FallSale from '../../ReactModal/FallSale';
 import { valiateDate } from '../../../utils/validateDate';
 import ValidAct from '../../ReactModal/ValidAct';
-import ValidInstallment from '../../ReactModal/ValidInstallment';
 
 interface IFinancesProps {
   status: string;
@@ -75,8 +74,6 @@ const Finances: React.FC<IFinancesProps> = ({
   const [editInstallments, setEditInstallments] = useState(false);
   const [modalFallSale, setModalFallSale] = useState(false);
   const [modalValidAct, setModalValidAct] = useState(false);
-  const [modalValidInstallments, setModalValidInstallments] = useState(false);
-  const [selectedInstallment, setSelectedInstalment] = useState('');
   const history = useHistory();
   const { userAuth } = useAuth();
 
@@ -111,9 +108,6 @@ const Finances: React.FC<IFinancesProps> = ({
   const toogleModalValidAct = useCallback(() => {
     setModalValidAct(!modalValidAct);
   }, [modalValidAct]);
-  const toogleModalValidInstallments = useCallback(() => {
-    setModalValidInstallments(!modalValidInstallments);
-  }, [modalValidInstallments]);
 
   const unMaskedValue = useCallback((data: FormData) => {
     const vgv = formRef.current?.getFieldValue('realty_ammount');
@@ -136,14 +130,6 @@ const Finances: React.FC<IFinancesProps> = ({
     label: payment.name,
     value: payment.id,
   }));
-
-  const handleSetDataMadalValidInstallmet = (id: string | undefined) => {
-    if (!id) {
-      return;
-    }
-    toogleModalValidInstallments();
-    setSelectedInstalment(id);
-  };
 
   const handleSubmit: SubmitHandler<FormData> = async data => {
     formRef.current?.setErrors({});
@@ -435,8 +421,8 @@ const Finances: React.FC<IFinancesProps> = ({
                                 type="button"
                                 className="valid"
                                 onClick={() =>
-                                  handleSetDataMadalValidInstallmet(
-                                    installment?.id,
+                                  history.push(
+                                    `/financeiro/calculadora/${installment.id}`,
                                   )
                                 }
                               >
@@ -476,8 +462,8 @@ const Finances: React.FC<IFinancesProps> = ({
                                 type="button"
                                 className="valid"
                                 onClick={() =>
-                                  handleSetDataMadalValidInstallmet(
-                                    installment.id,
+                                  history.push(
+                                    `/financeiro/calculadora/${installment.id}`,
                                   )
                                 }
                               >
@@ -570,11 +556,7 @@ const Finances: React.FC<IFinancesProps> = ({
         setIsOpen={toogleModalValidAct}
         idSale={sale.id}
       />
-      <ValidInstallment
-        isOpen={modalValidInstallments}
-        setIsOpen={toogleModalValidInstallments}
-        idPlot={selectedInstallment}
-      />
+
       <FallSale
         isOpen={modalFallSale}
         setIsOpen={toogleModalFallSale}

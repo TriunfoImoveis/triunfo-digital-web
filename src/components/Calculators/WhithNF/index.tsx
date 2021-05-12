@@ -3,6 +3,8 @@ import { RiSave3Fill } from 'react-icons/ri';
 import { MdEdit } from 'react-icons/md';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
+import { toast } from 'react-toastify';
+import { useHistory } from 'react-router-dom';
 import Button from '../../Button';
 import Input from '../../Input';
 
@@ -11,6 +13,7 @@ import { currency } from '../../../utils/unMasked';
 import { formatPrice } from '../../../utils/format';
 import EditComissionDivision from '../../ReactModal/EditDivisionComission';
 import { useCalculator } from '../../../context/CalculatorContext';
+import api from '../../../services/api';
 
 interface Comission {
   realtor: string;
@@ -19,7 +22,11 @@ interface Comission {
   subsidiary: string;
   cap: string;
 }
-const WhithNF: React.FC = () => {
+
+type CalcProps = {
+  id: string;
+};
+const WhithNF: React.FC<CalcProps> = ({ id }) => {
   const formRef = useRef<FormHandles>(null);
   const formRealtors = useRef<FormHandles>(null);
   const [porcentImpost, setPorcentImpost] = useState('');
@@ -53,6 +60,7 @@ const WhithNF: React.FC = () => {
   } as Comission);
   const [editDivisionModal, setEditDivisionModal] = useState(false);
   const { divisionData, calcDivision, sald, comission } = useCalculator();
+  const history = useHistory();
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
@@ -169,6 +177,104 @@ const WhithNF: React.FC = () => {
       calcDivision,
     ],
   );
+
+  const handleSaveDivision = async () => {
+    const pl = divisionData.filter(item => item.name === 'PL');
+    const lucro = divisionData.filter(item => item.name === 'Lucro');
+    const tax = divisionData.filter(item => item.name === 'Imposto');
+
+    const saveData = {
+      division_pl: {
+        division_type: pl[0].id,
+        percentage: pl[0].porcent,
+        value: pl[0].total && currency(pl[0].total),
+      },
+      division_lucro: {
+        division_type: lucro[0].id,
+        percentage: lucro[0].porcent,
+        value: lucro[0].total && currency(lucro[0].total),
+      },
+      division_tax: {
+        division_type: tax[0].id,
+        percentage: tax[0].porcent,
+        value: tax[0].total && currency(tax[0].total),
+      },
+    };
+
+    const [dev1, dev2, dev3] = divisionData
+      .filter(
+        item =>
+          item.name !== 'PL' &&
+          item.name !== 'Lucro' &&
+          item.name !== 'Imposto' &&
+          item,
+      )
+      .map((data, index) => {
+        if (index === 0) {
+          return {
+            [`division_other_one`]: {
+              division_type: data.id,
+              percentage: data.porcent,
+              value: data.total && currency(data.total),
+            },
+          };
+        }
+        if (index === 1) {
+          return {
+            [`division_other_two`]: {
+              division_type: data.id,
+              percentage: data.porcent,
+              value: data.total && currency(data.total),
+            },
+          };
+        }
+        if (index === 2) {
+          return {
+            [`division_other_three`]: {
+              division_type: data.id,
+              percentage: data.porcent,
+              value: data.total && currency(data.total),
+            },
+          };
+        }
+      });
+
+    let result = {};
+    if (dev1) {
+      result = Object.assign(saveData, dev1);
+    } else {
+      result = Object.assign(saveData, {});
+    }
+    if (dev2) {
+      result = Object.assign(saveData, dev2);
+    } else {
+      result = Object.assign(saveData, {});
+    }
+    if (dev3) {
+      result = Object.assign(saveData, dev3);
+    } else {
+      result = Object.assign(saveData, {});
+    }
+
+    const finalResult = {
+      ...result,
+      installment: id,
+    };
+    try {
+      await api.post('/calculator', finalResult);
+      await api.patch(`/installment/paid/${id}`);
+      toast.success('Parcela Paga com sucesso !');
+      history.push('/financeiro/caixa');
+    } catch (error) {
+      if (error.response) {
+        toast.error(`ERROR! ${error.response.message}`);
+      } else if (error.response) {
+        toast.error(`Erro interno do servidor contate o suporte`);
+      } else {
+        toast.error('Não foi possível confirmar o pagamento');
+      }
+    }
+  };
   return (
     <Wrapper>
       <Container>
@@ -534,7 +640,7 @@ const WhithNF: React.FC = () => {
           </tbody>
         </Table>
         <div className="save">
-          <Button type="button">
+          <Button type="button" onClick={handleSaveDivision}>
             <RiSave3Fill />
             Salvar cálculo!
           </Button>

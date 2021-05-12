@@ -17,16 +17,16 @@ const Calculator: React.FC = () => {
 
   useEffect(() => {
     const loadSale = async () => {
-      const response = await api.get(`/installment`);
+      const response = await api.get(`/installment/${id}`);
       const { data } = response;
-      const installment = data.filter(item => item.id === id && item);
-      const responseSale = await api.get(`/sale/${installment[0].sale.id}`);
+      const installment = data;
+      const responseSale = await api.get(`/sale/${installment.sale.id}`);
 
       const sale = responseSale.data;
       const installmentFormatted = {
-        id: installment[0].id,
-        value: Number(installment[0].value),
-        valueBRL: money(Number(installment[0].value)),
+        id: installment.id,
+        value: Number(installment.value),
+        valueBRL: money(Number(installment.value)),
         id_sale: sale.id,
         type_sale: sale.sale_type,
         sellers: sale.sale_has_sellers,
@@ -54,7 +54,7 @@ const Calculator: React.FC = () => {
               </select>
             </div>
           </HeaderCalc>
-          <WhithNF />
+          <WhithNF id={id} />
         </CalculatorContainer>
       </Container>
     </FinancesLayout>
