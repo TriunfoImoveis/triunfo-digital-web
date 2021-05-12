@@ -236,6 +236,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             },
           };
         }
+        return;
       });
 
     let result = {};
