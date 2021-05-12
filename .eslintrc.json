@@ -49,6 +49,7 @@
     "react-hooks/exhaustive-deps": "warn",
     "no-nested-ternary": "off",
     "import/no-duplicates": "off",
+    "array-callback-return": "off",
     "react/jsx-filename-extension": [
       1,
       {
