@@ -3,6 +3,7 @@ import { shade } from 'polished';
 
 interface ContainerProps {
   colors?: string;
+  active?: boolean;
 }
 export const Container = styled.button<ContainerProps>`
   background: ${props => (props.colors ? props.colors : '#C32925')};
@@ -20,6 +21,7 @@ export const Container = styled.button<ContainerProps>`
   line-height: 2.3rem;
 
   color: ${({ theme }) => theme.colors.secondary};
+
   &:hover {
     ${props =>
       props.colors
@@ -29,5 +31,14 @@ export const Container = styled.button<ContainerProps>`
         : css`
             background: ${shade(0.2, '#C32925')};
           `}
+  }
+
+  ${props =>
+    props.active &&
+    css`
+      background: ${({ theme }) => theme.colors.textColor};
+    `};
+  &:disabled {
+    background: ${({ theme }) => theme.colors.textColor};
   }
 `;

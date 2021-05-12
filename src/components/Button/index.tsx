@@ -4,10 +4,16 @@ import { Container } from './styles';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   color?: string;
+  active?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({ children, color, ...rest }) => (
-  <Container colors={color} {...rest}>
+const Button: React.FC<ButtonProps> = ({
+  children,
+  color,
+  active,
+  ...rest
+}) => (
+  <Container colors={color} active={active} {...rest}>
     {children}
   </Container>
 );
