@@ -34,7 +34,7 @@ const Calculator: React.FC = () => {
         coordinator: sale.user_coordinator || null,
         directors: sale.users_directors,
         subsidiary: sale.realty.city,
-        builder: sale.builder.name,
+        builder: sale.builder ? sale.builder.name : null,
       };
       handleSetComission(installmentFormatted);
     };

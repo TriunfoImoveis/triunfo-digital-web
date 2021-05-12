@@ -9,7 +9,7 @@ import Button from '../../Button';
 import Input from '../../Input';
 
 import { Container, Asaid, Main, Table, Wrapper, Footer } from './styles';
-import { currency } from '../../../utils/unMasked';
+import { currency, unMaked } from '../../../utils/unMasked';
 import { formatPrice } from '../../../utils/format';
 import EditComissionDivision from '../../ReactModal/EditDivisionComission';
 import { useCalculator } from '../../../context/CalculatorContext';
@@ -64,7 +64,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
-
   const calcIss = () => {
     const valuePlot = currency(formRef.current?.getFieldValue('valuePlot'));
     const porcentIss = formRef.current?.getFieldValue('porcentIss') / 100;
@@ -256,13 +255,21 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
       result = Object.assign(saveData, {});
     }
 
+    const tax_rate = unMaked(
+      formRef.current?.getFieldValue('porcentImpostTotal'),
+    );
+
+    const note_value = unMaked(formRef.current?.getFieldValue('sald'));
+
     const finalResult = {
       ...result,
       installment: id,
+      tax_rate,
+      note_value,
+      balance: unMaked(sald),
     };
     try {
       await api.post('/calculator', finalResult);
-      await api.patch(`/installment/paid/${id}`);
       toast.success('Parcela Paga com sucesso !');
       history.push('/financeiro/caixa');
     } catch (error) {

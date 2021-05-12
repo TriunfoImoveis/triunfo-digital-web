@@ -33,6 +33,7 @@ interface CalculatorContextData {
   handleSetDivision: (divisionData: Division[]) => void;
   calcDivision: (comissionSubsiary: string) => void;
   handleSetComission: (installment: Installment) => Promise<void>;
+  initialValue: () => void;
 }
 
 const CalculatorContext = createContext({} as CalculatorContextData);
@@ -76,6 +77,18 @@ const CalculatorProvider: React.FC = ({ children }) => {
     setComission(installment);
   };
 
+  const initialValue = () => {
+    setDivisionData([
+      {
+        id: '',
+        name: '',
+        porcent: '0',
+      },
+    ]);
+    setSald('');
+    setComission({} as Installment);
+  };
+
   return (
     <CalculatorContext.Provider
       value={{
@@ -85,6 +98,7 @@ const CalculatorProvider: React.FC = ({ children }) => {
         sald,
         comission,
         handleSetComission,
+        initialValue,
       }}
     >
       {children}

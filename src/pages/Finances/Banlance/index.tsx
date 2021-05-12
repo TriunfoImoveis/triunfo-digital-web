@@ -88,7 +88,7 @@ const Balance: React.FC = () => {
       const response = await api.get(`/installment?city=${city}&status=PAGO`);
       if (checkedDay) {
         const entry = response.data.filter(item => {
-          const parsedDate = parseISO(item.due_date);
+          const parsedDate = parseISO(item.pay_date);
           const today = isToday(parsedDate);
           if (!today) {
             // eslint-disable-next-line
@@ -99,7 +99,7 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            due_date: DateBRL(item.pay_date),
             city,
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
@@ -129,7 +129,7 @@ const Balance: React.FC = () => {
       } else if (month > 0) {
         const entry = response.data
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const monthDateSale = getMonth(parsedDate) + 1;
             if (!(monthDateSale === month)) {
               // eslint-disable-next-line
@@ -149,7 +149,7 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            due_date: DateBRL(item.pay_date),
             city,
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
@@ -189,7 +189,7 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            due_date: DateBRL(item.pay_date),
             city,
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
@@ -230,7 +230,7 @@ const Balance: React.FC = () => {
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const today = isToday(parsedDate);
             if (!today) {
               // eslint-disable-next-line
@@ -242,7 +242,7 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            due_date: DateBRL(item.pay_date),
             city,
             description: item.description,
             client: item.description,
@@ -268,7 +268,7 @@ const Balance: React.FC = () => {
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const monthDateSale = getMonth(parsedDate) + 1;
             if (!(monthDateSale === month)) {
               // eslint-disable-next-line
@@ -277,7 +277,7 @@ const Balance: React.FC = () => {
             return item;
           })
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const newYear = getYear(parsedDate);
             if (!(newYear === year)) {
               // eslint-disable-next-line
@@ -289,7 +289,7 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            due_date: DateBRL(item.pay_date),
             city,
             description: item.description,
             client: item.description,
@@ -315,7 +315,7 @@ const Balance: React.FC = () => {
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const newYear = getYear(parsedDate);
             if (!(newYear === year)) {
               // eslint-disable-next-line
@@ -360,7 +360,7 @@ const Balance: React.FC = () => {
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const today = isToday(parsedDate);
             if (!today) {
               // eslint-disable-next-line
@@ -400,7 +400,7 @@ const Balance: React.FC = () => {
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const monthDateSale = getMonth(parsedDate) + 1;
             if (!(monthDateSale === month)) {
               // eslint-disable-next-line
@@ -449,7 +449,7 @@ const Balance: React.FC = () => {
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const newYear = getYear(parsedDate);
             if (!(newYear === year)) {
               // eslint-disable-next-line
@@ -494,7 +494,7 @@ const Balance: React.FC = () => {
           .filter(item => item.subsidiary.city === city && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const today = isToday(parsedDate);
             if (!today) {
               // eslint-disable-next-line
@@ -531,7 +531,7 @@ const Balance: React.FC = () => {
           .filter(item => item.subsidiary.city === city && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const monthDateSale = getMonth(parsedDate) + 1;
             if (!(monthDateSale === month)) {
               // eslint-disable-next-line
@@ -540,7 +540,7 @@ const Balance: React.FC = () => {
             return item;
           })
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const newYear = getYear(parsedDate);
             if (!(newYear === year)) {
               // eslint-disable-next-line
@@ -577,7 +577,7 @@ const Balance: React.FC = () => {
           .filter(item => item.subsidiary.city === city && item)
           .filter(item => item.pay_date !== null && item)
           .filter(item => {
-            const parsedDate = parseISO(item.due_date);
+            const parsedDate = parseISO(item.pay_date);
             const newYear = getYear(parsedDate);
             if (!(newYear === year)) {
               // eslint-disable-next-line
