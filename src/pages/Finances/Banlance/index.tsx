@@ -87,15 +87,17 @@ const Balance: React.FC = () => {
     const loadingSalesEntry = async () => {
       const response = await api.get(`/installment?city=${city}&status=PAGO`);
       if (checkedDay) {
-        const entry = response.data.filter(item => {
-          const parsedDate = parseISO(item.pay_date);
-          const today = isToday(parsedDate);
-          if (!today) {
-            // eslint-disable-next-line
+        const entry = response.data
+          .filter(item => item.calculation !== null && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.pay_date);
+            const today = isToday(parsedDate);
+            if (!today) {
+              // eslint-disable-next-line
               return;
-          }
-          return item;
-        });
+            }
+            return item;
+          });
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -104,10 +106,20 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value: Number(item.value),
-            brute_valueBRL: money(Number(item.value)),
-            value_note: item.value_note ? item.value_note : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            brute_value:
+              item.calculation !== null ? Number(item.calculation.balance) : 0,
+            brute_valueBRL:
+              item.calculation !== null
+                ? money(Number(item.calculation.balance))
+                : '--------',
+            value_note:
+              item.calculation !== null
+                ? money(Number(item.calculation.note_value))
+                : '------',
+            tax_rate:
+              item.calculation !== null
+                ? item.calculation.tax_rate_nf
+                : '------',
             bank: item.bank_data ? item.bank_data : '-----',
             realtors: item.sale.sale_has_sellers
               .map(realtor => realtor.name)
@@ -128,6 +140,7 @@ const Balance: React.FC = () => {
         setSalesEntry(dataFormated);
       } else if (month > 0) {
         const entry = response.data
+          .filter(item => item.calculation !== null && item)
           .filter(item => {
             const parsedDate = parseISO(item.pay_date);
             const monthDateSale = getMonth(parsedDate) + 1;
@@ -154,10 +167,20 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value: Number(item.value),
-            brute_valueBRL: money(Number(item.value)),
-            value_note: item.value_note ? item.value_note : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            brute_value:
+              item.calculation !== null ? Number(item.calculation.balance) : 0,
+            brute_valueBRL:
+              item.calculation !== null
+                ? money(Number(item.calculation.balance))
+                : '--------',
+            value_note:
+              item.calculation !== null
+                ? money(Number(item.calculation.note_value))
+                : '------',
+            tax_rate:
+              item.calculation !== null
+                ? item.calculation.tax_rate_nf
+                : '------',
             bank: item.bank_data ? item.bank_data : '-----',
             realtors: item.sale.sale_has_sellers
               .map(realtor => realtor.name)
@@ -177,15 +200,17 @@ const Balance: React.FC = () => {
 
         setSalesEntry(dataFormated);
       } else {
-        const entry = response.data.filter(item => {
-          const parsedDate = parseISO(item.due_date);
-          const newYear = getYear(parsedDate);
-          if (!(newYear === year)) {
-            // eslint-disable-next-line
+        const entry = response.data
+          .filter(item => item.calculation !== null && item)
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const newYear = getYear(parsedDate);
+            if (!(newYear === year)) {
+              // eslint-disable-next-line
             return;
-          }
-          return item;
-        });
+            }
+            return item;
+          });
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -194,10 +219,20 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value: Number(item.value),
-            brute_valueBRL: money(Number(item.value)),
-            value_note: item.value_note ? item.value_note : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            brute_value:
+              item.calculation !== null ? Number(item.calculation.balance) : 0,
+            brute_valueBRL:
+              item.calculation !== null
+                ? money(Number(item.calculation.balance))
+                : '--------',
+            value_note:
+              item.calculation !== null
+                ? money(Number(item.calculation.note_value))
+                : '------',
+            tax_rate:
+              item.calculation !== null
+                ? item.calculation.tax_rate_nf
+                : '------',
             bank: item.bank_data ? item.bank_data : '-----',
             realtors: item.sale.sale_has_sellers
               .map(realtor => realtor.name)

@@ -68,7 +68,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
               <th>Descrição</th>
               <th>Nome do Cliente</th>
               <th>Corretor</th>
-              <th>Valor bruto</th>
+              <th>Valor Líquido</th>
               <th>Valor da nota</th>
               <th>Taxa de imposto</th>
               <th>Conta de entrada</th>
