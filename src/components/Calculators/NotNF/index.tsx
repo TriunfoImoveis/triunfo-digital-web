@@ -9,7 +9,7 @@ import Button from '../../Button';
 import Input from '../../Input';
 
 import { Container, Asaid, Main, Table, Wrapper, Footer } from './styles';
-import { currency, unMaked } from '../../../utils/unMasked';
+import { unMaked } from '../../../utils/unMasked';
 import { formatPrice } from '../../../utils/format';
 import EditComissionDivision from '../../ReactModal/EditDivisionComission';
 import { useCalculator } from '../../../context/CalculatorContext';
@@ -28,8 +28,6 @@ interface Participantes {
   participant_type: string;
   comission_percentage: string;
   comission_integral: string;
-  tax_percentage: string;
-  tax_value: string;
   comission_liquid: string;
 }
 
@@ -42,11 +40,10 @@ interface Division {
 type CalcProps = {
   id: string;
 };
-const WhithNF: React.FC<CalcProps> = ({ id }) => {
+const NotNF: React.FC<CalcProps> = ({ id }) => {
   const formRef = useRef<FormHandles>(null);
   const formRealtors = useRef<FormHandles>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [porcentImpost, setPorcentImpost] = useState('');
   const [porcentComissionData, setPorcentComissionData] = useState<Comission>({
     realtor: '',
     coordinator: '',
@@ -55,13 +52,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
     cap: '',
   } as Comission);
   const [comissionBrute, setcomissionBrute] = useState({
-    realtor: '',
-    coordinator: '',
-    director: '',
-    subsidiary: '',
-    cap: '',
-  } as Comission);
-  const [impostValue, setImpostValue] = useState({
     realtor: '',
     coordinator: '',
     director: '',
@@ -87,28 +77,12 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
-  const calcIss = () => {
-    const valuePlot = currency(formRef.current?.getFieldValue('valuePlot'));
-    const porcentIss = formRef.current?.getFieldValue('porcentIss') / 100;
-    const iss = formatPrice(valuePlot * porcentIss);
-    formRef.current?.setFieldValue('issValue', iss);
-  };
-  const calTotalImpost = useCallback(() => {
-    const porcentImpostTotal =
-      currency(formRef.current?.getFieldValue('porcentImpostTotal')) / 100;
-    const valuePlot = currency(formRef.current?.getFieldValue('valuePlot'));
-    const iss = currency(formRef.current?.getFieldValue('issValue'));
-    const total = formatPrice(valuePlot * porcentImpostTotal - iss);
-    formRef.current?.setFieldValue('sald', total);
-    setPorcentImpost(formRef.current?.getFieldValue('porcentImpostTotal'));
-  }, []);
 
   const calcBruteValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>, participant: string) => {
       const { value } = event.target;
       const calcBrute = comission.value * (Number(value) / 100);
-      const valueImpost = calcBrute * (currency(porcentImpost) / 100);
-      const total = formatPrice(calcBrute - valueImpost);
+      const total = formatPrice(calcBrute);
 
       switch (participant) {
         case 'realtor':
@@ -120,7 +94,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             ...comissionBrute,
             realtor: formatPrice(calcBrute),
           });
-          setImpostValue({ ...impostValue, realtor: formatPrice(valueImpost) });
           setNetComission({ ...netCommission, realtor: total });
           break;
         case 'captvator':
@@ -132,7 +105,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             ...comissionBrute,
             cap: formatPrice(calcBrute),
           });
-          setImpostValue({ ...impostValue, cap: formatPrice(valueImpost) });
           setNetComission({ ...netCommission, cap: total });
           break;
         case 'coordinator':
@@ -144,10 +116,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             ...comissionBrute,
             coordinator: formatPrice(calcBrute),
           });
-          setImpostValue({
-            ...impostValue,
-            coordinator: formatPrice(valueImpost),
-          });
+
           setNetComission({
             ...netCommission,
             coordinator: total,
@@ -162,10 +131,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             ...comissionBrute,
             director: formatPrice(calcBrute),
           });
-          setImpostValue({
-            ...impostValue,
-            director: formatPrice(valueImpost),
-          });
+
           setNetComission({ ...netCommission, director: total });
           break;
         case 'subsiadiary':
@@ -177,10 +143,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             ...comissionBrute,
             subsidiary: formatPrice(calcBrute),
           });
-          setImpostValue({
-            ...impostValue,
-            subsidiary: formatPrice(valueImpost),
-          });
+
           setNetComission({ ...netCommission, subsidiary: total });
           calcDivision(total);
           break;
@@ -192,8 +155,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
       porcentComissionData,
       comissionBrute,
       comission.value,
-      impostValue,
-      porcentImpost,
       netCommission,
       setNetComission,
       calcDivision,
@@ -214,8 +175,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
           participant_type: 'COORDENADOR',
           comission_percentage: porcentComissionData.coordinator,
           comission_integral: unMaked(comissionBrute.coordinator),
-          tax_percentage: porcentImpost,
-          tax_value: unMaked(impostValue.coordinator),
           comission_liquid: unMaked(netCommission.coordinator),
         },
       ];
@@ -227,8 +186,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
         participant_type: 'CAPTADOR',
         comission_percentage: porcentComissionData.cap,
         comission_integral: unMaked(comissionBrute.cap),
-        tax_percentage: porcentImpost,
-        tax_value: unMaked(impostValue.cap),
         comission_liquid: unMaked(netCommission.cap),
       }));
       participants = [...participants, ...balanceCaptivators];
@@ -238,8 +195,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
       participant_type: 'VENDEDOR',
       comission_percentage: porcentComissionData.realtor,
       comission_integral: unMaked(comissionBrute.realtor),
-      tax_percentage: porcentImpost,
-      tax_value: unMaked(impostValue.realtor),
       comission_liquid: unMaked(netCommission.realtor),
     }));
     const balanceDirector = comission.directors.map(director => ({
@@ -247,8 +202,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
       participant_type: 'DIRETOR',
       comission_percentage: porcentComissionData.director,
       comission_integral: unMaked(comissionBrute.director),
-      tax_percentage: porcentImpost,
-      tax_value: unMaked(impostValue.director),
       comission_liquid: unMaked(netCommission.director),
     }));
     const balanceSubsidiary = [
@@ -256,8 +209,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
         participant_type: 'EMPRESA',
         comission_percentage: porcentComissionData.subsidiary,
         comission_integral: unMaked(comissionBrute.subsidiary),
-        tax_percentage: porcentImpost,
-        tax_value: unMaked(impostValue.subsidiary),
         comission_liquid: unMaked(netCommission.subsidiary),
       },
     ];
@@ -267,17 +218,8 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
       ...balanceDirector,
       ...balanceSubsidiary,
     ];
-    const note_value = unMaked(formRef.current?.getFieldValue('sald'));
-    const note_number = unMaked(formRef.current?.getFieldValue('numberNF'));
-    const tax_iss_nf = formRef.current?.getFieldValue('porcentIss');
-    const value_iss = unMaked(formRef.current?.getFieldValue('issValue'));
     const calculatorData = {
       installment: id,
-      note_value,
-      note_number,
-      tax_iss_nf,
-      value_iss,
-      tax_rate_nf: porcentImpost,
       balance: unMaked(sald),
       divisions: division,
       participants,
@@ -299,7 +241,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
     <Wrapper>
       <Container>
         <Asaid>
-          <span>Imóveis com NF</span>
+          <span>Imóveis sem NF</span>
 
           <Form ref={formRef} onSubmit={() => console.log('ok')}>
             {comission && comission.type_sale === 'NOVO' && comission.builder && (
@@ -313,10 +255,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
               </div>
             )}
             <div>
-              <span>N° NF</span>
-              <Input name="numberNF" type="text" />
-            </div>
-            <div>
               <span>Valor total NF</span>
               <Input
                 mask="currency"
@@ -324,37 +262,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                 type="text"
                 defaultValue={comission.valueBRL}
               />
-            </div>
-            <div>
-              <span>Taxa de ISS imposto NF</span>
-              <Input
-                name="porcentIss"
-                type="text"
-                defaultValue="%"
-                onChange={calcIss}
-              />
-            </div>
-            <div>
-              <span>Debito ISS</span>
-              <Input
-                mask="currency"
-                name="issValue"
-                type="text"
-                defaultValue="R$ 0,00"
-              />
-            </div>
-            <div>
-              <span>Taxa total do Imposto NF</span>
-              <Input
-                name="porcentImpostTotal"
-                type="text"
-                defaultValue="%"
-                onChange={calTotalImpost}
-              />
-            </div>
-            <div>
-              <span>Recolhimento de Imposto</span>
-              <Input name="sald" type="text" defaultValue="R$ 0,00" />
             </div>
           </Form>
         </Asaid>
@@ -366,8 +273,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                   <th>Participantes</th>
                   <th>% de comissão</th>
                   <th>Comissão bruta</th>
-                  <th>% do Imposto</th>
-                  <th>$ do Imposto</th>
                   <th className="comission-header">Comissão líquida</th>
                 </tr>
               </thead>
@@ -397,22 +302,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           defaultValue={comissionBrute.realtor}
                         />
                       </td>
-                      <td>
-                        <Input
-                          name="impost"
-                          type="text"
-                          className="input-background-dark"
-                          defaultValue={porcentImpost}
-                        />
-                      </td>
-                      <td>
-                        <Input
-                          name="valueImpost"
-                          type="text"
-                          className="input-background-dark"
-                          defaultValue={impostValue.realtor}
-                        />
-                      </td>
+
                       <td className="comission">
                         <span>
                           {netCommission.realtor === ''
@@ -447,22 +337,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           defaultValue={comissionBrute.cap}
                         />
                       </td>
-                      <td>
-                        <Input
-                          name="impost"
-                          type="text"
-                          className="input-background-dark"
-                          defaultValue={porcentImpost}
-                        />
-                      </td>
-                      <td>
-                        <Input
-                          name="valueImpost"
-                          type="text"
-                          className="input-background-dark"
-                          defaultValue={impostValue.cap}
-                        />
-                      </td>
+
                       <td className="comission">
                         <span>
                           {netCommission.cap === ''
@@ -496,22 +371,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                         defaultValue={comissionBrute.coordinator}
                       />
                     </td>
-                    <td>
-                      <Input
-                        name="impostCoordinator"
-                        type="text"
-                        className="input-background-dark"
-                        defaultValue={porcentImpost}
-                      />
-                    </td>
-                    <td>
-                      <Input
-                        name="impostCoordinator"
-                        type="text"
-                        className="input-background-dark"
-                        defaultValue={impostValue.coordinator}
-                      />
-                    </td>
+
                     <td className="comission">
                       <span>
                         {netCommission.coordinator === ''
@@ -542,22 +402,6 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           name="impostCoordinator"
                           type="text"
                           defaultValue={comissionBrute.director}
-                        />
-                      </td>
-                      <td>
-                        <Input
-                          name="impostDirector"
-                          type="text"
-                          className="input-background-dark"
-                          defaultValue={porcentImpost}
-                        />
-                      </td>
-                      <td>
-                        <Input
-                          name="impostDirector"
-                          type="text"
-                          className="input-background-dark"
-                          defaultValue={impostValue.director}
                         />
                       </td>
                       <td className="comission">
@@ -591,22 +435,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                       defaultValue={comissionBrute.subsidiary}
                     />
                   </td>
-                  <td>
-                    <Input
-                      name="impostSubsidary"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={porcentImpost}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="impostCoordinator"
-                      type="text"
-                      className="input-background-dark"
-                      defaultValue={impostValue.subsidiary}
-                    />
-                  </td>
+
                   <td className="comission">
                     <span>
                       {netCommission.subsidiary === ''
@@ -674,4 +503,4 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
   );
 };
 
-export default WhithNF;
+export default NotNF;

@@ -104,10 +104,20 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value: Number(item.value),
-            brute_valueBRL: money(Number(item.value)),
-            value_note: item.value_note ? item.value_note : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            brute_value:
+              item.calculation !== null ? Number(item.calculation.balance) : 0,
+            brute_valueBRL:
+              item.calculation !== null
+                ? money(Number(item.calculation.balance))
+                : '--------',
+            value_note:
+              item.calculation !== null
+                ? money(Number(item.calculation.note_value))
+                : '------',
+            tax_rate:
+              item.calculation !== null
+                ? item.calculation.tax_rate_nf
+                : '------',
             bank: item.bank_data ? item.bank_data : '-----',
             realtors: item.sale.sale_has_sellers
               .map(realtor => realtor.name)
@@ -145,7 +155,8 @@ const Balance: React.FC = () => {
               return;
             }
             return item;
-          });
+          })
+          .filter(item => item.calculation !== null);
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -154,10 +165,20 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value: Number(item.value),
-            brute_valueBRL: money(Number(item.value)),
-            value_note: item.value_note ? item.value_note : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            brute_value:
+              item.calculation !== null ? Number(item.calculation.balance) : 0,
+            brute_valueBRL:
+              item.calculation !== null
+                ? money(Number(item.calculation.balance))
+                : '--------',
+            value_note:
+              item.calculation !== null
+                ? money(Number(item.calculation.note_value))
+                : '------',
+            tax_rate:
+              item.calculation !== null
+                ? item.calculation.tax_rate_nf
+                : '------',
             bank: item.bank_data ? item.bank_data : '-----',
             realtors: item.sale.sale_has_sellers
               .map(realtor => realtor.name)
@@ -177,15 +198,17 @@ const Balance: React.FC = () => {
 
         setSalesEntry(dataFormated);
       } else {
-        const entry = response.data.filter(item => {
-          const parsedDate = parseISO(item.due_date);
-          const newYear = getYear(parsedDate);
-          if (!(newYear === year)) {
-            // eslint-disable-next-line
+        const entry = response.data
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const newYear = getYear(parsedDate);
+            if (!(newYear === year)) {
+              // eslint-disable-next-line
             return;
-          }
-          return item;
-        });
+            }
+            return item;
+          })
+          .filter(item => item.calculation !== null);
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -194,10 +217,20 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value: Number(item.value),
-            brute_valueBRL: money(Number(item.value)),
-            value_note: item.value_note ? item.value_note : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            brute_value:
+              item.calculation !== null ? Number(item.calculation.balance) : 0,
+            brute_valueBRL:
+              item.calculation !== null
+                ? money(Number(item.calculation.balance))
+                : '--------',
+            value_note:
+              item.calculation !== null
+                ? money(Number(item.calculation.note_value))
+                : '------',
+            tax_rate:
+              item.calculation !== null
+                ? item.calculation.tax_rate_nf
+                : '------',
             bank: item.bank_data ? item.bank_data : '-----',
             realtors: item.sale.sale_has_sellers
               .map(realtor => realtor.name)
@@ -486,8 +519,9 @@ const Balance: React.FC = () => {
     };
     loadingCreditEntry();
   }, [city, month, checkedDay, year]);
+
   useEffect(() => {
-    const loadingCreditEntry = async () => {
+    const loadingAccounts = async () => {
       const response = await api.get(`/expense`);
       if (checkedDay) {
         const entry = response.data
@@ -610,9 +644,8 @@ const Balance: React.FC = () => {
         setAccount(dataFormated);
       }
     };
-    loadingCreditEntry();
+    loadingAccounts();
   }, [city, month, checkedDay, year]);
-
   const handleSetTabEntry = (tabName: string | null) => {
     if (tabName) {
       setTypeTabEntry(tabName);
@@ -691,7 +724,7 @@ const Balance: React.FC = () => {
               <FiltersBottonItems>
                 <span>Ano: </span>
                 <select
-                  disabled={checked}
+                  disabled={checkedDay}
                   defaultValue={year}
                   onChange={handleSelectYear}
                 >
@@ -706,7 +739,7 @@ const Balance: React.FC = () => {
                 <select
                   defaultValue={month}
                   onChange={handleSelectDate}
-                  disabled={checked}
+                  disabled={checkedDay}
                 >
                   <option value={0}>Todas</option>
                   <option value={1}>Janeiro</option>
