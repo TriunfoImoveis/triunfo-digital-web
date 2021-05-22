@@ -87,17 +87,15 @@ const Balance: React.FC = () => {
     const loadingSalesEntry = async () => {
       const response = await api.get(`/installment?city=${city}&status=PAGO`);
       if (checkedDay) {
-        const entry = response.data
-          .filter(item => item.calculation !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
+        const entry = response.data.filter(item => {
+          const parsedDate = parseISO(item.pay_date);
+          const today = isToday(parsedDate);
+          if (!today) {
+            // eslint-disable-next-line
               return;
-            }
-            return item;
-          });
+          }
+          return item;
+        });
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -140,7 +138,6 @@ const Balance: React.FC = () => {
         setSalesEntry(dataFormated);
       } else if (month > 0) {
         const entry = response.data
-          .filter(item => item.calculation !== null && item)
           .filter(item => {
             const parsedDate = parseISO(item.pay_date);
             const monthDateSale = getMonth(parsedDate) + 1;
@@ -158,7 +155,8 @@ const Balance: React.FC = () => {
               return;
             }
             return item;
-          });
+          })
+          .filter(item => item.calculation !== null);
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -201,7 +199,6 @@ const Balance: React.FC = () => {
         setSalesEntry(dataFormated);
       } else {
         const entry = response.data
-          .filter(item => item.calculation !== null && item)
           .filter(item => {
             const parsedDate = parseISO(item.due_date);
             const newYear = getYear(parsedDate);
@@ -210,7 +207,8 @@ const Balance: React.FC = () => {
             return;
             }
             return item;
-          });
+          })
+          .filter(item => item.calculation !== null);
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -521,8 +519,9 @@ const Balance: React.FC = () => {
     };
     loadingCreditEntry();
   }, [city, month, checkedDay, year]);
+
   useEffect(() => {
-    const loadingCreditEntry = async () => {
+    const loadingAccounts = async () => {
       const response = await api.get(`/expense`);
       if (checkedDay) {
         const entry = response.data
@@ -645,9 +644,8 @@ const Balance: React.FC = () => {
         setAccount(dataFormated);
       }
     };
-    loadingCreditEntry();
+    loadingAccounts();
   }, [city, month, checkedDay, year]);
-
   const handleSetTabEntry = (tabName: string | null) => {
     if (tabName) {
       setTypeTabEntry(tabName);
@@ -726,7 +724,7 @@ const Balance: React.FC = () => {
               <FiltersBottonItems>
                 <span>Ano: </span>
                 <select
-                  disabled={checked}
+                  disabled={checkedDay}
                   defaultValue={year}
                   onChange={handleSelectYear}
                 >
@@ -741,7 +739,7 @@ const Balance: React.FC = () => {
                 <select
                   defaultValue={month}
                   onChange={handleSelectDate}
-                  disabled={checked}
+                  disabled={checkedDay}
                 >
                   <option value={0}>Todas</option>
                   <option value={1}>Janeiro</option>
