@@ -35,6 +35,10 @@ const Menu: React.FC = () => {
             <FinancesIcons />
             <span>Entradas/Saídas</span>
           </Option>
+          <Option to="/financeiro/dashboard">
+            <FinancesIcons />
+            <span>Dashboard</span>
+          </Option>
         </OptionsContainer>
       </Content>
     </Container>

@@ -418,7 +418,7 @@ const Account: React.FC = () => {
                 onSelect={tab => handleSetTab(tab)}
                 variant="tabs"
               >
-                <TabBootstrap eventKey="fix" title="Contas Fiquísas">
+                <TabBootstrap eventKey="fix" title="Contas Fixas">
                   <TitlePane>Contas Fiquísas</TitlePane>
                   <Table cols={7}>
                     <thead>

@@ -23,7 +23,7 @@ const AddAccount: React.FC = () => {
               onClick={() => setTypeAccount('FIXA')}
               active={typeAccount !== 'FIXA'}
             >
-              FIQUISAS
+              FIXAS
             </Button>
             <Button
               onClick={() => setTypeAccount('VARIAVEL')}

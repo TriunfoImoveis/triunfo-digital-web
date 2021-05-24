@@ -1,3 +1,5 @@
+import { getMonth, getYear, isToday, parseISO } from 'date-fns';
+
 interface IUser {
   id: string;
   name: string;
@@ -27,6 +29,38 @@ interface IUserSales {
   date_sale: string;
   vgv: string;
   status: string;
+}
+
+type ParticipantSale =
+  | 'VENDEDOR'
+  | 'CAPTADOR'
+  | 'COORDENADOR'
+  | 'DIRETOR'
+  | 'EMPRESA';
+
+interface Participantes {
+  user?: string;
+  participant_type: string;
+  comission_percentage: string;
+  comission_integral: string;
+  tax_percentage?: number;
+  tax_value?: string;
+  comission_liquid: string;
+}
+
+interface Division {
+  division_type: {
+    id: string;
+  };
+  percentage: string;
+  value: string;
+}
+interface CalculatorData {
+  calculation: {
+    note_value: string;
+    participants: Participantes[];
+    divisions: Division[];
+  };
 }
 
 export const filterOptions = (
@@ -83,4 +117,93 @@ export const formatTextStatus = (textStaus: string): string => {
       break;
   }
   return textFormatted;
+};
+
+const reducer = (accumulator, currentValue) => accumulator + currentValue;
+
+export const generateValueBrute = (
+  sale: CalculatorData[],
+  typeParticipants: ParticipantSale,
+): number => {
+  return sale
+    .map(item => item.calculation.participants && item.calculation.participants)
+    .map(item => {
+      return item
+        .map(item =>
+          item.participant_type === typeParticipants
+            ? Number(item.comission_integral)
+            : 0,
+        )
+        .reduce(reducer, 0);
+    })
+    .reduce(reducer, 0);
+};
+export const generateValueLiquid = (
+  sale: CalculatorData[],
+  typeParticipants: ParticipantSale,
+): number => {
+  return sale
+    .map(item => item.calculation.participants && item.calculation.participants)
+    .map(item => {
+      return item
+        .map(item =>
+          item.participant_type === typeParticipants
+            ? Number(item.comission_liquid)
+            : 0,
+        )
+        .reduce(reducer, 0);
+    })
+    .reduce(reducer, 0);
+};
+
+export const generateImpostValue = (sale: CalculatorData[]) => {
+  return sale
+    .map(item =>
+      item.calculation.note_value ? Number(item.calculation.note_value) : 0,
+    )
+    .reduce(reducer, 0);
+};
+
+export const generateDivionValue = (
+  sale: CalculatorData[],
+  typeDivision: string,
+) => {
+  return sale
+    .map(item => item.calculation.divisions && item.calculation.divisions)
+    .map(item => {
+      return item
+        .map(item =>
+          item.division_type.id === typeDivision ? Number(item.value) : 0,
+        )
+        .reduce(reducer, 0);
+    })
+    .reduce(reducer, 0);
+};
+
+export const filterDay = (data: string) => {
+  const parsedDate = parseISO(data);
+  const today = isToday(parsedDate);
+  if (!today) {
+    // eslint-disable-next-line
+              return false;
+  }
+  return true;
+};
+export const filterMonth = (data: string, month: number) => {
+  const parsedDate = parseISO(data);
+  const monthDateSale = getMonth(parsedDate) + 1;
+  if (!(monthDateSale === month)) {
+    // eslint-disable-next-line
+    return false;
+  }
+  return true;
+};
+export const filterYear = (data: string, year: number) => {
+  const parsedDate = parseISO(data);
+  const newYear = getYear(parsedDate);
+  if (!(newYear === year)) {
+    // eslint-disable-next-line
+    return false;
+  }
+  return true;
 };
