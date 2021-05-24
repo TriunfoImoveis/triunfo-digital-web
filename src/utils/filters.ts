@@ -29,6 +29,38 @@ interface IUserSales {
   status: string;
 }
 
+type ParticipantSale =
+  | 'VENDEDOR'
+  | 'CAPTADOR'
+  | 'COORDENADOR'
+  | 'DIRETOR'
+  | 'EMPRESA';
+
+interface Participantes {
+  user?: string;
+  participant_type: string;
+  comission_percentage: string;
+  comission_integral: string;
+  tax_percentage?: number;
+  tax_value?: string;
+  comission_liquid: string;
+}
+
+interface Division {
+  division_type: {
+    id: string;
+  };
+  percentage: string;
+  value: string;
+}
+interface CalculatorData {
+  calculation: {
+    note_value: string;
+    participants: Participantes[];
+    divisions: Division[];
+  };
+}
+
 export const filterOptions = (
   inputValue: string,
   options: OptionsData[],
@@ -83,4 +115,65 @@ export const formatTextStatus = (textStaus: string): string => {
       break;
   }
   return textFormatted;
+};
+
+const reducer = (accumulator, currentValue) => accumulator + currentValue;
+
+export const generateValueBrute = (
+  sale: CalculatorData[],
+  typeParticipants: ParticipantSale,
+): number => {
+  return sale
+    .map(item => item.calculation.participants && item.calculation.participants)
+    .map(item => {
+      return item
+        .map(item =>
+          item.participant_type === typeParticipants
+            ? Number(item.comission_integral)
+            : 0,
+        )
+        .reduce(reducer);
+    })
+    .reduce(reducer);
+};
+export const generateValueLiquid = (
+  sale: CalculatorData[],
+  typeParticipants: ParticipantSale,
+): number => {
+  return sale
+    .map(item => item.calculation.participants && item.calculation.participants)
+    .map(item => {
+      return item
+        .map(item =>
+          item.participant_type === typeParticipants
+            ? Number(item.comission_liquid)
+            : 0,
+        )
+        .reduce(reducer);
+    })
+    .reduce(reducer);
+};
+
+export const generateImpostValue = (sale: CalculatorData[]) => {
+  return sale
+    .map(item =>
+      item.calculation.note_value ? Number(item.calculation.note_value) : 0,
+    )
+    .reduce(reducer);
+};
+
+export const generateDivionValue = (
+  sale: CalculatorData[],
+  typeDivision: string,
+) => {
+  return sale
+    .map(item => item.calculation.divisions && item.calculation.divisions)
+    .map(item => {
+      return item
+        .map(item =>
+          item.division_type.id === typeDivision ? Number(item.value) : 0,
+        )
+        .reduce(reducer);
+    })
+    .reduce(reducer);
 };

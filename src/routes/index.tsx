@@ -28,6 +28,7 @@ import MenuFinances from '../pages/Finances/Menu';
 import FutureReceipts from '../pages/Finances/FutureReceipts';
 import AddAccount from '../pages/Finances/AddAccountPage';
 import DetailsAccount from '../pages/Finances/DetailsAccount';
+import DashboardFinances from '../pages/Finances/Dashboard';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -61,6 +62,11 @@ const Routes: React.FC = () => (
     <Route path="/password/reset/:id" component={ResetPassword} />
 
     <Route path="/financeiro/menu" component={MenuFinances} isPrivate />
+    <Route
+      path="/financeiro/dashboard"
+      component={DashboardFinances}
+      isPrivate
+    />
     <Route path="/financeiro/futuro" component={FutureReceipts} isPrivate />
     <Route path="/financeiro/caixa" component={Balance} isPrivate />
     <Route path="/financeiro/contas" component={Accounts} isPrivate />
