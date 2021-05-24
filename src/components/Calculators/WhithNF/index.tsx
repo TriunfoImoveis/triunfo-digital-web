@@ -1,10 +1,10 @@
 import React, { ChangeEvent, useCallback, useRef, useState } from 'react';
+import * as Yup from 'yup';
 import { RiSave3Fill } from 'react-icons/ri';
 import { MdEdit } from 'react-icons/md';
 import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
+import { FormHandles, SubmitHandler } from '@unform/core';
 import { toast } from 'react-toastify';
-import { useHistory } from 'react-router-dom';
 import Button from '../../Button';
 import Input from '../../Input';
 
@@ -13,7 +13,8 @@ import { currency, unMaked } from '../../../utils/unMasked';
 import { formatPrice } from '../../../utils/format';
 import EditComissionDivision from '../../ReactModal/EditDivisionComission';
 import { useCalculator } from '../../../context/CalculatorContext';
-import api from '../../../services/api';
+import ValidCalculation from '../../ReactModal/ValidCalculation';
+import getValidationErros from '../../../utils/getValidationErros';
 
 interface Comission {
   realtor: string;
@@ -28,7 +29,7 @@ interface Participantes {
   participant_type: string;
   comission_percentage: string;
   comission_integral: string;
-  tax_percentage: string;
+  tax_percentage: number;
   tax_value: string;
   comission_liquid: string;
 }
@@ -39,13 +40,35 @@ interface Division {
   value: string;
 }
 
+interface InfoNoteData {
+  numberNF: string;
+  porcentIss: string;
+  issValue: string;
+  porcentImpostTotal: string;
+  sald: string;
+}
+
+interface CalculatorData {
+  installment: string;
+  note_value: string;
+  note_number: string;
+  tax_iss_nf: number;
+  value_iss: string;
+  tax_rate_nf: string;
+  balance: string;
+  divisions: Division[];
+  participants: Participantes[];
+}
 type CalcProps = {
   id: string;
 };
 const WhithNF: React.FC<CalcProps> = ({ id }) => {
   const formRef = useRef<FormHandles>(null);
   const formRealtors = useRef<FormHandles>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [openModalValidCalculator, setOpenModalValidCalculator] = useState(
+    false,
+  );
+  const [calculationData, setCalculationData] = useState({} as CalculatorData);
   const [porcentImpost, setPorcentImpost] = useState('');
   const [porcentComissionData, setPorcentComissionData] = useState<Comission>({
     realtor: '',
@@ -76,20 +99,14 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
     cap: '',
   } as Comission);
   const [editDivisionModal, setEditDivisionModal] = useState(false);
-  const {
-    divisionData,
-    calcDivision,
-    sald,
-    comission,
-    initialValue,
-  } = useCalculator();
-  const history = useHistory();
+  const { divisionData, calcDivision, sald, comission } = useCalculator();
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
   const calcIss = () => {
     const valuePlot = currency(formRef.current?.getFieldValue('valuePlot'));
-    const porcentIss = formRef.current?.getFieldValue('porcentIss') / 100;
+    const porcentIss =
+      currency(formRef.current?.getFieldValue('porcentIss')) / 100;
     const iss = formatPrice(valuePlot * porcentIss);
     formRef.current?.setFieldValue('issValue', iss);
   };
@@ -200,108 +217,135 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
     ],
   );
 
-  const handleSaveDivision = async () => {
-    let participants: Participantes[] = [];
-    const division: Division[] = divisionData.map(division => ({
-      division_type: division.id,
-      percentage: division.porcent,
-      value: division.total ? unMaked(division.total) : '0',
-    }));
-    if (comission.coordinator) {
-      const balanceCoordinator = [
-        {
-          user: comission.coordinator.id,
-          participant_type: 'COORDENADOR',
-          comission_percentage: porcentComissionData.coordinator,
-          comission_integral: unMaked(comissionBrute.coordinator),
-          tax_percentage: porcentImpost,
-          tax_value: unMaked(impostValue.coordinator),
-          comission_liquid: unMaked(netCommission.coordinator),
-        },
-      ];
-      participants = [...participants, ...balanceCoordinator];
-    }
-    if (comission.captvators) {
-      const balanceCaptivators = comission.captvators.map(cap => ({
-        user: cap.id,
-        participant_type: 'CAPTADOR',
-        comission_percentage: porcentComissionData.cap,
-        comission_integral: unMaked(comissionBrute.cap),
-        tax_percentage: porcentImpost,
-        tax_value: unMaked(impostValue.cap),
-        comission_liquid: unMaked(netCommission.cap),
-      }));
-      participants = [...participants, ...balanceCaptivators];
-    }
-    const balanceRealtors = comission.sellers.map(saller => ({
-      user: saller.id,
-      participant_type: 'VENDEDOR',
-      comission_percentage: porcentComissionData.realtor,
-      comission_integral: unMaked(comissionBrute.realtor),
-      tax_percentage: porcentImpost,
-      tax_value: unMaked(impostValue.realtor),
-      comission_liquid: unMaked(netCommission.realtor),
-    }));
-    const balanceDirector = comission.directors.map(director => ({
-      user: director.id,
-      participant_type: 'DIRETOR',
-      comission_percentage: porcentComissionData.director,
-      comission_integral: unMaked(comissionBrute.director),
-      tax_percentage: porcentImpost,
-      tax_value: unMaked(impostValue.director),
-      comission_liquid: unMaked(netCommission.director),
-    }));
-    const balanceSubsidiary = [
-      {
-        participant_type: 'EMPRESA',
-        comission_percentage: porcentComissionData.subsidiary,
-        comission_integral: unMaked(comissionBrute.subsidiary),
-        tax_percentage: porcentImpost,
-        tax_value: unMaked(impostValue.subsidiary),
-        comission_liquid: unMaked(netCommission.subsidiary),
-      },
-    ];
-    participants = [
-      ...participants,
-      ...balanceRealtors,
-      ...balanceDirector,
-      ...balanceSubsidiary,
-    ];
-    const note_value = unMaked(formRef.current?.getFieldValue('sald'));
-    const note_number = unMaked(formRef.current?.getFieldValue('numberNF'));
-    const tax_iss_nf = formRef.current?.getFieldValue('porcentIss');
-    const value_iss = unMaked(formRef.current?.getFieldValue('issValue'));
-    const calculatorData = {
-      installment: id,
-      note_value,
-      note_number,
-      tax_iss_nf,
-      value_iss,
-      tax_rate_nf: porcentImpost,
-      balance: unMaked(sald),
-      divisions: division,
-      participants,
-    };
-
+  const toogleOpenModal = () => {
+    setOpenModalValidCalculator(!openModalValidCalculator);
+  };
+  const handleInfoNote: SubmitHandler<InfoNoteData> = async data => {
+    formRef.current?.setErrors({});
     try {
-      setIsLoading(true);
-      await api.post('/calculator', calculatorData);
-      toast.success('Parcela Paga e calaculada com sucesso !');
-      history.push('/financeiro/caixa');
-    } catch (error) {
-      toast.error('Deu algo errado, contate o suporte');
-    } finally {
-      setIsLoading(false);
-      initialValue();
+      const schema = Yup.object({
+        numberNF: Yup.string().required('Obrigatório'),
+        porcentIss: Yup.string().required('Obrigatório'),
+        issValue: Yup.string().required('Obrigatório'),
+        porcentImpostTotal: Yup.string().required('Obrigatório'),
+        sald: Yup.string().required('Obrigatório'),
+      });
+      await schema.validate(data, {
+        abortEarly: false,
+      });
+      setOpenModalValidCalculator(true);
+    } catch (err) {
+      setOpenModalValidCalculator(false);
+      if (err instanceof Yup.ValidationError) {
+        const erros = getValidationErros(err);
+        formRef.current?.setErrors(erros);
+      }
+
+      toast.error('ERROR!, verifique as informações e tente novamente');
     }
   };
+
+  const handleSaveDivision = async () => {
+    try {
+      formRef.current?.submitForm();
+      let participants: Participantes[] = [];
+      const division: Division[] = divisionData.map(division => ({
+        division_type: division.id,
+        percentage: division.porcent,
+        value: division.total ? unMaked(division.total) : '0',
+      }));
+      if (comission.coordinator) {
+        const balanceCoordinator = [
+          {
+            user: comission.coordinator.id,
+            participant_type: 'COORDENADOR',
+            comission_percentage: porcentComissionData.coordinator,
+            comission_integral: unMaked(comissionBrute.coordinator),
+            tax_percentage: Number(porcentImpost),
+            tax_value: unMaked(impostValue.coordinator),
+            comission_liquid: unMaked(netCommission.coordinator),
+          },
+        ];
+        participants = [...participants, ...balanceCoordinator];
+      }
+      if (comission.captvators) {
+        const balanceCaptivators = comission.captvators.map(cap => ({
+          user: cap.id,
+          participant_type: 'CAPTADOR',
+          comission_percentage: porcentComissionData.cap,
+          comission_integral: unMaked(comissionBrute.cap),
+          tax_percentage: Number(porcentImpost),
+          tax_value: unMaked(impostValue.cap),
+          comission_liquid: unMaked(netCommission.cap),
+        }));
+        participants = [...participants, ...balanceCaptivators];
+      }
+      const balanceRealtors = comission.sellers.map(saller => ({
+        user: saller.id,
+        participant_type: 'VENDEDOR',
+        comission_percentage: porcentComissionData.realtor,
+        comission_integral: unMaked(comissionBrute.realtor),
+        tax_percentage: Number(porcentImpost),
+        tax_value: unMaked(impostValue.realtor),
+        comission_liquid: unMaked(netCommission.realtor),
+      }));
+      const balanceDirector = comission.directors.map(director => ({
+        user: director.id,
+        participant_type: 'DIRETOR',
+        comission_percentage: porcentComissionData.director,
+        comission_integral: unMaked(comissionBrute.director),
+        tax_percentage: Number(porcentImpost),
+        tax_value: unMaked(impostValue.director),
+        comission_liquid: unMaked(netCommission.director),
+      }));
+      const balanceSubsidiary = [
+        {
+          participant_type: 'EMPRESA',
+          comission_percentage: porcentComissionData.subsidiary,
+          comission_integral: unMaked(comissionBrute.subsidiary),
+          tax_percentage: Number(porcentImpost),
+          tax_value: unMaked(impostValue.subsidiary),
+          comission_liquid: unMaked(netCommission.subsidiary),
+        },
+      ];
+      participants = [
+        ...participants,
+        ...balanceRealtors,
+        ...balanceDirector,
+        ...balanceSubsidiary,
+      ];
+      const note_value = unMaked(formRef.current?.getFieldValue('sald'));
+      const note_number = unMaked(formRef.current?.getFieldValue('numberNF'));
+      const tax_iss_nf = Number(
+        unMaked(formRef.current?.getFieldValue('porcentIss')),
+      );
+      const value_iss = unMaked(formRef.current?.getFieldValue('issValue'));
+      const calculatorData: CalculatorData = {
+        installment: id,
+        note_value,
+        note_number,
+        tax_iss_nf,
+        value_iss,
+        tax_rate_nf: unMaked(porcentImpost),
+        balance: unMaked(sald),
+        divisions: division,
+        participants,
+      };
+
+      setCalculationData(calculatorData);
+      toogleOpenModal();
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
   return (
     <Wrapper>
       <Container>
         <Asaid>
           <span>Imóveis com NF</span>
 
-          <Form ref={formRef} onSubmit={() => console.log('ok')}>
+          <Form ref={formRef} onSubmit={handleInfoNote}>
             {comission && comission.type_sale === 'NOVO' && comission.builder && (
               <div>
                 <span>Construtora</span>
@@ -327,34 +371,23 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             </div>
             <div>
               <span>Taxa de ISS imposto NF</span>
-              <Input
-                name="porcentIss"
-                type="text"
-                defaultValue="%"
-                onChange={calcIss}
-              />
+              <Input name="porcentIss" type="text" onChange={calcIss} />
             </div>
             <div>
               <span>Debito ISS</span>
-              <Input
-                mask="currency"
-                name="issValue"
-                type="text"
-                defaultValue="R$ 0,00"
-              />
+              <Input mask="currency" name="issValue" type="text" />
             </div>
             <div>
               <span>Taxa total do Imposto NF</span>
               <Input
                 name="porcentImpostTotal"
                 type="text"
-                defaultValue="%"
                 onChange={calTotalImpost}
               />
             </div>
             <div>
               <span>Recolhimento de Imposto</span>
-              <Input name="sald" type="text" defaultValue="R$ 0,00" />
+              <Input name="sald" type="text" />
             </div>
           </Form>
         </Asaid>
@@ -662,13 +695,18 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
         <div className="save">
           <Button type="button" onClick={handleSaveDivision}>
             <RiSave3Fill />
-            {isLoading ? '...Salvando, Aguarde !' : 'Salvar cálculo!'}
+            Salvar cálculo!
           </Button>
         </div>
       </Footer>
       <EditComissionDivision
         isOpen={editDivisionModal}
         setIsOpen={toogleEditDivisionModal}
+      />
+      <ValidCalculation
+        isOpen={openModalValidCalculator}
+        setIsOpen={toogleOpenModal}
+        calcData={calculationData}
       />
     </Wrapper>
   );

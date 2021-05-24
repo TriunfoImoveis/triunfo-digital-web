@@ -3,8 +3,6 @@ import { RiSave3Fill } from 'react-icons/ri';
 import { MdEdit } from 'react-icons/md';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { toast } from 'react-toastify';
-import { useHistory } from 'react-router-dom';
 import Button from '../../Button';
 import Input from '../../Input';
 
@@ -13,8 +11,14 @@ import { unMaked } from '../../../utils/unMasked';
 import { formatPrice } from '../../../utils/format';
 import EditComissionDivision from '../../ReactModal/EditDivisionComission';
 import { useCalculator } from '../../../context/CalculatorContext';
-import api from '../../../services/api';
+import ValidCalculation from '../../ReactModal/ValidCalculation';
 
+interface CalculatorData {
+  installment: string;
+  balance: string;
+  divisions: Division[];
+  participants: Participantes[];
+}
 interface Comission {
   realtor: string;
   coordinator: string;
@@ -43,7 +47,10 @@ type CalcProps = {
 const NotNF: React.FC<CalcProps> = ({ id }) => {
   const formRef = useRef<FormHandles>(null);
   const formRealtors = useRef<FormHandles>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [openModalValidCalculator, setOpenModalValidCalculator] = useState(
+    false,
+  );
+  const [calculationData, setCalculationData] = useState({} as CalculatorData);
   const [porcentComissionData, setPorcentComissionData] = useState<Comission>({
     realtor: '',
     coordinator: '',
@@ -66,17 +73,13 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
     cap: '',
   } as Comission);
   const [editDivisionModal, setEditDivisionModal] = useState(false);
-  const {
-    divisionData,
-    calcDivision,
-    sald,
-    comission,
-    initialValue,
-  } = useCalculator();
-  const history = useHistory();
+  const { divisionData, calcDivision, sald, comission } = useCalculator();
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
+  const toogleOpenModal = () => {
+    setOpenModalValidCalculator(!openModalValidCalculator);
+  };
 
   const calcBruteValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>, participant: string) => {
@@ -218,24 +221,14 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
       ...balanceDirector,
       ...balanceSubsidiary,
     ];
-    const calculatorData = {
+    const calculatorData: CalculatorData = {
       installment: id,
       balance: unMaked(sald),
       divisions: division,
       participants,
     };
-
-    try {
-      setIsLoading(true);
-      await api.post('/calculator', calculatorData);
-      toast.success('Parcela Paga e calaculada com sucesso !');
-      history.push('/financeiro/caixa');
-    } catch (error) {
-      toast.error('Deu algo errado, contate o suporte');
-    } finally {
-      setIsLoading(false);
-      initialValue();
-    }
+    setCalculationData(calculatorData);
+    toogleOpenModal();
   };
   return (
     <Wrapper>
@@ -491,13 +484,18 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
         <div className="save">
           <Button type="button" onClick={handleSaveDivision}>
             <RiSave3Fill />
-            {isLoading ? '...Salvando, Aguarde !' : 'Salvar cálculo!'}
+            Salvar cálculo!
           </Button>
         </div>
       </Footer>
       <EditComissionDivision
         isOpen={editDivisionModal}
         setIsOpen={toogleEditDivisionModal}
+      />
+      <ValidCalculation
+        isOpen={openModalValidCalculator}
+        setIsOpen={toogleOpenModal}
+        calcData={calculationData}
       />
     </Wrapper>
   );
