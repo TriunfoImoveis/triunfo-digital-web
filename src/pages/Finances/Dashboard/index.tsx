@@ -30,7 +30,20 @@ const DashboardFinances: React.FC = () => {
   const [SubsidiaryLiquid, setSubsidiaryLiquid] = useState('R$ 0,00');
   const [taxCollected, setTaxCollected] = useState('R$ 0,00');
   const [divisions, setDivisions] = useState<Division[]>([]);
+  const [linkDownloadReportContas, setLinkDownloadReportContas] = useState('');
+  const [linkDownloadReportRevenue, setLinkDownloadReportRevenue] = useState(
+    '',
+  );
 
+  useEffect(() => {
+    const LoadingReports = async () => {
+      const contas = await api.get('/expense/export/excel');
+      const revenue = await api.get('revenue/export/excel');
+      setLinkDownloadReportContas(contas.data.link_url);
+      setLinkDownloadReportRevenue(revenue.data.link_url);
+    };
+    LoadingReports();
+  }, []);
   useEffect(() => {
     const loadCommercialData = async () => {
       const response = await api.get('/installment');
@@ -191,6 +204,35 @@ const DashboardFinances: React.FC = () => {
                       </BoxContent>
                     </Box>
                   ))}
+                </ContainerCards>
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+          <Card>
+            <Accordion.Toggle as={Card.Header} eventKey="3">
+              Relatórios
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey="3">
+              <Card.Body>
+                <ContainerCards>
+                  <Box>
+                    <a
+                      href={linkDownloadReportRevenue}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Gerar relatório de Entradas e Saídas
+                    </a>
+                  </Box>
+                  <Box>
+                    <a
+                      href={linkDownloadReportContas}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Gerar relatório de Contas Fixa e Variaveis
+                    </a>
+                  </Box>
                 </ContainerCards>
               </Card.Body>
             </Accordion.Collapse>
