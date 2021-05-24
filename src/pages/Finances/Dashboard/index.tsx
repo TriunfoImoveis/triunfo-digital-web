@@ -1,23 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent, useMemo } from 'react';
 
 import { Accordion, Card } from 'react-bootstrap';
+import Switch from 'react-switch';
 import Header from '../../../components/Header/SimpleHeader';
 import api from '../../../services/api';
 import {
+  filterDay,
+  filterMonth,
+  filterYear,
   generateDivionValue,
   generateImpostValue,
   generateValueBrute,
   generateValueLiquid,
 } from '../../../utils/filters';
 import { formatPrice } from '../../../utils/format';
-import { Container, Content, ContainerCards, Box, BoxContent } from './styles';
+import {
+  Container,
+  Content,
+  ContainerCards,
+  Box,
+  BoxContent,
+  FiltersContainer,
+  FiltersBotton,
+  FilterButtonGroup,
+  FiltersBottonItems,
+} from './styles';
 
 interface Division {
   id: string;
   name: string;
   value: string;
 }
+
+interface DivisionType {
+  division_type: {
+    id: string;
+  };
+  percentage: string;
+  value: string;
+}
+interface Participantes {
+  user?: string;
+  participant_type: string;
+  comission_percentage: string;
+  comission_integral: string;
+  tax_percentage?: number;
+  tax_value?: string;
+  comission_liquid: string;
+}
+interface CalculatorData {
+  calculation: {
+    note_value: string;
+    participants: Participantes[];
+    divisions: DivisionType[];
+  };
+}
 const DashboardFinances: React.FC = () => {
+  const [city] = useState('São Luís');
+  const [month, setMonth] = useState(0);
+  const [year, setYear] = useState(2021);
+  const [checkedDay, setCheckedDay] = useState(true);
   const [sallerBrute, setSallerBrute] = useState('R$ 0,00');
   const [sallerLiquid, setSallerLiquid] = useState('R$ 0,00');
   const [captvatorBrute, setCaptvatorBrute] = useState('R$ 0,00');
@@ -34,6 +76,10 @@ const DashboardFinances: React.FC = () => {
   const [linkDownloadReportRevenue, setLinkDownloadReportRevenue] = useState(
     '',
   );
+  const [url, setUrl] = useState('/installment');
+  const [salesCalculation, setSalesCalculation] = useState<CalculatorData[]>(
+    [],
+  );
 
   useEffect(() => {
     const LoadingReports = async () => {
@@ -45,73 +91,169 @@ const DashboardFinances: React.FC = () => {
     LoadingReports();
   }, []);
   useEffect(() => {
-    const loadCommercialData = async () => {
-      const response = await api.get('/installment');
-      const commercial = response.data.filter(item => item.calculation && item);
-      const totalSubsidiaryBrute = generateValueBrute(commercial, 'EMPRESA');
-      const totalSubsidiaryLiquid = generateValueLiquid(commercial, 'EMPRESA');
-      const totalSallerBrute = generateValueBrute(commercial, 'VENDEDOR');
-      const totalSallerLiquid = generateValueLiquid(commercial, 'VENDEDOR');
-      const totalCaptvatorBrute = generateValueBrute(commercial, 'CAPTADOR');
-      const totalCaptvatorLiquid = generateValueLiquid(commercial, 'CAPTADOR');
-      const totalDirectorBrute = generateValueBrute(commercial, 'DIRETOR');
-      const totalDirectorLiquid = generateValueLiquid(commercial, 'DIRETOR');
-      const totalCoordinatorBrute = generateValueBrute(
-        commercial,
-        'COORDENADOR',
+    const loadDataSales = async () => {
+      const response = await api.get(url);
+      const salesCalculation = response.data.filter(
+        item => item.calculation && item,
       );
-      const totalCoordinatorLiquid = generateValueLiquid(
-        commercial,
-        'COORDENADOR',
-      );
-      setSubsidiaryBrute(formatPrice(totalSubsidiaryBrute));
-      setSubsidiaryLiquid(formatPrice(totalSubsidiaryLiquid));
-      setSallerBrute(formatPrice(totalSallerBrute));
-      setSallerLiquid(formatPrice(totalSallerLiquid));
-      setCaptvatorBrute(formatPrice(totalCaptvatorBrute));
-      setsetCaptvatorLiquid(formatPrice(totalCaptvatorLiquid));
-      setCoordinatorBrute(formatPrice(totalCoordinatorBrute));
-      setCoordinatorLiquid(formatPrice(totalCoordinatorLiquid));
-      setDirectorBrute(formatPrice(totalDirectorBrute));
-      setDirectorLiquid(formatPrice(totalDirectorLiquid));
+      if (checkedDay) {
+        setSalesCalculation(
+          salesCalculation.filter(item => filterDay(item.pay_date)),
+        );
+      } else if (month > 0) {
+        setSalesCalculation(
+          salesCalculation
+            .filter(item => filterYear(item.pay_date, year))
+            .filter(item => filterMonth(item.pay_date, month)),
+        );
+      } else if (month === 0) {
+        setSalesCalculation(
+          salesCalculation.filter(item => filterYear(item.pay_date, year)),
+        );
+      } else {
+        setSalesCalculation(salesCalculation);
+      }
     };
-    loadCommercialData();
-  }, []);
-  useEffect(() => {
-    const loadImpost = async () => {
-      const response = await api.get('/installment');
-      const commercial = response.data.filter(item => item.calculation && item);
-      const impost = generateImpostValue(commercial);
-      setTaxCollected(formatPrice(impost));
-    };
-    loadImpost();
-  }, []);
-  useEffect(() => {
-    const loadDivision = async () => {
-      const responseDivisions = await api.get('/calculator/division_types');
-      const disivionTypes = responseDivisions.data;
-      const response = await api.get('/installment');
-      const commercial = response.data.filter(
-        item => item.calculation && item.calculation,
-      );
 
-      const data = disivionTypes.map(division => {
-        const value = generateDivionValue(commercial, division.id);
-        return {
-          id: division.id,
-          name: division.name,
-          value: formatPrice(value),
-        };
-      });
+    loadDataSales();
+  }, [url, checkedDay, month, year]);
+  useMemo(async () => {
+    const totalSubsidiaryBrute = generateValueBrute(
+      salesCalculation,
+      'EMPRESA',
+    );
+    const totalSubsidiaryLiquid = generateValueLiquid(
+      salesCalculation,
+      'EMPRESA',
+    );
+    const totalSallerBrute = generateValueBrute(salesCalculation, 'VENDEDOR');
+    const totalSallerLiquid = generateValueLiquid(salesCalculation, 'VENDEDOR');
+    const totalCaptvatorBrute = generateValueBrute(
+      salesCalculation,
+      'CAPTADOR',
+    );
+    const totalCaptvatorLiquid = generateValueLiquid(
+      salesCalculation,
+      'CAPTADOR',
+    );
+    const totalDirectorBrute = generateValueBrute(salesCalculation, 'DIRETOR');
+    const totalDirectorLiquid = generateValueLiquid(
+      salesCalculation,
+      'DIRETOR',
+    );
+    const totalCoordinatorBrute = generateValueBrute(
+      salesCalculation,
+      'COORDENADOR',
+    );
+    const totalCoordinatorLiquid = generateValueLiquid(
+      salesCalculation,
+      'COORDENADOR',
+    );
+    setSubsidiaryBrute(formatPrice(totalSubsidiaryBrute));
+    setSubsidiaryLiquid(formatPrice(totalSubsidiaryLiquid));
+    setSallerBrute(formatPrice(totalSallerBrute));
+    setSallerLiquid(formatPrice(totalSallerLiquid));
+    setCaptvatorBrute(formatPrice(totalCaptvatorBrute));
+    setsetCaptvatorLiquid(formatPrice(totalCaptvatorLiquid));
+    setCoordinatorBrute(formatPrice(totalCoordinatorBrute));
+    setCoordinatorLiquid(formatPrice(totalCoordinatorLiquid));
+    setDirectorBrute(formatPrice(totalDirectorBrute));
+    setDirectorLiquid(formatPrice(totalDirectorLiquid));
+  }, [salesCalculation]);
+  useMemo(async () => {
+    const impost = generateImpostValue(salesCalculation);
+    setTaxCollected(formatPrice(impost));
+  }, [salesCalculation]);
+  useMemo(async () => {
+    const responseDivisions = await api.get('/calculator/division_types');
+    const disivionTypes = responseDivisions.data;
 
-      setDivisions(data);
-    };
-    loadDivision();
-  }, []);
+    const data = disivionTypes.map(division => {
+      const value = generateDivionValue(salesCalculation, division.id);
+      return {
+        id: division.id,
+        name: division.name,
+        value: formatPrice(value),
+      };
+    });
+
+    setDivisions(data);
+  }, [salesCalculation]);
+
+  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
+    event.target.value === 'Todas'
+      ? setUrl(`/installment`)
+      : setUrl(`/installment?city=${event.target.value}`);
+  };
+  const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    setYear(Number(event.target.value));
+  };
+  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
+    setMonth(Number(event.target.value));
+  };
+
+  const handleChangeDay = () => {
+    setCheckedDay(!checkedDay);
+  };
+
   return (
     <Container>
       <Header />
       <Content>
+        <FiltersContainer>
+          <FiltersBotton>
+            <FilterButtonGroup>
+              <FiltersBottonItems>
+                <span>Cidade: </span>
+                <select defaultValue={city} onChange={handleSelectCity}>
+                  <option value="Todas">Todas</option>
+                  <option value="São Luís">São Luís</option>
+                  <option value="Fortaleza">Fortaleza</option>
+                  <option value="Teresina">Teresina</option>
+                </select>
+              </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Ano: </span>
+                <select
+                  disabled={checkedDay}
+                  defaultValue={year}
+                  onChange={handleSelectYear}
+                >
+                  <option value={2021}>2021</option>
+                  <option value={2022}>2022</option>
+                  <option value={2023}>2023</option>
+                </select>
+              </FiltersBottonItems>
+
+              <FiltersBottonItems>
+                <span>Mês: </span>
+                <select
+                  defaultValue={month}
+                  onChange={handleSelectDate}
+                  disabled={checkedDay}
+                >
+                  <option value={0}>Todas</option>
+                  <option value={1}>Janeiro</option>
+                  <option value={2}>Fevereiro</option>
+                  <option value={3}>Março</option>
+                  <option value={4}>Abril</option>
+                  <option value={5}>Maio</option>
+                  <option value={6}>Junho</option>
+                  <option value={7}>Julho</option>
+                  <option value={8}>Agosto</option>
+                  <option value={9}>Setembro</option>
+                  <option value={10}>Outubro</option>
+                  <option value={11}>Novembro</option>
+                  <option value={12}>Dezembro</option>
+                </select>
+              </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Dia: </span>
+                <Switch onChange={handleChangeDay} checked={checkedDay} />
+              </FiltersBottonItems>
+            </FilterButtonGroup>
+          </FiltersBotton>
+        </FiltersContainer>
         <Accordion defaultActiveKey="0" bsPrefix="dashboard">
           <Card>
             <Accordion.Toggle as={Card.Header} eventKey="0">

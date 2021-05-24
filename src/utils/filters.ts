@@ -1,3 +1,5 @@
+import { getMonth, getYear, isToday, parseISO } from 'date-fns';
+
 interface IUser {
   id: string;
   name: string;
@@ -132,9 +134,9 @@ export const generateValueBrute = (
             ? Number(item.comission_integral)
             : 0,
         )
-        .reduce(reducer);
+        .reduce(reducer, 0);
     })
-    .reduce(reducer);
+    .reduce(reducer, 0);
 };
 export const generateValueLiquid = (
   sale: CalculatorData[],
@@ -149,9 +151,9 @@ export const generateValueLiquid = (
             ? Number(item.comission_liquid)
             : 0,
         )
-        .reduce(reducer);
+        .reduce(reducer, 0);
     })
-    .reduce(reducer);
+    .reduce(reducer, 0);
 };
 
 export const generateImpostValue = (sale: CalculatorData[]) => {
@@ -159,7 +161,7 @@ export const generateImpostValue = (sale: CalculatorData[]) => {
     .map(item =>
       item.calculation.note_value ? Number(item.calculation.note_value) : 0,
     )
-    .reduce(reducer);
+    .reduce(reducer, 0);
 };
 
 export const generateDivionValue = (
@@ -173,7 +175,35 @@ export const generateDivionValue = (
         .map(item =>
           item.division_type.id === typeDivision ? Number(item.value) : 0,
         )
-        .reduce(reducer);
+        .reduce(reducer, 0);
     })
-    .reduce(reducer);
+    .reduce(reducer, 0);
+};
+
+export const filterDay = (data: string) => {
+  const parsedDate = parseISO(data);
+  const today = isToday(parsedDate);
+  if (!today) {
+    // eslint-disable-next-line
+              return false;
+  }
+  return true;
+};
+export const filterMonth = (data: string, month: number) => {
+  const parsedDate = parseISO(data);
+  const monthDateSale = getMonth(parsedDate) + 1;
+  if (!(monthDateSale === month)) {
+    // eslint-disable-next-line
+    return false;
+  }
+  return true;
+};
+export const filterYear = (data: string, year: number) => {
+  const parsedDate = parseISO(data);
+  const newYear = getYear(parsedDate);
+  if (!(newYear === year)) {
+    // eslint-disable-next-line
+    return false;
+  }
+  return true;
 };
