@@ -1,4 +1,11 @@
-import { getMonth, getYear, isToday, parseISO } from 'date-fns';
+import {
+  getMonth,
+  getYear,
+  isAfter,
+  isBefore,
+  isToday,
+  parseISO,
+} from 'date-fns';
 
 interface IUser {
   id: string;
@@ -197,6 +204,20 @@ export const filterMonth = (data: string, month: number) => {
     return false;
   }
   return true;
+};
+
+export const filterTimeSlot = (
+  dataActual: string,
+  dateInitial: string,
+  dateFinaly: string,
+) => {
+  if (
+    isAfter(parseISO(dataActual), parseISO(dateInitial)) &&
+    isBefore(parseISO(dataActual), parseISO(dateFinaly))
+  ) {
+    return true;
+  }
+  return false;
 };
 export const filterYear = (data: string, year: number) => {
   const parsedDate = parseISO(data);

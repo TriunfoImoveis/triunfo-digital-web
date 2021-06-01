@@ -1,12 +1,21 @@
-import React, { useState, useEffect, ChangeEvent, useMemo } from 'react';
+import { Form } from '@unform/web';
+import React, {
+  useState,
+  useEffect,
+  ChangeEvent,
+  useMemo,
+  useCallback,
+} from 'react';
 
 import { Accordion, Card } from 'react-bootstrap';
 import Switch from 'react-switch';
+import Button from '../../../components/Button';
 import Header from '../../../components/Header/SimpleHeader';
+import Input from '../../../components/Input';
 import api from '../../../services/api';
 import {
-  filterDay,
   filterMonth,
+  filterTimeSlot,
   filterYear,
   generateDivionValue,
   generateImpostValue,
@@ -59,7 +68,6 @@ const DashboardFinances: React.FC = () => {
   const [city] = useState('São Luís');
   const [month, setMonth] = useState(0);
   const [year, setYear] = useState(2021);
-  const [checkedDay, setCheckedDay] = useState(true);
   const [sallerBrute, setSallerBrute] = useState('R$ 0,00');
   const [sallerLiquid, setSallerLiquid] = useState('R$ 0,00');
   const [captvatorBrute, setCaptvatorBrute] = useState('R$ 0,00');
@@ -80,6 +88,13 @@ const DashboardFinances: React.FC = () => {
   const [salesCalculation, setSalesCalculation] = useState<CalculatorData[]>(
     [],
   );
+  const [isTimeSlot, setIsTimeSlot] = useState(false);
+  const [dateInitial, setDateInitial] = useState('');
+  const [dateFinal, setDateFinal] = useState('');
+
+  const toogleIsTimeSlot = useCallback(() => {
+    setIsTimeSlot(!isTimeSlot);
+  }, [isTimeSlot]);
 
   useEffect(() => {
     const LoadingReports = async () => {
@@ -96,19 +111,23 @@ const DashboardFinances: React.FC = () => {
       const salesCalculation = response.data.filter(
         item => item.calculation && item,
       );
-      if (checkedDay) {
+      if (isTimeSlot && dateInitial.length !== 0) {
         setSalesCalculation(
-          salesCalculation.filter(item => filterDay(item.pay_date)),
+          salesCalculation.filter(item =>
+            filterTimeSlot(item.calculation.pay_date, dateInitial, dateFinal),
+          ),
         );
-      } else if (month > 0) {
+      } else if (!isTimeSlot && month > 0) {
         setSalesCalculation(
           salesCalculation
-            .filter(item => filterYear(item.pay_date, year))
-            .filter(item => filterMonth(item.pay_date, month)),
+            .filter(item => filterYear(item.calculation.pay_date, year))
+            .filter(item => filterMonth(item.calculation.pay_date, month)),
         );
-      } else if (month === 0) {
+      } else if (!isTimeSlot && month === 0) {
         setSalesCalculation(
-          salesCalculation.filter(item => filterYear(item.pay_date, year)),
+          salesCalculation.filter(item =>
+            filterYear(item.calculation.pay_date, year),
+          ),
         );
       } else {
         setSalesCalculation(salesCalculation);
@@ -116,7 +135,7 @@ const DashboardFinances: React.FC = () => {
     };
 
     loadDataSales();
-  }, [url, checkedDay, month, year]);
+  }, [url, month, isTimeSlot, year, dateInitial, dateFinal]);
   useMemo(async () => {
     const totalSubsidiaryBrute = generateValueBrute(
       salesCalculation,
@@ -180,6 +199,11 @@ const DashboardFinances: React.FC = () => {
     setDivisions(data);
   }, [salesCalculation]);
 
+  const handleSubmit = ({ date_initial, date_final }) => {
+    setDateInitial(date_initial);
+    setDateFinal(date_final);
+  };
+
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
     event.target.value === 'Todas'
       ? setUrl(`/installment`)
@@ -190,10 +214,6 @@ const DashboardFinances: React.FC = () => {
   };
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
     setMonth(Number(event.target.value));
-  };
-
-  const handleChangeDay = () => {
-    setCheckedDay(!checkedDay);
   };
 
   return (
@@ -212,44 +232,56 @@ const DashboardFinances: React.FC = () => {
                   <option value="Teresina">Teresina</option>
                 </select>
               </FiltersBottonItems>
-              <FiltersBottonItems>
-                <span>Ano: </span>
-                <select
-                  disabled={checkedDay}
-                  defaultValue={year}
-                  onChange={handleSelectYear}
-                >
-                  <option value={2021}>2021</option>
-                  <option value={2022}>2022</option>
-                  <option value={2023}>2023</option>
-                </select>
-              </FiltersBottonItems>
+              {!isTimeSlot ? (
+                <>
+                  <FiltersBottonItems>
+                    <span>Ano: </span>
+                    <select
+                      disabled={isTimeSlot}
+                      defaultValue={year}
+                      onChange={handleSelectYear}
+                    >
+                      <option value={2021}>2021</option>
+                      <option value={2022}>2022</option>
+                      <option value={2023}>2023</option>
+                    </select>
+                  </FiltersBottonItems>
 
+                  <FiltersBottonItems>
+                    <span>Mês: </span>
+                    <select
+                      defaultValue={month}
+                      onChange={handleSelectDate}
+                      disabled={isTimeSlot}
+                    >
+                      <option value={0}>Todas</option>
+                      <option value={1}>Janeiro</option>
+                      <option value={2}>Fevereiro</option>
+                      <option value={3}>Março</option>
+                      <option value={4}>Abril</option>
+                      <option value={5}>Maio</option>
+                      <option value={6}>Junho</option>
+                      <option value={7}>Julho</option>
+                      <option value={8}>Agosto</option>
+                      <option value={9}>Setembro</option>
+                      <option value={10}>Outubro</option>
+                      <option value={11}>Novembro</option>
+                      <option value={12}>Dezembro</option>
+                    </select>
+                  </FiltersBottonItems>
+                </>
+              ) : (
+                <FiltersBottonItems>
+                  <Form onSubmit={handleSubmit}>
+                    <Input name="date_initial" mask="date" type="date" />
+                    <Input name="date_final" mask="date" type="date" />
+                    <Button type="submit">Filtrar</Button>
+                  </Form>
+                </FiltersBottonItems>
+              )}
               <FiltersBottonItems>
-                <span>Mês: </span>
-                <select
-                  defaultValue={month}
-                  onChange={handleSelectDate}
-                  disabled={checkedDay}
-                >
-                  <option value={0}>Todas</option>
-                  <option value={1}>Janeiro</option>
-                  <option value={2}>Fevereiro</option>
-                  <option value={3}>Março</option>
-                  <option value={4}>Abril</option>
-                  <option value={5}>Maio</option>
-                  <option value={6}>Junho</option>
-                  <option value={7}>Julho</option>
-                  <option value={8}>Agosto</option>
-                  <option value={9}>Setembro</option>
-                  <option value={10}>Outubro</option>
-                  <option value={11}>Novembro</option>
-                  <option value={12}>Dezembro</option>
-                </select>
-              </FiltersBottonItems>
-              <FiltersBottonItems>
-                <span>Dia: </span>
-                <Switch onChange={handleChangeDay} checked={checkedDay} />
+                <span>intervalo de tempo: </span>
+                <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
               </FiltersBottonItems>
             </FilterButtonGroup>
           </FiltersBotton>

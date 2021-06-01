@@ -26,6 +26,7 @@ import {
 } from './styles';
 import NotFound from '../../../components/Errors/NotFound';
 import EntryRevenue from '../../../components/ReactModal/EntryRevenue';
+import { filterDay, filterMonth } from '../../../utils/filters';
 
 type FutureReceiptsType = {
   id: string;
@@ -53,14 +54,18 @@ type RevenueType = {
   cliente_name: string;
 };
 const FutureReceipts: React.FC = () => {
-  const [typeTab, setTypeTab] = useState('VENDAS');
+  const [typeTab, setTypeTab] = useState('RECEBIDO');
   const [modalDetails, setModalDetails] = useState(false);
   const [modalEntryRevenue, setModalEntryRevenue] = useState(false);
   const [city, setCity] = useState('São Luís');
   const [total, setTotal] = useState('R$ 0,00');
+  const [totalRecepient, setTotalRecepient] = useState('R$ 0,00');
   const [totalDespachante, setTotalDespachante] = useState('R$ 0,00');
   const [totalCredit, setTotalCredit] = useState('R$ 0,00');
   const [future, setFuture] = useState<FutureReceiptsType[]>([]);
+  const [futureRecepient, setFutureRecepient] = useState<FutureReceiptsType[]>(
+    [],
+  );
   const [futureDespachante, setFutureDespachante] = useState<RevenueType[]>([]);
   const [futureCredit, setFutureCredit] = useState<RevenueType[]>([]);
   const [selectedInstallment, setSelectedInstalment] = useState(
@@ -70,6 +75,109 @@ const FutureReceipts: React.FC = () => {
   const [month, setMonth] = useState(0);
   const [checked, setChecked] = useState(false);
 
+  useEffect(() => {
+    const loadingFutureReceipts = async () => {
+      const response = await api.get(`/installment?city=${city}`);
+      const recipientsPay = response.data.filter(
+        item => item.status === 'PAGO',
+      );
+
+      if (checked) {
+        const futureReceipt = recipientsPay.filter(item =>
+          filterDay(item.pay_date),
+        );
+        const dataFormated = futureReceipt.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.due_date),
+            description: `${item.installment_number}° Parcela, ${
+              item.sale.realty.enterprise
+            }, ${money(Number(item.sale.realty_ammount))}`,
+            value: Number(item.value),
+            valueBRL: money(Number(item.value)),
+            status: item.status,
+            city: item.sale.realty.city,
+            realtors: item.sale.sale_has_sellers
+              .map(realtor => realtor.name)
+              .toString(),
+            sale_type: item.sale.sale_type,
+          };
+        });
+        if (futureReceipt.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalRecepient(money(total));
+        } else {
+          setTotalRecepient(money(0));
+        }
+        setFutureRecepient(dataFormated);
+      } else if (month > 0) {
+        const futureReceipt = recipientsPay.filter(item =>
+          filterMonth(item.pay_date, month),
+        );
+
+        const dataFormated = futureReceipt.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.due_date),
+            description: `${item.installment_number}° Parcela, ${
+              item.sale.realty.enterprise
+            }, ${money(Number(item.sale.realty_ammount))}`,
+            value: Number(item.value),
+            valueBRL: money(Number(item.value)),
+            status: item.status,
+            city: item.sale.realty.city,
+            realtors: item.sale.sale_has_sellers
+              .map(realtor => realtor.name)
+              .toString(),
+            sale_type: item.sale.sale_type,
+          };
+        });
+        if (futureReceipt.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalRecepient(money(total));
+        } else {
+          setTotalRecepient(money(0));
+        }
+
+        setFutureRecepient(dataFormated);
+      } else {
+        const dataFormated = recipientsPay.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.due_date),
+            description: `${item.installment_number}° Parcela, ${
+              item.sale.realty.enterprise
+            }, ${money(Number(item.sale.realty_ammount))}`,
+            value: Number(item.value),
+            valueBRL: money(Number(item.value)),
+            status: item.status,
+            city: item.sale.realty.city,
+            realtors: item.sale.sale_has_sellers
+              .map(realtor => realtor.name)
+              .toString(),
+            sale_type: item.sale.sale_type,
+          };
+        });
+        if (recipientsPay.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalRecepient(money(total));
+        } else {
+          setTotalRecepient(money(0));
+        }
+        setFutureRecepient(dataFormated);
+      }
+    };
+    loadingFutureReceipts();
+  }, [city, month, checked]);
   useEffect(() => {
     const loadingFutureReceipts = async () => {
       const response = await api.get(`/installment?city=${city}`);
@@ -585,7 +693,7 @@ const FutureReceipts: React.FC = () => {
       <Background>
         <Container>
           <Header>
-            <h1>Recebimentos Futuros</h1>
+            <h1>Recebimentos</h1>
           </Header>
           <FiltersContainer>
             <FiltersBotton>
@@ -637,7 +745,7 @@ const FutureReceipts: React.FC = () => {
                 onSelect={tab => handleSetTab(tab)}
                 variant="tabs"
               >
-                <TabBootstrap eventKey="VENDAS" title="Vendas">
+                <TabBootstrap eventKey="RECEBER" title="Vendas | A receber">
                   <TitlePane>Entradas Futuras</TitlePane>
                   <Table cols={6}>
                     <thead>
@@ -683,6 +791,55 @@ const FutureReceipts: React.FC = () => {
                     <p>
                       <span>Total</span>
                       <strong>{total}</strong>
+                    </p>
+                  </BalanceAmount>
+                </TabBootstrap>
+                <TabBootstrap eventKey="RECEBIDO" title="Vendas | Recebidos">
+                  <TitlePane>Entradas Futuras</TitlePane>
+                  <Table cols={6}>
+                    <thead>
+                      <tr>
+                        <th>Filial</th>
+                        <th>Vencimento</th>
+                        <th>Descrição</th>
+                        <th>Valor Bruto</th>
+                        <th>Corretor</th>
+                        <th>Status</th>
+                        <th>Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {futureRecepient.length === 0 ? (
+                        <NotFound />
+                      ) : (
+                        futureRecepient.map(item => (
+                          <>
+                            <tr key={item.id}>
+                              <td>{item.city}</td>
+                              <td>{item.due_date}</td>
+                              <td>{item.description}</td>
+                              <td>{item.valueBRL}</td>
+                              <td>{item.realtors}</td>
+                              <td className={item.status}>{item.status}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="details"
+                                  onClick={() => handleOpenModal(item)}
+                                >
+                                  <AiOutlinePlus color="#C32925" />
+                                </button>
+                              </td>
+                            </tr>
+                          </>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
+                  <BalanceAmount>
+                    <p>
+                      <span>Total</span>
+                      <strong>{totalRecepient}</strong>
                     </p>
                   </BalanceAmount>
                 </TabBootstrap>
