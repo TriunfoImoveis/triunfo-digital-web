@@ -13,6 +13,7 @@ import { Container, ContainerWrapper, ButtonGroup } from './styles';
 import { useAuth } from '../../../context/AuthContext';
 import getValidationErros from '../../../utils/getValidationErros';
 import { useCalculator } from '../../../context/CalculatorContext';
+import Input from '../../Input';
 
 interface Participantes {
   user?: string;
@@ -48,6 +49,7 @@ interface ModalProps {
 }
 
 interface FormData {
+  pay_date: string;
   bank_data: string;
 }
 
@@ -68,6 +70,7 @@ const ValidCalculation: React.FC<ModalProps> = ({
     formRef.current?.setErrors({});
     try {
       const schema = Yup.object({
+        pay_date: Yup.string().required('Data de Pagamento obrigatória'),
         bank_data: Yup.string().required('Conta de Entrada obrigatória'),
       });
 
@@ -104,6 +107,11 @@ const ValidCalculation: React.FC<ModalProps> = ({
             Antes de dar a baixa na parcela nos informe a conta de entrada !
           </p>
           <Form ref={formRef} onSubmit={handlePayPlot}>
+            <Input
+              name="pay_date"
+              label="Data de pagamento da comissão"
+              mask="date"
+            />
             <Select
               name="bank_data"
               label="Conta de entrada"
