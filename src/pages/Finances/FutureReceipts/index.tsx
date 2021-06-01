@@ -3,7 +3,7 @@ import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { AiOutlinePlus } from 'react-icons/ai';
 import Switch from 'react-switch';
 
-import { getMonth, isToday, parseISO } from 'date-fns';
+import { Link } from 'react-router-dom';
 import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
@@ -30,7 +30,9 @@ import { filterDay, filterMonth } from '../../../utils/filters';
 
 type FutureReceiptsType = {
   id: string;
-  due_date: string;
+  sale_id?: string;
+  pay_date?: string;
+  due_date?: string;
   description: string;
   value: number;
   valueBRL: string;
@@ -89,7 +91,7 @@ const FutureReceipts: React.FC = () => {
         const dataFormated = futureReceipt.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            pay_date: DateBRL(item.pay_date),
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             }, ${money(Number(item.sale.realty_ammount))}`,
@@ -121,7 +123,7 @@ const FutureReceipts: React.FC = () => {
         const dataFormated = futureReceipt.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            pay_date: DateBRL(item.pay_date),
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             }, ${money(Number(item.sale.realty_ammount))}`,
@@ -150,7 +152,7 @@ const FutureReceipts: React.FC = () => {
         const dataFormated = recipientsPay.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            pay_date: DateBRL(item.pay_date),
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
             }, ${money(Number(item.sale.realty_ammount))}`,
@@ -184,32 +186,17 @@ const FutureReceipts: React.FC = () => {
       if (checked) {
         const futureReceiptsPending = response.data
           .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterDay(item.due_date));
         const futureReceiptsExpired = response.data
           .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterDay(item.due_date));
 
         const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
         const dataFormated = data.map(item => {
           return {
             id: item.id,
+            sale_id: item.sale.id,
             due_date: DateBRL(item.due_date),
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
@@ -238,32 +225,17 @@ const FutureReceipts: React.FC = () => {
       } else if (month > 0) {
         const futureReceiptsPending = response.data
           .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterMonth(item.due_date, month));
         const futureReceiptsExpired = response.data
           .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterMonth(item.due_date, month));
 
         const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
         const dataFormated = data.map(item => {
           return {
             id: item.id,
+            sale_id: item.sale.id,
             due_date: DateBRL(item.due_date),
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
@@ -302,6 +274,7 @@ const FutureReceipts: React.FC = () => {
         const dataFormated = data.map(item => {
           return {
             id: item.id,
+            sale_id: item.sale.id,
             due_date: DateBRL(item.due_date),
             description: `${item.installment_number}° Parcela, ${
               item.sale.realty.enterprise
@@ -339,28 +312,12 @@ const FutureReceipts: React.FC = () => {
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterDay(item.due_date));
         const futureReceiptsExpired = response.data
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.status.includes('VENCIDO') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterDay(item.due_date));
 
         const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
@@ -396,28 +353,12 @@ const FutureReceipts: React.FC = () => {
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterMonth(item.due_date, month));
         const futureReceiptsExpired = response.data
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.status.includes('VENCIDO') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterMonth(item.due_date, month));
 
         const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
@@ -499,28 +440,12 @@ const FutureReceipts: React.FC = () => {
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterDay(item.due_date));
         const futureReceiptsExpired = response.data
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.status.includes('VENCIDO') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterDay(item.due_date));
 
         const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
@@ -556,28 +481,12 @@ const FutureReceipts: React.FC = () => {
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterMonth(item.due_date, month));
         const futureReceiptsExpired = response.data
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.status.includes('VENCIDO') && item)
           .filter(item => item.subsidiary.city === city && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+          .filter(item => filterMonth(item.due_date, month));
 
         const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
@@ -755,7 +664,6 @@ const FutureReceipts: React.FC = () => {
                         <th>Descrição</th>
                         <th>Valor Bruto</th>
                         <th>Corretor</th>
-                        <th>Status</th>
                         <th>Detalhes</th>
                       </tr>
                     </thead>
@@ -771,15 +679,12 @@ const FutureReceipts: React.FC = () => {
                               <td>{item.description}</td>
                               <td>{item.valueBRL}</td>
                               <td>{item.realtors}</td>
-                              <td className={item.status}>{item.status}</td>
                               <td>
-                                <button
-                                  type="button"
-                                  className="details"
-                                  onClick={() => handleOpenModal(item)}
+                                <Link
+                                  to={`/adm/detalhes-vendas/${item.sale_id}`}
                                 >
-                                  <AiOutlinePlus color="#C32925" />
-                                </button>
+                                  Ver detalhes
+                                </Link>
                               </td>
                             </tr>
                           </>
@@ -796,7 +701,7 @@ const FutureReceipts: React.FC = () => {
                 </TabBootstrap>
                 <TabBootstrap eventKey="RECEBIDO" title="Vendas | Recebidos">
                   <TitlePane>Entradas Futuras</TitlePane>
-                  <Table cols={6}>
+                  <Table cols={7}>
                     <thead>
                       <tr>
                         <th>Filial</th>
@@ -816,7 +721,7 @@ const FutureReceipts: React.FC = () => {
                           <>
                             <tr key={item.id}>
                               <td>{item.city}</td>
-                              <td>{item.due_date}</td>
+                              <td>{item.pay_date}</td>
                               <td>{item.description}</td>
                               <td>{item.valueBRL}</td>
                               <td>{item.realtors}</td>

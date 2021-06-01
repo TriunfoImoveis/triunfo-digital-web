@@ -199,11 +199,11 @@ export const filterDay = (data: string) => {
 export const filterMonth = (data: string, month: number) => {
   const parsedDate = parseISO(data);
   const monthDateSale = getMonth(parsedDate) + 1;
-  if (!(monthDateSale === month)) {
+  if (monthDateSale === month) {
     // eslint-disable-next-line
-    return false;
+    return true;
   }
-  return true;
+  return false;
 };
 
 export const filterTimeSlot = (
