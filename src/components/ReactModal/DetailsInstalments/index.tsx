@@ -9,7 +9,7 @@ import Button from '../../Button';
 
 type Installment = {
   id: string;
-  due_date: string;
+  pay_date?: string;
   description: string;
   value: number;
   valueBRL: string;
@@ -40,7 +40,7 @@ const DetailsInstalments: React.FC<IModalProps> = ({
             <Input label="Tipo da Venda" data={installment.sale_type} />
           </InputGroup>
           <InputGroup>
-            <Input label="Vencimento" data={installment.due_date} />
+            <Input label="Data de Pagamento" data={installment.pay_date} />
             <Input label="Status" data={installment.status} />
           </InputGroup>
           <Input label="Valor Bruto" data={installment.valueBRL} />

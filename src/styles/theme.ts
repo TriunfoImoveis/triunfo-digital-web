@@ -4,6 +4,8 @@ const theme: DefaultTheme = {
   colors: {
     primary: '#C32925',
     primaryAlpha: 'rgba(195, 41, 37, 0.2)',
+    orange: '#ff8c00',
+    orangeAlpha: 'rgba(255, 140, 0, 0.2)',
     secondary: '#FCF9F9',
     danger: '#DC3545',
     success: '#40B236',

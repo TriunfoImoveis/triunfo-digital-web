@@ -42,6 +42,7 @@ const ValidInstallment: React.FC<ModalProps> = ({
         <h3>Validação da Parcela</h3>
         <Container>
           <strong>ATENÇÃO!!</strong>
+          <p>Você confirma que recebeu o pagamento da parcela!</p>
           <p>Você esta realizando um operação inreverssível, tem certeza?</p>
           <ButtonGroup>
             <Button color="#40B236" onClick={handlePayPlot}>

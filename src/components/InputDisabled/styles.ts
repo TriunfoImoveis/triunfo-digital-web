@@ -26,14 +26,20 @@ export const Container = styled.div<ContainerProps>`
   ${props =>
     props.status === 'PAGO' &&
     css`
-      background-color: ${({ theme }) => theme.colors.successAlpha};
-      border-color: ${({ theme }) => theme.colors.successAlpha};
+      background-color: ${({ theme }) => theme.colors.orangeAlpha};
+      border-color: ${({ theme }) => theme.colors.orangeAlpha};
     `}
   ${props =>
     props.status === 'VENCIDO' &&
     css`
       background-color: ${({ theme }) => theme.colors.primaryAlpha};
       border-color: ${({ theme }) => theme.colors.primaryAlpha};
+    `}
+  ${props =>
+    props.status === 'LIQUIDADO' &&
+    css`
+      background-color: ${({ theme }) => theme.colors.successAlpha};
+      border-color: ${({ theme }) => theme.colors.successAlpha};
     `}
 `;
 export const Label = styled.span`
