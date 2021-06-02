@@ -1,9 +1,9 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { SiOneplus } from 'react-icons/si';
 import Switch from 'react-switch';
-import { getMonth, getYear, isToday, parseISO } from 'date-fns';
+import { Form } from '@unform/web';
 import NotFound from '../../../components/Errors/NotFound';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
@@ -26,6 +26,13 @@ import {
 import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
+import Input from '../../../components/Input';
+import Button from '../../../components/Button';
+import {
+  filterMonth,
+  filterTimeSlot,
+  filterYear,
+} from '../../../utils/filters';
 
 type AccountProps = {
   id: string;
@@ -44,7 +51,6 @@ const Account: React.FC = () => {
   const [city, setCity] = useState('São Luís');
   const [month, setMonth] = useState(0);
   const [year, setYear] = useState(2021);
-  const [checked, setChecked] = useState(true);
   const [totalFixed, setTotalFixed] = useState('R$ 0,00');
   const [totalVariable, setTotalVariable] = useState('R$ 0,00');
   const [accountDataFixed, setAccountDataFixed] = useState<AccountProps[]>([]);
@@ -52,23 +58,21 @@ const Account: React.FC = () => {
     AccountProps[]
   >([]);
 
+  const [isTimeSlot, setIsTimeSlot] = useState(false);
+  const [dateInitial, setDateInitial] = useState('');
+  const [dateFinal, setDateFinal] = useState('');
+
   useEffect(() => {
     const loadingAccountFixed = async () => {
       const response = await api.get(`/expense`);
-      if (checked) {
-        const account = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.expense_type.includes('FIXA') && item)
-          .filter(item => item.pay_date === null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+      const responseAccount = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.expense_type.includes('FIXA') && item)
+        .filter(item => item.pay_date === null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const account = responseAccount.filter(item =>
+          filterTimeSlot(item.due_date, dateInitial, dateFinal),
+        );
 
         const data = account;
         const dataFormated = data.map(item => {
@@ -96,28 +100,9 @@ const Account: React.FC = () => {
 
         setAccountDataFixed(dataFormated);
       } else if (month > 0) {
-        const account = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.expense_type.includes('FIXA') && item)
-          .filter(item => item.pay_date === null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          })
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+        const account = responseAccount
+          .filter(item => filterMonth(item.due_date, month))
+          .filter(item => filterYear(item.due_date, year));
 
         const data = account;
 
@@ -146,19 +131,9 @@ const Account: React.FC = () => {
 
         setAccountDataFixed(dataFormated);
       } else {
-        const account = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.expense_type.includes('FIXA') && item)
-          .filter(item => item.pay_date === null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-            return;
-            }
-            return item;
-          });
+        const account = responseAccount.filter(item =>
+          filterYear(item.due_date, year),
+        );
 
         const data = account;
 
@@ -189,24 +164,18 @@ const Account: React.FC = () => {
       }
     };
     loadingAccountFixed();
-  }, [city, month, checked, year]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
   useEffect(() => {
     const loadingAccountVariable = async () => {
       const response = await api.get(`/expense`);
-      if (checked) {
-        const variable = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.expense_type.includes('VARIAVEL') && item)
-          .filter(item => item.pay_date === null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+      const responseAccount = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.expense_type.includes('VARIAVEL') && item)
+        .filter(item => item.pay_date === null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const variable = responseAccount.filter(item =>
+          filterTimeSlot(item.due_date, dateInitial, dateFinal),
+        );
 
         const data = variable;
         const dataFormated = data.map(item => {
@@ -234,28 +203,9 @@ const Account: React.FC = () => {
 
         setAccountDataVariable(dataFormated);
       } else if (month > 0) {
-        const variable = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.expense_type.includes('VARIAVEL') && item)
-          .filter(item => item.pay_date === null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          })
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+        const variable = responseAccount
+          .filter(item => filterMonth(item.due_date, month))
+          .filter(item => filterYear(item.due_date, year));
 
         const data = variable;
 
@@ -284,19 +234,9 @@ const Account: React.FC = () => {
 
         setAccountDataVariable(dataFormated);
       } else {
-        const variable = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.expense_type.includes('VARIAVEL') && item)
-          .filter(item => item.pay_date === null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-            return;
-            }
-            return item;
-          });
+        const variable = responseAccount.filter(item =>
+          filterYear(item.due_date, year),
+        );
 
         const data = variable;
 
@@ -327,7 +267,16 @@ const Account: React.FC = () => {
       }
     };
     loadingAccountVariable();
-  }, [city, month, checked, year]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+
+  const toogleIsTimeSlot = useCallback(() => {
+    setIsTimeSlot(!isTimeSlot);
+  }, [isTimeSlot]);
+
+  const handleSubmit = ({ date_initial, date_final }) => {
+    setDateInitial(date_initial);
+    setDateFinal(date_final);
+  };
 
   const handleSetTab = (tabName: string | null) => {
     if (tabName) {
@@ -343,10 +292,6 @@ const Account: React.FC = () => {
   };
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
     setMonth(Number(event.target.value));
-  };
-
-  const handleChange = () => {
-    setChecked(!checked);
   };
 
   return (
@@ -367,44 +312,56 @@ const Account: React.FC = () => {
                     <option value="Teresina">Teresina</option>
                   </select>
                 </FiltersBottonItems>
-                <FiltersBottonItems>
-                  <span>Ano: </span>
-                  <select
-                    disabled={checked}
-                    defaultValue={year}
-                    onChange={handleSelectYear}
-                  >
-                    <option value={2021}>2021</option>
-                    <option value={2022}>2022</option>
-                    <option value={2023}>2023</option>
-                  </select>
-                </FiltersBottonItems>
+                {!isTimeSlot ? (
+                  <>
+                    <FiltersBottonItems>
+                      <span>Ano: </span>
+                      <select
+                        disabled={isTimeSlot}
+                        defaultValue={year}
+                        onChange={handleSelectYear}
+                      >
+                        <option value={2021}>2021</option>
+                        <option value={2022}>2022</option>
+                        <option value={2023}>2023</option>
+                      </select>
+                    </FiltersBottonItems>
 
+                    <FiltersBottonItems>
+                      <span>Mês: </span>
+                      <select
+                        defaultValue={month}
+                        onChange={handleSelectDate}
+                        disabled={isTimeSlot}
+                      >
+                        <option value={0}>Todas</option>
+                        <option value={1}>Janeiro</option>
+                        <option value={2}>Fevereiro</option>
+                        <option value={3}>Março</option>
+                        <option value={4}>Abril</option>
+                        <option value={5}>Maio</option>
+                        <option value={6}>Junho</option>
+                        <option value={7}>Julho</option>
+                        <option value={8}>Agosto</option>
+                        <option value={9}>Setembro</option>
+                        <option value={10}>Outubro</option>
+                        <option value={11}>Novembro</option>
+                        <option value={12}>Dezembro</option>
+                      </select>
+                    </FiltersBottonItems>
+                  </>
+                ) : (
+                  <FiltersBottonItems>
+                    <Form onSubmit={handleSubmit}>
+                      <Input name="date_initial" mask="date" type="date" />
+                      <Input name="date_final" mask="date" type="date" />
+                      <Button type="submit">Filtrar</Button>
+                    </Form>
+                  </FiltersBottonItems>
+                )}
                 <FiltersBottonItems>
-                  <span>Mês: </span>
-                  <select
-                    defaultValue={month}
-                    onChange={handleSelectDate}
-                    disabled={checked}
-                  >
-                    <option value={0}>Todas</option>
-                    <option value={1}>Janeiro</option>
-                    <option value={2}>Fevereiro</option>
-                    <option value={3}>Março</option>
-                    <option value={4}>Abril</option>
-                    <option value={5}>Maio</option>
-                    <option value={6}>Junho</option>
-                    <option value={7}>Julho</option>
-                    <option value={8}>Agosto</option>
-                    <option value={9}>Setembro</option>
-                    <option value={10}>Outubro</option>
-                    <option value={11}>Novembro</option>
-                    <option value={12}>Dezembro</option>
-                  </select>
-                </FiltersBottonItems>
-                <FiltersBottonItems>
-                  <span>Dia: </span>
-                  <Switch onChange={handleChange} checked={checked} />
+                  <span>intervalo de tempo: </span>
+                  <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
                 </FiltersBottonItems>
               </FilterButtonGroup>
             </FiltersBotton>
@@ -419,7 +376,7 @@ const Account: React.FC = () => {
                 variant="tabs"
               >
                 <TabBootstrap eventKey="fix" title="Contas Fixas">
-                  <TitlePane>Contas Fiquísas</TitlePane>
+                  <TitlePane>Contas Fixas</TitlePane>
                   <Table cols={7}>
                     <thead>
                       <tr>

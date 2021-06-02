@@ -16,7 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 import { DateYMD, unMaked } from '../../utils/unMasked';
 import { valiateDate } from '../../utils/validateDate';
 import getValidationErros from '../../utils/getValidationErros';
-import { money } from '../../utils/masked';
+import { DateBRL, formatPrice } from '../../utils/format';
 
 type Options = {
   label: string;
@@ -51,10 +51,10 @@ const EditAccountFixed: React.FC<EditAccountFixedProps> = ({ accountId }) => {
       setAccount({
         subsidiary: account.subsidiary.id,
         description: account.description,
-        value: account.value,
+        value: formatPrice(Number(account.value)),
         status: account.status,
         group: account.group.id,
-        due_date: account.due_date,
+        due_date: DateBRL(account.due_date),
       });
 
       setAccount(account);
@@ -107,7 +107,6 @@ const EditAccountFixed: React.FC<EditAccountFixedProps> = ({ accountId }) => {
     setIsLoadingGroup(false);
     setOptionsGroup(options);
   };
-
   const handleSubmit = async data => {
     formRef.current?.setErrors({});
     try {
@@ -172,7 +171,7 @@ const EditAccountFixed: React.FC<EditAccountFixedProps> = ({ accountId }) => {
             name="value"
             label="Valor"
             mask="currency"
-            defaultValue={money(Number(account.value))}
+            defaultValue={account.value}
           />
         </InputGroup>
         <InputGroup>
@@ -203,7 +202,7 @@ const EditAccountFixed: React.FC<EditAccountFixedProps> = ({ accountId }) => {
         onClick={() => formRef.current?.submitForm()}
       >
         <BsCheckBox />
-        {!isLoadingAddAccount ? 'ATualizar dados' : '...Atualizando'}
+        {!isLoadingAddAccount ? 'Atualizar dados' : '...Atualizando'}
       </Button>
     </Container>
   );

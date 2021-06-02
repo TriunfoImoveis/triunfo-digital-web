@@ -56,7 +56,7 @@ const TableBoxFinancesAccount: React.FC<TableBoxFinancesAccountProps> = ({
                 <td>{account.city}</td>
                 <td>{account.description}</td>
                 <td>{account.user}</td>
-                <td>{account.value}</td>
+                <td>{account.valueBRL}</td>
                 <td>{account.bank}</td>
               </tr>
             ))}
