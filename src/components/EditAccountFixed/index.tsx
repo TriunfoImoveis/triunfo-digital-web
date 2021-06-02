@@ -56,8 +56,6 @@ const EditAccountFixed: React.FC<EditAccountFixedProps> = ({ accountId }) => {
         group: account.group.id,
         due_date: DateBRL(account.due_date),
       });
-
-      setAccount(account);
     };
     loadAccount();
   }, [accountId]);
@@ -167,18 +165,12 @@ const EditAccountFixed: React.FC<EditAccountFixedProps> = ({ accountId }) => {
           />
         </InputGroup>
         <InputGroup>
-          <Input
-            name="value"
-            label="Valor"
-            mask="currency"
-            defaultValue={account.value}
-          />
+          <Input name="value" label="Valor" defaultValue={account.value} />
         </InputGroup>
         <InputGroup>
           <Input
             name="due_date"
             label="Data de Inicio"
-            mask="date"
             defaultValue={account.due_date}
           />
         </InputGroup>
