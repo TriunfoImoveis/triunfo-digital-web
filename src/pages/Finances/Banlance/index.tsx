@@ -25,6 +25,11 @@ import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
 import TableBoxFinancesAccount from '../../../components/Finances/TableBoxFinancesAccounts';
+import {
+  filterDay,
+  generateValueBruteSubsidiary,
+  generateValueBruteSubsidiaryLiquid,
+} from '../../../utils/filters';
 
 type BalanceData = {
   id: string;
@@ -37,6 +42,21 @@ type BalanceData = {
   brute_valueBRL: string;
   value_note: string;
   tax_rate: string;
+  bank: string;
+};
+type EntryData = {
+  id: string;
+  pay_date: string;
+  city: string;
+  description: string;
+  paying_source: string;
+  brute_value: string;
+  brute_valueBRL: string;
+  tax_rate: string;
+  value_note: string;
+  empressBrute: string;
+  empressLiquidBRL: string;
+  empressLiquid: string;
   bank: string;
 };
 type ForwardingAgentData = {
@@ -71,7 +91,7 @@ const Balance: React.FC = () => {
   const [totalSalesEntry, setTotalSalesEntry] = useState('R$ 0,00');
   const [totalCreditEntry, setTotalCreditEntry] = useState('R$ 0,00');
   const [totalAccount, setTotalAccount] = useState('R$ 0,00');
-  const [salesEntry, setSalesEntry] = useState<BalanceData[]>([]);
+  const [salesEntry, setSalesEntry] = useState<EntryData[]>([]);
   const [creditEntry, setCreditEntry] = useState<BalanceData[]>([]);
   const [account, setAccount] = useState<Account[]>([]);
   const [dispatcherEntry, setDispatcherEntry] = useState<ForwardingAgentData[]>(
@@ -85,48 +105,38 @@ const Balance: React.FC = () => {
 
   useEffect(() => {
     const loadingSalesEntry = async () => {
-      const response = await api.get(`/installment?city=${city}&status=PAGO`);
+      const response = await api.get(
+        `/installment?city=${city}&status=LIQUIDADA`,
+      );
       if (checkedDay) {
-        const entry = response.data.filter(item => {
-          const parsedDate = parseISO(item.pay_date);
-          const today = isToday(parsedDate);
-          if (!today) {
-            // eslint-disable-next-line
-              return;
-          }
-          return item;
-        });
+        const entry = response.data.filter(item =>
+          filterDay(item.calculation.pay_date),
+        );
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.pay_date),
+            pay_date: DateBRL(item.calculation.pay_date),
             city,
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value:
-              item.calculation !== null ? Number(item.calculation.balance) : 0,
-            brute_valueBRL:
-              item.calculation !== null
-                ? money(Number(item.calculation.balance))
-                : '--------',
-            value_note:
-              item.calculation !== null
-                ? money(Number(item.calculation.note_value))
-                : '------',
-            tax_rate:
-              item.calculation !== null
-                ? item.calculation.tax_rate_nf
-                : '------',
+            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
+            paying_source: `${
+              item.sale_type ? 'CONSTRUTORA' : 'CLIENTE VENDEDOR'
+            }`,
+            brute_value: item.value ? Number(item.value) : 0,
+            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
+            tax_rate: item.calculation.tax_rate_nf
+              ? item.calculation.tax_rate_nf
+              : '0%',
+            value_note: item.calculation.note_value
+              ? money(Number(item.calculation.note_value))
+              : 'R$ 0,00',
+            empressBrute: money(generateValueBruteSubsidiary(item)),
+            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
+            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
             bank: item.bank_data ? item.bank_data : '-----',
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            client: item.sale.client_buyer.name,
           };
         });
         if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.brute_value);
+          const arrayValues = dataFormated.map(item => item.empressLiquid);
           const reducer = (accumulator, currentValue) =>
             accumulator + currentValue;
           const total = arrayValues.reduce(reducer);
@@ -160,34 +170,28 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.pay_date),
+            pay_date: DateBRL(item.calculation.pay_date),
             city,
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value:
-              item.calculation !== null ? Number(item.calculation.balance) : 0,
-            brute_valueBRL:
-              item.calculation !== null
-                ? money(Number(item.calculation.balance))
-                : '--------',
-            value_note:
-              item.calculation !== null
-                ? money(Number(item.calculation.note_value))
-                : '------',
-            tax_rate:
-              item.calculation !== null
-                ? item.calculation.tax_rate_nf
-                : '------',
+            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
+            paying_source: `${
+              item.sale_type ? 'CONSTRUTORA' : 'CLIENTE VENDEDOR'
+            }`,
+            brute_value: item.value ? Number(item.value) : 0,
+            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
+            tax_rate: item.calculation.tax_rate_nf
+              ? item.calculation.tax_rate_nf
+              : '0%',
+            value_note: item.calculation.note_value
+              ? money(Number(item.calculation.note_value))
+              : 'R$ 0,00',
+            empressBrute: money(generateValueBruteSubsidiary(item)),
+            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
+            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
             bank: item.bank_data ? item.bank_data : '-----',
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            client: item.sale.client_buyer.name,
           };
         });
         if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.brute_value);
+          const arrayValues = dataFormated.map(item => item.empressLiquid);
           const reducer = (accumulator, currentValue) =>
             accumulator + currentValue;
           const total = arrayValues.reduce(reducer);
@@ -212,34 +216,28 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.pay_date),
+            pay_date: DateBRL(item.calculation.pay_date),
             city,
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            } de ${money(Number(item.sale.realty_ammount))}`,
-            brute_value:
-              item.calculation !== null ? Number(item.calculation.balance) : 0,
-            brute_valueBRL:
-              item.calculation !== null
-                ? money(Number(item.calculation.balance))
-                : '--------',
-            value_note:
-              item.calculation !== null
-                ? money(Number(item.calculation.note_value))
-                : '------',
-            tax_rate:
-              item.calculation !== null
-                ? item.calculation.tax_rate_nf
-                : '------',
+            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
+            paying_source: `${
+              item.sale_type ? 'CONSTRUTORA' : 'CLIENTE VENDEDOR'
+            }`,
+            brute_value: item.value ? Number(item.value) : 0,
+            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
+            tax_rate: item.calculation.tax_rate_nf
+              ? item.calculation.tax_rate_nf
+              : '0%',
+            value_note: item.calculation.note_value
+              ? money(Number(item.calculation.note_value))
+              : 'R$ 0,00',
+            empressBrute: money(generateValueBruteSubsidiary(item)),
+            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
+            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
             bank: item.bank_data ? item.bank_data : '-----',
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            client: item.sale.client_buyer.name,
           };
         });
         if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.brute_value);
+          const arrayValues = dataFormated.map(item => item.empressLiquid);
           const reducer = (accumulator, currentValue) =>
             accumulator + currentValue;
           const total = arrayValues.reduce(reducer);
@@ -360,7 +358,7 @@ const Balance: React.FC = () => {
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
-            due_date: DateBRL(item.due_date),
+            due_date: DateBRL(item.pay_date),
             city,
             description: item.description,
             client: item.description,

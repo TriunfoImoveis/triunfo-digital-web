@@ -12,6 +12,13 @@ export const TitlePane = styled.div`
   color: #504c4c;
 `;
 
+export const ContentWrapper = styled.div`
+  overflow-y: auto;
+  ::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+  }
+`;
 export const Table = styled.table<TableProps>`
   width: 100%;
   thead,

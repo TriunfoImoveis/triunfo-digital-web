@@ -70,6 +70,23 @@ export const FiltersBottonItems = styled.div`
       background: ${darken(0.05, '#2d9cdb')};
     }
   }
+
+  form {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    input {
+      height: 4rem;
+    }
+
+    button {
+      margin-top: 0;
+      height: 4rem;
+    }
+  }
 `;
 
 export const AccountContainer = styled.div`
