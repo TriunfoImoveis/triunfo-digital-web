@@ -128,6 +128,27 @@ export const formatTextStatus = (textStaus: string): string => {
 
 const reducer = (accumulator, currentValue) => accumulator + currentValue;
 
+export const generateValueBruteSubsidiary = (sale: CalculatorData): number => {
+  const valueBrute = sale.calculation.participants
+    .map(item =>
+      item.participant_type === 'EMPRESA' ? Number(item.comission_integral) : 0,
+    )
+    .reduce(reducer, 0);
+
+  return valueBrute;
+};
+export const generateValueBruteSubsidiaryLiquid = (
+  sale: CalculatorData,
+): number => {
+  const valueLiquid = sale.calculation.participants
+    .map(item =>
+      item.participant_type === 'EMPRESA' ? Number(item.comission_liquid) : 0,
+    )
+    .reduce(reducer, 0);
+
+  return valueLiquid;
+};
+
 export const generateValueBrute = (
   sale: CalculatorData[],
   typeParticipants: ParticipantSale,

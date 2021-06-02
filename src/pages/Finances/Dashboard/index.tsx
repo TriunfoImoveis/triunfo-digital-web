@@ -84,6 +84,10 @@ const DashboardFinances: React.FC = () => {
   const [linkDownloadReportRevenue, setLinkDownloadReportRevenue] = useState(
     '',
   );
+  const [
+    linkDownloadReportComissions,
+    setLinkDownloadReportComissions,
+  ] = useState('');
   const [url, setUrl] = useState('/installment');
   const [salesCalculation, setSalesCalculation] = useState<CalculatorData[]>(
     [],
@@ -100,8 +104,10 @@ const DashboardFinances: React.FC = () => {
     const LoadingReports = async () => {
       const contas = await api.get('/expense/export/excel');
       const revenue = await api.get('revenue/export/excel');
+      const comissions = await api.get('/installment/export/excel');
       setLinkDownloadReportContas(contas.data.link_url);
       setLinkDownloadReportRevenue(revenue.data.link_url);
+      setLinkDownloadReportComissions(comissions.data.link_url);
     };
     LoadingReports();
   }, []);
@@ -395,7 +401,7 @@ const DashboardFinances: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Gerar relatório de Entradas e Saídas
+                      Gerar relatório de Entradas (Crédito e Despachante)
                     </a>
                   </Box>
                   <Box>
@@ -404,7 +410,16 @@ const DashboardFinances: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Gerar relatório de Contas Fixa e Variaveis
+                      Gerar relatório de Despesas
+                    </a>
+                  </Box>
+                  <Box>
+                    <a
+                      href={linkDownloadReportComissions}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Gerar relatório de comissões
                     </a>
                   </Box>
                 </ContainerCards>

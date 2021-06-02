@@ -14,6 +14,7 @@ import { useAuth } from '../../../context/AuthContext';
 import getValidationErros from '../../../utils/getValidationErros';
 import { useCalculator } from '../../../context/CalculatorContext';
 import Input from '../../Input';
+import { DateYMD } from '../../../utils/unMasked';
 
 interface Participantes {
   user?: string;
@@ -79,7 +80,8 @@ const ValidCalculation: React.FC<ModalProps> = ({
       });
       const formData = {
         ...calcData,
-        ...data,
+        pay_date: DateYMD(data.pay_date),
+        bank_data: data.bank_data,
       };
       await api.post('/calculator', formData);
       toast.success('Parcela Paga e calaculada com sucesso !');

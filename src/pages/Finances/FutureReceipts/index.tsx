@@ -4,6 +4,7 @@ import { AiOutlinePlus } from 'react-icons/ai';
 import Switch from 'react-switch';
 
 import { Link } from 'react-router-dom';
+import { Form } from '@unform/web';
 import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
@@ -26,7 +27,9 @@ import {
 } from './styles';
 import NotFound from '../../../components/Errors/NotFound';
 import EntryRevenue from '../../../components/ReactModal/EntryRevenue';
-import { filterDay, filterMonth } from '../../../utils/filters';
+import { filterDay, filterMonth, filterTimeSlot } from '../../../utils/filters';
+import Input from '../../../components/Input';
+import Button from '../../../components/Button';
 
 type FutureReceiptsType = {
   id: string;
@@ -75,7 +78,9 @@ const FutureReceipts: React.FC = () => {
   );
   const [selectedRevenue, setSelectedRevenue] = useState({} as RevenueType);
   const [month, setMonth] = useState(0);
-  const [checked, setChecked] = useState(false);
+  const [isTimeSlot, setIsTimeSlot] = useState(false);
+  const [dateInitial, setDateInitial] = useState('');
+  const [dateFinal, setDateFinal] = useState('');
 
   useEffect(() => {
     const loadingFutureReceipts = async () => {
@@ -84,9 +89,9 @@ const FutureReceipts: React.FC = () => {
         item => item.status === 'PAGO',
       );
 
-      if (checked) {
+      if (isTimeSlot && dateInitial.length !== 0) {
         const futureReceipt = recipientsPay.filter(item =>
-          filterDay(item.pay_date),
+          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
         );
         const dataFormated = futureReceipt.map(item => {
           return {
@@ -115,7 +120,7 @@ const FutureReceipts: React.FC = () => {
           setTotalRecepient(money(0));
         }
         setFutureRecepient(dataFormated);
-      } else if (month > 0) {
+      } else if (!isTimeSlot && month > 0) {
         const futureReceipt = recipientsPay.filter(item =>
           filterMonth(item.pay_date, month),
         );
@@ -179,17 +184,21 @@ const FutureReceipts: React.FC = () => {
       }
     };
     loadingFutureReceipts();
-  }, [city, month, checked]);
+  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
   useEffect(() => {
     const loadingFutureReceipts = async () => {
       const response = await api.get(`/installment?city=${city}`);
-      if (checked) {
+      if (isTimeSlot && dateInitial.length !== 0) {
         const futureReceiptsPending = response.data
           .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => filterDay(item.due_date));
+          .filter(item =>
+            filterTimeSlot(item.due_date, dateInitial, dateFinal),
+          );
         const futureReceiptsExpired = response.data
           .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => filterDay(item.due_date));
+          .filter(item =>
+            filterTimeSlot(item.due_date, dateInitial, dateFinal),
+          );
 
         const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
@@ -222,7 +231,7 @@ const FutureReceipts: React.FC = () => {
         }
 
         setFuture(dataFormated);
-      } else if (month > 0) {
+      } else if (!isTimeSlot && month > 0) {
         const futureReceiptsPending = response.data
           .filter(item => item.status.includes('PENDENTE') && item)
           .filter(item => filterMonth(item.due_date, month));
@@ -303,11 +312,11 @@ const FutureReceipts: React.FC = () => {
       }
     };
     loadingFutureReceipts();
-  }, [city, month, checked]);
+  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
   useEffect(() => {
     const loadingFutureReceiptsDespachante = async () => {
       const response = await api.get(`/revenue`);
-      if (checked) {
+      if (isTimeSlot && dateInitial.length !== 0) {
         const futureReceiptsPending = response.data
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
@@ -348,7 +357,7 @@ const FutureReceipts: React.FC = () => {
         }
 
         setFutureDespachante(dataFormated);
-      } else if (month > 0) {
+      } else if (!isTimeSlot && month > 0) {
         const futureReceiptsPending = response.data
           .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
@@ -431,11 +440,11 @@ const FutureReceipts: React.FC = () => {
       }
     };
     loadingFutureReceiptsDespachante();
-  }, [city, month, checked]);
+  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
   useEffect(() => {
     const loadingFutureReceiptsCredit = async () => {
       const response = await api.get(`/revenue`);
-      if (checked) {
+      if (isTimeSlot && dateInitial.length !== 0) {
         const futureReceiptsPending = response.data
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
@@ -476,7 +485,7 @@ const FutureReceipts: React.FC = () => {
         }
 
         setFutureCredit(dataFormated);
-      } else if (month > 0) {
+      } else if (!isTimeSlot && month > 0) {
         const futureReceiptsPending = response.data
           .filter(item => item.revenue_type.includes('CREDITO') && item)
           .filter(item => item.status.includes('PENDENTE') && item)
@@ -559,11 +568,21 @@ const FutureReceipts: React.FC = () => {
       }
     };
     loadingFutureReceiptsCredit();
-  }, [city, month, checked]);
+  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
+
+  const toogleIsTimeSlot = useCallback(() => {
+    setIsTimeSlot(!isTimeSlot);
+  }, [isTimeSlot]);
+
   const handleSetTab = (tabName: string | null) => {
     if (tabName) {
       setTypeTab(tabName);
     }
+  };
+
+  const handleSubmit = ({ date_initial, date_final }) => {
+    setDateInitial(date_initial);
+    setDateFinal(date_final);
   };
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -594,9 +613,6 @@ const FutureReceipts: React.FC = () => {
     [toogleModalEntryRevenue],
   );
 
-  const handleChange = () => {
-    setChecked(!checked);
-  };
   return (
     <FinancesLayout>
       <Background>
@@ -615,32 +631,41 @@ const FutureReceipts: React.FC = () => {
                     <option value="Teresina">Teresina</option>
                   </select>
                 </FiltersBottonItems>
-
+                {!isTimeSlot ? (
+                  <FiltersBottonItems>
+                    <span>Mês: </span>
+                    <select
+                      defaultValue={month}
+                      onChange={handleSelectDate}
+                      disabled={isTimeSlot}
+                    >
+                      <option value={0}>Todas</option>
+                      <option value={1}>Janeiro</option>
+                      <option value={2}>Fevereiro</option>
+                      <option value={3}>Março</option>
+                      <option value={4}>Abril</option>
+                      <option value={5}>Maio</option>
+                      <option value={6}>Junho</option>
+                      <option value={7}>Julho</option>
+                      <option value={8}>Agosto</option>
+                      <option value={9}>Setembro</option>
+                      <option value={10}>Outubro</option>
+                      <option value={11}>Novembro</option>
+                      <option value={12}>Dezembro</option>
+                    </select>
+                  </FiltersBottonItems>
+                ) : (
+                  <FiltersBottonItems>
+                    <Form onSubmit={handleSubmit}>
+                      <Input name="date_initial" mask="date" type="date" />
+                      <Input name="date_final" mask="date" type="date" />
+                      <Button type="submit">Filtrar</Button>
+                    </Form>
+                  </FiltersBottonItems>
+                )}
                 <FiltersBottonItems>
-                  <span>Mês: </span>
-                  <select
-                    defaultValue={month}
-                    onChange={handleSelectDate}
-                    disabled={checked}
-                  >
-                    <option value={0}>Todas</option>
-                    <option value={1}>Janeiro</option>
-                    <option value={2}>Fevereiro</option>
-                    <option value={3}>Março</option>
-                    <option value={4}>Abril</option>
-                    <option value={5}>Maio</option>
-                    <option value={6}>Junho</option>
-                    <option value={7}>Julho</option>
-                    <option value={8}>Agosto</option>
-                    <option value={9}>Setembro</option>
-                    <option value={10}>Outubro</option>
-                    <option value={11}>Novembro</option>
-                    <option value={12}>Dezembro</option>
-                  </select>
-                </FiltersBottonItems>
-                <FiltersBottonItems>
-                  <span>Dia: </span>
-                  <Switch onChange={handleChange} checked={checked} />
+                  <span>intervalo de tempo: </span>
+                  <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
                 </FiltersBottonItems>
               </FilterButtonGroup>
             </FiltersBotton>

@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { CgSync } from 'react-icons/cg';
 import { GrFormEdit } from 'react-icons/gr';
 import { toast } from 'react-toastify';
+import { useHistory } from 'react-router-dom';
 import Modal from '..';
 import Input from '../../Input';
 
@@ -54,6 +55,7 @@ const EntryRevenue: React.FC<IModalProps> = ({
   const [edit, setEdit] = useState(false);
   const [pay, setPay] = useState(false);
   const [cities, setCities] = useState<Cities[]>([]);
+  const history = useHistory();
   const { userAuth } = useAuth();
 
   const unmaskedFormData = () => {
@@ -107,6 +109,8 @@ const EntryRevenue: React.FC<IModalProps> = ({
     try {
       if (pay) {
         const schema = Yup.object({
+          tax_rate: Yup.string(),
+          invoice_value: Yup.string(),
           pay_date: Yup.string()
             .test('validateDate', 'Data Invalida', function valid(value) {
               const { path, createError } = this;
@@ -119,14 +123,15 @@ const EntryRevenue: React.FC<IModalProps> = ({
         await schema.validate(data, {
           abortEarly: false,
         });
-        formRef.current?.setFieldValue(
-          'pay_date',
-          DateYMD(formRef.current?.getFieldValue('pay_date')),
-        );
-        const dateForm = formRef.current?.getData();
+        const dateForm = {
+          // tax_rate: unMaked(data.tax_rate) || '0',
+          // invoice_value: unMaked(data.invoice_value) || '0',
+          pay_date: DateYMD(data.pay_date),
+          bank_data: data.bank_data,
+        };
         await api.patch(`/revenue/paid/${revenue.id}`, dateForm);
-        toast.success('Entrada cadastrada com sucesso!');
-        window.location.reload();
+        toast.success('baixa realizada com sucesso!');
+        history.push('/financeiro/caixa');
       } else {
         const schema = Yup.object({
           revenue_type: Yup.string().required('Tipo Obrigatório'),
@@ -140,8 +145,6 @@ const EntryRevenue: React.FC<IModalProps> = ({
             })
             .required('Informe a data de vencimento'),
           value_integral: Yup.string().required('valor Obrigatório'),
-          tax_rate: Yup.string(),
-          invoice_value: Yup.string(),
           client: Yup.string().required('valor Obrigatório'),
           subsidiary: Yup.string().required('Selecione a cidade'),
         });
@@ -191,31 +194,35 @@ const EntryRevenue: React.FC<IModalProps> = ({
 
               <InputDisabled label="Vencimento" data={revenue.due_date} />
               <InputDisabled label="Valor" data={revenue.valueBRL} />
-              <InputGroup>
-                <InputDisabled
-                  label="Taxa de Imposto"
-                  data={String(revenue.tax_rate)}
-                />
-                <InputDisabled
-                  label="Valor da Nota"
-                  data={revenue.invoiceValueBRL}
-                />
-              </InputGroup>
-
               <InputDisabled label="Filial" data={revenue.city} />
               {pay && (
-                <InputGroup>
-                  <Input
-                    mask="date"
-                    name="pay_date"
-                    label="Data do pagamento"
-                  />
-                  <ReactSelect
-                    label="Conta de Entrada"
-                    name="bank_data"
-                    options={optionsbank}
-                  />
-                </InputGroup>
+                <>
+                  <InputGroup>
+                    <Input
+                      name="tax_rate"
+                      label="Taxa de Imposto"
+                      defaultValue={String(revenue.tax_rate)}
+                    />
+                    <Input
+                      mask="currency"
+                      name="invoice_value"
+                      label="Valor da Nota"
+                      defaultValue={revenue.invoiceValueBRL}
+                    />
+                  </InputGroup>
+                  <InputGroup>
+                    <Input
+                      mask="date"
+                      name="pay_date"
+                      label="Data do pagamento"
+                    />
+                    <ReactSelect
+                      label="Conta de Entrada"
+                      name="bank_data"
+                      options={optionsbank}
+                    />
+                  </InputGroup>
+                </>
               )}
             </>
           ) : (
@@ -242,19 +249,6 @@ const EntryRevenue: React.FC<IModalProps> = ({
                 label="Valor"
                 defaultValue={revenue.valueBRL}
               />
-              <InputGroup>
-                <Input
-                  name="tax_rate"
-                  label="Taxa de Imposto"
-                  defaultValue={String(revenue.tax_rate)}
-                />
-                <Input
-                  mask="currency"
-                  name="invoice_value"
-                  label="Valor da Nota"
-                  defaultValue={revenue.invoiceValueBRL}
-                />
-              </InputGroup>
               <Input
                 name="client"
                 label="Cliente"

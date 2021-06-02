@@ -48,7 +48,7 @@ const ConfirmAccount: React.FC<ConfirmAccountProps> = ({ accountId }) => {
         pay_date: DateYMD(data.pay_date),
         bank_data: userAuth.bank_data[0].id,
       };
-      await api.patch(`/expense/${accountId}`, formData);
+      await api.patch(`/expense/paid/${accountId}`, formData);
       toast.success('Confirmação de pagamento feito com sucesso');
       history.push('/financeiro/contas');
     } catch (err) {
@@ -86,7 +86,7 @@ const ConfirmAccount: React.FC<ConfirmAccountProps> = ({ accountId }) => {
         onClick={() => formRef.current?.submitForm()}
       >
         <BsCheckBox />
-        {!isLoadingAddAccount ? 'ATualizar dados' : '...Atualizando'}
+        {!isLoadingAddAccount ? 'Dar a baixa' : '...liquidando'}
       </Button>
     </Container>
   );

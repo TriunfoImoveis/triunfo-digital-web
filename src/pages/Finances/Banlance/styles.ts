@@ -140,6 +140,23 @@ export const FiltersBottonItems = styled.div`
       background: ${darken(0.05, '#2d9cdb')};
     }
   }
+
+  form {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    input {
+      height: 4rem;
+    }
+
+    button {
+      margin-top: 0;
+      height: 4rem;
+    }
+  }
 `;
 
 export const SwitchButton = styled.div`
@@ -160,6 +177,9 @@ export const SwitchButton = styled.div`
 export const BalanceContainer = styled.div`
   padding: 2rem 4rem;
 
+  .tab-content {
+    max-width: 1120px;
+  }
   .tab-container,
   .tab-content {
     width: 100%;
@@ -185,6 +205,7 @@ export const BalanceContainer = styled.div`
 `;
 
 export const TitlePane = styled.div`
+  width: 100%;
   background-color: ${({ theme }) => theme.colors.primaryAlpha};
   text-align: center;
   font-size: 1.6rem;

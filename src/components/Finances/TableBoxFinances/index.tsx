@@ -1,7 +1,23 @@
 import React from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 
-import { TitlePane, Table, BalanceAmount } from './styles';
+import { TitlePane, Table, BalanceAmount, ContentWrapper } from './styles';
+
+type EntryData = {
+  id: string;
+  pay_date: string;
+  city: string;
+  description: string;
+  paying_source: string;
+  brute_value: string;
+  brute_valueBRL: string;
+  tax_rate: string;
+  value_note: string;
+  empressBrute: string;
+  empressLiquidBRL: string;
+  empressLiquid: string;
+  bank: string;
+};
 
 type BalanceData = {
   id: string;
@@ -31,7 +47,7 @@ type TableBoxFinancesProps = {
   typeTab: string;
   handleSetTab: (tabName: string | null) => void;
   title: string;
-  salesEntry: BalanceData[];
+  salesEntry: EntryData[];
   dispatcherEntry: ForwardingAgentData[];
   creditEntry: BalanceData[];
   salesEntryTotal: string;
@@ -60,36 +76,40 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
     >
       <TabBootstrap eventKey="sales" title="Vendas">
         <TitlePane>{title}</TitlePane>
-        <Table cols={9}>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Filial</th>
-              <th>Descrição</th>
-              <th>Nome do Cliente</th>
-              <th>Corretor</th>
-              <th>Valor Líquido</th>
-              <th>Valor da nota</th>
-              <th>Taxa de imposto</th>
-              <th>Conta de entrada</th>
-            </tr>
-          </thead>
-          <tbody>
-            {salesEntry.map(sale => (
-              <tr key={sale.id}>
-                <td>{sale.due_date}</td>
-                <td>{sale.city}</td>
-                <td>{sale.description}</td>
-                <td>{sale.client}</td>
-                <td>{sale.realtors}</td>
-                <td>{sale.brute_valueBRL}</td>
-                <td>{sale.value_note}</td>
-                <td>{sale.tax_rate}</td>
-                <td>{sale.bank}</td>
+        <ContentWrapper>
+          <Table cols={10}>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Filial</th>
+                <th>Descrição</th>
+                <th>Fonte Pagadora</th>
+                <th>Valor Bruto</th>
+                <th>Taxa de imposto</th>
+                <th>Valor da nota</th>
+                <th>Parte Bruta da Empresa</th>
+                <th>Parte Líquida da Empresa</th>
+                <th>Conta de entrada</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {salesEntry.map(sale => (
+                <tr key={sale.id}>
+                  <td>{sale.pay_date}</td>
+                  <td>{sale.city}</td>
+                  <td>{sale.description}</td>
+                  <td>{sale.paying_source}</td>
+                  <td>{sale.brute_valueBRL}</td>
+                  <td>{sale.tax_rate}</td>
+                  <td>{sale.value_note}</td>
+                  <td>{sale.empressBrute}</td>
+                  <td>{sale.empressLiquidBRL}</td>
+                  <td>{sale.bank}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </ContentWrapper>
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
