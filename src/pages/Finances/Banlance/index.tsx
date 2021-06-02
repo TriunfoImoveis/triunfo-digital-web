@@ -1,6 +1,7 @@
 import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
 import Switch from 'react-switch';
-import { getMonth, getYear, isToday, parseISO } from 'date-fns';
+import { getMonth, getYear, parseISO } from 'date-fns';
+import { Form } from '@unform/web';
 import { AddEntry } from '../../../assets/images';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
@@ -26,10 +27,14 @@ import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
 import TableBoxFinancesAccount from '../../../components/Finances/TableBoxFinancesAccounts';
 import {
-  filterDay,
+  filterMonth,
+  filterTimeSlot,
+  filterYear,
   generateValueBruteSubsidiary,
   generateValueBruteSubsidiaryLiquid,
 } from '../../../utils/filters';
+import Input from '../../../components/Input';
+import Button from '../../../components/Button';
 
 type BalanceData = {
   id: string;
@@ -86,7 +91,6 @@ const Balance: React.FC = () => {
   const [city, setCity] = useState('São Luís');
   const [month, setMonth] = useState(0);
   const [year, setYear] = useState(2021);
-  const [checkedDay, setCheckedDay] = useState(true);
   const [totalDispatcherEntry, setTotalDispatcherEntry] = useState('R$ 0,00');
   const [totalSalesEntry, setTotalSalesEntry] = useState('R$ 0,00');
   const [totalCreditEntry, setTotalCreditEntry] = useState('R$ 0,00');
@@ -102,15 +106,18 @@ const Balance: React.FC = () => {
   const [modalCreditEntry, setModalCreditEnrey] = useState(false);
   const [modalDespEntry, setModalDespEnrey] = useState(false);
   const [checked, setChecked] = useState(false);
+  const [isTimeSlot, setIsTimeSlot] = useState(false);
+  const [dateInitial, setDateInitial] = useState('');
+  const [dateFinal, setDateFinal] = useState('');
 
   useEffect(() => {
     const loadingSalesEntry = async () => {
       const response = await api.get(
         `/installment?city=${city}&status=LIQUIDADA`,
       );
-      if (checkedDay) {
+      if (isTimeSlot && dateInitial.length !== 0) {
         const entry = response.data.filter(item =>
-          filterDay(item.calculation.pay_date),
+          filterTimeSlot(item.calculation.pay_date, dateInitial, dateFinal),
         );
         const dataFormated = entry.map(item => {
           return {
@@ -119,7 +126,9 @@ const Balance: React.FC = () => {
             city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${
-              item.sale_type ? 'CONSTRUTORA' : 'CLIENTE VENDEDOR'
+              item.sale.sale_type === 'NOVO'
+                ? 'CONSTRUTORA'
+                : 'CLIENTE VENDEDOR'
             }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
@@ -146,7 +155,7 @@ const Balance: React.FC = () => {
         }
 
         setSalesEntry(dataFormated);
-      } else if (month > 0) {
+      } else if (!isTimeSlot && month > 0) {
         const entry = response.data
           .filter(item => {
             const parsedDate = parseISO(item.pay_date);
@@ -174,7 +183,9 @@ const Balance: React.FC = () => {
             city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${
-              item.sale_type ? 'CONSTRUTORA' : 'CLIENTE VENDEDOR'
+              item.sale.sale_type === 'NOVO'
+                ? 'CONSTRUTORA'
+                : 'CLIENTE VENDEDOR'
             }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
@@ -220,7 +231,9 @@ const Balance: React.FC = () => {
             city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${
-              item.sale_type ? 'CONSTRUTORA' : 'CLIENTE VENDEDOR'
+              item.sale.sale_type === 'NOVO'
+                ? 'CONSTRUTORA'
+                : 'CLIENTE VENDEDOR'
             }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
@@ -250,25 +263,19 @@ const Balance: React.FC = () => {
       }
     };
     loadingSalesEntry();
-  }, [city, month, checkedDay, year]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
 
   useEffect(() => {
     const loadingDispachEntry = async () => {
       const response = await api.get(`/revenue`);
-      if (checkedDay) {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+      const dispachEntry = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+        .filter(item => item.pay_date !== null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const entry = dispachEntry.filter(item =>
+          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
+        );
 
         const dataFormated = entry.map(item => {
           return {
@@ -293,29 +300,10 @@ const Balance: React.FC = () => {
         }
 
         setDispatcherEntry(dataFormated);
-      } else if (month > 0) {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          })
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+      } else if (!isTimeSlot && month > 0) {
+        const entry = dispachEntry
+          .filter(item => filterYear(item.pay_date, year))
+          .filter(item => filterMonth(item.pay_date, month));
 
         const dataFormated = entry.map(item => {
           return {
@@ -341,19 +329,9 @@ const Balance: React.FC = () => {
 
         setDispatcherEntry(dataFormated);
       } else {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-            return;
-            }
-            return item;
-          });
+        const entry = dispachEntry.filter(item =>
+          filterYear(item.pay_date, year),
+        );
 
         const dataFormated = entry.map(item => {
           return {
@@ -381,24 +359,18 @@ const Balance: React.FC = () => {
       }
     };
     loadingDispachEntry();
-  }, [city, month, checkedDay, year]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
   useEffect(() => {
     const loadingCreditEntry = async () => {
       const response = await api.get(`/revenue`);
-      if (checkedDay) {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+      const entryCredit = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.revenue_type.includes('CREDITO') && item)
+        .filter(item => item.pay_date !== null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const entry = entryCredit.filter(item =>
+          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
+        );
 
         const dataFormated = entry.map(item => {
           return {
@@ -426,28 +398,9 @@ const Balance: React.FC = () => {
 
         setCreditEntry(dataFormated);
       } else if (month > 0) {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          })
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+        const entry = entryCredit
+          .filter(item => filterMonth(item.pay_date, month))
+          .filter(item => filterYear(item.pay_date, year));
 
         const dataFormated = entry.map(item => {
           return {
@@ -475,19 +428,9 @@ const Balance: React.FC = () => {
 
         setCreditEntry(dataFormated);
       } else {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-            return;
-            }
-            return item;
-          });
+        const entry = entryCredit.filter(item =>
+          filterYear(item.pay_date, year),
+        );
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -516,24 +459,18 @@ const Balance: React.FC = () => {
       }
     };
     loadingCreditEntry();
-  }, [city, month, checkedDay, year]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
 
   useEffect(() => {
     const loadingAccounts = async () => {
       const response = await api.get(`/expense`);
-      if (checkedDay) {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const today = isToday(parsedDate);
-            if (!today) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+      const despense = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.pay_date !== null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const entry = despense.filter(item =>
+          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
+        );
 
         const dataFormated = entry.map(item => {
           return {
@@ -559,27 +496,9 @@ const Balance: React.FC = () => {
 
         setAccount(dataFormated);
       } else if (month > 0) {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          })
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          });
+        const entry = despense
+          .filter(item => filterMonth(item.pay_date, month))
+          .filter(item => filterYear(item.pay_date, year));
 
         const dataFormated = entry.map(item => {
           return {
@@ -605,18 +524,7 @@ const Balance: React.FC = () => {
 
         setAccount(dataFormated);
       } else {
-        const entry = response.data
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => item.pay_date !== null && item)
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-            return;
-            }
-            return item;
-          });
+        const entry = despense.filter(item => filterYear(item.pay_date, year));
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -643,7 +551,12 @@ const Balance: React.FC = () => {
       }
     };
     loadingAccounts();
-  }, [city, month, checkedDay, year]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+
+  const toogleIsTimeSlot = useCallback(() => {
+    setIsTimeSlot(!isTimeSlot);
+  }, [isTimeSlot]);
+
   const handleSetTabEntry = (tabName: string | null) => {
     if (tabName) {
       setTypeTabEntry(tabName);
@@ -692,6 +605,11 @@ const Balance: React.FC = () => {
     toogleModalCreditEntry,
   ]);
 
+  const handleSubmit = ({ date_initial, date_final }) => {
+    setDateInitial(date_initial);
+    setDateFinal(date_final);
+  };
+
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
     setCity(event.target.value);
   };
@@ -702,9 +620,6 @@ const Balance: React.FC = () => {
     setMonth(Number(event.target.value));
   };
 
-  const handleChangeDay = () => {
-    setCheckedDay(!checkedDay);
-  };
   return (
     <FinancesLayout>
       <Container>
@@ -719,44 +634,56 @@ const Balance: React.FC = () => {
                   <option value="Teresina">Teresina</option>
                 </select>
               </FiltersBottonItems>
-              <FiltersBottonItems>
-                <span>Ano: </span>
-                <select
-                  disabled={checkedDay}
-                  defaultValue={year}
-                  onChange={handleSelectYear}
-                >
-                  <option value={2021}>2021</option>
-                  <option value={2022}>2022</option>
-                  <option value={2023}>2023</option>
-                </select>
-              </FiltersBottonItems>
 
+              {!isTimeSlot ? (
+                <>
+                  <FiltersBottonItems>
+                    <span>Ano: </span>
+                    <select
+                      disabled={isTimeSlot}
+                      defaultValue={year}
+                      onChange={handleSelectYear}
+                    >
+                      <option value={2021}>2021</option>
+                      <option value={2022}>2022</option>
+                      <option value={2023}>2023</option>
+                    </select>
+                  </FiltersBottonItems>
+                  <FiltersBottonItems>
+                    <span>Mês: </span>
+                    <select
+                      defaultValue={month}
+                      onChange={handleSelectDate}
+                      disabled={isTimeSlot}
+                    >
+                      <option value={0}>Todas</option>
+                      <option value={1}>Janeiro</option>
+                      <option value={2}>Fevereiro</option>
+                      <option value={3}>Março</option>
+                      <option value={4}>Abril</option>
+                      <option value={5}>Maio</option>
+                      <option value={6}>Junho</option>
+                      <option value={7}>Julho</option>
+                      <option value={8}>Agosto</option>
+                      <option value={9}>Setembro</option>
+                      <option value={10}>Outubro</option>
+                      <option value={11}>Novembro</option>
+                      <option value={12}>Dezembro</option>
+                    </select>
+                  </FiltersBottonItems>
+                </>
+              ) : (
+                <FiltersBottonItems>
+                  <Form onSubmit={handleSubmit}>
+                    <Input name="date_initial" mask="date" type="date" />
+                    <Input name="date_final" mask="date" type="date" />
+                    <Button type="submit">Filtrar</Button>
+                  </Form>
+                </FiltersBottonItems>
+              )}
               <FiltersBottonItems>
-                <span>Mês: </span>
-                <select
-                  defaultValue={month}
-                  onChange={handleSelectDate}
-                  disabled={checkedDay}
-                >
-                  <option value={0}>Todas</option>
-                  <option value={1}>Janeiro</option>
-                  <option value={2}>Fevereiro</option>
-                  <option value={3}>Março</option>
-                  <option value={4}>Abril</option>
-                  <option value={5}>Maio</option>
-                  <option value={6}>Junho</option>
-                  <option value={7}>Julho</option>
-                  <option value={8}>Agosto</option>
-                  <option value={9}>Setembro</option>
-                  <option value={10}>Outubro</option>
-                  <option value={11}>Novembro</option>
-                  <option value={12}>Dezembro</option>
-                </select>
-              </FiltersBottonItems>
-              <FiltersBottonItems>
-                <span>Dia: </span>
-                <Switch onChange={handleChangeDay} checked={checkedDay} />
+                <span>intervalo de tempo: </span>
+                <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
               </FiltersBottonItems>
             </FilterButtonGroup>
           </FiltersBotton>
