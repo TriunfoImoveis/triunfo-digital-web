@@ -7,10 +7,10 @@ import { BsCheckBox } from 'react-icons/bs';
 import { useHistory } from 'react-router-dom';
 import Input from '../Input';
 import Button from '../Button';
+import Select from '../ReactSelect';
 
 import { Container, InputGroup } from './styles';
 import api from '../../services/api';
-import InputDisabled from '../InputDisabled';
 import { useAuth } from '../../context/AuthContext';
 import { valiateDate } from '../../utils/validateDate';
 import getValidationErros from '../../utils/getValidationErros';
@@ -25,6 +25,11 @@ const ConfirmAccount: React.FC<ConfirmAccountProps> = ({ accountId }) => {
   const { userAuth } = useAuth();
   const history = useHistory();
   const formRef = useRef<FormHandles>(null);
+
+  const optionsBankData = userAuth.bank_data.map(bank => ({
+    label: bank.bank_name,
+    value: bank.id,
+  }));
 
   const handleSubmit = async data => {
     formRef.current?.setErrors({});
@@ -46,7 +51,7 @@ const ConfirmAccount: React.FC<ConfirmAccountProps> = ({ accountId }) => {
       const formData = {
         value_paid: unMaked(data.value_paid),
         pay_date: DateYMD(data.pay_date),
-        bank_data: userAuth.bank_data[0].id,
+        bank_data: data.bank_data,
       };
       await api.patch(`/expense/paid/${accountId}`, formData);
       toast.success('Confirmação de pagamento feito com sucesso');
@@ -75,9 +80,10 @@ const ConfirmAccount: React.FC<ConfirmAccountProps> = ({ accountId }) => {
           <Input name="pay_date" label="Data do Pagamento" mask="date" />
         </InputGroup>
         <InputGroup>
-          <InputDisabled
+          <Select
             label="Conta Bancária"
-            data={userAuth.bank_data[0].bank_name}
+            name="bank_data"
+            options={optionsBankData}
           />
         </InputGroup>
       </Form>
