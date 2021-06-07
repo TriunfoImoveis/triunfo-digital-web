@@ -15,14 +15,16 @@
     "react-bootstrap": "^1.4.3",
     "react-dom": "^16.13.1",
     "react-icons": "^3.11.0",
+    "react-input-autosize": "^3.0.0",
     "react-jwt": "^1.1.2",
     "react-loader-spinner": "^3.1.14",
     "react-modal": "^3.12.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
-    "react-select": "^3.1.0",
+    "react-select": "^4.3.0",
     "react-select-search": "^2.2.4",
     "react-spinners-css": "^1.2.2",
+    "react-switch": "^6.0.0",
     "react-toastify": "^6.0.8",
     "styled-components": "^5.2.0",
     "styled-media-query": "^2.1.2",
@@ -57,6 +59,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "7.20.0",
     "eslint-plugin-react-hooks": "4",
+    "json-server": "^0.16.3",
     "prettier": "^2.0.5",
     "typescript": "~3.8.0"
   },
@@ -64,7 +67,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "json-server --watch apiFake.json --port 3335 -d 750"
   },
   "eslintConfig": {
     "extends": "react-app"

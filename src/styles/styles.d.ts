@@ -10,6 +10,9 @@ declare module 'styled-components' {
       primaryDark?: string;
       primaryAlpha?: string;
 
+      orange?: string;
+      orangeAlpha?: string;
+
       secondary: string;
       secondaryLight?: string;
       secondaryDark?: string;

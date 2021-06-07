@@ -8,35 +8,46 @@ interface Division {
   porcent: string;
   total?: string;
 }
+type Realtor = {
+  id: string;
+  name: string;
+};
+type Installment = {
+  id: string;
+  value: number;
+  valueBRL: string;
+  id_sale: string;
+  type_sale: string;
+  sellers: Realtor[];
+  captvators: Realtor[] | null;
+  coordinator: Realtor | null;
+  directors: Realtor[];
+  subsidiary: string;
+  builder: string | null;
+};
 
-interface DivisionContextData {
+interface CalculatorContextData {
   divisionData: Division[];
   sald: string;
+  comission: Installment;
   handleSetDivision: (divisionData: Division[]) => void;
   calcDivision: (comissionSubsiary: string) => void;
+  handleSetComission: (installment: Installment) => Promise<void>;
+  initialValue: () => void;
 }
 
-const DivisionContext = createContext({} as DivisionContextData);
+const CalculatorContext = createContext({} as CalculatorContextData);
 
-const DivisionProvider: React.FC = ({ children }) => {
+const CalculatorProvider: React.FC = ({ children }) => {
   const [divisionData, setDivisionData] = useState<Division[]>([
     {
-      id: Math.random().toString(16),
-      name: 'PL',
-      porcent: '10',
-    },
-    {
-      id: Math.random().toString(16),
-      name: 'LUCRO',
-      porcent: '8',
-    },
-    {
-      id: Math.random().toString(16),
-      name: 'IMPOSTO',
-      porcent: '5',
+      id: '',
+      name: '',
+      porcent: '0',
     },
   ]);
   const [sald, setSald] = useState('');
+  const [comission, setComission] = useState({} as Installment);
 
   const handleSetDivision = useCallback((divisionData: Division[]) => {
     setDivisionData(divisionData);
@@ -62,18 +73,41 @@ const DivisionProvider: React.FC = ({ children }) => {
     },
     [divisionData],
   );
+  const handleSetComission = async (installment: Installment) => {
+    setComission(installment);
+  };
+
+  const initialValue = () => {
+    setDivisionData([
+      {
+        id: '',
+        name: '',
+        porcent: '0',
+      },
+    ]);
+    setSald('');
+    setComission({} as Installment);
+  };
 
   return (
-    <DivisionContext.Provider
-      value={{ divisionData, handleSetDivision, calcDivision, sald }}
+    <CalculatorContext.Provider
+      value={{
+        divisionData,
+        handleSetDivision,
+        calcDivision,
+        sald,
+        comission,
+        handleSetComission,
+        initialValue,
+      }}
     >
       {children}
-    </DivisionContext.Provider>
+    </CalculatorContext.Provider>
   );
 };
 
-function useDivision(): DivisionContextData {
-  const context = useContext(DivisionContext);
+function useCalculator(): CalculatorContextData {
+  const context = useContext(CalculatorContext);
 
   if (!context) {
     throw new Error('useDivision só pode ser usado com o DivisionProvider');
@@ -82,4 +116,4 @@ function useDivision(): DivisionContextData {
   return context;
 }
 
-export { DivisionProvider, useDivision };
+export { CalculatorProvider, useCalculator };

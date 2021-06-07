@@ -1,3 +1,4 @@
+import { darken } from 'polished';
 import styled from 'styled-components';
 
 interface TableProps {
@@ -12,77 +13,6 @@ export const Container = styled.div`
 `;
 export const Header = styled.div`
   width: 100%;
-`;
-export const SaldBanksContainer = styled.div`
-  width: 100%;
-`;
-export const SaldBanksHeader = styled.div`
-  display: flex;
-  align-items: center;
-  h1 {
-    font-size: 2.4rem;
-    color: #504c4c;
-    margin-right: 0.8rem;
-  }
-
-  button {
-    border: 0;
-    background: transparent;
-  }
-`;
-export const SaldBanks = styled.div`
-  table {
-    width: 100%;
-    thead {
-      border: 1px solid #000;
-      tr {
-        display: grid;
-        grid-template-columns: repeat(11, 1fr);
-
-        > th {
-          padding: 0.5rem;
-
-          & + th {
-            border-left: 1px solid #000;
-          }
-          div {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            > span {
-              font-size: 1.2rem;
-              color: #504c4c;
-            }
-          }
-        }
-      }
-    }
-
-    tbody {
-      tr {
-        display: grid;
-        grid-template-columns: repeat(11, 1fr);
-        > td {
-          & + td {
-            border-left: 1px solid #000;
-            border-bottom: 1px solid #000;
-          }
-          text-align: center;
-          font-size: 1.2rem;
-          color: #504c4c;
-          font-weight: bold;
-        }
-        > td:first-child {
-          border-left: 1px solid #000;
-          border-bottom: 1px solid #000;
-        }
-        > td:last-child {
-          border-right: 1px solid #000;
-        }
-      }
-    }
-  }
 `;
 
 export const Content = styled.main`
@@ -145,9 +75,111 @@ export const Filter = styled.div`
   }
 `;
 
+export const FiltersContainer = styled.div`
+  width: 100%;
+  z-index: 100;
+`;
+
+export const FiltersBotton = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+`;
+
+export const FilterButtonGroup = styled.div`
+  display: flex;
+  > div + div {
+    margin-left: 1.6rem;
+  }
+`;
+export const FiltersBottonItems = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  margin: 1.2rem 0;
+
+  span {
+    z-index: 10;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 2rem;
+    color: #c32925;
+  }
+  select {
+    z-index: 10;
+    width: 17rem;
+    height: 4.8rem;
+
+    border: 0.1rem solid #818181;
+    box-sizing: border-box;
+    border-radius: 0.4rem;
+    color: #818181;
+    padding: 0 0.5rem;
+
+    font-size: 1.8rem;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 17.1rem;
+    height: 4.8rem;
+    font-size: 1.4rem;
+    background: #2d9cdb;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    border: 0;
+    color: #fff;
+    transition: background 0.2s;
+
+    &:hover {
+      background: ${darken(0.05, '#2d9cdb')};
+    }
+  }
+
+  form {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    input {
+      height: 4rem;
+    }
+
+    button {
+      margin-top: 0;
+      height: 4rem;
+    }
+  }
+`;
+
+export const SwitchButton = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  span {
+    margin: 0 0.5rem;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.textColor};
+  }
+`;
+
 export const BalanceContainer = styled.div`
   padding: 2rem 4rem;
 
+  .tab-content {
+    max-width: 1120px;
+  }
   .tab-container,
   .tab-content {
     width: 100%;
@@ -173,6 +205,7 @@ export const BalanceContainer = styled.div`
 `;
 
 export const TitlePane = styled.div`
+  width: 100%;
   background-color: ${({ theme }) => theme.colors.primaryAlpha};
   text-align: center;
   font-size: 1.6rem;
@@ -305,26 +338,6 @@ export const ButtonGroup = styled.div`
       > span {
         color: ${({ theme }) => theme.colors.primaryAlpha};
       }
-    }
-  }
-`;
-
-export const BalanceAmount = styled.div`
-  width: 100%;
-
-  > p {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    > span {
-      font-size: 2.4rem;
-      margin-right: 1rem;
-    }
-
-    strong {
-      font-size: 3.2rem;
-      color: ${({ theme }) => theme.colors.primary};
     }
   }
 `;

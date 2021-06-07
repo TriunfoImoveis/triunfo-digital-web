@@ -20,11 +20,12 @@ interface UserAuth {
     name: string;
   };
   bank_data: {
+    id: string;
     account: string;
     account_type: string;
     agency: string;
     bank_name: string;
-  };
+  }[];
   avatar_url: string | null;
 }
 

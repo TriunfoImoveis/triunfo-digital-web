@@ -1,46 +1,575 @@
-import React, { useState, useCallback } from 'react';
-import { IoMdArrowDropup, IoMdArrowDropdown } from 'react-icons/io';
-import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import {
-  FinancesIcons,
-  CalculatorIcon,
-  BradescoIcon,
-  Search,
-  Filter as FilterIcon,
-  DropDownIcon,
-  AddEntry,
-} from '../../../assets/images';
+import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
+import Switch from 'react-switch';
+import { getMonth, getYear, parseISO } from 'date-fns';
+import { Form } from '@unform/web';
+import { AddEntry } from '../../../assets/images';
 
-import AdmLayout from '../../Layouts/Adm';
+import FinancesLayout from '../../Layouts/FinancesLayout';
 import ModalAddEntrySale from '../../../components/ReactModal/AddEntrySales';
 import ModalAddEntryCredit from '../../../components/ReactModal/AddEntryCredit';
 import ModalAddEntryDesp from '../../../components/ReactModal/AddEntryDesp';
 
 import {
   Container,
-  Header,
-  SaldBanks,
-  SaldBanksHeader,
-  SaldBanksContainer,
   Content,
-  Filters,
-  Filter,
   BalanceContainer,
-  TitlePane,
-  Table,
   Footer,
   ButtonGroup,
-  BalanceAmount,
+  SwitchButton,
+  FiltersContainer,
+  FiltersBotton,
+  FilterButtonGroup,
+  FiltersBottonItems,
 } from './styles';
+import TableBoxFinances from '../../../components/Finances/TableBoxFinances';
+import api from '../../../services/api';
+import { DateBRL } from '../../../utils/format';
+import { money } from '../../../utils/masked';
+import TableBoxFinancesAccount from '../../../components/Finances/TableBoxFinancesAccounts';
+import {
+  filterMonth,
+  filterTimeSlot,
+  filterYear,
+  generateValueBruteSubsidiary,
+  generateValueBruteSubsidiaryLiquid,
+} from '../../../utils/filters';
+import Input from '../../../components/Input';
+import Button from '../../../components/Button';
 
+type BalanceData = {
+  id: string;
+  due_date: string;
+  city: string;
+  description: string;
+  client: string;
+  realtors: string;
+  brute_value: string;
+  brute_valueBRL: string;
+  value_note: string;
+  tax_rate: string;
+  bank: string;
+};
+type EntryData = {
+  id: string;
+  pay_date: string;
+  city: string;
+  description: string;
+  paying_source: string;
+  brute_value: string;
+  brute_valueBRL: string;
+  tax_rate: string;
+  value_note: string;
+  empressBrute: string;
+  empressLiquidBRL: string;
+  empressLiquid: string;
+  bank: string;
+};
+type ForwardingAgentData = {
+  id: string;
+  due_date: string;
+  city: string;
+  description: string;
+  client: string;
+  liquid_value: string;
+  liquid_valueBRL: string;
+  bank: string;
+};
+
+type Account = {
+  id: string;
+  due_date: string;
+  city: string;
+  description: string;
+  value: number;
+  valueBRL: string;
+  user: string;
+  bank: string;
+};
 const Balance: React.FC = () => {
-  const [isBankVisible, setIsBankVisible] = useState(true);
+  const [typeTabEntry, setTypeTabEntry] = useState('sales');
+  const [typeTabAccount, setTypeTabAccount] = useState('account');
+  const [city, setCity] = useState('São Luís');
+  const [month, setMonth] = useState(0);
+  const [year, setYear] = useState(2021);
+  const [totalDispatcherEntry, setTotalDispatcherEntry] = useState('R$ 0,00');
+  const [totalSalesEntry, setTotalSalesEntry] = useState('R$ 0,00');
+  const [totalCreditEntry, setTotalCreditEntry] = useState('R$ 0,00');
+  const [totalAccount, setTotalAccount] = useState('R$ 0,00');
+  const [salesEntry, setSalesEntry] = useState<EntryData[]>([]);
+  const [creditEntry, setCreditEntry] = useState<BalanceData[]>([]);
+  const [account, setAccount] = useState<Account[]>([]);
+  const [dispatcherEntry, setDispatcherEntry] = useState<ForwardingAgentData[]>(
+    [],
+  );
+
   const [modalSaleEntry, setModalSaleEnrey] = useState(false);
   const [modalCreditEntry, setModalCreditEnrey] = useState(false);
   const [modalDespEntry, setModalDespEnrey] = useState(false);
-  const [typeTab, setTypeTab] = useState('sales');
+  const [checked, setChecked] = useState(false);
+  const [isTimeSlot, setIsTimeSlot] = useState(false);
+  const [dateInitial, setDateInitial] = useState('');
+  const [dateFinal, setDateFinal] = useState('');
 
+  useEffect(() => {
+    const loadingSalesEntry = async () => {
+      const response = await api.get(
+        `/installment?city=${city}&status=LIQUIDADA`,
+      );
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const entry = response.data.filter(item =>
+          filterTimeSlot(item.calculation.pay_date, dateInitial, dateFinal),
+        );
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            pay_date: DateBRL(item.calculation.pay_date),
+            city,
+            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
+            paying_source: `${
+              item.sale.sale_type === 'NOVO'
+                ? 'CONSTRUTORA'
+                : 'CLIENTE VENDEDOR'
+            }`,
+            brute_value: item.value ? Number(item.value) : 0,
+            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
+            tax_rate: item.calculation.tax_rate_nf
+              ? item.calculation.tax_rate_nf
+              : '0%',
+            value_note: item.calculation.note_value
+              ? money(Number(item.calculation.note_value))
+              : 'R$ 0,00',
+            empressBrute: money(generateValueBruteSubsidiary(item)),
+            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
+            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
+            bank: item.bank_data ? item.bank_data : '-----',
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.empressLiquid);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalSalesEntry(money(Number(total)));
+        } else {
+          setTotalSalesEntry(money(0));
+        }
+
+        setSalesEntry(dataFormated);
+      } else if (!isTimeSlot && month > 0) {
+        const entry = response.data
+          .filter(item => {
+            const parsedDate = parseISO(item.pay_date);
+            const monthDateSale = getMonth(parsedDate) + 1;
+            if (!(monthDateSale === month)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          })
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const newYear = getYear(parsedDate);
+            if (!(newYear === year)) {
+              // eslint-disable-next-line
+              return;
+            }
+            return item;
+          })
+          .filter(item => item.calculation !== null);
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            pay_date: DateBRL(item.calculation.pay_date),
+            city,
+            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
+            paying_source: `${
+              item.sale.sale_type === 'NOVO'
+                ? 'CONSTRUTORA'
+                : 'CLIENTE VENDEDOR'
+            }`,
+            brute_value: item.value ? Number(item.value) : 0,
+            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
+            tax_rate: item.calculation.tax_rate_nf
+              ? item.calculation.tax_rate_nf
+              : '0%',
+            value_note: item.calculation.note_value
+              ? money(Number(item.calculation.note_value))
+              : 'R$ 0,00',
+            empressBrute: money(generateValueBruteSubsidiary(item)),
+            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
+            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
+            bank: item.bank_data ? item.bank_data : '-----',
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.empressLiquid);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalSalesEntry(money(Number(total)));
+        } else {
+          setTotalSalesEntry(money(0));
+        }
+
+        setSalesEntry(dataFormated);
+      } else {
+        const entry = response.data
+          .filter(item => {
+            const parsedDate = parseISO(item.due_date);
+            const newYear = getYear(parsedDate);
+            if (!(newYear === year)) {
+              // eslint-disable-next-line
+            return;
+            }
+            return item;
+          })
+          .filter(item => item.calculation !== null);
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            pay_date: DateBRL(item.calculation.pay_date),
+            city,
+            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
+            paying_source: `${
+              item.sale.sale_type === 'NOVO'
+                ? 'CONSTRUTORA'
+                : 'CLIENTE VENDEDOR'
+            }`,
+            brute_value: item.value ? Number(item.value) : 0,
+            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
+            tax_rate: item.calculation.tax_rate_nf
+              ? item.calculation.tax_rate_nf
+              : '0%',
+            value_note: item.calculation.note_value
+              ? money(Number(item.calculation.note_value))
+              : 'R$ 0,00',
+            empressBrute: money(generateValueBruteSubsidiary(item)),
+            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
+            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
+            bank: item.bank_data ? item.bank_data : '-----',
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.empressLiquid);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalSalesEntry(money(total));
+        } else {
+          setTotalSalesEntry(money(0));
+        }
+
+        setSalesEntry(dataFormated);
+      }
+    };
+    loadingSalesEntry();
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+
+  useEffect(() => {
+    const loadingDispachEntry = async () => {
+      const response = await api.get(`/revenue`);
+      const dispachEntry = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+        .filter(item => item.pay_date !== null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const entry = dispachEntry.filter(item =>
+          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
+        );
+
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            client: item.description,
+            liquid_value: item.value_liquid,
+            liquid_valueBRL: money(Number(item.value_liquid)),
+            bank: item.bank_data.account,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.liquid_value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalDispatcherEntry(money(total));
+        } else {
+          setTotalDispatcherEntry(money(0));
+        }
+
+        setDispatcherEntry(dataFormated);
+      } else if (!isTimeSlot && month > 0) {
+        const entry = dispachEntry
+          .filter(item => filterYear(item.pay_date, year))
+          .filter(item => filterMonth(item.pay_date, month));
+
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            client: item.description,
+            liquid_value: item.value_liquid,
+            liquid_valueBRL: money(Number(item.value_liquid)),
+            bank: item.bank_data.account,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.liquid_value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalDispatcherEntry(money(total));
+        } else {
+          setTotalDispatcherEntry(money(0));
+        }
+
+        setDispatcherEntry(dataFormated);
+      } else {
+        const entry = dispachEntry.filter(item =>
+          filterYear(item.pay_date, year),
+        );
+
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            client: item.description,
+            liquid_value: item.value_liquid,
+            liquid_valueBRL: money(Number(item.value_liquid)),
+            bank: item.bank_data.account,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.liquid_value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalDispatcherEntry(money(Number(total)));
+        } else {
+          setTotalDispatcherEntry(money(0));
+        }
+
+        setDispatcherEntry(dataFormated);
+      }
+    };
+    loadingDispachEntry();
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+  useEffect(() => {
+    const loadingCreditEntry = async () => {
+      const response = await api.get(`/revenue`);
+      const entryCredit = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.revenue_type.includes('CREDITO') && item)
+        .filter(item => item.pay_date !== null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const entry = entryCredit.filter(item =>
+          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
+        );
+
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            brute_value: Number(item.value_liquid),
+            brute_valueBRL: money(Number(item.value_liquid)),
+            value_note: item.invoice_value ? item.invoice_value : '------',
+            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            bank: item.bank_data.name ? item.bank_data.name : '-----',
+            client: item.client,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.brute_value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalCreditEntry(money(total));
+        } else {
+          setTotalCreditEntry(money(0));
+        }
+
+        setCreditEntry(dataFormated);
+      } else if (month > 0) {
+        const entry = entryCredit
+          .filter(item => filterMonth(item.pay_date, month))
+          .filter(item => filterYear(item.pay_date, year));
+
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            brute_value: Number(item.value_liquid),
+            brute_valueBRL: money(Number(item.value_liquid)),
+            value_note: item.invoice_value ? item.invoice_value : '------',
+            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            bank: item.bank_data.name ? item.bank_data.name : '-----',
+            client: item.client,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.brute_value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalCreditEntry(money(total));
+        } else {
+          setTotalCreditEntry(money(0));
+        }
+
+        setCreditEntry(dataFormated);
+      } else {
+        const entry = entryCredit.filter(item =>
+          filterYear(item.pay_date, year),
+        );
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            brute_value: Number(item.value_liquid),
+            brute_valueBRL: money(Number(item.value_liquid)),
+            value_note: item.invoice_value ? item.invoice_value : '------',
+            tax_rate: item.tax_rate ? item.tax_rate : '------',
+            bank: item.bank_data.name ? item.bank_data.name : '-----',
+            client: item.client,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.brute_value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalCreditEntry(money(total));
+        } else {
+          setTotalCreditEntry(money(0));
+        }
+
+        setCreditEntry(dataFormated);
+      }
+    };
+    loadingCreditEntry();
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+
+  useEffect(() => {
+    const loadingAccounts = async () => {
+      const response = await api.get(`/expense`);
+      const despense = response.data
+        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => item.pay_date !== null && item);
+      if (isTimeSlot && dateInitial.length !== 0) {
+        const entry = despense.filter(item =>
+          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
+        );
+
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            value: Number(item.value_paid),
+            valueBRL: money(Number(item.value_paid)),
+            user: item.user.name,
+            bank: item.bank_data.bank_name,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalAccount(money(Number(total)));
+        } else {
+          setTotalAccount(money(0));
+        }
+
+        setAccount(dataFormated);
+      } else if (month > 0) {
+        const entry = despense
+          .filter(item => filterMonth(item.pay_date, month))
+          .filter(item => filterYear(item.pay_date, year));
+
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            value: Number(item.value_paid),
+            valueBRL: money(Number(item.value_paid)),
+            user: item.user.name,
+            bank: item.bank_data.bank_name,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalAccount(money(Number(total)));
+        } else {
+          setTotalAccount(money(0));
+        }
+
+        setAccount(dataFormated);
+      } else {
+        const entry = despense.filter(item => filterYear(item.pay_date, year));
+        const dataFormated = entry.map(item => {
+          return {
+            id: item.id,
+            due_date: DateBRL(item.pay_date),
+            city,
+            description: item.description,
+            value: Number(item.value_paid),
+            valueBRL: money(Number(item.value_paid)),
+            user: item.user.name,
+            bank: item.bank_data.bank_name,
+          };
+        });
+        if (entry.length > 0) {
+          const arrayValues = dataFormated.map(item => item.value);
+          const reducer = (accumulator, currentValue) =>
+            accumulator + currentValue;
+          const total = arrayValues.reduce(reducer);
+          setTotalAccount(money(Number(total)));
+        } else {
+          setTotalAccount(money(0));
+        }
+
+        setAccount(dataFormated);
+      }
+    };
+    loadingAccounts();
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+
+  const toogleIsTimeSlot = useCallback(() => {
+    setIsTimeSlot(!isTimeSlot);
+  }, [isTimeSlot]);
+
+  const handleSetTabEntry = (tabName: string | null) => {
+    if (tabName) {
+      setTypeTabEntry(tabName);
+    }
+  };
+  const handleSetTabAccount = (tabName: string | null) => {
+    if (tabName) {
+      setTypeTabAccount(tabName);
+    }
+  };
+  const handleChange = () => {
+    setChecked(!checked);
+  };
   const toogleModalSaleEntry = useCallback(() => {
     setModalSaleEnrey(!modalSaleEntry);
   }, [modalSaleEntry]);
@@ -50,13 +579,9 @@ const Balance: React.FC = () => {
   const toogleModalCreditEntry = useCallback(() => {
     setModalCreditEnrey(!modalCreditEntry);
   }, [modalCreditEntry]);
-  const handleSetTab = (tabName: string | null) => {
-    if (tabName) {
-      setTypeTab(tabName);
-    }
-  };
+
   const handleSelectModalAddEntry = useCallback(() => {
-    switch (typeTab) {
+    switch (typeTabEntry) {
       case 'sales': {
         toogleModalSaleEntry();
         break;
@@ -74,469 +599,135 @@ const Balance: React.FC = () => {
         break;
     }
   }, [
-    typeTab,
+    typeTabEntry,
     toogleModalSaleEntry,
     toogleModalDespEntry,
     toogleModalCreditEntry,
   ]);
 
+  const handleSubmit = ({ date_initial, date_final }) => {
+    setDateInitial(date_initial);
+    setDateFinal(date_final);
+  };
+
+  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
+    setCity(event.target.value);
+  };
+  const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    setYear(Number(event.target.value));
+  };
+  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
+    setMonth(Number(event.target.value));
+  };
+
   return (
-    <AdmLayout>
+    <FinancesLayout>
       <Container>
-        <Header>
-          <SaldBanksContainer>
-            <SaldBanksHeader>
-              <h1>Saldo dos Bancos</h1>
-              <button
-                type="button"
-                onClick={() => setIsBankVisible(!isBankVisible)}
-              >
-                {isBankVisible ? (
-                  <IoMdArrowDropup size={30} color="#C32925" />
-                ) : (
-                  <IoMdArrowDropdown size={30} color="#C32925" />
-                )}
-              </button>
-            </SaldBanksHeader>
-            {isBankVisible && (
-              <SaldBanks>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                      <th>
-                        <div>
-                          <BradescoIcon />
-                          <span>Bradesco</span>
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                      <td>R$ 1.000,00</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </SaldBanks>
-            )}
-          </SaldBanksContainer>
-        </Header>
+        <FiltersContainer>
+          <FiltersBotton>
+            <FilterButtonGroup>
+              <FiltersBottonItems>
+                <span>Cidade: </span>
+                <select defaultValue={city} onChange={handleSelectCity}>
+                  <option value="São Luís">São Luís</option>
+                  <option value="Fortaleza">Fortaleza</option>
+                  <option value="Teresina">Teresina</option>
+                </select>
+              </FiltersBottonItems>
+
+              {!isTimeSlot ? (
+                <>
+                  <FiltersBottonItems>
+                    <span>Ano: </span>
+                    <select
+                      disabled={isTimeSlot}
+                      defaultValue={year}
+                      onChange={handleSelectYear}
+                    >
+                      <option value={2021}>2021</option>
+                      <option value={2022}>2022</option>
+                      <option value={2023}>2023</option>
+                    </select>
+                  </FiltersBottonItems>
+                  <FiltersBottonItems>
+                    <span>Mês: </span>
+                    <select
+                      defaultValue={month}
+                      onChange={handleSelectDate}
+                      disabled={isTimeSlot}
+                    >
+                      <option value={0}>Todas</option>
+                      <option value={1}>Janeiro</option>
+                      <option value={2}>Fevereiro</option>
+                      <option value={3}>Março</option>
+                      <option value={4}>Abril</option>
+                      <option value={5}>Maio</option>
+                      <option value={6}>Junho</option>
+                      <option value={7}>Julho</option>
+                      <option value={8}>Agosto</option>
+                      <option value={9}>Setembro</option>
+                      <option value={10}>Outubro</option>
+                      <option value={11}>Novembro</option>
+                      <option value={12}>Dezembro</option>
+                    </select>
+                  </FiltersBottonItems>
+                </>
+              ) : (
+                <FiltersBottonItems>
+                  <Form onSubmit={handleSubmit}>
+                    <Input name="date_initial" mask="date" type="date" />
+                    <Input name="date_final" mask="date" type="date" />
+                    <Button type="submit">Filtrar</Button>
+                  </Form>
+                </FiltersBottonItems>
+              )}
+              <FiltersBottonItems>
+                <span>intervalo de tempo: </span>
+                <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
+              </FiltersBottonItems>
+            </FilterButtonGroup>
+          </FiltersBotton>
+        </FiltersContainer>
+
         <Content>
-          <Filters>
-            <Filter>
-              <Search />
-              <input placeholder="Buscar" />
-            </Filter>
-            <Filter className="filter">
-              <FilterIcon />
-              <select name="">
-                <option value="Todos">Filtrar por</option>
-              </select>
-              <DropDownIcon />
-            </Filter>
-            <Filter>
-              <span>Filial</span>
-              <select name="">
-                <option value="São Luís">São Luís</option>
-                <option value="Teresina">Teresina</option>
-                <option value="Fortaleza">Fortaleza</option>
-              </select>
-              <DropDownIcon />
-            </Filter>
-          </Filters>
+          <SwitchButton>
+            <span>Saídas</span>
+            <Switch
+              onChange={handleChange}
+              checked={checked}
+              checkedIcon={false}
+              uncheckedIcon={false}
+              onColor="#DC3545"
+              offColor="#DC3545"
+            />
+            <span>Entradas</span>
+          </SwitchButton>
           <BalanceContainer>
-            <Tabs
-              id="tab-container"
-              className="tab-container"
-              activeKey={typeTab}
-              onSelect={tab => handleSetTab(tab)}
-              variant="tabs"
-            >
-              <TabBootstrap eventKey="sales" title="Vendas">
-                <TitlePane>Caixa de Entrada</TitlePane>
-                <Table cols={8}>
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Filial</th>
-                      <th>Descrição</th>
-                      <th>Nome do Cliente</th>
-                      <th>Valor bruto</th>
-                      <th>Valor da nota</th>
-                      <th>Taxa de imposto</th>
-                      <th>Conta de entrada</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                  </tbody>
-                </Table>
-                <BalanceAmount>
-                  <p>
-                    <span>Saldo Total</span>
-                    <strong>R$ 50.000,00</strong>
-                  </p>
-                </BalanceAmount>
-              </TabBootstrap>
-              <TabBootstrap eventKey="forwardingAgent" title="Despachante">
-                <TitlePane>Caixa de Entrada</TitlePane>
-                <Table cols={6}>
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Filial</th>
-                      <th>Descrição</th>
-                      <th>Nome do Cliente</th>
-                      <th>Valor bruto</th>
-                      <th>Conta de entrada</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>578769-6</td>
-                    </tr>
-                  </tbody>
-                </Table>
-                <BalanceAmount>
-                  <p>
-                    <span>Saldo Total</span>
-                    <strong>R$ 50.000,00</strong>
-                  </p>
-                </BalanceAmount>
-              </TabBootstrap>
-              <TabBootstrap eventKey="credit" title="Crédito">
-                <TitlePane>Recebimentos Futuros</TitlePane>
-                <Table cols={8}>
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Filial</th>
-                      <th>Descrição</th>
-                      <th>Nome do Cliente</th>
-                      <th>Valor bruto</th>
-                      <th>Valor da nota</th>
-                      <th>Taxa de imposto</th>
-                      <th>Conta de entrada</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                    <tr>
-                      <td>29/11/2021</td>
-                      <td>São Luis</td>
-                      <td>Ilha Prime</td>
-                      <td>---</td>
-                      <td>R$ 10.000,00</td>
-                      <td>---</td>
-                      <td>---</td>
-                      <td>578769-6</td>
-                    </tr>
-                  </tbody>
-                </Table>
-                <BalanceAmount>
-                  <p>
-                    <span>Saldo Total</span>
-                    <strong>R$ 50.000,00</strong>
-                  </p>
-                </BalanceAmount>
-              </TabBootstrap>
-            </Tabs>
+            {checked ? (
+              <TableBoxFinances
+                typeTab={typeTabEntry}
+                handleSetTab={handleSetTabEntry}
+                title="Entradas"
+                salesEntry={salesEntry}
+                salesEntryTotal={totalSalesEntry}
+                dispatcherEntry={dispatcherEntry}
+                dispatcherEntryTotal={totalDispatcherEntry}
+                creditEntry={creditEntry}
+                creditEntryTotal={totalCreditEntry}
+              />
+            ) : (
+              <TableBoxFinancesAccount
+                typeTab={typeTabAccount}
+                handleSetTab={handleSetTabAccount}
+                title="Saídas"
+                account={account}
+                accountTotal={totalAccount}
+              />
+            )}
           </BalanceContainer>
         </Content>
         <Footer>
           <ButtonGroup>
-            <Link to="/financeiro/contas">
-              <FinancesIcons />
-              <span>Contas</span>
-            </Link>
-
-            <Link to="/financeiro/calculadora">
-              <CalculatorIcon />
-              <span>Calculadora</span>
-            </Link>
             <button type="button" onClick={handleSelectModalAddEntry}>
               <AddEntry />
               <span>Nova Entrada</span>
@@ -556,7 +747,7 @@ const Balance: React.FC = () => {
         isOpen={modalCreditEntry}
         setIsOpen={toogleModalCreditEntry}
       />
-    </AdmLayout>
+    </FinancesLayout>
   );
 };
 
