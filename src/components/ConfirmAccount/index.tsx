@@ -27,7 +27,7 @@ const ConfirmAccount: React.FC<ConfirmAccountProps> = ({ accountId }) => {
   const formRef = useRef<FormHandles>(null);
 
   const optionsBankData = userAuth.bank_data.map(bank => ({
-    label: bank.bank_name,
+    label: `${bank.account} - ${bank.bank_name}`,
     value: bank.id,
   }));
 

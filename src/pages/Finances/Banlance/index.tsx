@@ -1,6 +1,5 @@
 import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
 import Switch from 'react-switch';
-import { getMonth, getYear, parseISO } from 'date-fns';
 import { Form } from '@unform/web';
 import { AddEntry } from '../../../assets/images';
 
@@ -127,8 +126,8 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${
               item.sale.sale_type === 'NOVO'
-                ? 'CONSTRUTORA'
-                : 'CLIENTE VENDEDOR'
+                ? item.sale.builder.name
+                : item.sale.client_buyer.name
             }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
@@ -141,7 +140,9 @@ const Balance: React.FC = () => {
             empressBrute: money(generateValueBruteSubsidiary(item)),
             empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
             empressLiquid: generateValueBruteSubsidiaryLiquid(item),
-            bank: item.bank_data ? item.bank_data : '-----',
+            bank: item.calculation.bank_data
+              ? `${item.calculation.bank_data.account}`
+              : '-----',
           };
         });
         if (entry.length > 0) {
@@ -155,27 +156,10 @@ const Balance: React.FC = () => {
         }
 
         setSalesEntry(dataFormated);
-      } else if (!isTimeSlot && month > 0) {
+      } else if (month > 0) {
         const entry = response.data
-          .filter(item => {
-            const parsedDate = parseISO(item.pay_date);
-            const monthDateSale = getMonth(parsedDate) + 1;
-            if (!(monthDateSale === month)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          })
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-              return;
-            }
-            return item;
-          })
-          .filter(item => item.calculation !== null);
+          .filter(item => filterMonth(item.calculation.pay_date, month))
+          .filter(item => filterYear(item.calculation.pay_date, year));
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -184,8 +168,8 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${
               item.sale.sale_type === 'NOVO'
-                ? 'CONSTRUTORA'
-                : 'CLIENTE VENDEDOR'
+                ? item.sale.builder.name
+                : item.sale.client_buyer.name
             }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
@@ -198,7 +182,9 @@ const Balance: React.FC = () => {
             empressBrute: money(generateValueBruteSubsidiary(item)),
             empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
             empressLiquid: generateValueBruteSubsidiaryLiquid(item),
-            bank: item.bank_data ? item.bank_data : '-----',
+            bank: item.calculation.bank_data
+              ? `${item.calculation.bank_data.account}`
+              : '-----',
           };
         });
         if (entry.length > 0) {
@@ -213,17 +199,9 @@ const Balance: React.FC = () => {
 
         setSalesEntry(dataFormated);
       } else {
-        const entry = response.data
-          .filter(item => {
-            const parsedDate = parseISO(item.due_date);
-            const newYear = getYear(parsedDate);
-            if (!(newYear === year)) {
-              // eslint-disable-next-line
-            return;
-            }
-            return item;
-          })
-          .filter(item => item.calculation !== null);
+        const entry = response.data.filter(item =>
+          filterYear(item.calculation.pay_date, year),
+        );
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -232,8 +210,8 @@ const Balance: React.FC = () => {
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${
               item.sale.sale_type === 'NOVO'
-                ? 'CONSTRUTORA'
-                : 'CLIENTE VENDEDOR'
+                ? item.sale.builder.name
+                : item.sale.client_buyer.name
             }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
@@ -246,7 +224,9 @@ const Balance: React.FC = () => {
             empressBrute: money(generateValueBruteSubsidiary(item)),
             empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
             empressLiquid: generateValueBruteSubsidiaryLiquid(item),
-            bank: item.bank_data ? item.bank_data : '-----',
+            bank: item.calculation.bank_data
+              ? `${item.calculation.bank_data.account}`
+              : '-----',
           };
         });
         if (entry.length > 0) {
@@ -286,7 +266,7 @@ const Balance: React.FC = () => {
             client: item.description,
             liquid_value: item.value_liquid,
             liquid_valueBRL: money(Number(item.value_liquid)),
-            bank: item.bank_data.account,
+            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
           };
         });
         if (entry.length > 0) {
@@ -302,8 +282,8 @@ const Balance: React.FC = () => {
         setDispatcherEntry(dataFormated);
       } else if (!isTimeSlot && month > 0) {
         const entry = dispachEntry
-          .filter(item => filterYear(item.pay_date, year))
-          .filter(item => filterMonth(item.pay_date, month));
+          .filter(item => filterMonth(item.pay_date, month))
+          .filter(item => filterYear(item.pay_date, year));
 
         const dataFormated = entry.map(item => {
           return {
@@ -314,7 +294,7 @@ const Balance: React.FC = () => {
             client: item.description,
             liquid_value: item.value_liquid,
             liquid_valueBRL: money(Number(item.value_liquid)),
-            bank: item.bank_data.account,
+            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
           };
         });
         if (entry.length > 0) {
@@ -342,7 +322,7 @@ const Balance: React.FC = () => {
             client: item.description,
             liquid_value: item.value_liquid,
             liquid_valueBRL: money(Number(item.value_liquid)),
-            bank: item.bank_data.account,
+            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
           };
         });
         if (entry.length > 0) {
@@ -367,6 +347,7 @@ const Balance: React.FC = () => {
         .filter(item => item.subsidiary.city === city && item)
         .filter(item => item.revenue_type.includes('CREDITO') && item)
         .filter(item => item.pay_date !== null && item);
+
       if (isTimeSlot && dateInitial.length !== 0) {
         const entry = entryCredit.filter(item =>
           filterTimeSlot(item.pay_date, dateInitial, dateFinal),
@@ -382,7 +363,7 @@ const Balance: React.FC = () => {
             brute_valueBRL: money(Number(item.value_liquid)),
             value_note: item.invoice_value ? item.invoice_value : '------',
             tax_rate: item.tax_rate ? item.tax_rate : '------',
-            bank: item.bank_data.name ? item.bank_data.name : '-----',
+            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
             client: item.client,
           };
         });
@@ -412,7 +393,7 @@ const Balance: React.FC = () => {
             brute_valueBRL: money(Number(item.value_liquid)),
             value_note: item.invoice_value ? item.invoice_value : '------',
             tax_rate: item.tax_rate ? item.tax_rate : '------',
-            bank: item.bank_data.name ? item.bank_data.name : '-----',
+            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
             client: item.client,
           };
         });
@@ -441,7 +422,7 @@ const Balance: React.FC = () => {
             brute_valueBRL: money(Number(item.value_liquid)),
             value_note: item.invoice_value ? item.invoice_value : '------',
             tax_rate: item.tax_rate ? item.tax_rate : '------',
-            bank: item.bank_data.name ? item.bank_data.name : '-----',
+            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
             client: item.client,
           };
         });
@@ -481,7 +462,7 @@ const Balance: React.FC = () => {
             value: Number(item.value_paid),
             valueBRL: money(Number(item.value_paid)),
             user: item.user.name,
-            bank: item.bank_data.bank_name,
+            bank: item.bank_data ? item.bank_data.account : '-----',
           };
         });
         if (entry.length > 0) {
@@ -509,7 +490,7 @@ const Balance: React.FC = () => {
             value: Number(item.value_paid),
             valueBRL: money(Number(item.value_paid)),
             user: item.user.name,
-            bank: item.bank_data.bank_name,
+            bank: item.bank_data ? item.bank_data.account : '-----',
           };
         });
         if (entry.length > 0) {
@@ -534,7 +515,7 @@ const Balance: React.FC = () => {
             value: Number(item.value_paid),
             valueBRL: money(Number(item.value_paid)),
             user: item.user.name,
-            bank: item.bank_data.bank_name,
+            bank: item.bank_data ? item.bank_data.account : '-----',
           };
         });
         if (entry.length > 0) {
