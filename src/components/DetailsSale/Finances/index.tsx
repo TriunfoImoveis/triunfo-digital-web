@@ -476,8 +476,8 @@ const Finances: React.FC<IFinancesProps> = ({
                                 type="button"
                                 className="valid"
                                 onClick={() =>
-                                  history.push(
-                                    `/financeiro/calculadora/${installment.id}`,
+                                  handleSetDataMadalValidInstallmet(
+                                    installment.id,
                                   )
                                 }
                               >
