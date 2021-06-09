@@ -64,7 +64,7 @@ const ValidCalculation: React.FC<ModalProps> = ({
   const { initialValue } = useCalculator();
   const history = useHistory();
   const bankOptions = userAuth.bank_data.map(item => ({
-    label: item.bank_name,
+    label: `${item.account} - ${item.bank_name}`,
     value: item.id,
   }));
   const handlePayPlot: SubmitHandler<FormData> = async data => {
