@@ -58,7 +58,8 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const { updateFormData } = useForm();
   const { userAuth } = useAuth();
 
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState(() => userAuth.subsidiary.city);
+
   useEffect(() => {
     const loadAllRealtors = async () => {
       const response = await api.get(
@@ -68,9 +69,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     };
     loadAllRealtors();
   }, [city]);
-  useEffect(() => {
-    setCity(userAuth.subsidiary.city);
-  }, [userAuth.subsidiary.city]);
+
   useEffect(() => {
     const loadCoordinator = async () => {
       const response = await api.get(`/users?city=${city}&office=Coordenador`);
