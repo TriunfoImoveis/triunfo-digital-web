@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import AdmLayout from '../../pages/Layouts/Adm';
-import { CPFMask, FoneMask } from '../../utils/masked';
+import { cnpj, CPFMask, FoneMask } from '../../utils/masked';
 import { DateBRL, formatPrice } from '../../utils/format';
 import { Container, Content } from './styles';
 import api from '../../services/api';
@@ -16,6 +16,8 @@ import Builder from './Builder';
 import Realtors from './Realtors';
 import Finances from './Finances';
 import StatusSale from './StatusSale';
+import ClientBuyerPJ from './ClientBuyerPJ';
+import ClientSellerPJ from './ClientSellerPJ';
 
 interface IParamsData {
   id: string;
@@ -117,6 +119,8 @@ interface ITypeProperty {
 }
 
 interface IClient {
+  cnpj: string;
+  address: string;
   civil_status: string;
   cpf: string;
   date_birth: string;
@@ -165,19 +169,46 @@ const DetailsSale: React.FC = () => {
         const captavators = sale.sale_has_captivators;
         const directors = sale.users_directors;
         if (sale.client_seller) {
-          const cpfSellerFormatted = CPFMask(sale.client_seller.cpf);
-          const dataSellerFormatted = DateBRL(sale.client_seller.date_birth);
-          const foneSellerFormatted = FoneMask(sale.client_seller.phone);
+          if (sale.client_seller.cpf !== null) {
+            const cpfSellerFormatted = CPFMask(sale.client_seller.cpf);
+            const dataSellerFormatted = DateBRL(sale.client_seller.date_birth);
+            const foneSellerFormatted = FoneMask(sale.client_seller.phone);
+            Object.assign(
+              sale,
+              (sale.client_seller.cpf = cpfSellerFormatted),
+              (sale.client_seller.date_birth = dataSellerFormatted),
+              (sale.client_seller.phone = foneSellerFormatted),
+            );
+          } else if (sale.client_seller.cpf === null) {
+            const cnpjSellerFormatted = cnpj(sale.client_seller.cnpj);
+            const foneSellerFormatted = FoneMask(sale.client_seller.phone);
+            Object.assign(
+              sale,
+              (sale.client_seller.cnpj = cnpjSellerFormatted),
+              (sale.client_seller.phone = foneSellerFormatted),
+            );
+          }
+        }
+        if (sale.client_buyer.cpf !== null) {
+          const cpfSellerFormatted = CPFMask(sale.client_buyer.cpf);
+          const dataSellerFormatted = DateBRL(sale.client_buyer.date_birth);
+          const foneSellerFormatted = FoneMask(sale.client_buyer.phone);
           Object.assign(
             sale,
-            (sale.client_seller.cpf = cpfSellerFormatted),
-            (sale.client_seller.date_birth = dataSellerFormatted),
-            (sale.client_seller.phone = foneSellerFormatted),
+            (sale.client_buyer.cpf = cpfSellerFormatted),
+            (sale.client_buyer.date_birth = dataSellerFormatted),
+            (sale.client_buyer.phone = foneSellerFormatted),
           );
         }
-        const cpfFormatted = CPFMask(sale.client_buyer.cpf);
-        const dataFormatted = DateBRL(sale.client_buyer.date_birth);
-        const foneFormatted = FoneMask(sale.client_buyer.phone);
+        if (sale.client_buyer.cpf === null) {
+          const cnpjSellerFormatted = cnpj(sale.client_buyer.cnpj);
+          const foneSellerFormatted = FoneMask(sale.client_buyer.phone);
+          Object.assign(
+            sale,
+            (sale.client_buyer.cnpj = cnpjSellerFormatted),
+            (sale.client_buyer.phone = foneSellerFormatted),
+          );
+        }
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = formatPrice(sale.commission);
         const saleDate = DateBRL(sale.sale_date);
@@ -199,9 +230,6 @@ const DetailsSale: React.FC = () => {
 
         const saleFormatted = Object.assign(
           sale,
-          (sale.client_buyer.cpf = cpfFormatted),
-          (sale.client_buyer.date_birth = dataFormatted),
-          (sale.client_buyer.phone = foneFormatted),
           (sale.realty_ammount = realtyAmmount),
           (sale.commission = commission),
           (sale.sale_date = saleDate),
@@ -225,11 +253,11 @@ const DetailsSale: React.FC = () => {
         setDirectors(directors);
         setInstallments(newInstallments);
         setInstalmentPay(installmentPay);
-        // setPaymentType(newSaleFormatted.payment_type);
       } catch (error) {
         toast.error(
-          'Conexão do servidor falhou ! entre em contato com o suporte',
+          'Não consegui carregar os dados da venda ! entre em contato com o suporte',
         );
+        console.log(error);
       }
     };
     loadSale();
@@ -254,7 +282,11 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
-                <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+                {client_buyer.cpf !== null ? (
+                  <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+                ) : (
+                  <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
+                )}
               </TabBootstrap>
               <TabBootstrap eventKey="builder" title="Construtora">
                 <Builder
@@ -304,13 +336,23 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
-                <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+                {client_buyer.cpf !== null ? (
+                  <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+                ) : (
+                  <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
+                )}
+
               </TabBootstrap>
               <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
-                <ClientSeller
-                  clientSeller={client_seller}
-                  status={sale.status}
-                />
+                {client_seller.cpf !== null ? (
+                  <ClientSeller
+                    clientSeller={client_seller}
+                    status={sale.status}
+                  />
+                ) : (
+                  <ClientSellerPJ clientSeller={client_seller} status={sale.status} />
+                )}
+
               </TabBootstrap>
               <TabBootstrap eventKey="realtors" title="Corretores">
                 <Realtors

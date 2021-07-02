@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { OptionTypeBase } from 'react-select';
-import Select, { Props as AsyncProps } from 'react-select/async';
+import Select, { Props as AsyncProps, } from 'react-select/async';
 import { useField } from '@unform/core';
 import { Container, ContainerWrapper, Error } from './styles';
 
-interface Props extends AsyncProps<OptionTypeBase> {
+interface Props extends AsyncProps<OptionTypeBase, true | false> {
   name: string;
   label?: string;
 }
