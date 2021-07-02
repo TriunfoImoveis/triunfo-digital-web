@@ -248,7 +248,7 @@ const DetailsSale: React.FC = () => {
         const coordinator = sale.user_coordinator;
         const captavators = sale.sale_has_captivators;
         const directors = sale.users_directors;
-        if (sale.client_seller) {
+        if (sale.client_seller.cpf.length > 0) {
           const cpfSellerFormatted = CPFMask(sale.client_seller.cpf);
           const dataSellerFormatted = DateBRL(sale.client_seller.date_birth);
           const foneSellerFormatted = FoneMask(sale.client_seller.phone);
@@ -308,7 +308,7 @@ const DetailsSale: React.FC = () => {
         setDirectors(directors);
       } catch (error) {
         toast.error(
-          'Conexão do servidor falhou ! entre em contato com o suporte',
+          'Não Consegui carregar os dados da venda ! entre em contato com o suporte',
         );
       }
     };
@@ -401,7 +401,7 @@ const DetailsSale: React.FC = () => {
         toast.error(`${error.response.data.message}`);
       } else if (error.request) {
         toast.error(
-          'Erro de Conexão tente recarregar a página, contate o suporte',
+          'Erro de Conexão!! tente recarregar a página, se não der certo contate o suporte',
         );
       } else {
         toast.error(' Erro desconhecido, contate o suporte');

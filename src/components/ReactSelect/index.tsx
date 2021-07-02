@@ -4,7 +4,7 @@ import { useField } from '@unform/core';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { Container, ContainerWrapper, AddButton, Error } from './styles';
 
-interface Props extends SelectProps<OptionTypeBase> {
+interface Props extends SelectProps<OptionTypeBase, true | false> {
   name: string;
   label?: string;
   add?: boolean;
