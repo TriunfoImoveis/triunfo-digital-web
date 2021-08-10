@@ -4,7 +4,6 @@ import { Form } from '@unform/web';
 import { AddEntry } from '../../../assets/images';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
-import ModalAddEntrySale from '../../../components/ReactModal/AddEntrySales';
 import ModalAddEntryCredit from '../../../components/ReactModal/AddEntryCredit';
 import ModalAddEntryDesp from '../../../components/ReactModal/AddEntryDesp';
 
@@ -101,7 +100,6 @@ const Balance: React.FC = () => {
     [],
   );
 
-  const [modalSaleEntry, setModalSaleEnrey] = useState(false);
   const [modalCreditEntry, setModalCreditEnrey] = useState(false);
   const [modalDespEntry, setModalDespEnrey] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -124,11 +122,10 @@ const Balance: React.FC = () => {
             pay_date: DateBRL(item.calculation.pay_date),
             city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
-            paying_source: `${
-              item.sale.sale_type === 'NOVO'
-                ? item.sale.builder.name
-                : item.sale.client_buyer.name
-            }`,
+            paying_source: `${item.sale.sale_type === 'NOVO'
+              ? item.sale.builder.name
+              : item.sale.client_buyer.name
+              }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
             tax_rate: item.calculation.tax_rate_nf
@@ -166,11 +163,10 @@ const Balance: React.FC = () => {
             pay_date: DateBRL(item.calculation.pay_date),
             city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
-            paying_source: `${
-              item.sale.sale_type === 'NOVO'
-                ? item.sale.builder.name
-                : item.sale.client_buyer.name
-            }`,
+            paying_source: `${item.sale.sale_type === 'NOVO'
+              ? item.sale.builder.name
+              : item.sale.client_buyer.name
+              }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
             tax_rate: item.calculation.tax_rate_nf
@@ -208,11 +204,10 @@ const Balance: React.FC = () => {
             pay_date: DateBRL(item.calculation.pay_date),
             city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
-            paying_source: `${
-              item.sale.sale_type === 'NOVO'
-                ? item.sale.builder.name
-                : item.sale.client_buyer.name
-            }`,
+            paying_source: `${item.sale.sale_type === 'NOVO'
+              ? item.sale.builder.name
+              : item.sale.client_buyer.name
+              }`,
             brute_value: item.value ? Number(item.value) : 0,
             brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
             tax_rate: item.calculation.tax_rate_nf
@@ -551,9 +546,6 @@ const Balance: React.FC = () => {
   const handleChange = () => {
     setChecked(!checked);
   };
-  const toogleModalSaleEntry = useCallback(() => {
-    setModalSaleEnrey(!modalSaleEntry);
-  }, [modalSaleEntry]);
   const toogleModalDespEntry = useCallback(() => {
     setModalDespEnrey(!modalDespEntry);
   }, [modalDespEntry]);
@@ -563,10 +555,6 @@ const Balance: React.FC = () => {
 
   const handleSelectModalAddEntry = useCallback(() => {
     switch (typeTabEntry) {
-      case 'sales': {
-        toogleModalSaleEntry();
-        break;
-      }
       case 'credit': {
         toogleModalCreditEntry();
         break;
@@ -581,7 +569,6 @@ const Balance: React.FC = () => {
     }
   }, [
     typeTabEntry,
-    toogleModalSaleEntry,
     toogleModalDespEntry,
     toogleModalCreditEntry,
   ]);
@@ -707,19 +694,18 @@ const Balance: React.FC = () => {
             )}
           </BalanceContainer>
         </Content>
-        <Footer>
-          <ButtonGroup>
-            <button type="button" onClick={handleSelectModalAddEntry}>
-              <AddEntry />
-              <span>Nova Entrada</span>
-            </button>
-          </ButtonGroup>
-        </Footer>
+        {typeTabEntry !== 'sales' && (
+          <Footer>
+            <ButtonGroup>
+              <button type="button" onClick={handleSelectModalAddEntry}>
+                <AddEntry />
+                <span>Nova Entrada</span>
+              </button>
+            </ButtonGroup>
+          </Footer>
+        )}
+
       </Container>
-      <ModalAddEntrySale
-        isOpen={modalSaleEntry}
-        setIsOpen={toogleModalSaleEntry}
-      />
       <ModalAddEntryDesp
         isOpen={modalDespEntry}
         setIsOpen={toogleModalDespEntry}
