@@ -86,7 +86,7 @@ type Account = {
 const Balance: React.FC = () => {
   const [typeTabEntry, setTypeTabEntry] = useState('sales');
   const [typeTabAccount, setTypeTabAccount] = useState('account');
-  const [city, setCity] = useState('São Luís');
+  const [city, setCity] = useState('');
   const [month, setMonth] = useState(0);
   const [year, setYear] = useState(2021);
   const [totalDispatcherEntry, setTotalDispatcherEntry] = useState('R$ 0,00');
@@ -109,9 +109,8 @@ const Balance: React.FC = () => {
 
   useEffect(() => {
     const loadingSalesEntry = async () => {
-      const response = await api.get(
-        `/installment?city=${city}&status=LIQUIDADA`,
-      );
+      const url = city === '' ? `/installment?status=LIQUIDADA` : `/installment?city=${city}&status=LIQUIDADA`
+      const response = await api.get(url);
       if (isTimeSlot && dateInitial.length !== 0) {
         const entry = response.data.filter(item =>
           filterTimeSlot(item.calculation.pay_date, dateInitial, dateFinal),
@@ -120,7 +119,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             pay_date: DateBRL(item.calculation.pay_date),
-            city,
+            city: item.sale.sale_has_sellers[0].subsidiary.city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${item.sale.sale_type === 'NOVO'
               ? item.sale.builder.name
@@ -161,7 +160,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             pay_date: DateBRL(item.calculation.pay_date),
-            city,
+            city: item.sale.sale_has_sellers[0].subsidiary.city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${item.sale.sale_type === 'NOVO'
               ? item.sale.builder.name
@@ -202,7 +201,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             pay_date: DateBRL(item.calculation.pay_date),
-            city,
+            city: item.sale.sale_has_sellers[0].subsidiary.city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${item.sale.sale_type === 'NOVO'
               ? item.sale.builder.name
@@ -244,7 +243,15 @@ const Balance: React.FC = () => {
     const loadingDispachEntry = async () => {
       const response = await api.get(`/revenue`);
       const dispachEntry = response.data
-        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => {
+          if (item.subsidiary.city === city) {
+            return item;
+          } else if (city === '') {
+            return item
+          }
+          // eslint-disable-next-line
+          return;
+        })
         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
         .filter(item => item.pay_date !== null && item);
       if (isTimeSlot && dateInitial.length !== 0) {
@@ -256,7 +263,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             client: item.description,
             liquid_value: item.value_liquid,
@@ -284,7 +291,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             client: item.description,
             liquid_value: item.value_liquid,
@@ -312,7 +319,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             client: item.description,
             liquid_value: item.value_liquid,
@@ -339,7 +346,15 @@ const Balance: React.FC = () => {
     const loadingCreditEntry = async () => {
       const response = await api.get(`/revenue`);
       const entryCredit = response.data
-        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => {
+          if (item.subsidiary.city === city) {
+            return item;
+          } else if (city === '') {
+            return item
+          }
+          // eslint-disable-next-line
+          return;
+        })
         .filter(item => item.revenue_type.includes('CREDITO') && item)
         .filter(item => item.pay_date !== null && item);
 
@@ -352,7 +367,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             brute_value: Number(item.value_liquid),
             brute_valueBRL: money(Number(item.value_liquid)),
@@ -382,7 +397,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             brute_value: Number(item.value_liquid),
             brute_valueBRL: money(Number(item.value_liquid)),
@@ -411,7 +426,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             brute_value: Number(item.value_liquid),
             brute_valueBRL: money(Number(item.value_liquid)),
@@ -441,7 +456,15 @@ const Balance: React.FC = () => {
     const loadingAccounts = async () => {
       const response = await api.get(`/expense`);
       const despense = response.data
-        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => {
+          if (item.subsidiary.city === city) {
+            return item;
+          } else if (city === '') {
+            return item
+          }
+          // eslint-disable-next-line
+          return;
+        })
         .filter(item => item.pay_date !== null && item);
       if (isTimeSlot && dateInitial.length !== 0) {
         const entry = despense.filter(item =>
@@ -452,7 +475,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             value: Number(item.value_paid),
             valueBRL: money(Number(item.value_paid)),
@@ -480,7 +503,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             value: Number(item.value_paid),
             valueBRL: money(Number(item.value_paid)),
@@ -505,7 +528,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             due_date: DateBRL(item.pay_date),
-            city,
+            city: item.subsidiary.city,
             description: item.description,
             value: Number(item.value_paid),
             valueBRL: money(Number(item.value_paid)),
@@ -597,6 +620,7 @@ const Balance: React.FC = () => {
               <FiltersBottonItems>
                 <span>Cidade: </span>
                 <select defaultValue={city} onChange={handleSelectCity}>
+                  <option value="">Todas</option>
                   <option value="São Luís">São Luís</option>
                   <option value="Fortaleza">Fortaleza</option>
                   <option value="Teresina">Teresina</option>
