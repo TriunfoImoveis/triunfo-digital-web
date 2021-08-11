@@ -32,7 +32,6 @@
     "prettier/prettier": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "array-callback-return": "off",
     "no-shadow": "off",
     "no-return-assign": "off",
     "react/jsx-curly-newline": "off",
