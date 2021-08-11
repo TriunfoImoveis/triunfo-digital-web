@@ -48,7 +48,7 @@ type AccountProps = {
 
 const Account: React.FC = () => {
   const [typeTab, setTypeTab] = useState('fix');
-  const [city, setCity] = useState('São Luís');
+  const [city, setCity] = useState('');
   const [month, setMonth] = useState(0);
   const [year, setYear] = useState(2021);
   const [totalFixed, setTotalFixed] = useState('R$ 0,00');
@@ -66,7 +66,15 @@ const Account: React.FC = () => {
     const loadingAccountFixed = async () => {
       const response = await api.get(`/expense`);
       const responseAccount = response.data
-        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => {
+          if (item.subsidiary.city === city) {
+            return item;
+          } else if (city === '') {
+            return item
+          }
+          // eslint-disable-next-line
+          return;
+        })
         .filter(item => item.expense_type.includes('FIXA') && item)
         .filter(item => item.pay_date === null && item);
       if (isTimeSlot && dateInitial.length !== 0) {
@@ -169,7 +177,15 @@ const Account: React.FC = () => {
     const loadingAccountVariable = async () => {
       const response = await api.get(`/expense`);
       const responseAccount = response.data
-        .filter(item => item.subsidiary.city === city && item)
+        .filter(item => {
+          if (item.subsidiary.city === city) {
+            return item;
+          } else if (city === '') {
+            return item
+          }
+          // eslint-disable-next-line
+          return;
+        })
         .filter(item => item.expense_type.includes('VARIAVEL') && item)
         .filter(item => item.pay_date === null && item);
       if (isTimeSlot && dateInitial.length !== 0) {
@@ -307,6 +323,7 @@ const Account: React.FC = () => {
                 <FiltersBottonItems>
                   <span>Cidade: </span>
                   <select defaultValue={city} onChange={handleSelectCity}>
+                    <option value="">Todas</option>
                     <option value="São Luís">São Luís</option>
                     <option value="Fortaleza">Fortaleza</option>
                     <option value="Teresina">Teresina</option>
