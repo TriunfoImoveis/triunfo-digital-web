@@ -1,7 +1,10 @@
 import React from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
+import { GridColDef } from '@material-ui/data-grid';
 
-import { TitlePane, Table, BalanceAmount, ContentWrapper } from './styles';
+import Table from '../../Table';
+
+import { TitlePane, BalanceAmount } from './styles';
 
 type EntryData = {
   id: string;
@@ -66,6 +69,73 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
   creditEntry,
   creditEntryTotal,
 }) => {
+  const collumSalesEntry: GridColDef[] = [
+    { field: 'id', headerName: 'ID', disableColumnMenu: true, hide: true, align: 'center', headerAlign: 'center' },
+    { field: 'data', headerName: 'DATA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
+    { field: 'filial', headerName: 'FILIAL', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'fontePagadora', headerName: 'FONTE PAGADORA', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'valorBruto', headerName: 'VALOR BRUTO', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'taxaDeImposto', headerName: 'TAXA DE IMPOSTO', width: 200, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'valorDaNota', headerName: 'VALOR DA NOTA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'parteBrutaDaEmpresa', headerName: 'PARTE BRUTA DA EMPRESA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'parteLiquidaDaEmpresa', headerName: 'PARTE LÍQUIDA DA EMPRESA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'contaDeEntrada', headerName: 'CONTA DE ENTRADA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+  ];
+  const collumDespachanteEntry: GridColDef[] = [
+    { field: 'id', headerName: 'ID', disableColumnMenu: true, hide: true, align: 'center', headerAlign: 'center' },
+    { field: 'data', headerName: 'DATA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
+    { field: 'filial', headerName: 'FILIAL', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'nomeDoCliente', headerName: 'NOME DO CLIENTE', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'valorBruto', headerName: 'VALOR BRUTO', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'contaDeEntrada', headerName: 'CONTA DE ENTRADA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+  ];
+  const collumCreditEntry: GridColDef[] = [
+    { field: 'id', headerName: 'ID', disableColumnMenu: true, hide: true, align: 'center', headerAlign: 'center' },
+    { field: 'data', headerName: 'DATA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
+    { field: 'filial', headerName: 'FILIAL', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'nomeDoCliente', headerName: 'NOME DO CLIENTE', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'valorBruto', headerName: 'VALOR BRUTO', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'valorDaNota', headerName: 'VALOR DA NOTA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'taxaDeImposto', headerName: 'TAXA DE IMPOSTO', width: 200, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'contaDeEntrada', headerName: 'CONTA DE ENTRADA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+  ];
+
+  const rowSallesEntry = salesEntry.map(item => ({
+    id: item.id,
+    data: item.pay_date,
+    filial: item.city,
+    descricao: item.description,
+    fontePagadora: item.paying_source,
+    valorBruto: item.brute_valueBRL,
+    taxaDeImposto: item.tax_rate,
+    valorDaNota: item.value_note,
+    parteBrutaDaEmpresa: item.empressBrute,
+    parteLiquidaDaEmpresa: item.empressLiquidBRL,
+    contaDeEntrada: item.bank,
+  }));
+  const rowDespachanteEntry = dispatcherEntry.map(item => ({
+    id: item.id,
+    data: item.due_date,
+    filial: item.city,
+    descricao: item.description,
+    nomeDoCliente: item.client,
+    valorBruto: item.liquid_valueBRL,
+    contaDeEntrada: item.bank,
+  }));
+  const rowCreditEntry = creditEntry.map(item => ({
+    id: item.id,
+    data: item.due_date,
+    filial: item.city,
+    descricao: item.description,
+    nomeDoCliente: item.client,
+    valorBruto: item.brute_valueBRL,
+    valorDaNota: item.value_note,
+    taxaDeImposto: item.tax_rate,
+    contaDeEntrada: item.bank,
+  }));
   return (
     <Tabs
       id="tab-container"
@@ -76,40 +146,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
     >
       <TabBootstrap eventKey="sales" title="Vendas">
         <TitlePane>{title}</TitlePane>
-        <ContentWrapper>
-          <Table cols={10}>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Filial</th>
-                <th>Descrição</th>
-                <th>Fonte Pagadora</th>
-                <th>Valor Bruto</th>
-                <th>Taxa de imposto</th>
-                <th>Valor da nota</th>
-                <th>Parte Bruta da Empresa</th>
-                <th>Parte Líquida da Empresa</th>
-                <th>Conta de entrada</th>
-              </tr>
-            </thead>
-            <tbody>
-              {salesEntry.map(sale => (
-                <tr key={sale.id}>
-                  <td>{sale.pay_date}</td>
-                  <td>{sale.city}</td>
-                  <td>{sale.description}</td>
-                  <td>{sale.paying_source}</td>
-                  <td>{sale.brute_valueBRL}</td>
-                  <td>{sale.tax_rate}</td>
-                  <td>{sale.value_note}</td>
-                  <td>{sale.empressBrute}</td>
-                  <td>{sale.empressLiquidBRL}</td>
-                  <td>{sale.bank}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </ContentWrapper>
+        <Table columns={collumSalesEntry} rows={rowSallesEntry} rowsPerPageOptions={10} />
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
@@ -119,30 +156,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
       </TabBootstrap>
       <TabBootstrap eventKey="forwardingAgent" title="Despachante">
         <TitlePane>{title}</TitlePane>
-        <Table cols={6}>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Filial</th>
-              <th>Descrição</th>
-              <th>Nome do Cliente</th>
-              <th>Valor bruto</th>
-              <th>Conta de entrada</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dispatcherEntry.map(entry => (
-              <tr key={entry.id}>
-                <td>{entry.due_date}</td>
-                <td>{entry.city}</td>
-                <td>{entry.description}</td>
-                <td>{entry.client}</td>
-                <td>{entry.liquid_valueBRL}</td>
-                <td>{entry.bank}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <Table columns={collumDespachanteEntry} rows={rowDespachanteEntry} rowsPerPageOptions={10} />
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
@@ -152,34 +166,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
       </TabBootstrap>
       <TabBootstrap eventKey="credit" title="Crédito">
         <TitlePane>{title}</TitlePane>
-        <Table cols={8}>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Filial</th>
-              <th>Descrição</th>
-              <th>Nome do Cliente</th>
-              <th>Valor bruto</th>
-              <th>Valor da nota</th>
-              <th>Taxa de imposto</th>
-              <th>Conta de entrada</th>
-            </tr>
-          </thead>
-          <tbody>
-            {creditEntry.map(credit => (
-              <tr key={credit.id}>
-                <td>{credit.due_date}</td>
-                <td>{credit.city}</td>
-                <td>{credit.description}</td>
-                <td>{credit.client}</td>
-                <td>{credit.brute_valueBRL}</td>
-                <td>{credit.value_note}</td>
-                <td>{credit.tax_rate}</td>
-                <td>{credit.bank}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <Table columns={collumCreditEntry} rows={rowCreditEntry} rowsPerPageOptions={10} />
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
