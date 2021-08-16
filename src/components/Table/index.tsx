@@ -6,16 +6,17 @@ import { Container } from './styles';
 type TableProps = {
   columns: GridColDef[];
   rows: Array<Object>;
+  rowsPerPageOptions?: number;
 }
 
-const Table: React.FC<TableProps> = ({ rows, columns }) => {
+const Table: React.FC<TableProps> = ({ rows, columns, rowsPerPageOptions }) => {
   return (
     <Container>
       <DataGrid
         rows={rows}
         columns={columns}
         pageSize={5}
-        rowsPerPageOptions={[5]}
+        rowsPerPageOptions={[rowsPerPageOptions ? rowsPerPageOptions : 5]}
       />
     </Container>
   );

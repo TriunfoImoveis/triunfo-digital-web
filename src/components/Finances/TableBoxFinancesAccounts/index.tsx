@@ -61,30 +61,6 @@ const TableBoxFinancesAccount: React.FC<TableBoxFinancesAccountProps> = ({
       <TabBootstrap eventKey="account" title="Despesas">
         <TitlePane>{title}</TitlePane>
         <Table columns={columns} rows={rows} />
-        {/* <Table cols={6}>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Filial</th>
-              <th>Descrição</th>
-              <th>Quem pagou</th>
-              <th>Valor</th>
-              <th>Conta de Saída</th>
-            </tr>
-          </thead>
-          <tbody>
-            {account.map(account => (
-              <tr key={account.id}>
-                <td>{account.due_date}</td>
-                <td>{account.city}</td>
-                <td>{account.description}</td>
-                <td>{account.user}</td>
-                <td>{account.valueBRL}</td>
-                <td>{account.bank}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table> */}
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
