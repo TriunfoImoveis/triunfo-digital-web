@@ -102,9 +102,13 @@ const RankingGeneral: React.FC = () => {
 
   const handleSelectMonth = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
+      if(event.target.value === '0') {
+        handleSwichVGVToYear('year');
+      } else {
         const month = Number(event.target.value);
         handleSwichVGVToYear('month', month);
-    },
+      }
+    },   
     [handleSwichVGVToYear],
   );
   return (
