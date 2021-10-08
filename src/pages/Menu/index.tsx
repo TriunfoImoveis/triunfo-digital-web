@@ -52,6 +52,10 @@ const Menu: React.FC = () => {
                 <RankingIcon />
                 <span>Ranking de Vendas</span>
               </Option>
+              <Option to="/ranking-geral-vendas"> 
+                <RankingIcon />
+                <span>Ranking Geral de Vendas</span>
+              </Option>
               <Option to="/ranking-captacao">
                 <RankingIcon />
                 <span>Ranking de Captação</span>
