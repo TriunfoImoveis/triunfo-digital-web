@@ -43,6 +43,10 @@ const Menu: React.FC = () => {
             <FinancesIcons />
             <span>Dashboard</span>
           </Option>
+          <Option to="/financeiro/fluxo-de-caixa">
+            <FinancesIcons />
+            <span>Fluxo de Caixa</span>
+          </Option>
         </OptionsContainer>
       </Content>
     </Container>

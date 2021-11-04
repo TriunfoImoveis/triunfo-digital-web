@@ -29,6 +29,7 @@ import FutureReceipts from '../pages/Finances/FutureReceipts';
 import AddAccount from '../pages/Finances/AddAccountPage';
 import DetailsAccount from '../pages/Finances/DetailsAccount';
 import DashboardFinances from '../pages/Finances/Dashboard';
+import CashFlow from '../pages/Finances/CashFlow';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -69,6 +70,7 @@ const Routes: React.FC = () => (
     />
     <Route path="/financeiro/futuro" component={FutureReceipts} isPrivate />
     <Route path="/financeiro/caixa" component={Balance} isPrivate />
+    <Route path="/financeiro/fluxo-de-caixa" component={CashFlow} isPrivate />
     <Route path="/financeiro/contas" component={Accounts} isPrivate />
     <Route
       path="/financeiro/detalhes-conta/:id"
