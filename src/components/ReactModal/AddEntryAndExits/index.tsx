@@ -89,6 +89,7 @@ const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
       createEntryOrExits(data);
       setLoading(false);
       setIsOpen();
+      document.location.reload();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);

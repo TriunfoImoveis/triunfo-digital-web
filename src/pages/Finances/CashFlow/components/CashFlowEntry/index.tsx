@@ -3,14 +3,32 @@ import { GridColDef } from '@material-ui/data-grid';
 import Table from '../../../../../components/Table';
 import ModalAddEntryAndExits from '../../../../../components/ReactModal/AddEntryAndExits';
 import Button from '../../../../../components/Button';
-
+ 
 // import { Container } from './styles';
 
-const CashFlowEntry: React.FC = () => {
+interface Despesa {
+  id: string;
+  conta: {
+    conta: string;
+    nome_banco: string;
+  };
+  escritorio: {
+    nome: string;
+  }
+  descricao: string;
+  tipo_despesa: 'ENTRADA' | 'SAIDA';
+  valor: string;
+}
+
+interface CashFlowEntryProps {
+  entradas: Despesa[]
+}
+const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
   const [modalAddEntryAndExits, setModalAddEntryAndExits] = useState(false);
   const toogleModal = useCallback(() => {
     setModalAddEntryAndExits(!modalAddEntryAndExits);
   }, [modalAddEntryAndExits]);
+
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 10, sortable: false, hide: true, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
@@ -21,50 +39,15 @@ const CashFlowEntry: React.FC = () => {
     { field: 'contaDeSaida', headerName: 'CONTA DE SAÍDA', width: 200, sortable: false, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
   ];
 
-  const rows = [
-    {
-      id: Math.random(),
-      sede: 'São Luís',
-      tipo: 'FIXA',
-      descricao: 'CAEMA',
-      valor: 'R$ 80,00',
-    },
-    {
-      id: Math.random(),
-      sede: 'São Luís',
-      tipo: 'FIXA',
-      descricao: 'CAEMA',
-      valor: 'R$ 100,00',
-    },
-    {
-      id: Math.random(),
-      sede: 'São Luís',
-      tipo: 'FIXA',
-      descricao: 'CAEMA',
-      valor: 'R$ 100,00',
-    },
-    {
-      id: Math.random(),
-      sede: 'São Luís',
-      tipo: 'FIXA',
-      descricao: 'CAEMA',
-      valor: 'R$ 100,00',
-    },
-    {
-      id: Math.random(),
-      sede: 'São Luís',
-      tipo: 'FIXA',
-      descricao: 'CAEMA',
-      valor: 'R$ 120,00',
-    },
-    {
-      id: Math.random(),
-      sede: 'São Luís',
-      tipo: 'FIXA',
-      descricao: 'CAEMA',
-      valor: 'R$ 50,00',
-    },
-];
+  const rows = entradas.map(item => ({
+    id: item.id,
+    sede: item.escritorio.nome,
+    tipo: item.tipo_despesa,
+    descricao: item.descricao,
+    valor: item.valor,
+    contaDeSaida: item.conta.conta
+  }));
+  
   return (
     <>
       <Table columns={columns} rows={rows} />
