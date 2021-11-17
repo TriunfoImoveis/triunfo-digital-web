@@ -42,6 +42,8 @@ interface Despesa {
   descricao: string;
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
+  data: string;
+  created_at: string;
 }
 
 interface Saldos {
@@ -61,7 +63,8 @@ const formatData = (data: Despesa[]): Despesa[] => {
   const dataFormated = data.map(item => {
     return {
       ...item,
-      valor: formatPrice(Number(item.valor))
+      valor: formatPrice(Number(item.valor)),
+      data: format(new Date(item.created_at), 'dd/MM/yyyy'),
     }
   });
   return dataFormated;
@@ -197,7 +200,7 @@ const CashFlow: React.FC = () => {
                 <select defaultValue={""} onChange={handleSelectCity}>
                   <option value="">Todas</option>
                   {optionsFilial.map(item => (
-                    <option value={item.value}>{item.label}</option>
+                    <option key={item.value} value={item.value}>{item.label}</option>
                   ))}
                 </select>
               </FiltersBottonItems>
@@ -207,7 +210,7 @@ const CashFlow: React.FC = () => {
                 <select defaultValue={""} onChange={handleSelectContas}>
                   <option value="">Todas</option>
                   {optionsContas.map(item => (
-                    <option value={item.value}>{item.label}</option>
+                    <option key={item.value} value={item.value}>{item.label}</option>
                   ))}
                 </select>
               </FiltersBottonItems>
@@ -237,7 +240,12 @@ const CashFlow: React.FC = () => {
           <CashFlowExits saidas={saidas} />
         </TabBootstrap>
         <TabBootstrap eventKey="bankBalances" title="Saldos">
-          <CashFlowBalanceBanks saldos={saldos} />
+          <CashFlowBalanceBanks 
+            saldos={saldos} 
+            entradas={entradas} 
+            saidas={saidas} 
+            listBanks={contas} 
+          />
         </TabBootstrap> 
       </Tabs>
       </Container>
