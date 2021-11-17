@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import Modal from '..';
+import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import Button from '../../Button';
 
@@ -12,26 +13,40 @@ interface ModalProps {
 }
 
 const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
+  const { userAuth } = useAuth();
+  const { name } = userAuth.office;
   const [loading, setLoading] = useState(false);
   const [linkDownloadReport, setLinkDownloadReport] = useState();
 
-  useEffect(() => {
-    const createReport = async () => {
-      setLoading(true);
-      try {
+
+  const createReport = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (name === 'Diretor') {
+        const response = await api.get('/sale/export/excel', {
+          params: {
+            state: userAuth.subsidiary.state
+          }
+        });
+        setLinkDownloadReport(response.data.link_url);
+      } else {
         const response = await api.get('/sale/export/excel');
         setLinkDownloadReport(response.data.link_url);
-      } catch (error) {
-        if (error.response) {
-          toast.error('error na conexão! contate o suporte');
-        }
-      } finally {
-        setLoading(false);
       }
-    };
+      
+      
+    } catch (error) {
+      if (error.response) {
+        toast.error('error na conexão! contate o suporte');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [name, userAuth.subsidiary.state]);
 
+  useEffect(() => {
     createReport();
-  }, []);
+  }, [createReport]);
 
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
