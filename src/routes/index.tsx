@@ -7,6 +7,7 @@ import SignIn from '../pages/SignIn';
 import Menu from '../pages/Menu';
 import Action from '../pages/Action';
 import Ranking from '../pages/Ranking';
+import RankingGeneral from '../pages/RankingGeneral';
 import RegisterSaleNew from '../pages/RegisterSale/New';
 import RegisterSaleUsed from '../pages/RegisterSale/Used';
 import ListSale from '../pages/ADM/ListSales';
@@ -38,6 +39,7 @@ const Routes: React.FC = () => (
     <Route path="/menu" component={Menu} isPrivate />
     <Route path="/perfil" component={Perfil} isPrivate />
     <Route path="/ranking" component={Ranking} isPrivate />
+    <Route path="/ranking-geral-vendas" component={RankingGeneral} isPrivate />
     <Route path="/ranking-captacao" component={RankingCapture} isPrivate />
     <Route path="/vendas-novo" component={RegisterSaleNew} isPrivate />
     <Route path="/vendas-usado" component={RegisterSaleUsed} isPrivate />

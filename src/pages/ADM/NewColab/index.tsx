@@ -5,7 +5,7 @@ import React, {
   useState,
   ChangeEvent,
 } from 'react';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
@@ -88,6 +88,7 @@ const NewColab: React.FC = () => {
   const [, setSelectedDepartament] = useState('');
   const [user, setUser] = useState<IUser>({} as IUser);
   const token = localStorage.getItem('@TriunfoDigital:token');
+  const history = useHistory();
 
   const { id } = useParams<IRoteparams>();
 
@@ -274,13 +275,15 @@ const NewColab: React.FC = () => {
     [id, token],
   );
 
-  // const removeRealtor = useCallback(() => {
-  //   try {
-  //     await api.patch()
-  //   } catch (error) {
-
-  //   }
-  // }, []);
+  const removeRealtor = useCallback(async () => {
+    try {
+      await api.patch(`/users/active/${user.id}`);
+      toast.success('Colaborardor Removido com sucesso');
+      history.push('/adm/lista-colaboradores');
+    } catch (error) {
+      console.log(error);
+    }
+  }, [user.id, history]);
 
   return (
     <AdmLayout>
@@ -331,7 +334,7 @@ const NewColab: React.FC = () => {
                   <Sync />
                   <span>Atualizar</span>
                 </button>
-                <button type="button">
+                <button type="button" onClick={removeRealtor}>
                   <Garb />
                   <span>Remover</span>
                 </button>
