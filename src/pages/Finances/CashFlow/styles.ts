@@ -7,6 +7,34 @@ export const Container = styled.div`
   max-width: 1280px;
   width: 100%;
   z-index: 10;
+
+  padding: 2rem 4rem;
+
+  .tab-content {
+    max-width: 1120px;
+  }
+  .tab-container,
+  .tab-content {
+    width: 100%;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: ${({ theme }) => theme.colors.primary};
+    /* border-width: 4px; */
+    background-color: ${({ theme }) => theme.colors.primaryAlpha};
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  .nav-tabs .nav-link {
+    padding: 0.5rem 3rem;
+    color: #504c4c;
+    font-size: 1.2rem;
+    border-radius: 1rem 1rem 0 0;
+    border-color: rgba(195, 41, 37, 0.3);
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
+  }
 `;
 
 export const Filters = styled.div`

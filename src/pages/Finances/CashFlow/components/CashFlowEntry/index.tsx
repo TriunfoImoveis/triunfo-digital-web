@@ -18,6 +18,7 @@ interface Despesa {
   descricao: string;
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
+  data: string;
 }
 
 interface CashFlowEntryProps {
@@ -33,8 +34,9 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 10, sortable: false, hide: true, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
     { field: 'sede', headerName: 'SEDE', width: 150, sortable: false, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
+    { field: 'data', headerName: 'DATA', width: 100, sortable: true, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
     { field: 'tipo', headerName: 'TIPO', width: 100, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 400, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
     { field: 'valor', headerName: 'VALOR', width: 230, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: true },
     { field: 'contaDeSaida', headerName: 'CONTA DE SAÍDA', width: 200, sortable: false, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
   ];
@@ -45,7 +47,8 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
     tipo: item.tipo_despesa,
     descricao: item.descricao,
     valor: item.valor,
-    contaDeSaida: item.conta.conta
+    contaDeSaida: item.conta.conta,
+    data: item.data
   }));
   
   return (
