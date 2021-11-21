@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { SiOneplus } from 'react-icons/si';
@@ -33,6 +33,35 @@ import {
   filterTimeSlot,
   filterYear,
 } from '../../../utils/filters';
+import { useFilter } from '../../../context/FilterContext';
+import { useFetch } from '../../../hooks/useFetch';
+
+
+interface AccountData {
+  id: string;
+  expense_type: string;
+  description: string;
+  due_date: string;
+  value: string;
+  pay_date: string | null;
+  value_paid: string | null
+  status: string;
+  group: GroupsResponse;
+  subsidiary: {
+    id: string;
+    name: string;
+    city: string;
+  }
+  bank_data: {
+    id: string;
+    bank_name: string;
+    account: string;
+  }
+  user: {
+    id: string;
+    name: string;
+  }
+}
 
 type AccountProps = {
   id: string;
@@ -46,26 +75,47 @@ type AccountProps = {
   group: string;
 };
 
+interface GroupsResponse {
+  id: string; 
+  name: string;
+}
+
+interface Options {
+  label: string;
+  value: string;
+}
+
 const Account: React.FC = () => {
   const [typeTab, setTypeTab] = useState('fix');
-  const [city, setCity] = useState('');
-  const [month, setMonth] = useState(0);
-  const [year, setYear] = useState(2021);
   const [totalFixed, setTotalFixed] = useState('R$ 0,00');
   const [totalVariable, setTotalVariable] = useState('R$ 0,00');
-  const [accountDataFixed, setAccountDataFixed] = useState<AccountProps[]>([]);
-  const [accountDataVariable, setAccountDataVariable] = useState<
-    AccountProps[]
-  >([]);
-
   const [isTimeSlot, setIsTimeSlot] = useState(false);
   const [dateInitial, setDateInitial] = useState('');
   const [dateFinal, setDateFinal] = useState('');
+  const [optionsGroup, setOptionsGroup] = useState<Options[]>([]);
+  const { data: account } = useFetch<AccountData[]>('/expense');
+  const {
+    city, 
+    handleSetCity, 
+    handleSetMonth, 
+    month, 
+    year,
+    handleSetYear,
+    group,
+    handleSetGroup
+  } = useFilter();
 
-  useEffect(() => {
-    const loadingAccountFixed = async () => {
-      const response = await api.get(`/expense`);
-      const responseAccount = response.data
+  const loadGroupsAccount = useCallback(async () => {
+    const response = await api.get<GroupsResponse[]>('/expense/groups');
+    const options = response.data.map(item => ({ 
+      label: item.name,
+      value: item.id
+    }));
+    setOptionsGroup(options);
+  }, []);
+
+  const accountFixed = useCallback((account: AccountData[]): AccountProps[] => {
+    const responseAccount = account
         .filter(item => {
           if (item.subsidiary.city === city) {
             return item;
@@ -76,7 +126,14 @@ const Account: React.FC = () => {
           return;
         })
         .filter(item => item.expense_type.includes('FIXA') && item)
-        .filter(item => item.pay_date === null && item);
+        .filter(item => item.pay_date === null && item)
+        .filter(item => {
+          if (group === '') {
+            // eslint-disable-next-line
+            return item;
+          }
+          return item.group.id === group && item;
+        });
       if (isTimeSlot && dateInitial.length !== 0) {
         const account = responseAccount.filter(item =>
           filterTimeSlot(item.due_date, dateInitial, dateFinal),
@@ -106,7 +163,7 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataFixed(dataFormated);
+        return dataFormated;
       } else if (month > 0) {
         const account = responseAccount
           .filter(item => filterMonth(item.due_date, month))
@@ -137,7 +194,7 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataFixed(dataFormated);
+        return dataFormated;
       } else {
         const account = responseAccount.filter(item =>
           filterYear(item.due_date, year),
@@ -154,7 +211,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -168,15 +225,12 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataFixed(dataFormated);
+        return dataFormated;
       }
-    };
-    loadingAccountFixed();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
-  useEffect(() => {
-    const loadingAccountVariable = async () => {
-      const response = await api.get(`/expense`);
-      const responseAccount = response.data
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, group]);
+
+  const accountVariable = useCallback((account: AccountData[]): AccountProps[] => {
+    const responseAccount = account
         .filter(item => {
           if (item.subsidiary.city === city) {
             return item;
@@ -187,7 +241,13 @@ const Account: React.FC = () => {
           return;
         })
         .filter(item => item.expense_type.includes('VARIAVEL') && item)
-        .filter(item => item.pay_date === null && item);
+        .filter(item => item.pay_date === null && item)
+        .filter(item => {
+          if (group === '') {
+            return item;
+          }
+          return item.group.id === group && item;
+        });
       if (isTimeSlot && dateInitial.length !== 0) {
         const variable = responseAccount.filter(item =>
           filterTimeSlot(item.due_date, dateInitial, dateFinal),
@@ -203,7 +263,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -217,7 +277,7 @@ const Account: React.FC = () => {
           setTotalVariable(money(0));
         }
 
-        setAccountDataVariable(dataFormated);
+       return dataFormated;
       } else if (month > 0) {
         const variable = responseAccount
           .filter(item => filterMonth(item.due_date, month))
@@ -234,7 +294,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -248,7 +308,7 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataVariable(dataFormated);
+        return dataFormated;
       } else {
         const variable = responseAccount.filter(item =>
           filterYear(item.due_date, year),
@@ -265,7 +325,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -279,11 +339,31 @@ const Account: React.FC = () => {
           setTotalVariable(money(0));
         }
 
-        setAccountDataVariable(dataFormated);
+        return dataFormated;
       }
-    };
-    loadingAccountVariable();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, group]);
+
+  const listFixedExpense = useMemo(() => {
+    if (!account) {
+      return [];
+    }
+
+    return accountFixed(account);
+  }, [account, accountFixed]);
+
+  const listVariableExpense = useMemo(() => {
+    if (!account) {
+      return [];
+    }
+
+    return accountVariable(account);
+  }, [account, accountVariable]);
+
+
+  
+  useEffect(() => {
+    loadGroupsAccount();
+  }, [loadGroupsAccount]);
 
   const toogleIsTimeSlot = useCallback(() => {
     setIsTimeSlot(!isTimeSlot);
@@ -301,13 +381,17 @@ const Account: React.FC = () => {
   };
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    setCity(event.target.value);
+    handleSetCity(event.target.value);
   };
   const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    setYear(Number(event.target.value));
+    handleSetYear(Number(event.target.value));
   };
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    setMonth(Number(event.target.value));
+    handleSetMonth(Number(event.target.value));
+  };
+
+  const handleSelectGroup = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetGroup(event.target.value);
   };
 
   return (
@@ -383,6 +467,23 @@ const Account: React.FC = () => {
               </FilterButtonGroup>
             </FiltersBotton>
           </FiltersContainer>
+          <FiltersContainer>
+            <FiltersBotton>
+            <FiltersBottonItems>
+                <span>Grupo: </span>
+                <select
+                  onChange={handleSelectGroup}
+                  defaultValue={group}
+                >
+                  <option value="">Todos</option>
+                  {optionsGroup.map(option => (
+                    <option value={option.value}>{option.label}</option>
+                  ))}
+
+                </select>
+              </FiltersBottonItems>
+            </FiltersBotton>
+          </FiltersContainer>
           <Content>
             <AccountContainer>
               <Tabs
@@ -407,11 +508,11 @@ const Account: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {accountDataFixed.length === 0 ? (
+                      {listFixedExpense.length === 0 ? (
                         <NotFound />
                       ) : (
                         <>
-                          {accountDataFixed.map(item => (
+                          {listFixedExpense.map(item => (
                             <tr key={item.id}>
                               <td>{item.city}</td>
                               <td>{item.description}</td>
@@ -454,21 +555,28 @@ const Account: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {accountDataVariable.map(item => (
-                        <tr key={item.id}>
-                          <td>{item.city}</td>
-                          <td>{item.description}</td>
-                          <td>{item.due_date}</td>
-                          <td>{item.group}</td>
-                          <td>{item.valueBRL}</td>
-                          <td className={item.status}>{item.status}</td>
-                          <td>
-                            <a href={`/financeiro/detalhes-conta/${item.id}`}>
-                              mais detalhes
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
+                      {listVariableExpense.length === 0 ? (
+                        <NotFound />
+                      ): 
+                      (
+                        <>
+                          {listVariableExpense.map(item => (
+                          <tr key={item.id}>
+                            <td>{item.city}</td>
+                            <td>{item.description}</td>
+                            <td>{item.due_date}</td>
+                            <td>{item.group}</td>
+                            <td>{item.valueBRL}</td>
+                            <td className={item.status}>{item.status}</td>
+                            <td>
+                              <a href={`/financeiro/detalhes-conta/${item.id}`}>
+                                mais detalhes
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                        </>
+                      )}
                     </tbody>
                   </Table>
                   <BalanceAmount>
