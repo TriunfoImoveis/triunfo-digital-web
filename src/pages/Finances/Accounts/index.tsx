@@ -35,6 +35,7 @@ import {
 } from '../../../utils/filters';
 import { useFilter } from '../../../context/FilterContext';
 import { useFetch } from '../../../hooks/useFetch';
+import Actions from './components/Actions'
 
 
 interface AccountData {
@@ -521,11 +522,7 @@ const Account: React.FC = () => {
                               <td>{item.valueBRL}</td>
                               <td className={item.status}>{item.status}</td>
                               <td>
-                                <a
-                                  href={`/financeiro/detalhes-conta/${item.id}`}
-                                >
-                                  mais detalhes
-                                </a>
+                                <Actions item={item} />
                               </td>
                             </tr>
                           ))}
