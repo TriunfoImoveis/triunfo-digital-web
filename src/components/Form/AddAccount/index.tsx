@@ -12,24 +12,24 @@ const AddAccount: React.FC = () => {
     VARIAVEL: <AccountVariable />,
   };
   return (
-        <Container>
-          <h2>ADICIONAR CONTAS</h2>
-          <Header>
-            <Button
-              onClick={() => setTypeAccount('FIXA')}
-              active={typeAccount !== 'FIXA'}
-            >
-              FIXAS
-            </Button>
-            <Button
-              onClick={() => setTypeAccount('VARIAVEL')}
-              active={typeAccount === 'FIXA'}
-            >
-              VARIAVEIS
-            </Button>
-          </Header>
-          <Content>{forms[typeAccount]}</Content>
-        </Container>
+    <Container>
+      <h2>ADICIONAR CONTAS</h2>
+      <Header>
+        <Button
+          onClick={() => setTypeAccount('FIXA')}
+          active={typeAccount !== 'FIXA'}
+        >
+          FIXAS
+        </Button>
+        <Button
+          onClick={() => setTypeAccount('VARIAVEL')}
+          active={typeAccount === 'FIXA'}
+        >
+          VARIAVEIS
+        </Button>
+      </Header>
+      <Content>{forms[typeAccount]}</Content>
+    </Container>
   );
 };
 

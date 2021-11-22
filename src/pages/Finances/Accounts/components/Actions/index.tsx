@@ -1,9 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { FaRegEdit, FaTrashAlt } from 'react-icons/fa';
-import { IoMdEye, IoMdSync } from 'react-icons/io';
+import { IoMdSync } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import api from '../../../../../services/api';
-import ModalAddAccount from '../../../../../components/ReactModal/AddAccount';
+import ModalPaymentAccount from '../../../../../components/ReactModal/PaymentAccount';
+import ModalEditAccount from '../../../../../components/ReactModal/EditAccount';
+
 import { Container } from './styles';
 
 type Account = {
@@ -25,7 +27,9 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ item }) => {
   const {id} = item;
-  const [modalAddAccount, setAddAccount] = useState(false);
+  const [modalPaymentAccount, setPaymentAccount] = useState(false);
+  const [modalEditAccount, setEditAccount] = useState(false);
+
   const handleRemoveAccout = useCallback(async () => {
     try {
       await api.delete(`/expense/${id}`);
@@ -35,26 +39,40 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
     }
   }, [id]);
 
-  const toogleAddAccount = useCallback(() => {
-    setAddAccount(!modalAddAccount);
-  }, [modalAddAccount]);
+  const tooglePaymentAccount = useCallback(() => {
+    setPaymentAccount(prevState => !prevState);
+  }, []);
+
+  const toogleEditAccount = useCallback(() => {
+    setEditAccount(prevState => !prevState);
+  }, []);
+
   return (
     <>
     <Container>
-      <button>
+      <button type="button" onClick={() => tooglePaymentAccount()}>
         <FaRegEdit />
       </button>
-      <button>
+      {/* <button>
         <IoMdEye />
-      </button>
-      <button>
+      </button> */}
+      <button type="button" onClick={() => toogleEditAccount()}>
         <IoMdSync />
       </button>
       <button type="button" onClick={() => handleRemoveAccout()}>
         <FaTrashAlt />
       </button> 
     </Container>
-    <ModalAddAccount isOpen={modalAddAccount} setIsOpen={toogleAddAccount} />
+    <ModalPaymentAccount 
+      isOpen={modalPaymentAccount} 
+      setIsOpen={tooglePaymentAccount} 
+      accountId={id} 
+    />
+    <ModalEditAccount 
+      isOpen={modalEditAccount} 
+      setIsOpen={toogleEditAccount} 
+      accountId={id} 
+    />
     </>
   );
 }

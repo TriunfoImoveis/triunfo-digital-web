@@ -248,7 +248,6 @@ const Account: React.FC = () => {
           // eslint-disable-next-line
           return;
         })
-        .filter(item => item.expense_type.includes('VARIAVEL') && item)
         .filter(item => item.pay_date === null && item)
         .filter(item => {
           if (group === '') {
@@ -363,8 +362,8 @@ const Account: React.FC = () => {
     if (!account) {
       return [];
     }
-
-    return accountVariable(account);
+    const variableAccount = account.filter(item => item.expense_type.includes('VARIAVEL') && item);
+    return accountVariable(variableAccount);
   }, [account, accountVariable]);
 
 
@@ -573,9 +572,7 @@ const Account: React.FC = () => {
                             <td>{item.valueBRL}</td>
                             <td className={item.status}>{item.status}</td>
                             <td>
-                              <a href={`/financeiro/detalhes-conta/${item.id}`}>
-                                mais detalhes
-                              </a>
+                              <Actions item={item} />
                             </td>
                           </tr>
                         ))}
