@@ -1,8 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FaRegEdit, FaTrashAlt } from 'react-icons/fa';
 import { IoMdEye, IoMdSync } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import api from '../../../../../services/api';
+import ModalAddAccount from '../../../../../components/ReactModal/AddAccount';
 import { Container } from './styles';
 
 type Account = {
@@ -24,6 +25,7 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ item }) => {
   const {id} = item;
+  const [modalAddAccount, setAddAccount] = useState(false);
   const handleRemoveAccout = useCallback(async () => {
     try {
       await api.delete(`/expense/${id}`);
@@ -32,7 +34,12 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
       toast.error(`${err}`);
     }
   }, [id]);
+
+  const toogleAddAccount = useCallback(() => {
+    setAddAccount(!modalAddAccount);
+  }, [modalAddAccount]);
   return (
+    <>
     <Container>
       <button>
         <FaRegEdit />
@@ -45,9 +52,10 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
       </button>
       <button type="button" onClick={() => handleRemoveAccout()}>
         <FaTrashAlt />
-      </button>
-      
+      </button> 
     </Container>
+    <ModalAddAccount isOpen={modalAddAccount} setIsOpen={toogleAddAccount} />
+    </>
   );
 }
 

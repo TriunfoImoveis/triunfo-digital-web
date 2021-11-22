@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useCallback, useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { SiOneplus } from 'react-icons/si';
 import Switch from 'react-switch';
@@ -7,6 +6,8 @@ import { Form } from '@unform/web';
 import NotFound from '../../../components/Errors/NotFound';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
+import ModalAddAccount from '../../../components/ReactModal/AddAccount';
+
 import {
   Container,
   Header,
@@ -105,6 +106,12 @@ const Account: React.FC = () => {
     group,
     handleSetGroup
   } = useFilter();
+
+  const [modalAddAccount, setAddAccount] = useState(false);
+
+  const toogleAddAccount = useCallback(() => {
+    setAddAccount(prevState => !prevState);
+  }, []);
 
   const loadGroupsAccount = useCallback(async () => {
     const response = await api.get<GroupsResponse[]>('/expense/groups');
@@ -588,14 +595,15 @@ const Account: React.FC = () => {
           </Content>
           <Footer>
             <ButtonGroup>
-              <Link to="/financeiro/adicionanovaconta">
+              <button type="button" onClick={() => toogleAddAccount()}>
                 <SiOneplus />
                 <span>Adiconar nova conta</span>
-              </Link>
+              </button> 
             </ButtonGroup>
           </Footer>
         </Container>
       </Background>
+      <ModalAddAccount isOpen={modalAddAccount} setIsOpen={toogleAddAccount} />
     </FinancesLayout>
   );
 };
