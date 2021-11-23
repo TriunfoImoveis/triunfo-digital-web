@@ -109,6 +109,11 @@ const Account: React.FC = () => {
 
   const [modalAddAccount, setAddAccount] = useState(false);
 
+  const orderByAsc = useCallback(function (a: AccountData, b: AccountData) {
+    let data1 = new Date(a.due_date);
+    let data2 = new Date(b.due_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
   const toogleAddAccount = useCallback(() => {
     setAddAccount(prevState => !prevState);
   }, []);
@@ -355,16 +360,16 @@ const Account: React.FC = () => {
       return [];
     }
 
-    return accountFixed(account);
-  }, [account, accountFixed]);
+    return accountFixed(account.sort(orderByAsc));
+  }, [account, accountFixed, orderByAsc]);
 
   const listVariableExpense = useMemo(() => {
     if (!account) {
       return [];
     }
     const variableAccount = account.filter(item => item.expense_type.includes('VARIAVEL') && item);
-    return accountVariable(variableAccount);
-  }, [account, accountVariable]);
+    return accountVariable(variableAccount.sort(orderByAsc));
+  }, [account, accountVariable, orderByAsc]);
 
 
   
