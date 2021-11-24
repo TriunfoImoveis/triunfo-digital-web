@@ -107,6 +107,31 @@ const Balance: React.FC = () => {
   const [dateInitial, setDateInitial] = useState('');
   const [dateFinal, setDateFinal] = useState('');
 
+
+  const orderByAscAccount = useCallback(function (a: Account, b: Account) {
+    let data1 = new Date(a.due_date);
+    let data2 = new Date(b.due_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
+
+  const orderByAscSale = useCallback(function (a: EntryData, b: EntryData) {
+    let data1 = new Date(a.pay_date);
+    let data2 = new Date(b.pay_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
+
+  const orderByAscCredit = useCallback(function (a: BalanceData, b: BalanceData) {
+    let data1 = new Date(a.due_date);
+    let data2 = new Date(b.due_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
+
+  const orderByAscFowardAgent = useCallback(function (a: ForwardingAgentData, b: ForwardingAgentData) {
+    let data1 = new Date(a.due_date);
+    let data2 = new Date(b.due_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
+
   useEffect(() => {
     const loadingSalesEntry = async () => {
       const url = city === '' ? `/installment?status=LIQUIDADA` : `/installment?city=${city}&status=LIQUIDADA`
@@ -114,7 +139,7 @@ const Balance: React.FC = () => {
       if (isTimeSlot && dateInitial.length !== 0) {
         const entry = response.data.filter(item =>
           filterTimeSlot(item.calculation.pay_date, dateInitial, dateFinal),
-        );
+        ).sort(orderByAscSale);
         const dataFormated = entry.map(item => {
           return {
             id: item.id,
@@ -237,7 +262,7 @@ const Balance: React.FC = () => {
       }
     };
     loadingSalesEntry();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscSale]);
 
   useEffect(() => {
     const loadingDispachEntry = async () => {
@@ -253,7 +278,7 @@ const Balance: React.FC = () => {
           return;
         })
         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-        .filter(item => item.pay_date !== null && item);
+        .filter(item => item.pay_date !== null && item).sort(orderByAscFowardAgent);
       if (isTimeSlot && dateInitial.length !== 0) {
         const entry = dispachEntry.filter(item =>
           filterTimeSlot(item.pay_date, dateInitial, dateFinal),
@@ -341,7 +366,7 @@ const Balance: React.FC = () => {
       }
     };
     loadingDispachEntry();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscFowardAgent]);
   useEffect(() => {
     const loadingCreditEntry = async () => {
       const response = await api.get(`/revenue`);
@@ -356,7 +381,7 @@ const Balance: React.FC = () => {
           return;
         })
         .filter(item => item.revenue_type.includes('CREDITO') && item)
-        .filter(item => item.pay_date !== null && item);
+        .filter(item => item.pay_date !== null && item).sort(orderByAscCredit);
 
       if (isTimeSlot && dateInitial.length !== 0) {
         const entry = entryCredit.filter(item =>
@@ -450,7 +475,7 @@ const Balance: React.FC = () => {
       }
     };
     loadingCreditEntry();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscCredit]);
 
   useEffect(() => {
     const loadingAccounts = async () => {
@@ -465,7 +490,7 @@ const Balance: React.FC = () => {
           // eslint-disable-next-line
           return;
         })
-        .filter(item => item.pay_date !== null && item);
+        .filter(item => item.pay_date !== null && item).sort(orderByAscAccount);
       if (isTimeSlot && dateInitial.length !== 0) {
         const entry = despense.filter(item =>
           filterTimeSlot(item.pay_date, dateInitial, dateFinal),
@@ -550,7 +575,7 @@ const Balance: React.FC = () => {
       }
     };
     loadingAccounts();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscAccount]);
 
   const toogleIsTimeSlot = useCallback(() => {
     setIsTimeSlot(!isTimeSlot);

@@ -17,12 +17,14 @@ interface FilterContextData {
   month: number;
   year: number;
   group: string;
+  subsidiary: string;
   handleSetCity: (city: string) => void;
   handleSetStatus: (status: string) => void;
   handleSetName: (name: string) => void;
   handleSetMonth: (month: number) => void;
   handleSetYear: (year: number) => void;
   handleSetGroup: (group: string) => void;
+  handleSetSubsidiary: (subsidiary: string) => void;
 }
 
 const FilterContext = createContext({} as FilterContextData);
@@ -34,9 +36,14 @@ const FilterProvider: React.FC = ({ children }) => {
   const [month, setMonth] = useState(0);
   const [year, setYear] = useState(new Date().getFullYear());
   const [group, setGroup] = useState('');
+  const [subsidiary, setSubsidiary] = useState<string>('');
+
 
   const handleSetCity = (city: string) => {
     setCity(city);
+  };
+  const handleSetSubsidiary = (subsidiary: string) => {
+    setSubsidiary(subsidiary);
   };
   const handleSetStatus = (status: string) => {
     setStatus(status);
@@ -64,12 +71,14 @@ const FilterProvider: React.FC = ({ children }) => {
         month,
         year,
         group,
+        subsidiary,
         handleSetCity,
         handleSetName,
         handleSetStatus,
         handleSetMonth,
         handleSetYear,
-        handleSetGroup
+        handleSetGroup,
+        handleSetSubsidiary
       }}
     >
       {children}
