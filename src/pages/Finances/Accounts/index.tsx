@@ -3,7 +3,6 @@ import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { SiOneplus } from 'react-icons/si';
 import Switch from 'react-switch';
 import { Form } from '@unform/web';
-import NotFound from '../../../components/Errors/NotFound';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
 import ModalAddAccount from '../../../components/ReactModal/AddAccount';
@@ -21,7 +20,6 @@ import {
   FiltersBotton,
   AccountContainer,
   BalanceAmount,
-  Table,
   TitlePane,
 } from './styles';
 import api from '../../../services/api';
@@ -36,7 +34,7 @@ import {
 } from '../../../utils/filters';
 import { useFilter } from '../../../context/FilterContext';
 import { useFetch } from '../../../hooks/useFetch';
-import Actions from './components/Actions'
+import TableFix from '../../../components/Table/TableAccount';
 
 
 interface AccountData {
@@ -95,20 +93,26 @@ const Account: React.FC = () => {
   const [dateInitial, setDateInitial] = useState('');
   const [dateFinal, setDateFinal] = useState('');
   const [optionsGroup, setOptionsGroup] = useState<Options[]>([]);
+  const [optionsSubsidiary, setOptionsSubsidiary] = useState<Options[]>([]);
   const { data: account } = useFetch<AccountData[]>('/expense');
   const {
-    city, 
-    handleSetCity, 
     handleSetMonth, 
     month, 
     year,
     handleSetYear,
     group,
-    handleSetGroup
+    handleSetGroup,
+    subsidiary,
+    handleSetSubsidiary
   } = useFilter();
 
   const [modalAddAccount, setAddAccount] = useState(false);
 
+  const orderByAsc = useCallback(function (a: AccountData, b: AccountData) {
+    let data1 = new Date(a.due_date);
+    let data2 = new Date(b.due_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
   const toogleAddAccount = useCallback(() => {
     setAddAccount(prevState => !prevState);
   }, []);
@@ -122,12 +126,21 @@ const Account: React.FC = () => {
     setOptionsGroup(options);
   }, []);
 
+  const loadSubsidiary = useCallback(async () => {
+    const response = await api.get('/subsidiary');
+    const options = response.data.map(item => ({ 
+      label: item.name,
+      value: item.name
+    }));
+    setOptionsSubsidiary(options);
+  }, []);
+
   const accountFixed = useCallback((account: AccountData[]): AccountProps[] => {
     const responseAccount = account
         .filter(item => {
-          if (item.subsidiary.city === city) {
+          if (item.subsidiary.name === subsidiary) {
             return item;
-          } else if (city === '') {
+          } else if (subsidiary === '') {
             return item
           }
           // eslint-disable-next-line
@@ -157,7 +170,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -188,7 +201,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -235,14 +248,14 @@ const Account: React.FC = () => {
 
         return dataFormated;
       }
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, group]);
+  }, [subsidiary, month, year, dateInitial, dateFinal, isTimeSlot, group]);
 
   const accountVariable = useCallback((account: AccountData[]): AccountProps[] => {
     const responseAccount = account
         .filter(item => {
-          if (item.subsidiary.city === city) {
+          if (item.subsidiary.name === subsidiary) {
             return item;
-          } else if (city === '') {
+          } else if (subsidiary === '') {
             return item
           }
           // eslint-disable-next-line
@@ -348,29 +361,30 @@ const Account: React.FC = () => {
 
         return dataFormated;
       }
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, group]);
+  }, [subsidiary, month, year, dateInitial, dateFinal, isTimeSlot, group]);
 
   const listFixedExpense = useMemo(() => {
     if (!account) {
       return [];
     }
 
-    return accountFixed(account);
-  }, [account, accountFixed]);
+    return accountFixed(account.sort(orderByAsc));
+  }, [account, accountFixed, orderByAsc]);
 
   const listVariableExpense = useMemo(() => {
     if (!account) {
       return [];
     }
     const variableAccount = account.filter(item => item.expense_type.includes('VARIAVEL') && item);
-    return accountVariable(variableAccount);
-  }, [account, accountVariable]);
+    return accountVariable(variableAccount.sort(orderByAsc));
+  }, [account, accountVariable, orderByAsc]);
 
 
   
   useEffect(() => {
     loadGroupsAccount();
-  }, [loadGroupsAccount]);
+    loadSubsidiary();
+  }, [loadGroupsAccount, loadSubsidiary]);
 
   const toogleIsTimeSlot = useCallback(() => {
     setIsTimeSlot(!isTimeSlot);
@@ -387,8 +401,8 @@ const Account: React.FC = () => {
     }
   };
 
-  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetCity(event.target.value);
+  const handleSelectSubsidiary= (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetSubsidiary(event.target.value);
   };
   const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetYear(Number(event.target.value));
@@ -400,6 +414,16 @@ const Account: React.FC = () => {
   const handleSelectGroup = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetGroup(event.target.value);
   };
+
+  const collumAccount = [
+    {name: 'Filial'},
+    {name: 'Descrição'},
+    {name: 'Vencimento'},
+    {name: 'Grupo'},
+    {name: 'Valor'},
+    {name: 'Status'},
+    {name: 'Ações'},
+  ]
 
   return (
     <FinancesLayout>
@@ -413,11 +437,11 @@ const Account: React.FC = () => {
               <FilterButtonGroup>
                 <FiltersBottonItems>
                   <span>Cidade: </span>
-                  <select defaultValue={city} onChange={handleSelectCity}>
+                  <select defaultValue={subsidiary} onChange={handleSelectSubsidiary}>
                     <option value="">Todas</option>
-                    <option value="São Luís">São Luís</option>
-                    <option value="Fortaleza">Fortaleza</option>
-                    <option value="Teresina">Teresina</option>
+                    {optionsSubsidiary.map(item => (
+                      <option value={item.value}>{item.label}</option>
+                    ))}
                   </select>
                 </FiltersBottonItems>
                 {!isTimeSlot ? (
@@ -502,40 +526,7 @@ const Account: React.FC = () => {
               >
                 <TabBootstrap eventKey="fix" title="Contas Fixas">
                   <TitlePane>Contas Fixas</TitlePane>
-                  <Table cols={7}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Descrição</th>
-                        <th>Vencimento</th>
-                        <th>Grupo</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {listFixedExpense.length === 0 ? (
-                        <NotFound />
-                      ) : (
-                        <>
-                          {listFixedExpense.map(item => (
-                            <tr key={item.id}>
-                              <td>{item.city}</td>
-                              <td>{item.description}</td>
-                              <td>{item.due_date}</td>
-                              <td>{item.group}</td>
-                              <td>{item.valueBRL}</td>
-                              <td className={item.status}>{item.status}</td>
-                              <td>
-                                <Actions item={item} />
-                              </td>
-                            </tr>
-                          ))}
-                        </>
-                      )}
-                    </tbody>
-                  </Table>
+                  <TableFix cols={7} collums={collumAccount} rows={listFixedExpense} />
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
@@ -545,41 +536,7 @@ const Account: React.FC = () => {
                 </TabBootstrap>
                 <TabBootstrap eventKey="variable" title="Contas Variáveis">
                   <TitlePane>Contas Variáveis</TitlePane>
-                  <Table cols={7}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Descrição</th>
-                        <th>Vencimento</th>
-                        <th>Grupo</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {listVariableExpense.length === 0 ? (
-                        <NotFound />
-                      ): 
-                      (
-                        <>
-                          {listVariableExpense.map(item => (
-                          <tr key={item.id}>
-                            <td>{item.city}</td>
-                            <td>{item.description}</td>
-                            <td>{item.due_date}</td>
-                            <td>{item.group}</td>
-                            <td>{item.valueBRL}</td>
-                            <td className={item.status}>{item.status}</td>
-                            <td>
-                              <Actions item={item} />
-                            </td>
-                          </tr>
-                        ))}
-                        </>
-                      )}
-                    </tbody>
-                  </Table>
+                  <TableFix cols={7} collums={collumAccount} rows={listVariableExpense} />
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
