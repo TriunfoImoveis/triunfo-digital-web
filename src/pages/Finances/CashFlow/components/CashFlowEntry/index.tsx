@@ -3,22 +3,23 @@ import { GridColDef } from '@material-ui/data-grid';
 import Table from '../../../../../components/Table';
 import ModalAddEntryAndExits from '../../../../../components/ReactModal/AddEntryAndExits';
 import Button from '../../../../../components/Button';
+import { DateBRL } from '../../../../../utils/format';
  
 // import { Container } from './styles';
 
 interface Despesa {
   id: string;
   conta: {
-    conta: string;
-    nome_banco: string;
+    account: string;
+    bank_name: string;
   };
   escritorio: {
-    nome: string;
+    name: string;
   }
   descricao: string;
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
-  data: string;
+  data_pagamento: string;
 }
 
 interface CashFlowEntryProps {
@@ -43,12 +44,12 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
 
   const rows = entradas.map(item => ({
     id: item.id,
-    sede: item.escritorio.nome,
+    sede: item.escritorio.name,
     tipo: item.tipo_despesa,
     descricao: item.descricao,
     valor: item.valor,
-    contaDeSaida: item.conta.conta,
-    data: item.data
+    contaDeSaida: `${item.conta.bank_name} - ${item.conta.account}`,
+    data: DateBRL(item.data_pagamento)
   }));
   
   return (

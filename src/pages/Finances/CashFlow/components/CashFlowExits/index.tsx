@@ -5,23 +5,31 @@ import ModalAddEntryAndExits from '../../../../../components/ReactModal/AddEntry
 import Button from '../../../../../components/Button';
 // import { Container } from './styles';
 
-interface Despesa {
+interface Subsidiary {
   id: string;
-  conta: {
-    conta: string;
-    nome_banco: string;
-  };
-  escritorio: {
-    nome: string;
-  }
-  descricao: string;
-  tipo_despesa: 'ENTRADA' | 'SAIDA';
-  valor: string;
-  data: string;
+  name: string;
 }
 
+interface Expense {
+  id: string;
+  expense_type: string;
+  description: string;
+  due_date: string;
+  value: string;
+  pay_date: string;
+  value_paid: string;
+  group: {
+    id: string;
+    name: string;
+  }
+  subsidiary: Subsidiary
+  bank_data: {
+    id: string;
+    bank_name: string;
+  }
+}
 interface CashFlowEntryProps {
-  saidas: Despesa[]
+  saidas: Expense[]
 }
 
 const CashFlowExits: React.FC<CashFlowEntryProps> = ({saidas}) => {
@@ -42,12 +50,12 @@ const CashFlowExits: React.FC<CashFlowEntryProps> = ({saidas}) => {
 
   const rows = saidas.map(item => ({
     id: item.id,
-    sede: item.escritorio.nome,
-    tipo: item.tipo_despesa,
-    descricao: item.descricao,
-    valor: item.valor,
-    contaDeSaida: item.conta.conta,
-    data: item.data
+    sede: item.subsidiary.name,
+    tipo: item.group.name,
+    descricao: item.description,
+    valor: item.value_paid,
+    contaDeSaida: item.bank_data.bank_name,
+    data: item.pay_date
   }));
 
   return (
