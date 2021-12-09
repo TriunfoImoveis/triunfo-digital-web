@@ -1,24 +1,25 @@
 import React, { useState, useCallback } from 'react';
-import { GridColDef } from '@material-ui/data-grid';
-import Table from '../../../../../components/Table';
 import ModalAddEntryAndExits from '../../../../../components/ReactModal/AddEntryAndExits';
 import Button from '../../../../../components/Button';
+import { DateBRL } from '../../../../../utils/format';
+import Table from '../../../../../components/Table/TableCashFlowEntry';
+
  
 // import { Container } from './styles';
 
 interface Despesa {
   id: string;
   conta: {
-    conta: string;
-    nome_banco: string;
+    account: string;
+    bank_name: string;
   };
   escritorio: {
-    nome: string;
+    name: string;
   }
   descricao: string;
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
-  data: string;
+  data_pagamento: string;
 }
 
 interface CashFlowEntryProps {
@@ -31,29 +32,31 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
   }, [modalAddEntryAndExits]);
 
 
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 10, sortable: false, hide: true, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'sede', headerName: 'SEDE', width: 150, sortable: false, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'data', headerName: 'DATA', width: 100, sortable: true, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'tipo', headerName: 'TIPO', width: 100, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'valor', headerName: 'VALOR', width: 230, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: true },
-    { field: 'contaDeSaida', headerName: 'CONTA DE SAÍDA', width: 200, sortable: false, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-  ];
+  const collums = [
+    {name: 'Filial'},
+    {name: 'Data'},
+    {name: 'Grupo'},
+    {name: 'Descrição'},
+    {name: 'Valor'},
+    {name: 'Conta de Entrada'},
+    {name: 'Ações'},
+  ]
 
   const rows = entradas.map(item => ({
     id: item.id,
-    sede: item.escritorio.nome,
+    sede: item.escritorio.name,
     tipo: item.tipo_despesa,
     descricao: item.descricao,
     valor: item.valor,
-    contaDeSaida: item.conta.conta,
-    data: item.data
+    contaDeSaida: `${item.conta.account}`,
+    data: DateBRL(item.data_pagamento)
   }));
+
+  console.log(rows)
   
   return (
     <>
-      <Table columns={columns} rows={rows} />
+      <Table cols={8} collums={collums} rows={rows}  />
       <Button onClick={toogleModal}>Adicionar entrada</Button>
       <ModalAddEntryAndExits isOpen={modalAddEntryAndExits} setIsOpen={toogleModal} />
     </>

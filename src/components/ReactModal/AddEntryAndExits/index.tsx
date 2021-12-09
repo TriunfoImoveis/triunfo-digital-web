@@ -6,21 +6,30 @@ import { FormHandles } from '@unform/core';
 import { BsCheckBox } from 'react-icons/bs';
 import Modal from '..';
 import Select from '../../ReactSelect';
+import CreatableSelect from '../../ReactSelect/Creatable';
 import Input from '../../Input';
 import { Container } from './styles';
 import Button from '../../Button';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
-import {unMaked} from '../../../utils/unMasked';
+import { unMaked, DateYMD } from '../../../utils/unMasked';
+import { useAuth } from '../../../context/AuthContext';
 
 
 interface ModalProps {
   isOpen: boolean;
   setIsOpen: () => void;
 }
+
+interface Options {
+  label: string;
+  value: string;
+}
 interface IAddEntryAndExitsForm {
   tipo_despesa: string;
+  data_pagamento: string;
   descricao: string;
+  grupo: string;
   valor: string;
   escritorio: string;
   conta: string;
@@ -28,25 +37,35 @@ interface IAddEntryAndExitsForm {
 
 const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
   const formRef = useRef<FormHandles>(null);
+  const { userAuth } = useAuth();
   const [escritorio, setEscritorio] = useState([]);
-  const [contaBanco, setContaBanco] = useState([]);
+  const [contaBanco, setContaBanco] = useState<Options[]>([]);
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isLoadingGroup, setIsLoadingGroup] = useState(false);
 
+
+  const getGroups = useCallback(async () => {
+    const response = await api.get('/expense/groups');
+    const options = response.data.map(item => ({
+      label: item.name, value: item.id
+    }))
+    setGroups(options);
+  }, []);
   const getEscritorio = useCallback(async () => {
-    const response = await api.get('/escritorio');
+    const response = await api.get('/subsidiary');
     const options = response.data.map(item => (
-      { label: item.nome, value: item.id }
+      { label: item.name, value: item.id }
     ));
     setEscritorio(options);
   }, []);
 
-  const getContaBanco = useCallback(async () => {
-    const response = await api.get('/conta');
-    const options = response.data.map(item => (
-      { label: item.nome_banco, value: item.id }
+  const getContaBanco = useCallback(() => {
+    const options = userAuth.bank_data.map(item => (
+      { label: `${item.bank_name} - ${item.account}`, value: item.id }
     ));
     setContaBanco(options);
-  }, []);
+  }, [userAuth.bank_data]);
 
   useEffect(() => {
     getEscritorio();
@@ -56,14 +75,41 @@ const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
     getContaBanco();
   }, [getContaBanco]);
 
+  useEffect(() => {
+    getGroups();
+  }, [getGroups]);
+
+  const handleCreateNewGroup = async (group: string) => {
+    await api.post('/expense/groups', {
+      name: group,
+    });
+    const response = await api.get('/expense/groups');
+    const newOptions = response.data.map(op => {
+      return {
+        label: op.name,
+        value: op.id,
+      };
+    });
+    return newOptions;
+  };
+  const handleCreateGroup = async (newValue: any) => {
+    setIsLoadingGroup(true);
+    const options = await handleCreateNewGroup(newValue);
+    setIsLoadingGroup(false);
+    setGroups(options);
+  };
+
+
 
   const createEntryOrExits = useCallback(async (data: IAddEntryAndExitsForm) => {
     const payload = {
       ...data,
+      tipo_despesa: "ENTRADA",
       valor: Number(unMaked(data.valor)),
+      data_pagamento: DateYMD(data.data_pagamento)
     };
     try {
-      await api.post('/despesa',payload);
+      await api.post('/despesa', payload);
       toast.success(`Cadastro de ${data.tipo_despesa} realiza com sucesso!`);
     } catch (err) {
       toast.error(`${err}`);
@@ -75,20 +121,20 @@ const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
     try {
       setLoading(true);
       const schema = Yup.object().shape({
-        tipo_despesa: Yup.string().required('Tipo de despesa obrigatório'),
         descricao: Yup.string().required('Descrição obrigatório'),
         valor: Yup.string().required('Valor é obrigatório'),
         escritorio: Yup.string().required('Sede obrigatória'),
         conta: Yup.string().required('Conta bancária obrigatória'),
+        grupo: Yup.string().required('Grupo obrigatória'),
+        data_pagamento: Yup.string().required('data de obrigatória')
       });
 
       await schema.validate(data, {
         abortEarly: false,
       });
 
-      createEntryOrExits(data);
+      await createEntryOrExits(data);
       setLoading(false);
-      setIsOpen();
       document.location.reload();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
@@ -99,40 +145,45 @@ const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
       toast.error('ERROR!, verifique as informações e tente novamente');
       setLoading(false);
     }
-  }, [setIsOpen, createEntryOrExits]);
+  }, [createEntryOrExits]);
 
-  const optionsTipoDespesa = [{ label: 'ENTRADA', value: 'ENTRADA' }, { label: 'SAIDA', value: 'SAIDA' }];
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
-        <Container>
-          <Form ref={formRef} onSubmit={handleSubmit}>
-            <h3>Adiconar Entrada / Saída</h3>
-            <Select
-              name="tipo_despesa"
-              label="Tipo de Despesa"
-              options={optionsTipoDespesa}
-            />
-            <Input name="descricao" label="Descrição" />
-            <Input name="valor" label="Valor" mask="currency" />
-            <Select
-              name="escritorio"
-              label="Sede"
-              options={escritorio}
-            />
-            <Select
-              name="conta"
-              label="Conta bancaria"
-              options={contaBanco}
-            />
-          </Form>
-          <Button
-            className="add-button"
-            onClick={() => formRef.current?.submitForm()}
-          >
-            <BsCheckBox />
-            {loading ? 'Cadastrando....' : 'Adicionar entradas/saídas'}
-          </Button>
-        </Container>
+      <Container>
+        <Form ref={formRef} onSubmit={handleSubmit}>
+          <h3>Adicionar Entrada / Saída</h3>
+          <Input name="descricao" label="Descrição" />
+          <Input name="data_pagamento" label="Data" mask="date" />
+          <Input name="valor" label="Valor" mask="currency" />
+          <CreatableSelect
+            label="Grupo"
+            name="grupo"
+            isClearable
+            allowCreateWhileLoading={isLoadingGroup}
+            isDisabled={isLoadingGroup}
+            isLoading={isLoadingGroup}
+            onCreateOption={handleCreateGroup}
+            options={groups}
+          />
+          <Select
+            name="escritorio"
+            label="Sede"
+            options={escritorio}
+          />
+          <Select
+            name="conta"
+            label="Conta bancaria"
+            options={contaBanco}
+          />
+        </Form>
+        <Button
+          className="add-button"
+          onClick={() => formRef.current?.submitForm()}
+        >
+          <BsCheckBox />
+          {loading ? 'Cadastrando....' : 'Adicionar entradas/saídas'}
+        </Button>
+      </Container>
     </Modal>
   );
 };
