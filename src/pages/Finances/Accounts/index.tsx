@@ -1,12 +1,12 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { ChangeEvent, useCallback, useEffect, useState, useMemo } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { SiOneplus } from 'react-icons/si';
 import Switch from 'react-switch';
 import { Form } from '@unform/web';
-import NotFound from '../../../components/Errors/NotFound';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
+import ModalAddAccount from '../../../components/ReactModal/AddAccount';
+
 import {
   Container,
   Header,
@@ -20,7 +20,6 @@ import {
   FiltersBotton,
   AccountContainer,
   BalanceAmount,
-  Table,
   TitlePane,
 } from './styles';
 import api from '../../../services/api';
@@ -33,6 +32,36 @@ import {
   filterTimeSlot,
   filterYear,
 } from '../../../utils/filters';
+import { useFilter } from '../../../context/FilterContext';
+import { useFetch } from '../../../hooks/useFetch';
+import TableFix from '../../../components/Table/TableAccount';
+
+
+interface AccountData {
+  id: string;
+  expense_type: string;
+  description: string;
+  due_date: string;
+  value: string;
+  pay_date: string | null;
+  value_paid: string | null
+  status: string;
+  group: GroupsResponse;
+  subsidiary: {
+    id: string;
+    name: string;
+    city: string;
+  }
+  bank_data: {
+    id: string;
+    bank_name: string;
+    account: string;
+  }
+  user: {
+    id: string;
+    name: string;
+  }
+}
 
 type AccountProps = {
   id: string;
@@ -46,37 +75,86 @@ type AccountProps = {
   group: string;
 };
 
+interface GroupsResponse {
+  id: string; 
+  name: string;
+}
+
+interface Options {
+  label: string;
+  value: string;
+}
+
 const Account: React.FC = () => {
   const [typeTab, setTypeTab] = useState('fix');
-  const [city, setCity] = useState('');
-  const [month, setMonth] = useState(0);
-  const [year, setYear] = useState(2021);
   const [totalFixed, setTotalFixed] = useState('R$ 0,00');
   const [totalVariable, setTotalVariable] = useState('R$ 0,00');
-  const [accountDataFixed, setAccountDataFixed] = useState<AccountProps[]>([]);
-  const [accountDataVariable, setAccountDataVariable] = useState<
-    AccountProps[]
-  >([]);
-
   const [isTimeSlot, setIsTimeSlot] = useState(false);
   const [dateInitial, setDateInitial] = useState('');
   const [dateFinal, setDateFinal] = useState('');
+  const [optionsGroup, setOptionsGroup] = useState<Options[]>([]);
+  const [optionsSubsidiary, setOptionsSubsidiary] = useState<Options[]>([]);
+  const { data: account } = useFetch<AccountData[]>('/expense');
+  const {
+    handleSetMonth, 
+    month, 
+    year,
+    handleSetYear,
+    group,
+    handleSetGroup,
+    subsidiary,
+    handleSetSubsidiary
+  } = useFilter();
 
-  useEffect(() => {
-    const loadingAccountFixed = async () => {
-      const response = await api.get(`/expense`);
-      const responseAccount = response.data
+  const [modalAddAccount, setAddAccount] = useState(false);
+
+  const orderByAsc = useCallback(function (a: AccountData, b: AccountData) {
+    let data1 = new Date(a.due_date);
+    let data2 = new Date(b.due_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
+  const toogleAddAccount = useCallback(() => {
+    setAddAccount(prevState => !prevState);
+  }, []);
+
+  const loadGroupsAccount = useCallback(async () => {
+    const response = await api.get<GroupsResponse[]>('/expense/groups');
+    const options = response.data.map(item => ({ 
+      label: item.name,
+      value: item.id
+    }));
+    setOptionsGroup(options);
+  }, []);
+
+  const loadSubsidiary = useCallback(async () => {
+    const response = await api.get('/subsidiary');
+    const options = response.data.map(item => ({ 
+      label: item.name,
+      value: item.name
+    }));
+    setOptionsSubsidiary(options);
+  }, []);
+
+  const accountFixed = useCallback((account: AccountData[]): AccountProps[] => {
+    const responseAccount = account
         .filter(item => {
-          if (item.subsidiary.city === city) {
+          if (item.subsidiary.name === subsidiary) {
             return item;
-          } else if (city === '') {
+          } else if (subsidiary === '') {
             return item
           }
           // eslint-disable-next-line
           return;
         })
         .filter(item => item.expense_type.includes('FIXA') && item)
-        .filter(item => item.pay_date === null && item);
+        .filter(item => item.pay_date === null && item)
+        .filter(item => {
+          if (group === '') {
+            // eslint-disable-next-line
+            return item;
+          }
+          return item.group.id === group && item;
+        });
       if (isTimeSlot && dateInitial.length !== 0) {
         const account = responseAccount.filter(item =>
           filterTimeSlot(item.due_date, dateInitial, dateFinal),
@@ -92,7 +170,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -106,7 +184,7 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataFixed(dataFormated);
+        return dataFormated;
       } else if (month > 0) {
         const account = responseAccount
           .filter(item => filterMonth(item.due_date, month))
@@ -123,7 +201,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -137,7 +215,7 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataFixed(dataFormated);
+        return dataFormated;
       } else {
         const account = responseAccount.filter(item =>
           filterYear(item.due_date, year),
@@ -154,7 +232,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -168,26 +246,28 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataFixed(dataFormated);
+        return dataFormated;
       }
-    };
-    loadingAccountFixed();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
-  useEffect(() => {
-    const loadingAccountVariable = async () => {
-      const response = await api.get(`/expense`);
-      const responseAccount = response.data
+  }, [subsidiary, month, year, dateInitial, dateFinal, isTimeSlot, group]);
+
+  const accountVariable = useCallback((account: AccountData[]): AccountProps[] => {
+    const responseAccount = account
         .filter(item => {
-          if (item.subsidiary.city === city) {
+          if (item.subsidiary.name === subsidiary) {
             return item;
-          } else if (city === '') {
+          } else if (subsidiary === '') {
             return item
           }
           // eslint-disable-next-line
           return;
         })
-        .filter(item => item.expense_type.includes('VARIAVEL') && item)
-        .filter(item => item.pay_date === null && item);
+        .filter(item => item.pay_date === null && item)
+        .filter(item => {
+          if (group === '') {
+            return item;
+          }
+          return item.group.id === group && item;
+        });
       if (isTimeSlot && dateInitial.length !== 0) {
         const variable = responseAccount.filter(item =>
           filterTimeSlot(item.due_date, dateInitial, dateFinal),
@@ -203,7 +283,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -217,7 +297,7 @@ const Account: React.FC = () => {
           setTotalVariable(money(0));
         }
 
-        setAccountDataVariable(dataFormated);
+       return dataFormated;
       } else if (month > 0) {
         const variable = responseAccount
           .filter(item => filterMonth(item.due_date, month))
@@ -234,7 +314,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -248,7 +328,7 @@ const Account: React.FC = () => {
           setTotalFixed(money(0));
         }
 
-        setAccountDataVariable(dataFormated);
+        return dataFormated;
       } else {
         const variable = responseAccount.filter(item =>
           filterYear(item.due_date, year),
@@ -265,7 +345,7 @@ const Account: React.FC = () => {
             value: Number(item.value),
             valueBRL: money(Number(item.value)),
             status: item.status,
-            city: item.subsidiary.city,
+            city: item.subsidiary.name,
             group: item.group.name,
           };
         });
@@ -279,11 +359,32 @@ const Account: React.FC = () => {
           setTotalVariable(money(0));
         }
 
-        setAccountDataVariable(dataFormated);
+        return dataFormated;
       }
-    };
-    loadingAccountVariable();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot]);
+  }, [subsidiary, month, year, dateInitial, dateFinal, isTimeSlot, group]);
+
+  const listFixedExpense = useMemo(() => {
+    if (!account) {
+      return [];
+    }
+
+    return accountFixed(account.sort(orderByAsc));
+  }, [account, accountFixed, orderByAsc]);
+
+  const listVariableExpense = useMemo(() => {
+    if (!account) {
+      return [];
+    }
+    const variableAccount = account.filter(item => item.expense_type.includes('VARIAVEL') && item);
+    return accountVariable(variableAccount.sort(orderByAsc));
+  }, [account, accountVariable, orderByAsc]);
+
+
+  
+  useEffect(() => {
+    loadGroupsAccount();
+    loadSubsidiary();
+  }, [loadGroupsAccount, loadSubsidiary]);
 
   const toogleIsTimeSlot = useCallback(() => {
     setIsTimeSlot(!isTimeSlot);
@@ -300,15 +401,29 @@ const Account: React.FC = () => {
     }
   };
 
-  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    setCity(event.target.value);
+  const handleSelectSubsidiary= (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetSubsidiary(event.target.value);
   };
   const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    setYear(Number(event.target.value));
+    handleSetYear(Number(event.target.value));
   };
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    setMonth(Number(event.target.value));
+    handleSetMonth(Number(event.target.value));
   };
+
+  const handleSelectGroup = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetGroup(event.target.value);
+  };
+
+  const collumAccount = [
+    {name: 'Filial'},
+    {name: 'Descrição'},
+    {name: 'Vencimento'},
+    {name: 'Grupo'},
+    {name: 'Valor'},
+    {name: 'Status'},
+    {name: 'Ações'},
+  ]
 
   return (
     <FinancesLayout>
@@ -322,11 +437,11 @@ const Account: React.FC = () => {
               <FilterButtonGroup>
                 <FiltersBottonItems>
                   <span>Cidade: </span>
-                  <select defaultValue={city} onChange={handleSelectCity}>
+                  <select defaultValue={subsidiary} onChange={handleSelectSubsidiary}>
                     <option value="">Todas</option>
-                    <option value="São Luís">São Luís</option>
-                    <option value="Fortaleza">Fortaleza</option>
-                    <option value="Teresina">Teresina</option>
+                    {optionsSubsidiary.map(item => (
+                      <option value={item.value}>{item.label}</option>
+                    ))}
                   </select>
                 </FiltersBottonItems>
                 {!isTimeSlot ? (
@@ -383,6 +498,23 @@ const Account: React.FC = () => {
               </FilterButtonGroup>
             </FiltersBotton>
           </FiltersContainer>
+          <FiltersContainer>
+            <FiltersBotton>
+            <FiltersBottonItems>
+                <span>Grupo: </span>
+                <select
+                  onChange={handleSelectGroup}
+                  defaultValue={group}
+                >
+                  <option value="">Todos</option>
+                  {optionsGroup.map(option => (
+                    <option value={option.value}>{option.label}</option>
+                  ))}
+
+                </select>
+              </FiltersBottonItems>
+            </FiltersBotton>
+          </FiltersContainer>
           <Content>
             <AccountContainer>
               <Tabs
@@ -394,44 +526,7 @@ const Account: React.FC = () => {
               >
                 <TabBootstrap eventKey="fix" title="Contas Fixas">
                   <TitlePane>Contas Fixas</TitlePane>
-                  <Table cols={7}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Descrição</th>
-                        <th>Vencimento</th>
-                        <th>Grupo</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {accountDataFixed.length === 0 ? (
-                        <NotFound />
-                      ) : (
-                        <>
-                          {accountDataFixed.map(item => (
-                            <tr key={item.id}>
-                              <td>{item.city}</td>
-                              <td>{item.description}</td>
-                              <td>{item.due_date}</td>
-                              <td>{item.group}</td>
-                              <td>{item.valueBRL}</td>
-                              <td className={item.status}>{item.status}</td>
-                              <td>
-                                <a
-                                  href={`/financeiro/detalhes-conta/${item.id}`}
-                                >
-                                  mais detalhes
-                                </a>
-                              </td>
-                            </tr>
-                          ))}
-                        </>
-                      )}
-                    </tbody>
-                  </Table>
+                  <TableFix cols={7} collums={collumAccount} rows={listFixedExpense} />
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
@@ -441,36 +536,7 @@ const Account: React.FC = () => {
                 </TabBootstrap>
                 <TabBootstrap eventKey="variable" title="Contas Variáveis">
                   <TitlePane>Contas Variáveis</TitlePane>
-                  <Table cols={7}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Descrição</th>
-                        <th>Vencimento</th>
-                        <th>Grupo</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {accountDataVariable.map(item => (
-                        <tr key={item.id}>
-                          <td>{item.city}</td>
-                          <td>{item.description}</td>
-                          <td>{item.due_date}</td>
-                          <td>{item.group}</td>
-                          <td>{item.valueBRL}</td>
-                          <td className={item.status}>{item.status}</td>
-                          <td>
-                            <a href={`/financeiro/detalhes-conta/${item.id}`}>
-                              mais detalhes
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                  <TableFix cols={7} collums={collumAccount} rows={listVariableExpense} />
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
@@ -483,14 +549,15 @@ const Account: React.FC = () => {
           </Content>
           <Footer>
             <ButtonGroup>
-              <Link to="/financeiro/adicionanovaconta">
+              <button type="button" onClick={() => toogleAddAccount()}>
                 <SiOneplus />
                 <span>Adiconar nova conta</span>
-              </Link>
+              </button> 
             </ButtonGroup>
           </Footer>
         </Container>
       </Background>
+      <ModalAddAccount isOpen={modalAddAccount} setIsOpen={toogleAddAccount} />
     </FinancesLayout>
   );
 };

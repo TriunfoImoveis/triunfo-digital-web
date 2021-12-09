@@ -1,10 +1,49 @@
 import React from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
-import { GridColDef } from '@material-ui/data-grid';
 
-import Table from '../../Table';
+import TableEntrySales from '../../Table/TableEntrySales';
+import TableEntryFowardAgent from '../../Table/TableEntryFowardAgent';
+import TableEntryCredit from '../../Table/TableEntryCredit';
+
+
 
 import { TitlePane, BalanceAmount } from './styles';
+
+interface SallesData {
+  id: string;
+  data: string;
+  filial: string;
+  descricao: string;
+  fontePagadora: string;
+  valorBruto: string;
+  taxaDeImposto: string;
+  valorDaNota: string;
+  parteBrutaDaEmpresa: string;
+  parteLiquidaDaEmpresa: string;
+  contaDeEntrada: string;
+}
+
+interface DespachanteEntry {
+  id: string;
+  data: string;
+  filial: string;
+  descricao: string;
+  nomeDoCliente: string;
+  valorBruto: string;
+  contaDeEntrada: string;
+}
+
+interface CreditEntry {
+  id: string;
+  data: string;
+  filial: string;
+  descricao: string;
+  nomeDoCliente: string;
+  valorBruto: string;
+  valorDaNota: string;
+  taxaDeImposto: string;
+  contaDeEntrada: string;
+}
 
 type EntryData = {
   id: string;
@@ -69,41 +108,38 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
   creditEntry,
   creditEntryTotal,
 }) => {
-  const collumSalesEntry: GridColDef[] = [
-    { field: 'id', headerName: 'ID', disableColumnMenu: true, hide: true, align: 'center', headerAlign: 'center' },
-    { field: 'data', headerName: 'DATA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'filial', headerName: 'FILIAL', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'fontePagadora', headerName: 'FONTE PAGADORA', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'valorBruto', headerName: 'VALOR BRUTO', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'taxaDeImposto', headerName: 'TAXA DE IMPOSTO', width: 200, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'valorDaNota', headerName: 'VALOR DA NOTA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'parteBrutaDaEmpresa', headerName: 'PARTE BRUTA DA EMPRESA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'parteLiquidaDaEmpresa', headerName: 'PARTE LÍQUIDA DA EMPRESA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'contaDeEntrada', headerName: 'CONTA DE ENTRADA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+  const collumSalesEntry = [
+    { name: 'DATA'},
+    { name: 'FILIAL'},
+    { name: 'DESCRIÇÃO'},
+    { name: 'FONTE PAGADORA'},
+    { name: 'VALOR BRUTO'},
+    { name: 'TAXA DE IMPOSTO'},
+    { name: 'VALOR DA NOTA'},
+    { name: 'PARTE BRUTA DA EMPRESA'},
+    { name: 'PARTE LÍQUIDA DA EMPRESA'},
+    { name: 'CONTA DE ENTRADA'},
   ];
-  const collumDespachanteEntry: GridColDef[] = [
-    { field: 'id', headerName: 'ID', disableColumnMenu: true, hide: true, align: 'center', headerAlign: 'center' },
-    { field: 'data', headerName: 'DATA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'filial', headerName: 'FILIAL', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'nomeDoCliente', headerName: 'NOME DO CLIENTE', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'valorBruto', headerName: 'VALOR BRUTO', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'contaDeEntrada', headerName: 'CONTA DE ENTRADA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+  const collumDespachanteEntry = [
+    { name: 'DATA'},
+    { name: 'FILIAL'},
+    { name: 'DESCRIÇÃO'},
+    { name: 'NOME DO CLIENTE'},
+    { name: 'VALOR BRUTO'},
+    { name: 'CONTA DE ENTRADA'},
   ];
-  const collumCreditEntry: GridColDef[] = [
-    { field: 'id', headerName: 'ID', disableColumnMenu: true, hide: true, align: 'center', headerAlign: 'center' },
-    { field: 'data', headerName: 'DATA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'filial', headerName: 'FILIAL', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'nomeDoCliente', headerName: 'NOME DO CLIENTE', width: 300, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'valorBruto', headerName: 'VALOR BRUTO', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'valorDaNota', headerName: 'VALOR DA NOTA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'taxaDeImposto', headerName: 'TAXA DE IMPOSTO', width: 200, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'contaDeEntrada', headerName: 'CONTA DE ENTRADA', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
+  const collumCreditEntry = [
+    { name: 'DATA'},
+    { name: 'FILIAL'},
+    { name: 'DESCRIÇÃO'},
+    { name: 'NOME DO CLIENTE'},
+    { name: 'VALOR BRUTO' },
+    { name: 'VALOR DA NOTA' },
+    { name: 'TAXA DE IMPOSTO'},
+    { name: 'CONTA DE ENTRADA'},
   ];
 
-  const rowSallesEntry = salesEntry.map(item => ({
+  const rowSallesEntry: SallesData[] = salesEntry.map(item => ({
     id: item.id,
     data: item.pay_date,
     filial: item.city,
@@ -116,7 +152,10 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
     parteLiquidaDaEmpresa: item.empressLiquidBRL,
     contaDeEntrada: item.bank,
   }));
-  const rowDespachanteEntry = dispatcherEntry.map(item => ({
+
+  
+
+  const rowDespachanteEntry: DespachanteEntry[] = dispatcherEntry.map(item => ({
     id: item.id,
     data: item.due_date,
     filial: item.city,
@@ -125,7 +164,8 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
     valorBruto: item.liquid_valueBRL,
     contaDeEntrada: item.bank,
   }));
-  const rowCreditEntry = creditEntry.map(item => ({
+
+  const rowCreditEntry: CreditEntry[]  = creditEntry.map(item => ({
     id: item.id,
     data: item.due_date,
     filial: item.city,
@@ -146,7 +186,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
     >
       <TabBootstrap eventKey="sales" title="Vendas">
         <TitlePane>{title}</TitlePane>
-        <Table columns={collumSalesEntry} rows={rowSallesEntry} rowsPerPageOptions={10} />
+        <TableEntrySales collums={collumSalesEntry} rows={rowSallesEntry} cols={10} />
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
@@ -156,7 +196,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
       </TabBootstrap>
       <TabBootstrap eventKey="forwardingAgent" title="Despachante">
         <TitlePane>{title}</TitlePane>
-        <Table columns={collumDespachanteEntry} rows={rowDespachanteEntry} rowsPerPageOptions={10} />
+        <TableEntryFowardAgent collums={collumDespachanteEntry} rows={rowDespachanteEntry} cols={6} />
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
@@ -166,7 +206,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
       </TabBootstrap>
       <TabBootstrap eventKey="credit" title="Crédito">
         <TitlePane>{title}</TitlePane>
-        <Table columns={collumCreditEntry} rows={rowCreditEntry} rowsPerPageOptions={10} />
+        <TableEntryCredit collums={collumCreditEntry} rows={rowCreditEntry} cols={8} />
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>

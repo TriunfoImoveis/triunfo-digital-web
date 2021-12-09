@@ -1,8 +1,7 @@
 import React from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
-import { GridColDef } from '@material-ui/data-grid';
 
-import Table from '../../Table';
+import Table from '../../Table/TableExits';
 
 import { TitlePane, BalanceAmount } from './styles';
 
@@ -31,14 +30,13 @@ const TableBoxFinancesAccount: React.FC<TableBoxFinancesAccountProps> = ({
   account,
   accountTotal,
 }) => {
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', disableColumnMenu: true, hide: true, align: 'center', headerAlign: 'center' },
-    { field: 'data', headerName: 'DATA', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'filial', headerName: 'FILIAL', width: 150, sortable: false, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
-    { field: 'descricao', headerName: 'DESCRIÇÃO', width: 250, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'quemPagou', headerName: 'QUEM PAGOU', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'valor', headerName: 'VALOR', width: 150, disableColumnMenu: true, align: 'center', headerAlign: 'center', sortable: false },
-    { field: 'contaDeSaida', headerName: 'CONTA DE SAÍDA', width: 150, sortable: false, disableColumnMenu: true, align: 'center', headerAlign: 'center' },
+  const columns = [
+    { name: 'DATA'},
+    { name: 'FILIAL'},
+    { name: 'DESCRIÇÃO'},
+    { name: 'QUEM PAGOU'},
+    { name: 'VALOR'},
+    { name: 'CONTA DE SAÍDA'},
   ];
 
   const rows = account.map(item => ({
@@ -60,7 +58,7 @@ const TableBoxFinancesAccount: React.FC<TableBoxFinancesAccountProps> = ({
     >
       <TabBootstrap eventKey="account" title="Despesas">
         <TitlePane>{title}</TitlePane>
-        <Table columns={columns} rows={rows} />
+        <Table collums={columns} rows={rows} cols={6}/>
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
