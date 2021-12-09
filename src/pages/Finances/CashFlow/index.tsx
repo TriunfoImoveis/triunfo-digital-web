@@ -2,7 +2,7 @@ import React, {useState, useCallback, useEffect, ChangeEvent} from 'react';
 import { Form } from '@unform/web';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import api from '../../../services/api';
-import {formatPrice} from '../../../utils/format';
+import {DateBRL, formatPrice} from '../../../utils/format';
 import FinancesLayout from '../../Layouts/FinancesLayout';
 import CashFlowBalanceBanks from './components/CashFlowBalanceBanks';
 import CashFlowEntry from './components/CashFlowEntry';
@@ -16,7 +16,7 @@ import {
   FiltersBottonItems,
   FiltersContainer,
 } from './styles';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { useAuth } from '../../../context/AuthContext';
 
 interface Params {
@@ -49,7 +49,6 @@ interface Despesa {
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
   data_pagamento: string;
-  created_at: string;
 }
 
 interface Saldos {
@@ -74,6 +73,7 @@ interface Expense {
   bank_data: {
     id: string;
     bank_name: string;
+    account: string;
   }
 }
 
@@ -90,7 +90,6 @@ const formatEntry = (data: Despesa[]): Despesa[] => {
     return {
       ...item,
       valor: formatPrice(Number(item.valor)),
-      data: format(new Date(item.created_at), 'dd/MM/yyyy'),
     }
   });
   return dataFormated;
@@ -102,8 +101,8 @@ const formatExit = (data: Expense[]) => {
       ...item,
       value: formatPrice(Number(item.value)),
       value_paid: formatPrice(Number(item.value_paid)),
-      due_date: format(new Date(item.due_date), 'dd/MM/yyyy'),
-      pay_date: format(new Date(item.due_date), 'dd/MM/yyyy'),
+      due_date: DateBRL(item.due_date),
+      pay_date: DateBRL(item.pay_date),
     }
   });
 
@@ -120,7 +119,7 @@ const CashFlow: React.FC = () => {
   const [filiais, setFiliais] = useState<Filial[]>([]);
   const [contas, setContas] = useState<Conta[]>([]);
   const [parms, setParms] = useState({
-    data_inicio: '2021-01-01',
+    data_inicio: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
     data_fim: format(new Date(), 'yyyy-MM-dd'), 
   } as Params);
 
@@ -131,7 +130,7 @@ const CashFlow: React.FC = () => {
       const response = await api.get('/subsidiary');
       const filiais = response.data.map(item => ({
         id: item.id,
-        nome: item.name
+        name: item.name
       }));
       setFiliais(filiais);
     } catch (error) {
@@ -161,9 +160,9 @@ const CashFlow: React.FC = () => {
 
       const {saldo_entrada, saldo_saida, saldo_total, despesas, expenses} = response.data;
 
-      console.log(expenses);
       const entradas = formatEntry(despesas.filter(item => item.tipo_despesa === 'ENTRADA'));
       const saidas = formatExit(expenses);
+
 
       setEntradas(entradas);
       setSaidas(saidas);
@@ -194,20 +193,22 @@ const CashFlow: React.FC = () => {
     value: item.id,
   }));
 
+  console.log(optionsFilial)
   
 
   const initialParams = useCallback(() => {
     setParms({
-      data_inicio: '2021-01-01',
+      data_inicio: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
       data_fim: format(new Date(), 'yyyy-MM-dd'), 
     });
   }, []);
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    if(event.target.value !== '') {
+    const {value} = event.target
+    if(value !== '') {
       setParms(prevState => ({
         ...prevState,
-        escritorio: event.target.value
+        escritorio: value
       }));
     } else {
       initialParams();
@@ -216,10 +217,11 @@ const CashFlow: React.FC = () => {
 
 
   const handleSelectContas= (event: ChangeEvent<HTMLSelectElement>) => {
-    if(event.target.value !== '') {
+    const {value} = event.target
+    if(value !== '') {
       setParms(prevState => ({
         ...prevState,
-        conta: event.target.value
+        conta: value
       }));
     } else {
       initialParams();
