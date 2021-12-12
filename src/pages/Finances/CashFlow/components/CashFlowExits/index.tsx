@@ -53,7 +53,7 @@ const CashFlowExits: React.FC<CashFlowEntryProps> = ({saidas}) => {
 
   return (
     <>
-      <Table cols={8} collums={columns} rows={rows} />
+      <Table cols={7} collums={columns} rows={rows} />
     </>
   );
 }

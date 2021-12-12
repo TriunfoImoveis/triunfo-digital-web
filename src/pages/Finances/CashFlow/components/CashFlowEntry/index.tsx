@@ -56,7 +56,7 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
   
   return (
     <>
-      <Table cols={8} collums={collums} rows={rows}  />
+      <Table cols={7} collums={collums} rows={rows}  />
       <Button onClick={toogleModal}>Adicionar entrada</Button>
       <ModalAddEntryAndExits isOpen={modalAddEntryAndExits} setIsOpen={toogleModal} />
     </>

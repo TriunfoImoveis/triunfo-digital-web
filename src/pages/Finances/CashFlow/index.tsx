@@ -15,6 +15,8 @@ import {
   FiltersBotton,
   FiltersBottonItems,
   FiltersContainer,
+  CashFlowContainer,
+  TitlePane
 } from './styles';
 import { format, subDays } from 'date-fns';
 import { useAuth } from '../../../context/AuthContext';
@@ -276,6 +278,7 @@ const CashFlow: React.FC = () => {
           </FiltersBotton>
         </FiltersContainer>
 
+      <CashFlowContainer>
         <Tabs
         id="tab-container"
         className="tab-container"
@@ -284,9 +287,11 @@ const CashFlow: React.FC = () => {
         variant="tabs"
       >
         <TabBootstrap eventKey="entry" title="Entradas">
+          <TitlePane>Entradas</TitlePane>
           <CashFlowEntry entradas={entradas} />
         </TabBootstrap>
         <TabBootstrap eventKey="exits" title="Saídas">
+          <TitlePane>Saídas</TitlePane>
           <CashFlowExits saidas={saidas} />
         </TabBootstrap>
         <TabBootstrap eventKey="bankBalances" title="Saldos">
@@ -298,6 +303,7 @@ const CashFlow: React.FC = () => {
           />
         </TabBootstrap> 
       </Tabs>
+      </CashFlowContainer>
       </Container>
     </FinancesLayout>
   );
