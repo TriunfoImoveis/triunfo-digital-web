@@ -20,6 +20,10 @@ interface Despesa {
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
   data_pagamento: string;
+  grupo: {
+    id: string;
+    name: string;
+  }
 }
 
 interface CashFlowEntryProps {
@@ -49,14 +53,13 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
     descricao: item.descricao,
     valor: item.valor,
     contaDeSaida: `${item.conta.account}`,
-    data: DateBRL(item.data_pagamento)
+    data: DateBRL(item.data_pagamento),
+    grupo: item.grupo.name
   }));
-
-  console.log(rows)
   
   return (
     <>
-      <Table cols={8} collums={collums} rows={rows}  />
+      <Table cols={7} collums={collums} rows={rows}  />
       <Button onClick={toogleModal}>Adicionar entrada</Button>
       <ModalAddEntryAndExits isOpen={modalAddEntryAndExits} setIsOpen={toogleModal} />
     </>

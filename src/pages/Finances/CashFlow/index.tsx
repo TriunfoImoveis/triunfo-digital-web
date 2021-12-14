@@ -15,9 +15,12 @@ import {
   FiltersBotton,
   FiltersBottonItems,
   FiltersContainer,
+  CashFlowContainer,
+  TitlePane
 } from './styles';
 import { format, subDays } from 'date-fns';
 import { useAuth } from '../../../context/AuthContext';
+import { filterGroup } from '../../../utils/filters';
 
 interface Params {
   data_inicio: string;
@@ -40,7 +43,10 @@ interface Conta {
   bank_name: string;
 }
 
-
+interface Group {
+  id: string;
+  name: string;
+}
 interface Despesa {
   id: string;
   conta: Conta;
@@ -49,6 +55,7 @@ interface Despesa {
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
   data_pagamento: string;
+  grupo: Group;
 }
 
 interface Saldos {
@@ -65,10 +72,7 @@ interface Expense {
   value: string;
   pay_date: string;
   value_paid: string;
-  group: {
-    id: string;
-    name: string;
-  }
+  group: Group;
   subsidiary: Subsidiary
   bank_data: {
     id: string;
@@ -85,29 +89,6 @@ interface ReponseData {
   expenses: Expense[];
 }
 
-const formatEntry = (data: Despesa[]): Despesa[] => {
-  const dataFormated = data.map(item => {
-    return {
-      ...item,
-      valor: formatPrice(Number(item.valor)),
-    }
-  });
-  return dataFormated;
-};
-
-const formatExit = (data: Expense[]) => {
-  const dataFormated = data.map(item => {
-    return {
-      ...item,
-      value: formatPrice(Number(item.value)),
-      value_paid: formatPrice(Number(item.value_paid)),
-      due_date: DateBRL(item.due_date),
-      pay_date: DateBRL(item.pay_date),
-    }
-  });
-
-  return dataFormated;
-} 
 
 const CashFlow: React.FC = () => {
   const { userAuth } = useAuth();
@@ -118,11 +99,37 @@ const CashFlow: React.FC = () => {
   const [saldos, setSaldos] = useState({} as Saldos);
   const [filiais, setFiliais] = useState<Filial[]>([]);
   const [contas, setContas] = useState<Conta[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState('');
   const [parms, setParms] = useState({
     data_inicio: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
     data_fim: format(new Date(), 'yyyy-MM-dd'), 
   } as Params);
 
+  const formatEntry = (data: Despesa[]): Despesa[] => {
+    const dataFormated = data.map(item => {
+      return {
+        ...item,
+        valor: formatPrice(Number(item.valor)),
+      }
+    });
+    return dataFormated;
+  };
+
+  const formatExit = (data: Expense[]) => {
+    const dataFormated = data.map(item => {
+      return {
+        ...item,
+        value: formatPrice(Number(item.value)),
+        value_paid: formatPrice(Number(item.value_paid)),
+        due_date: DateBRL(item.due_date),
+        pay_date: DateBRL(item.pay_date),
+      }
+    });
+  
+    return dataFormated;
+  } 
+  
 
 
   const loadFiliais = useCallback(async () => {
@@ -138,7 +145,7 @@ const CashFlow: React.FC = () => {
     }
   }, []);
 
-  const loadContas = useCallback(async () => {
+  const loadContas = useCallback(() => {
     const contas = userAuth.bank_data.map(item => ({
       id: item.id,
       account: item.account,
@@ -146,6 +153,11 @@ const CashFlow: React.FC = () => {
     }))
     setContas(contas)
   }, [userAuth.bank_data]);
+
+  const loadGroups = useCallback(async () => {
+    const response = await api.get('/expense/groups');
+    setGroups(response.data);
+  }, []);
   const handleSetTab = (tabName: string | null) => {
     if (tabName) {
       setTypeTab(tabName);
@@ -160,9 +172,13 @@ const CashFlow: React.FC = () => {
 
       const {saldo_entrada, saldo_saida, saldo_total, despesas, expenses} = response.data;
 
-      const entradas = formatEntry(despesas.filter(item => item.tipo_despesa === 'ENTRADA'));
-      const saidas = formatExit(expenses);
-
+      const entradas = selectedGroup === '' ? formatEntry(despesas
+      .filter(item => item.tipo_despesa === 'ENTRADA'))
+      : formatEntry(despesas.filter(item => item.tipo_despesa === 'ENTRADA'))
+      .filter(item => filterGroup(selectedGroup, item.grupo.id));
+      const saidas = selectedGroup === "" ? 
+      formatExit(expenses)
+      : formatExit(expenses).filter(item => filterGroup(selectedGroup, item.group.id)); 
 
       setEntradas(entradas);
       setSaidas(saidas);
@@ -175,13 +191,14 @@ const CashFlow: React.FC = () => {
     } catch (error) {
       console.warn(error);
     }
-  }, [parms]);
+  }, [parms, selectedGroup]);
 
   useEffect(() => {
     loadDespesas();
     loadContas();
     loadFiliais();
-  }, [loadDespesas, loadContas, loadFiliais]);
+    loadGroups()
+  }, [loadDespesas, loadContas, loadFiliais, loadGroups]);
 
   const optionsFilial = filiais.map(item => ({
     label: item.name,
@@ -193,8 +210,10 @@ const CashFlow: React.FC = () => {
     value: item.id,
   }));
 
-  console.log(optionsFilial)
-  
+  const optionsGroups = groups.map(item => ({
+    label: item.name,
+    value: item.id
+  }))  
 
   const initialParams = useCallback(() => {
     setParms({
@@ -226,7 +245,16 @@ const CashFlow: React.FC = () => {
     } else {
       initialParams();
     }
-  }; 
+  };
+  
+  const handleSelectGroups= (event: ChangeEvent<HTMLSelectElement>) => {
+    const {value} = event.target
+    if(value !== '') {
+      setSelectedGroup(value);
+    } else {
+      initialParams();
+    }
+  };
 
   const handleSubmit = ({ data_inicio, data_fim }) => {
     if (data_inicio !== '' && data_fim !== '') {
@@ -264,6 +292,16 @@ const CashFlow: React.FC = () => {
                   ))}
                 </select>
               </FiltersBottonItems>
+
+              <FiltersBottonItems>
+                <span>Grupo: </span>
+                <select defaultValue={selectedGroup} onChange={handleSelectGroups}>
+                  <option value="">Todas</option>
+                  {optionsGroups.map(item => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </FiltersBottonItems>
             
                 <FiltersBottonItems>
                   <Form onSubmit={handleSubmit}>
@@ -276,6 +314,7 @@ const CashFlow: React.FC = () => {
           </FiltersBotton>
         </FiltersContainer>
 
+      <CashFlowContainer>
         <Tabs
         id="tab-container"
         className="tab-container"
@@ -284,9 +323,11 @@ const CashFlow: React.FC = () => {
         variant="tabs"
       >
         <TabBootstrap eventKey="entry" title="Entradas">
+          <TitlePane>Entradas</TitlePane>
           <CashFlowEntry entradas={entradas} />
         </TabBootstrap>
         <TabBootstrap eventKey="exits" title="Saídas">
+          <TitlePane>Saídas</TitlePane>
           <CashFlowExits saidas={saidas} />
         </TabBootstrap>
         <TabBootstrap eventKey="bankBalances" title="Saldos">
@@ -298,6 +339,7 @@ const CashFlow: React.FC = () => {
           />
         </TabBootstrap> 
       </Tabs>
+      </CashFlowContainer>
       </Container>
     </FinancesLayout>
   );
