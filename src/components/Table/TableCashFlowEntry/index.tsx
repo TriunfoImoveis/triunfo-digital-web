@@ -16,6 +16,7 @@ type CashFlowEntryProps = {
   valor: string;
   contaDeSaida: string;
   data: string;
+  grupo: string;
 };
 
 interface TableProps {
@@ -41,7 +42,7 @@ const TableCashFlowEntry: React.FC<TableProps> = ({ cols, collums, rows}) => {
               <tr key={item.id}>
                 <td>{item.sede}</td>
                 <td>{item.data}</td>
-                <td>{item.tipo}</td>
+                <td>{item.grupo}</td>
                 <td>{item.descricao}</td>
                 <td>{item.valor}</td>
                 <td>{item.contaDeSaida}</td>

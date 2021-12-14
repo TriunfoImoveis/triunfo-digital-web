@@ -42,7 +42,10 @@ interface Conta {
   bank_name: string;
 }
 
-
+interface Group {
+  id: string;
+  name: string;
+}
 interface Despesa {
   id: string;
   conta: Conta;
@@ -51,6 +54,7 @@ interface Despesa {
   tipo_despesa: 'ENTRADA' | 'SAIDA';
   valor: string;
   data_pagamento: string;
+  grupo: Group;
 }
 
 interface Saldos {
@@ -67,10 +71,7 @@ interface Expense {
   value: string;
   pay_date: string;
   value_paid: string;
-  group: {
-    id: string;
-    name: string;
-  }
+  group: Group;
   subsidiary: Subsidiary
   bank_data: {
     id: string;
@@ -164,7 +165,6 @@ const CashFlow: React.FC = () => {
 
       const entradas = formatEntry(despesas.filter(item => item.tipo_despesa === 'ENTRADA'));
       const saidas = formatExit(expenses);
-
 
       setEntradas(entradas);
       setSaidas(saidas);
