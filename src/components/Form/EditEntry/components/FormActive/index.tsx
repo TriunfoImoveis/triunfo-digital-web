@@ -1,30 +1,22 @@
-import React, { useCallback, useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { BsCheckBox } from 'react-icons/bs';
-import Modal from '..';
-import Select from '../../ReactSelect';
-import CreatableSelect from '../../ReactSelect/Creatable';
-import Input from '../../Input';
-import { Container } from './styles';
-import Button from '../../Button';
-import api from '../../../services/api';
-import getValidationErros from '../../../utils/getValidationErros';
-import { unMaked, DateYMD } from '../../../utils/unMasked';
-import { useAuth } from '../../../context/AuthContext';
-
-
-interface ModalProps {
-  isOpen: boolean;
-  setIsOpen: () => void;
-}
+import CreatableSelect from '../../../../ReactSelect/Creatable';
+import Input from '../../../../Input';
+import Select from '../../../../ReactSelect';
+import Button from '../../../../Button';
+import api from '../../../../../services/api';
+import { useAuth } from '../../../../../context/AuthContext';
+import getValidationErros from '../../../../../utils/getValidationErros';
 
 interface Options {
   label: string;
   value: string;
 }
+
 interface IAddEntryAndExitsForm {
   tipo_despesa: string;
   data_pagamento: string;
@@ -35,7 +27,22 @@ interface IAddEntryAndExitsForm {
   conta: string;
 }
 
-const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
+type Entry = {
+  id: string;
+  sede: string;
+  tipo: 'ENTRADA' | 'SAIDA';
+  descricao: string;
+  valor: string;
+  contaDeSaida: string;
+  data: string;
+};
+
+type FormActiveProps = {
+  entry: Entry;
+}
+
+const FormActive: React.FC<FormActiveProps> = ({ entry }) => {
+  const {id} = entry; 
   const formRef = useRef<FormHandles>(null);
   const { userAuth } = useAuth();
   const [escritorio, setEscritorio] = useState([]);
@@ -99,41 +106,36 @@ const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
     setGroups(options);
   };
 
-
-
-  const createEntryOrExits = useCallback(async (data: IAddEntryAndExitsForm) => {
+  const update = useCallback(async (data: IAddEntryAndExitsForm) => {
     const payload = {
       ...data,
-      tipo_despesa: "ENTRADA",
-      valor: Number(unMaked(data.valor)),
-      data_pagamento: DateYMD(data.data_pagamento)
     };
     try {
-      await api.post('/despesa', payload);
-      toast.success(`Cadastro de ${data.tipo_despesa} realiza com sucesso!`);
+      await api.put(`/despesa/${id}`, payload);
+      toast.success(`Atualização realizada com sucesso!`);
     } catch (err) {
       toast.error(`${err}`);
     }
-  }, []);
+  }, [id]);
 
   const handleSubmit = useCallback(async (data: IAddEntryAndExitsForm) => {
     formRef.current?.setErrors({});
     try {
       setLoading(true);
       const schema = Yup.object().shape({
-        descricao: Yup.string().required('Descrição obrigatório'),
-        valor: Yup.string().required('Valor é obrigatório'),
-        escritorio: Yup.string().required('Sede obrigatória'),
-        conta: Yup.string().required('Conta bancária obrigatória'),
-        grupo: Yup.string().required('Grupo obrigatória'),
-        data_pagamento: Yup.string().required('data de obrigatória')
+        descricao: Yup.string(),
+        valor: Yup.string(),
+        escritorio: Yup.string(),
+        conta: Yup.string(),
+        grupo: Yup.string(),
+        data_pagamento: Yup.string()
       });
 
       await schema.validate(data, {
         abortEarly: false,
       });
 
-      await createEntryOrExits(data);
+      await update(data);
       setLoading(false);
       document.location.reload();
     } catch (err) {
@@ -145,47 +147,43 @@ const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
       toast.error('ERROR!, verifique as informações e tente novamente');
       setLoading(false);
     }
-  }, [createEntryOrExits]);
-
+  }, [update]);
   return (
-    <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
-      <Container>
-        <Form ref={formRef} onSubmit={handleSubmit}>
-          <h3>Adicionar Entrada / Saída</h3>
-          <Input name="descricao" label="Descrição" />
-          <Input name="data_pagamento" label="Data" mask="date" />
-          <Input name="valor" label="Valor" mask="currency" />
-          <CreatableSelect
-            label="Grupo"
-            name="grupo"
-            isClearable
-            allowCreateWhileLoading={isLoadingGroup}
-            isDisabled={isLoadingGroup}
-            isLoading={isLoadingGroup}
-            onCreateOption={handleCreateGroup}
-            options={groups}
-          />
-          <Select
-            name="escritorio"
-            label="Sede"
-            options={escritorio}
-          />
-          <Select
-            name="conta"
-            label="Conta bancaria"
-            options={contaBanco}
-          />
-        </Form>
-        <Button
-          className="add-button"
-          onClick={() => formRef.current?.submitForm()}
-        >
-          <BsCheckBox />
-          {loading ? 'Cadastrando....' : 'Adicionar entradas/saídas'}
-        </Button>
-      </Container>
-    </Modal>
+    <>
+      <Form ref={formRef} onSubmit={handleSubmit}>
+        <Input name="descricao" label="Descrição" defaultValue={entry.descricao} />
+        <Input name="data_pagamento" label="Data" mask="date" defaultValue={entry.data} />
+        <Input name="valor" label="Valor" mask="currency" defaultValue={entry.valor} />
+        <CreatableSelect
+          label="Grupo"
+          name="grupo"
+          isClearable
+          allowCreateWhileLoading={isLoadingGroup}
+          isDisabled={isLoadingGroup}
+          isLoading={isLoadingGroup}
+          onCreateOption={handleCreateGroup}
+          options={groups}
+        />
+        <Select
+          name="escritorio"
+          label="Sede"
+          options={escritorio}
+        />
+        <Select
+          name="conta"
+          label="Conta bancaria"
+          options={contaBanco}
+        />
+      </Form>
+      <Button
+        className="add-button"
+        onClick={() => formRef.current?.submitForm()}
+      >
+        <BsCheckBox />
+        {loading ? 'Cadastrando....' : 'Adicionar entradas/saídas'}
+      </Button>
+    </>
   );
-};
+}
 
-export default AddEntryAndExits;
+export default FormActive;

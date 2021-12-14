@@ -249,3 +249,10 @@ export const filterYear = (data: string, year: number) => {
   }
   return true;
 };
+
+export const filterGroup = (actualGroup: string, group: string) => {
+  if (actualGroup === group) {
+    return true;
+  }
+  return false;
+};

@@ -17,8 +17,8 @@ interface Saldos {
 
 interface Conta {
   id: string
-  conta: string;
-  nome_banco: string;
+  account: string;
+  bank_name: string;
 }
 
 interface Despesa {
@@ -28,11 +28,36 @@ interface Despesa {
   valor: string;
 }
 
+interface Subsidiary {
+  id: string;
+  name: string;
+}
+
+interface Expense {
+  id: string;
+  expense_type: string;
+  description: string;
+  due_date: string;
+  value: string;
+  pay_date: string;
+  value_paid: string;
+  group: {
+    id: string;
+    name: string;
+  }
+  subsidiary: Subsidiary;
+  bank_data: {
+    id: string;
+    bank_name: string;
+  }
+}
+
+
 interface CashFlowBalanceBanksProps {
   saldos: Saldos;
   listBanks: Conta[];
   entradas: Despesa[];
-  saidas: Despesa[];
+  saidas: Expense[];
 }
 
 interface SaldoContas {
@@ -47,7 +72,7 @@ const CashFlowBalanceBanks: React.FC<CashFlowBalanceBanksProps> = ({
 }) => {
   const [contas, setContas] = useState<SaldoContas[]>([])
   const reducerSum = (acc, valor) => acc + valor;
-  const getSaldoConta = useCallback((conta: Conta, entradas: Despesa[], saidas: Despesa[]): SaldoContas => {
+  const getSaldoConta = useCallback((conta: Conta, entradas: Despesa[], saidas: Expense[]): SaldoContas => {
     const valorEntradas = entradas.map(entrada => {
       if(entrada.conta.id !== conta.id) {
         return 0;
@@ -57,16 +82,16 @@ const CashFlowBalanceBanks: React.FC<CashFlowBalanceBanksProps> = ({
     }).reduce(reducerSum, 0);
 
     const valorSaidas = saidas.map(saida => {
-      if(saida.conta.id !== conta.id) {
+      if(saida.bank_data.id !== conta.id) {
         return 0;
       }
 
-      return currency(saida.valor);
+      return currency(saida.value_paid);
     }).reduce(reducerSum, 0);
     
     const saldo = valorEntradas - valorSaidas;
     return {
-      nome: `${conta.nome_banco} - ${conta.conta}`,
+      nome: `${conta.bank_name} - ${conta.account}`,
       saldo: formatPrice(saldo),
     }
   }, []);

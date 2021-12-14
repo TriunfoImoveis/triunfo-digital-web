@@ -6,7 +6,7 @@ import { Container } from './styles';
 const NotFound: React.FC = () => {
   return (
     <Container>
-      <h2>Nenhuma venda encontrada !</h2>
+      <h2>Ops !</h2>
       <section>
         <img src={NotFoundImg} alt="Nenhuma venda encontrada" />
       </section>
