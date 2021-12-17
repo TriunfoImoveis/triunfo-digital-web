@@ -1,17 +1,17 @@
-import React, {useState, useCallback, useEffect, ChangeEvent} from 'react';
+import React, { useState, useCallback, useEffect, ChangeEvent } from 'react';
 import { Form } from '@unform/web';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import api from '../../../services/api';
-import {DateBRL, formatPrice} from '../../../utils/format';
+import { DateBRL, formatPrice } from '../../../utils/format';
 import FinancesLayout from '../../Layouts/FinancesLayout';
 import CashFlowBalanceBanks from './components/CashFlowBalanceBanks';
 import CashFlowEntry from './components/CashFlowEntry';
 import CashFlowExits from './components/CashFlowExits';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
-import { 
-  Container, 
-  FilterButtonGroup, 
+import {
+  Container,
+  FilterButtonGroup,
   FiltersBotton,
   FiltersBottonItems,
   FiltersContainer,
@@ -21,6 +21,7 @@ import {
 import { format, subDays } from 'date-fns';
 import { useAuth } from '../../../context/AuthContext';
 import { filterGroup } from '../../../utils/filters';
+import ExportCashFlow from '../../../components/ReactModal/ExportCashFlow';
 
 interface Params {
   data_inicio: string;
@@ -93,6 +94,7 @@ interface ReponseData {
 const CashFlow: React.FC = () => {
   const { userAuth } = useAuth();
 
+  const [modalCreateReoport, setModalCreateReoport] = useState(false);
   const [typeTab, setTypeTab] = useState('entry');
   const [entradas, setEntradas] = useState<Despesa[]>([]);
   const [saidas, setSaidas] = useState<Expense[]>([]);
@@ -103,7 +105,7 @@ const CashFlow: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState('');
   const [parms, setParms] = useState({
     data_inicio: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
-    data_fim: format(new Date(), 'yyyy-MM-dd'), 
+    data_fim: format(new Date(), 'yyyy-MM-dd'),
   } as Params);
 
   const formatEntry = (data: Despesa[]): Despesa[] => {
@@ -126,10 +128,10 @@ const CashFlow: React.FC = () => {
         pay_date: DateBRL(item.pay_date),
       }
     });
-  
+
     return dataFormated;
-  } 
-  
+  }
+
 
 
   const loadFiliais = useCallback(async () => {
@@ -170,15 +172,15 @@ const CashFlow: React.FC = () => {
         params: parms,
       })
 
-      const {saldo_entrada, saldo_saida, saldo_total, despesas, expenses} = response.data;
+      const { saldo_entrada, saldo_saida, saldo_total, despesas, expenses } = response.data;
 
       const entradas = selectedGroup === '' ? formatEntry(despesas
-      .filter(item => item.tipo_despesa === 'ENTRADA'))
-      : formatEntry(despesas.filter(item => item.tipo_despesa === 'ENTRADA'))
-      .filter(item => filterGroup(selectedGroup, item.grupo.id));
-      const saidas = selectedGroup === "" ? 
-      formatExit(expenses)
-      : formatExit(expenses).filter(item => filterGroup(selectedGroup, item.group.id)); 
+        .filter(item => item.tipo_despesa === 'ENTRADA'))
+        : formatEntry(despesas.filter(item => item.tipo_despesa === 'ENTRADA'))
+          .filter(item => filterGroup(selectedGroup, item.grupo.id));
+      const saidas = selectedGroup === "" ?
+        formatExit(expenses)
+        : formatExit(expenses).filter(item => filterGroup(selectedGroup, item.group.id));
 
       setEntradas(entradas);
       setSaidas(saidas);
@@ -213,18 +215,18 @@ const CashFlow: React.FC = () => {
   const optionsGroups = groups.map(item => ({
     label: item.name,
     value: item.id
-  }))  
+  }))
 
   const initialParams = useCallback(() => {
     setParms({
       data_inicio: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
-      data_fim: format(new Date(), 'yyyy-MM-dd'), 
+      data_fim: format(new Date(), 'yyyy-MM-dd'),
     });
   }, []);
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    const {value} = event.target
-    if(value !== '') {
+    const { value } = event.target
+    if (value !== '') {
       setParms(prevState => ({
         ...prevState,
         escritorio: value
@@ -232,12 +234,12 @@ const CashFlow: React.FC = () => {
     } else {
       initialParams();
     }
-  }; 
+  };
 
 
-  const handleSelectContas= (event: ChangeEvent<HTMLSelectElement>) => {
-    const {value} = event.target
-    if(value !== '') {
+  const handleSelectContas = (event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target
+    if (value !== '') {
       setParms(prevState => ({
         ...prevState,
         conta: value
@@ -246,10 +248,10 @@ const CashFlow: React.FC = () => {
       initialParams();
     }
   };
-  
-  const handleSelectGroups= (event: ChangeEvent<HTMLSelectElement>) => {
-    const {value} = event.target
-    if(value !== '') {
+
+  const handleSelectGroups = (event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target
+    if (value !== '') {
       setSelectedGroup(value);
     } else {
       initialParams();
@@ -265,12 +267,17 @@ const CashFlow: React.FC = () => {
       }))
     }
   };
- 
+
+  const toogleCreateReportModal = useCallback(() => {
+    setModalCreateReoport(!modalCreateReoport);
+  }, [modalCreateReoport]);
+
+
 
   return (
     <FinancesLayout>
       <Container>
-      <FiltersContainer>
+        <FiltersContainer>
           <FiltersBotton>
             <FilterButtonGroup>
               <FiltersBottonItems>
@@ -302,45 +309,49 @@ const CashFlow: React.FC = () => {
                   ))}
                 </select>
               </FiltersBottonItems>
-            
-                <FiltersBottonItems>
-                  <Form onSubmit={handleSubmit}>
-                    <Input name="data_inicio" mask="date" type="date" />
-                    <Input name="data_fim" mask="date" type="date" />
-                    <Button type="submit">Filtrar</Button>
-                  </Form>
-                </FiltersBottonItems>
+
+              <FiltersBottonItems>
+                <Form onSubmit={handleSubmit}>
+                  <Input name="data_inicio" mask="date" type="date" />
+                  <Input name="data_fim" mask="date" type="date" />
+                  <Button type="submit">Filtrar</Button>
+                </Form>
+              </FiltersBottonItems>
             </FilterButtonGroup>
           </FiltersBotton>
         </FiltersContainer>
 
-      <CashFlowContainer>
-        <Tabs
-        id="tab-container"
-        className="tab-container"
-        activeKey={typeTab}
-        onSelect={tab => handleSetTab(tab)}
-        variant="tabs"
-      >
-        <TabBootstrap eventKey="entry" title="Entradas">
-          <TitlePane>Entradas</TitlePane>
-          <CashFlowEntry entradas={entradas} />
-        </TabBootstrap>
-        <TabBootstrap eventKey="exits" title="Saídas">
-          <TitlePane>Saídas</TitlePane>
-          <CashFlowExits saidas={saidas} />
-        </TabBootstrap>
-        <TabBootstrap eventKey="bankBalances" title="Saldos">
-          <CashFlowBalanceBanks 
-            saldos={saldos} 
-            entradas={entradas} 
-            saidas={saidas} 
-            listBanks={contas} 
-          />
-        </TabBootstrap> 
-      </Tabs>
-      </CashFlowContainer>
+        <CashFlowContainer>
+          <Tabs
+            id="tab-container"
+            className="tab-container"
+            activeKey={typeTab}
+            onSelect={tab => handleSetTab(tab)}
+            variant="tabs"
+          >
+            <TabBootstrap eventKey="entry" title="Entradas">
+              <TitlePane>Entradas</TitlePane>
+              <CashFlowEntry entradas={entradas} />
+            </TabBootstrap>
+            <TabBootstrap eventKey="exits" title="Saídas">
+              <TitlePane>Saídas</TitlePane>
+              <CashFlowExits saidas={saidas} />
+            </TabBootstrap>
+            <TabBootstrap eventKey="bankBalances" title="Saldos">
+              <CashFlowBalanceBanks
+                saldos={saldos}
+                entradas={entradas}
+                saidas={saidas}
+                listBanks={contas}
+              />
+            </TabBootstrap>
+            <TabBootstrap eventKey="excel" title="Relatório">
+              <Button onClick={toogleCreateReportModal}>Gerar Relatório</Button>
+            </TabBootstrap>
+          </Tabs>
+        </CashFlowContainer>
       </Container>
+      <ExportCashFlow isOpen={modalCreateReoport} setIsOpen={toogleCreateReportModal} />
     </FinancesLayout>
   );
 }
