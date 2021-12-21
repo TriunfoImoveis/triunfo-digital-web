@@ -90,7 +90,7 @@ const Menu: React.FC = () => {
                 <RankingIcon />
                 <span>Ranking de Captação</span>
               </Option>
-              <Option to="/#top">
+              <Option to="/dashboard">
                 <DashboardIcon />
                 <span>Dashboard</span>
               </Option>
