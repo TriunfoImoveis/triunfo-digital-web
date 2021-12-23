@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
 import { FormHandles } from '@unform/core';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import { toast } from 'react-toastify';
 import { useHistory } from 'react-router-dom';
 import Modal from '..';
@@ -114,7 +114,7 @@ const AddEntryDesp: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
           className="add-button"
           onClick={() => formRef.current?.submitForm()}
         >
-          <BsCheckBox />
+          <BsCheck />
           Adicionar entrada
         </Button>
       </Container>

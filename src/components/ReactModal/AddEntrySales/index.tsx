@@ -1,8 +1,8 @@
 import React, { useCallback, useRef } from 'react';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { BsCheckBox } from 'react-icons/bs';
-import Modal from '..';
+import { BsCheck } from 'react-icons/bs';
+import Modal from '..'; 
 import Select from '../../ReactSelect';
 import Input from '../../Input';
 import { Container, InputGroup } from './styles';
@@ -62,7 +62,7 @@ const AddEntrySales: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
             className="add-button"
             onClick={() => formRef.current?.submitForm()}
           >
-            <BsCheckBox />
+            <BsCheck />
             Adicionar conta
           </Button>
         </Container>

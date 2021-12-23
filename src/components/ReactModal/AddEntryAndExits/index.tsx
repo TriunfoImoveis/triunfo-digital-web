@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import Modal from '..';
 import Select from '../../ReactSelect';
 import CreatableSelect from '../../ReactSelect/Creatable';
@@ -180,7 +180,7 @@ const AddEntryAndExits: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
           className="add-button"
           onClick={() => formRef.current?.submitForm()}
         >
-          <BsCheckBox />
+          <BsCheck />
           {loading ? 'Cadastrando....' : 'Adicionar entradas/saídas'}
         </Button>
       </Container>

@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import CreatableSelect from '../ReactSelect/Creatable';
 import Input from '../Input';
 import Select from '../ReactSelect';
@@ -163,7 +163,7 @@ const AccountFixed: React.FC = () => {
         className="add-button"
         onClick={() => formRef.current?.submitForm()}
       >
-        <BsCheckBox />
+        <BsCheck />
         {!isLoadingAddAccount ? 'Adicionar conta' : '...Cadastrando'}
       </Button>
     </Container>

@@ -3,7 +3,7 @@ import { Form } from '@unform/web';
 import { useHistory } from 'react-router-dom';
 import * as Yup from 'yup';
 import { FormHandles } from '@unform/core';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import { toast } from 'react-toastify';
 import Modal from '..';
 import Select from '../../ReactSelect';
@@ -114,7 +114,7 @@ const AddEntryCredit: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
           className="add-button"
           onClick={() => formRef.current?.submitForm()}
         >
-          <BsCheckBox />
+          <BsCheck />
           Adicionar entrada
         </Button>
       </Container>

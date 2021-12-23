@@ -13,7 +13,7 @@ import { FormHandles } from '@unform/core';
 
 import { BiEditAlt } from 'react-icons/bi';
 import { Form } from '@unform/web';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import { FaCheck, FaMinus, FaPlus } from 'react-icons/fa';
 import { VscEdit } from 'react-icons/vsc';
 import { useHistory, useParams } from 'react-router-dom';
@@ -1440,7 +1440,7 @@ const DetailsSale: React.FC = () => {
                     className="submit"
                     onClick={handleValidSale}
                   >
-                    <BsCheckBox size={25} />
+                    <BsCheck size={25} />
                     <span>Validar Venda</span>
                   </button>
                 )}
@@ -1531,7 +1531,7 @@ const DetailsSale: React.FC = () => {
                 type="button"
                 onClick={() => formModalRef.current?.submitForm()}
               >
-                <BsCheckBox size={25} />
+                <BsCheck size={25} />
                 Salvar
               </button>
             </ModalFooter>
@@ -1561,7 +1561,7 @@ const DetailsSale: React.FC = () => {
                   type="button"
                   onClick={() => formModalFallRef.current?.submitForm()}
                 >
-                  <BsCheckBox size={25} />
+                  <BsCheck size={25} />
                   Confirmar
                 </button>
               </ModalFooter>

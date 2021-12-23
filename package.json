@@ -16,7 +16,7 @@
     "react": "^16.13.1",
     "react-bootstrap": "^1.4.3",
     "react-dom": "^16.13.1",
-    "react-icons": "^3.11.0",
+    "react-icons": "^4.3.1",
     "react-input-autosize": "^3.0.0",
     "react-jwt": "^1.1.2",
     "react-loader-spinner": "^3.1.14",
