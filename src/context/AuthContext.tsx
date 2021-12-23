@@ -27,6 +27,7 @@ interface UserAuth {
     bank_name: string;
   }[];
   avatar_url: string | null;
+  goal: string;
 }
 
 interface AuthState {
