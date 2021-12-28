@@ -9,7 +9,6 @@ export const Container = styled.div`
 
 export const Filter = styled.div`
   width: 20%;
-  border: 1px solid #000;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,12 +87,19 @@ export const InforUser = styled.div`
 `;
 
 export const Main = styled.main`
-  width: 70%;
-  border: 1px solid #000;
-  
+  width: 70%;  
 `;
 
 export const CardContainer = styled.section`
   display: flex;
+  align-items: center;
+  justify-content: space-around;
   gap: 1rem;
+  margin-bottom: 2rem;
 `;
+
+export const GraficContainer = styled.div`
+  display: flex;
+`;
+
+
