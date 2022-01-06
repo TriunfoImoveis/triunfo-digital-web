@@ -88,9 +88,9 @@ const RankingGeneral: React.FC = () => {
       if (Number(event.target.value) > 0) {
         const month = Number(event.target.value);
         setSelectedMonth(event.target.value);
-        setUrlSLZ(`/ranking?city=${`São Luís`}&month=${month}&year=${selectedYear}user=Corretor`);
-        setUrlFTZ(`/ranking?city=Fortaleza&month=${month}&year=${selectedYear}user=Corretor`);
-        setUrlTRZ(`/ranking?city=Teresina&month=${month}&year=${selectedYear}user=Corretor`);
+        setUrlSLZ(`/ranking?city=${`São Luís`}&month=${month}&year=${selectedYear}&user=Corretor`);
+        setUrlFTZ(`/ranking?city=Fortaleza&month=${month}&year=${selectedYear}&user=Corretor`);
+        setUrlTRZ(`/ranking?city=Teresina&month=${month}&year=${selectedYear}&user=Corretor`);
       } else {
         setSelectedMonth('0');
         setUrlSLZ(`/ranking?city=${`São Luís`}&year=${selectedYear}&user=Corretor`);
@@ -106,9 +106,9 @@ const RankingGeneral: React.FC = () => {
       const year = Number(event.target.value);
       setSelectedYear(year);
       if (Number(selectedMonth) > 0) {
-        setUrlSLZ(`/ranking?city=${`São Luís`}&month=${selectedMonth}&year=${year}user=Corretor`);
-        setUrlFTZ(`/ranking?city=Fortaleza&month=${selectedMonth}&year=${year}user=Corretor`);
-        setUrlTRZ(`/ranking?city=Teresina&month=${selectedMonth}&year=${year}user=Corretor`);
+        setUrlSLZ(`/ranking?city=${`São Luís`}&month=${selectedMonth}&year=${year}&user=Corretor`);
+        setUrlFTZ(`/ranking?city=Fortaleza&month=${selectedMonth}&year=${year}&user=Corretor`);
+        setUrlTRZ(`/ranking?city=Teresina&month=${selectedMonth}&year=${year}&user=Corretor`);
       } else {
         setSelectedMonth('0');
         setUrlSLZ(`/ranking?city=${`São Luís`}&year=${year}&user=Corretor`);
