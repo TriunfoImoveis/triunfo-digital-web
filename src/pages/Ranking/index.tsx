@@ -2,6 +2,7 @@ import React, { useState, useCallback, ChangeEvent, useMemo } from 'react';
 import Loader from 'react-loader-spinner';
 import { useAuth } from '../../context/AuthContext';
 import { months } from '../../utils/months';
+import { optionYear } from '../../utils/loadOptions';
 import Header from '../../components/Header';
 
 import { BackgroundImage } from '../../assets/images';
@@ -39,15 +40,16 @@ interface IRealtorData {
 }
 
 const Ranking: React.FC = () => {
-  const currentMonth = new Date().getMonth() + 1;
-  const [selected, setSelected] = useState(false);
+  const currentYear = new Date().getFullYear();
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('São Luís');
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState('0');
   const { userAuth } = useAuth();
   const [url, setUrl] = useState(
-    `/ranking?city=${userAuth.subsidiary.city}&type=ANUAL&user=Corretor`,
+    `/ranking?city=${userAuth.subsidiary.city}&year=${currentYear}&user=Corretor`,
   );
   const { data: realtors } = useFetch<IRealtorData[]>(url);
-  const optionsMonth = months.filter(month => month.value <= currentMonth);
+  const optionsYear = optionYear.filter(year => year.value <= currentYear);
   const ranking = useMemo(() => {
     return realtors?.map(r => ({
       id: r.id,
@@ -57,61 +59,46 @@ const Ranking: React.FC = () => {
     }));
   }, [realtors]);
 
-  const handleSwichVGVToYear = useCallback(
-    async (filter: string, month?: number) => {
-      setSelected(!selected);
-      switch (filter) {
-        case 'month': {
-          const city =
-            userAuth.office.name === 'Presidente' ||
-            userAuth.office.name === 'Gerente'
-              ? selectedSubsidiary
-              : userAuth.subsidiary.city;
-          setUrl(
-            `/ranking?city=${city}&month=${month}&type=MENSAL&user=Corretor`,
-          );
-          break;
-        }
-        case 'year': {
-          const city =
-            userAuth.office.name === 'Presidente' ||
-            userAuth.office.name === 'Gerente'
-              ? selectedSubsidiary
-              : userAuth.subsidiary.city;
-          setUrl(`/ranking?city=${city}&user=Corretor`);
-          break;
-        }
-        default:
-          break;
-      }
-    },
-    [
-      selected,
-      selectedSubsidiary,
-      userAuth.subsidiary.city,
-      userAuth.office.name,
-    ],
-  );
   const handleSelectSubsidiary = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const subsidiaryCity = event.target.value;
       setSelectedSubsidiary(subsidiaryCity);
-      setUrl(`/ranking?city=${subsidiaryCity}&type=ANUAL&user=Corretor`);
+      if (Number(selectedMonth) > 0) {
+        setUrl(
+          `/ranking?city=${subsidiaryCity}&month=${selectedMonth}&year=${selectedYear}&user=Corretor`,
+        );
+      } else {
+        setUrl(
+          `/ranking?city=${subsidiaryCity}&year=${selectedYear}&user=Corretor`,
+        );
+      }
     },
-    [],
+    [selectedMonth, selectedYear],
   );
 
   const handleSelectMonth = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
-      if (event.target.value === '0') {
-        handleSwichVGVToYear('year');
-      } else {
+      if (Number(event.target.value) > 0) {
         const month = Number(event.target.value);
-        handleSwichVGVToYear('month', month);
+        setSelectedMonth(event.target.value);
+        setUrl(
+          `/ranking?city=${selectedSubsidiary}&month=${month}&year=${selectedYear}&user=Corretor`,
+        );
+      } else {
+        setSelectedMonth('0');
+        setUrl(
+          `/ranking?city=${selectedSubsidiary}&year=${selectedYear}&user=Corretor`,
+        );
       }
     },
-    [handleSwichVGVToYear],
+    [selectedSubsidiary, selectedYear],
   );
+
+  const heandleSelectedYear = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const year = Number(event.target.value);
+    setSelectedYear(year);
+    setUrl(`/ranking?city=${selectedSubsidiary}&year=${year}&user=Corretor`);
+  }, [selectedSubsidiary]);
 
   // useEffect(() => {
   //   handleSwichVGVToYear('month');
@@ -137,24 +124,37 @@ const Ranking: React.FC = () => {
             </SelectSubsidiary>
           )}
           {userAuth.office.name === 'Gerente' && (
-            <SelectSubsidiary>
-              <select
-                defaultValue={selectedSubsidiary}
-                onChange={handleSelectSubsidiary}
-              >
-                <option value="São Luís">São Luís</option>
-                <option value="Fortaleza">Fortaleza</option>
-                <option value="Teresina">Teresina</option>
-              </select>
-            </SelectSubsidiary>
+            <>
+              <SelectSubsidiary>
+                <select
+                  defaultValue={selectedSubsidiary}
+                  onChange={handleSelectSubsidiary}
+                >
+                  <option value="São Luís">São Luís</option>
+                  <option value="Fortaleza">Fortaleza</option>
+                  <option value="Teresina">Teresina</option>
+                </select>
+              </SelectSubsidiary>
+
+              <SelectSubsidiary>
+                <select
+                  defaultValue={selectedYear}
+                  onChange={heandleSelectedYear}
+                >
+                  {optionsYear.map(item => (
+                    <option value={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </SelectSubsidiary>
+            </>
           )}
 
           <MonthlyFilter>
             <SelectSubsidiary>
-              <select defaultValue="0" onChange={handleSelectMonth}>
+              <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
                 <option value="0">ANUAL</option>
                 <optgroup label="MESES">
-                  {optionsMonth.map(month => (
+                  {months.map(month => (
                     <option value={month.value}>{month.label}</option>
                   ))}
                 </optgroup>
