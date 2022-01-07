@@ -86,6 +86,10 @@ const Dashboard: React.FC = () => {
     setSelectedYear(event.target.value);
   }
 
+  const years = optionYear.map(item => (
+    {label: item.label, value: String(item.value)}
+  ))
+
 
   return (
     <DashbordLayout>
@@ -100,7 +104,7 @@ const Dashboard: React.FC = () => {
           <AvatarName>{userAuth.name}</AvatarName>
 
           <Select 
-            options={optionYear} 
+            options={years}  
             nameLabel='Ano' 
             defaultValue={selectedYear} 
             onChange={handleSelectedYear}/>
