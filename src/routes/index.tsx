@@ -31,6 +31,7 @@ import AddAccount from '../pages/Finances/AddAccountPage';
 import DetailsAccount from '../pages/Finances/DetailsAccount';
 import DashboardFinances from '../pages/Finances/Dashboard';
 import CashFlow from '../pages/Finances/CashFlow';
+import Dashboard from '../pages/Dashboard';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -48,6 +49,7 @@ const Routes: React.FC = () => (
     <Route path="/adm/lista-colaboradores" component={ListColab} isPrivate />
     <Route path="/adm/lista-construtoras" component={ListBuilders} isPrivate />
     <Route path="/adm/novo-colaborador" component={NewColab} isPrivate />
+    <Route path="/dashboard" component={Dashboard} isPrivate />
     <Route
       path="/adm/detalhes-colaborador/:id"
       component={NewColab}

@@ -1,7 +1,7 @@
 import React, { useRef, useCallback } from 'react';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import Modal from '..';
 import Input from '../../Input';
 
@@ -74,7 +74,7 @@ const AddOrEditAccountBank: React.FC<IModalProps> = ({
           className="add-button"
           onClick={() => formRef.current?.submitForm()}
         >
-          <BsCheckBox />
+          <BsCheck />
           Atualizar
         </Button>
       </Container>
