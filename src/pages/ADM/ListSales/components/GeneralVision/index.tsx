@@ -24,6 +24,9 @@ import { formatPrice, DateBRL } from '../../../../../utils/format';
 import { useFilter } from '../../../../../context/FilterContext';
 import { useFetch } from '../../../../../hooks/useFetch';
 import NotFound from '../../../../../components/Errors/NotFound';
+import { filterYear } from '../../../../../utils/filters';
+import { optionYear } from '../../../../../utils/loadOptions';
+
 
 interface ISale {
   id: string;
@@ -36,6 +39,7 @@ interface ISale {
 }
 
 const GeneralVision: React.FC = () => {
+  const currentYear = new Date().getFullYear();
   const {
     city,
     status,
@@ -47,7 +51,10 @@ const GeneralVision: React.FC = () => {
     handleSetMonth,
   } = useFilter();
   const [url, setUrl] = useState(`/sale?city=${city}&status=${status}`);
+  const [year, setYear] = useState(currentYear);
   const { data: sales } = useFetch<ISale[]>(url);
+  const optionsYear = optionYear.filter(year => year.value <= currentYear);
+
 
   const listSales = useMemo(() => {
     if (!sales) {
@@ -57,6 +64,7 @@ const GeneralVision: React.FC = () => {
       id: s.id,
       name: 'Teste',
       vgv: formatPrice(Number(s.realty_ammount)),
+      sale_date: s.sale_date,
       dateSale: DateBRL(s.sale_date),
       sallers: {
         name: s.sale_has_sellers[0].name,
@@ -64,7 +72,7 @@ const GeneralVision: React.FC = () => {
       },
     }));
     if (month === 0) {
-      return salesFormatted;
+      return salesFormatted.filter(sale => filterYear(sale.sale_date, year));
     }
     const salesFiltredMonth = sales.filter(sale => {
       const parsedDate = parseISO(sale.sale_date);
@@ -83,6 +91,7 @@ const GeneralVision: React.FC = () => {
       id: s.id,
       name: 'Teste',
       vgv: formatPrice(Number(s.realty_ammount)),
+      sale_date: s.sale_date,
       dateSale: DateBRL(s.sale_date),
       sallers: {
         name: s.sale_has_sellers[0].name,
@@ -90,8 +99,8 @@ const GeneralVision: React.FC = () => {
       },
     }));
 
-    return salesFiltred;
-  }, [sales, month]);
+    return salesFiltred.filter(sale => filterYear(sale.sale_date, year));
+  }, [sales, month, year]);
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetCity(event.target.value);
@@ -118,6 +127,10 @@ const GeneralVision: React.FC = () => {
 
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetMonth(Number(event.currentTarget.value));
+  };
+
+  const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    setYear(Number(event.currentTarget.value));
   };
 
   return (
@@ -169,6 +182,14 @@ const GeneralVision: React.FC = () => {
                   <option value={10}>Outubro</option>
                   <option value={11}>Novembro</option>
                   <option value={12}>Dezembro</option>
+                </select>
+              </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Ano: </span>
+                <select defaultValue={year} onChange={handleSelectYear}>
+                  {optionsYear.map(year => (
+                    <option value={year.value}>{year.value}</option>
+                  ))}
                 </select>
               </FiltersBottonItems>
             </FilterButtonGroup>

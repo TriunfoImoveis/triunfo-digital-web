@@ -5,6 +5,7 @@ import Header from '../../components/Header';
 import { BackgroundImage } from '../../assets/images';
 import Crown from '../../assets/images/coroa.svg';
 import { months } from '../../utils/months';
+import { optionYear } from '../../utils/loadOptions';
 
 
 import {
@@ -39,18 +40,23 @@ interface IRealtorData {
 }
 
 const RankingGeneral: React.FC = () => {
-  const currentMonth = new Date().getMonth() + 1;
-
+  const currentYear = new Date().getFullYear();
   const [realtors, setRealtors] = useState<IRealtorData[]>([]);
-  const [selected, setSelected] = useState(false);
-  const [urlSLZ, setUrlSLZ] = useState(`/ranking?city=${`São Luís`}&type=ANUAL&user=Corretor`);
-  const [urlFTZ, setUrlFTZ] = useState('/ranking?city=Fortaleza&type=ANUAL&user=Corretor');
-  const [urlTRZ, setUrlTRZ] = useState('/ranking?city=Teresina&type=ANUAL&user=Corretor');
+  const [selectedMonth, setSelectedMonth] = useState('0');
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
-  const optionsMonth = months.filter(month => month.value <= currentMonth);
+  const [urlSLZ, setUrlSLZ] = useState(`/ranking?city=${`São Luís`}&year=${selectedYear}&user=Corretor`);
+  const [urlFTZ, setUrlFTZ] = useState(`/ranking?city=Fortaleza&year=${selectedYear}&user=Corretor`);
+  const [urlTRZ, setUrlTRZ] = useState(`/ranking?city=Teresina&year=${selectedYear}&user=Corretor`);
+  
+  
+
   const { data: realtorsSLZ } = useFetch<IRealtorData[]>(urlSLZ);
   const { data: realtorsFTZ } = useFetch<IRealtorData[]>(urlFTZ);
   const { data: realtorsTRZ } = useFetch<IRealtorData[]>(urlTRZ);
+
+  const optionsYear = optionYear.filter(year => year.value <= currentYear);
+
 
   const allRealtors = useCallback(() => {
     if(realtorsSLZ !== undefined && realtorsFTZ !== undefined && realtorsTRZ !== undefined) {
@@ -77,40 +83,42 @@ const RankingGeneral: React.FC = () => {
     }));
   }, [realtors]);
 
-  const handleSwichVGVToYear = useCallback(
-    async (filter: string, month?: number) => {
-      setSelected(!selected);
-      switch (filter) {
-        case 'month': {
-          setUrlSLZ(`/ranking?city=${`São Luís`}&month=${month}&type=MENSAL&user=Corretor`);
-          setUrlFTZ(`/ranking?city=Fortaleza&month=${month}&type=MENSAL&user=Corretor`);
-          setUrlTRZ(`/ranking?city=Teresina&month=${month}&type=MENSAL&user=Corretor`);
-          break;
-        }
-        case 'year': {
-          setUrlSLZ(`/ranking?city=${`São Luís`}&user=Corretor`);
-          setUrlFTZ(`/ranking?city=Fortaleza&user=Corretor`);
-          setUrlTRZ(`/ranking?city=Teresina&user=Corretor`);
-          break;
-        }
-        default:
-          break;
-      }
-    },
-    [selected],
-  );
-
   const handleSelectMonth = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
-      if(event.target.value === '0') {
-        handleSwichVGVToYear('year');
-      } else {
+      if (Number(event.target.value) > 0) {
         const month = Number(event.target.value);
-        handleSwichVGVToYear('month', month);
+        setSelectedMonth(event.target.value);
+        setUrlSLZ(`/ranking?city=${`São Luís`}&month=${month}&year=${selectedYear}&user=Corretor`);
+        setUrlFTZ(`/ranking?city=Fortaleza&month=${month}&year=${selectedYear}&user=Corretor`);
+        setUrlTRZ(`/ranking?city=Teresina&month=${month}&year=${selectedYear}&user=Corretor`);
+      } else {
+        setSelectedMonth('0');
+        setUrlSLZ(`/ranking?city=${`São Luís`}&year=${selectedYear}&user=Corretor`);
+        setUrlFTZ(`/ranking?city=Fortaleza&year=${selectedYear}&user=Corretor`);
+        setUrlTRZ(`/ranking?city=Teresina&year=${selectedYear}&user=Corretor`);
       }
-    },   
-    [handleSwichVGVToYear],
+    },
+    [selectedYear],
   );
+
+  const handleSelectYear = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const year = Number(event.target.value);
+      setSelectedYear(year);
+      if (Number(selectedMonth) > 0) {
+        setUrlSLZ(`/ranking?city=${`São Luís`}&month=${selectedMonth}&year=${year}&user=Corretor`);
+        setUrlFTZ(`/ranking?city=Fortaleza&month=${selectedMonth}&year=${year}&user=Corretor`);
+        setUrlTRZ(`/ranking?city=Teresina&month=${selectedMonth}&year=${year}&user=Corretor`);
+      } else {
+        setSelectedMonth('0');
+        setUrlSLZ(`/ranking?city=${`São Luís`}&year=${year}&user=Corretor`);
+        setUrlFTZ(`/ranking?city=Fortaleza&year=${year}&user=Corretor`);
+        setUrlTRZ(`/ranking?city=Teresina&year=${year}&user=Corretor`);
+      }
+    },
+    [selectedMonth],
+  );
+  
   return (
     <Container>
       <Header />
@@ -120,13 +128,23 @@ const RankingGeneral: React.FC = () => {
         <Filters>
           <MonthlyFilter>
             <SelectSubsidiary>
-              <select defaultValue="0" onChange={handleSelectMonth}>
+              <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
                 <option value="0">ANUAL</option>
                 <optgroup label="MESES">
-                  {optionsMonth.map(month => (
+                  {months.map(month => (
                     <option value={month.value}>{month.label}</option>
                   ))}
                 </optgroup>
+              </select>
+            </SelectSubsidiary>
+          </MonthlyFilter>
+
+          <MonthlyFilter>
+            <SelectSubsidiary>
+              <select defaultValue={selectedYear} onChange={handleSelectYear}>
+                  {optionsYear.map(year => (
+                    <option value={year.value}>{year.label}</option>
+                  ))}
               </select>
             </SelectSubsidiary>
           </MonthlyFilter>

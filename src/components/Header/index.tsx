@@ -5,7 +5,6 @@ import { IoIosLogOut } from 'react-icons/io';
 import { useAuth } from '../../context/AuthContext';
 import {
   LogoHeader,
-  RankingIcon,
   RegisterSellIcon,
   DashboardIcon,
   Realter,
@@ -116,10 +115,10 @@ const Header: React.FC<IHeaderProps> = ({ type = 'realtor' }) => {
               <Link to="/adm/lista-vendas">Administrativo</Link>
             </NavItemContent>
           ) : null}
-          <NavItemContent>
+          {/* <NavItemContent>
             <RankingIcon />
             <Link to="/ranking">Ranking</Link>
-          </NavItemContent>
+          </NavItemContent> */}
           <NavItemContent>
             <RegisterSellIcon />
             <a href="/actions">Vendas</a>
