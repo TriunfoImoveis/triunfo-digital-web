@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import DashboardCard from '../../components/Dashboard/Card';
 import DashbordLayout from '../Layouts/dashboard';
@@ -22,13 +22,69 @@ import {
 import { 
   labelsMonth, 
   transformValue, 
-  labelClassImovel, 
   transformPorcent,
-  labelTipoImovel
 } from '../../utils/dashboard';
+import { useFetch } from '../../hooks/useFetch';
+
+interface IDashboardData {
+  quantity: {
+    sales: number;
+    captivators: number;
+  },
+  ticket_medium: {
+    sales: number;
+    captivators: number;
+  },
+  comission: number;
+  vgv: {
+    sales: {
+      total: number;
+      months: {
+        month: string;
+        vgv: number;
+      }[]
+    }
+    captivators: {
+      total: number;
+      months: {
+        month: string;
+        vgv: number;
+      }[]
+    }
+  }
+  sales: {
+    types: {
+      new: number;
+      used: number;
+    }
+    properties: {
+      property: string;
+      quantity: number;
+    }[];
+    origins: {
+        origin: string;
+        value: number;
+    }[]
+  } 
+}
 
 const Dashboard: React.FC = () => {
   const {userAuth} = useAuth();
+  const [selectedYear, setSelectedYear] = useState('2020');
+  const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(selectedYear)}`);
+
+  const types = [data?.sales.types.new || 0, data?.sales.types.used || 0];
+  const typeRealty = data?.sales.properties.filter(item => item.quantity > 0).map(item => (
+    {label: item.property, value: item.quantity}
+  ));
+
+  const origins = data?.sales.origins.filter(item => item.value > 0).map(item => (
+    {label: item.origin, value: item.value}
+  ));
+
+  const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(event.target.value);
+  }
 
 
   return (
@@ -43,13 +99,17 @@ const Dashboard: React.FC = () => {
           </Avatar>
           <AvatarName>{userAuth.name}</AvatarName>
 
-          <Select options={optionYear} nameLabel='Ano' />
+          <Select 
+            options={optionYear} 
+            nameLabel='Ano' 
+            defaultValue={selectedYear} 
+            onChange={handleSelectedYear}/>
         </Filter>
         <Main>
           <CardContainer>
-            <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value="R$ 12M" />
-            <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value="R$ 1M" />
-            <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value="R$ 100K" />
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value={formatPrice(data?.vgv.sales.total || 0)} />
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value={formatPrice(data?.ticket_medium.sales || 0)} />
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value={formatPrice(data?.comission || 0)} />
             <DashboardCard icon={GiStairsGoal} title="Meta" value={formatPrice(Number(userAuth.goal))} />
           </CardContainer>
           <GraficContainer>
@@ -60,29 +120,31 @@ const Dashboard: React.FC = () => {
               labels={labelsMonth} 
               title="Vendas ao Longo do ano" 
               formatter={transformValue} 
-              data={labelsMonth.map(() => 10000000)} 
+              data={data?.vgv.sales.months.map(item => item.vgv) || []} 
             />
           </GraficContainer>
           <GraficContainer>
             <PieGraphic 
               title='Class. do Imóvel' 
-              labels={labelClassImovel} 
-              data={[60, 20, 20]}
+              labels={['Novos', 'Usados']} 
+              data={types}
               formatter={transformPorcent}
              />
              <PieGraphic 
               title='Tipo do Imóvel' 
-              labels={labelTipoImovel} 
-              data={[93, 7]}
+              labels={typeRealty?.map(item => item.label) || []} 
+              data={typeRealty?.map(item => item.value) || []}
               formatter={transformPorcent}
              />
-             <PieGraphic 
-              title='Origem' 
-              labels={labelTipoImovel} 
-              data={[93, 7]}
-              formatter={transformPorcent}
+          </GraficContainer>
+          <GraficContainer>
+          <BarGraphics 
+              title='Origem da Venda' 
+              labels={origins?.map(item => item.label) || []} 
+              data={origins?.map(item => item.value) || []}
+              formatter={transformValue}
              />
-          </GraficContainer> 
+          </GraficContainer>
         </Main>
       </Container>
     </DashbordLayout>
