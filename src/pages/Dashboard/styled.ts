@@ -4,7 +4,13 @@ export const Container = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
-  z-index: 1000
+  z-index: 100;
+
+  @media (max-width: 500px) {
+    display: flex;
+    flex-direction: column;
+  }
+
 `;
 
 export const Filter = styled.div`
@@ -12,6 +18,12 @@ export const Filter = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  @media (max-width: 500px) {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
 `;
 
 export const Avatar = styled.div`
@@ -87,7 +99,11 @@ export const InforUser = styled.div`
 `;
 
 export const Main = styled.main`
-  width: 70%;  
+  width: 70%;
+  
+  @media (max-width: 500px) {
+    width: 100%;
+  }
 `;
 
 export const CardContainer = styled.section`
@@ -96,10 +112,36 @@ export const CardContainer = styled.section`
   justify-content: space-around;
   gap: 1rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 500px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
 `;
 
 export const GraficContainer = styled.div`
   display: flex;
+
+  .desktop {
+    display: flex;
+    width: 100%;
+  }
+
+  .mobile {
+    display: none;
+  }
+
+  @media (max-width: 500px) {
+    flex-direction: column;
+
+    .mobile {
+      display: flex;
+    }
+
+    .desktop {
+    display: none;
+  }
+  }
 `;
 
 

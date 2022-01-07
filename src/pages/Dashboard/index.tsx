@@ -88,8 +88,11 @@ const Dashboard: React.FC = () => {
 
   const years = optionYear.map(item => (
     {label: item.label, value: String(item.value)}
-  ))
+  ));
 
+  const mobileSales = data?.vgv.sales.months.map(item => (
+    {label: item.month, value: item.vgv }
+  ));
 
   return (
     <DashbordLayout>
@@ -120,12 +123,24 @@ const Dashboard: React.FC = () => {
             
           </GraficContainer>
           <GraficContainer>
+            <div className="desktop">
             <BarGraphics 
               labels={labelsMonth} 
               title="Vendas ao Longo do ano" 
               formatter={transformValue} 
               data={data?.vgv.sales.months.map(item => item.vgv) || []} 
             />
+            </div>
+            
+
+            <div className="mobile">
+              <BarGraphics
+                labels={mobileSales?.filter(item => item.value > 0).map(item => item.label) || []} 
+                title="Vendas ao Longo do ano" 
+                formatter={transformValue} 
+                data={mobileSales?.filter(item => item.value > 0).map(item => item.value) || []} 
+              />
+            </div>
           </GraficContainer>
           <GraficContainer>
             <PieGraphic 
