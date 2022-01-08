@@ -94,7 +94,7 @@ const Menu: React.FC = () => {
               <Option to="/dashboard">
               </Option> 
               */}
-              <Option to="/dashboard">
+              <Option to="/dashboard/vendas">
                 <DashboardIcon />
                 <span>Dashboard</span>
               </Option>
