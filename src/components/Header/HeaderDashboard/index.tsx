@@ -22,6 +22,12 @@ const Header: React.FC = () => {
       </Link>
       <NavBarContainer>
         <NavItemContent>
+          <Link to="/dashboard/vendas">Vendas</Link>
+        </NavItemContent>
+        <NavItemContent>
+          <Link to="/dashboard/persona">Persona</Link>
+        </NavItemContent>
+        <NavItemContent>
           <IoIosLogOut size={30} color="#fff" />
           <button type="button" onClick={toggleLogoutModal}>
             Sair

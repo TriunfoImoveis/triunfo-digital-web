@@ -1,14 +1,14 @@
 import React, { ChangeEvent, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import DashboardCard from '../../components/Dashboard/Card';
-import DashbordLayout from '../Layouts/dashboard';
+import { useAuth } from '../../../context/AuthContext';
+import DashboardCard from '../../../components/Dashboard/Card';
+import DashbordLayout from '../../Layouts/dashboard';
 import { RiMoneyDollarCircleFill } from 'react-icons/ri';
 import {GiStairsGoal} from 'react-icons/gi';
-import Select from '../../components/SelectSimple';
-import { optionYear } from '../../utils/loadOptions';
-import { formatPrice } from '../../utils/format';
-import BarGraphics from '../../components/Dashboard/Graphics/Bar';
-import PieGraphic from '../../components/Dashboard/Graphics/Pie';
+import Select from '../../../components/SelectSimple';
+import { optionYear } from '../../../utils/loadOptions';
+import { formatPrice } from '../../../utils/format';
+import BarGraphics from '../../../components/Dashboard/Graphics/Bar';
+import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
 
 import { 
   Container, 
@@ -18,13 +18,13 @@ import {
   Main, 
   CardContainer, 
   GraficContainer
-} from './styled';
+} from '../styled';
 import { 
   labelsMonth, 
   transformValue, 
   transformPorcent,
-} from '../../utils/dashboard';
-import { useFetch } from '../../hooks/useFetch';
+} from '../../../utils/dashboard';
+import { useFetch } from '../../../hooks/useFetch';
 
 interface IDashboardData {
   quantity: {
@@ -68,7 +68,7 @@ interface IDashboardData {
   } 
 }
 
-const Dashboard: React.FC = () => {
+const DashboardVendas: React.FC = () => {
   const {userAuth} = useAuth();
   const [selectedYear, setSelectedYear] = useState('2020');
   const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(selectedYear)}`);
@@ -93,10 +93,6 @@ const Dashboard: React.FC = () => {
   const mobileSales = data?.vgv.sales.months.map(item => (
     {label: item.month, value: item.vgv }
   ));
-
-  console.log(mobileSales?.filter(item => item.value > 0).map(item => item.label) || []);
-  console.log(mobileSales?.filter(item => item.value > 0).map(item => item.value) || [])
-
 
   return (
     <DashbordLayout>
@@ -123,9 +119,6 @@ const Dashboard: React.FC = () => {
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value={formatPrice(data?.comission || 0)} />
             <DashboardCard icon={GiStairsGoal} title="Meta" value={formatPrice(Number(userAuth.goal))} />
           </CardContainer>
-          <GraficContainer>
-            
-          </GraficContainer>
           <GraficContainer>
             <div className="desktop">
             <BarGraphics 
@@ -174,4 +167,4 @@ const Dashboard: React.FC = () => {
   );
 }
 
-export default Dashboard;
+export default DashboardVendas;

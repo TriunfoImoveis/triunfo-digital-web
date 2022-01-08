@@ -1,14 +1,12 @@
 import React, { ChangeEvent, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import DashboardCard from '../../components/Dashboard/Card';
-import DashbordLayout from '../Layouts/dashboard';
+import { useAuth } from '../../../context/AuthContext';
+import DashboardCard from '../../../components/Dashboard/Card';
+import DashbordLayout from '../../Layouts/dashboard';
 import { RiMoneyDollarCircleFill } from 'react-icons/ri';
 import {GiStairsGoal} from 'react-icons/gi';
-import Select from '../../components/SelectSimple';
-import { optionYear } from '../../utils/loadOptions';
-import { formatPrice } from '../../utils/format';
-import BarGraphics from '../../components/Dashboard/Graphics/Bar';
-import PieGraphic from '../../components/Dashboard/Graphics/Pie';
+import Select from '../../../components/SelectSimple';
+import { optionYear } from '../../../utils/loadOptions';
+import { formatPrice } from '../../../utils/format';
 
 import { 
   Container, 
@@ -16,15 +14,12 @@ import {
   Avatar, 
   AvatarName, 
   Main, 
-  CardContainer, 
-  GraficContainer
-} from './styled';
-import { 
-  labelsMonth, 
-  transformValue, 
-  transformPorcent,
-} from '../../utils/dashboard';
-import { useFetch } from '../../hooks/useFetch';
+  CardContainer,
+  GraficContainer, 
+} from '../styled';
+import { useFetch } from '../../../hooks/useFetch';
+import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
+import { transformPorcent } from '../../../utils/dashboard';
 
 interface IDashboardData {
   quantity: {
@@ -66,20 +61,38 @@ interface IDashboardData {
         value: number;
     }[]
   } 
+  client: {
+    genders: {
+				gender: string;
+				percentage: number;
+    }[]
+    civil_status: {
+      status: string;
+			percentage: number;
+    }[]
+    avg_number_children: number;
+    age_groups: {
+      age: string;
+			percentage: number;
+    }[]
+  }
 }
 
-const Dashboard: React.FC = () => {
+const DashboardPersona: React.FC = () => {
   const {userAuth} = useAuth();
   const [selectedYear, setSelectedYear] = useState('2020');
   const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(selectedYear)}`);
 
-  const types = [data?.sales.types.new || 0, data?.sales.types.used || 0];
-  const typeRealty = data?.sales.properties.filter(item => item.quantity > 0).map(item => (
-    {label: item.property, value: item.quantity}
+  const gender = data?.client.genders.filter(item => item.percentage > 0).map(item => (
+    {label: item.gender, value: item.percentage}
   ));
 
-  const origins = data?.sales.origins.filter(item => item.value > 0).map(item => (
-    {label: item.origin, value: item.value}
+  const civilStatus = data?.client.civil_status.filter(item => item.percentage > 0).map(item => (
+    {label: item.status, value: item.percentage}
+  ));
+
+  const age = data?.client.age_groups.filter(item => item.percentage > 0).map(item => (
+    {label: item.age, value: item.percentage}
   ));
 
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -89,14 +102,6 @@ const Dashboard: React.FC = () => {
   const years = optionYear.map(item => (
     {label: item.label, value: String(item.value)}
   ));
-
-  const mobileSales = data?.vgv.sales.months.map(item => (
-    {label: item.month, value: item.vgv }
-  ));
-
-  console.log(mobileSales?.filter(item => item.value > 0).map(item => item.label) || []);
-  console.log(mobileSales?.filter(item => item.value > 0).map(item => item.value) || [])
-
 
   return (
     <DashbordLayout>
@@ -123,49 +128,30 @@ const Dashboard: React.FC = () => {
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value={formatPrice(data?.comission || 0)} />
             <DashboardCard icon={GiStairsGoal} title="Meta" value={formatPrice(Number(userAuth.goal))} />
           </CardContainer>
-          <GraficContainer>
-            
-          </GraficContainer>
-          <GraficContainer>
-            <div className="desktop">
-            <BarGraphics 
-              labels={labelsMonth} 
-              title="Vendas ao Longo do ano" 
-              formatter={transformValue} 
-              data={data?.vgv.sales.months.map(item => item.vgv) || []} 
-            />
-            </div>
-            
 
-            <div className="mobile">
-              <BarGraphics
-                labels={mobileSales?.filter(item => item.value > 0).map(item => item.label) || []} 
-                title="Vendas ao Longo do ano" 
-                formatter={transformValue} 
-                data={mobileSales?.filter(item => item.value > 0).map(item => item.value) || []} 
-              />
-            </div>
-          </GraficContainer>
           <GraficContainer>
             <PieGraphic 
-              title='Class. do Imóvel' 
-              labels={['Novos', 'Usados']} 
-              data={types}
+              title='Gênero' 
+              labels={gender?.map(item => item.label) || []} 
+              data={gender?.map(item => item.value) || []}
               formatter={transformPorcent}
              />
              <PieGraphic 
-              title='Tipo do Imóvel' 
-              labels={typeRealty?.map(item => item.label) || []} 
-              data={typeRealty?.map(item => item.value) || []}
+              title='Estado civil' 
+              labels={civilStatus?.map(item => item.label) || []} 
+              data={civilStatus?.map(item => item.value) || []}
               formatter={transformPorcent}
              />
           </GraficContainer>
           <GraficContainer>
-          <BarGraphics 
-              title='Origem da Venda' 
-              labels={origins?.map(item => item.label) || []} 
-              data={origins?.map(item => item.value) || []}
-              formatter={transformValue}
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="Número de Filhos" value={String(data?.client.avg_number_children)} />
+          </GraficContainer>
+          <GraficContainer>
+            <PieGraphic 
+                title='Idade' 
+                labels={age?.map(item => item.label) || []} 
+                data={age?.map(item => item.value) || []}
+                formatter={transformPorcent}
              />
           </GraficContainer>
         </Main>
@@ -174,4 +160,4 @@ const Dashboard: React.FC = () => {
   );
 }
 
-export default Dashboard;
+export default DashboardPersona;

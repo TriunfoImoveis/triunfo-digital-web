@@ -121,6 +121,7 @@ export const CardContainer = styled.section`
 
 export const GraficContainer = styled.div`
   display: flex;
+  justify-content: center;
 
   .desktop {
     display: flex;
@@ -133,6 +134,7 @@ export const GraficContainer = styled.div`
 
   @media (max-width: 500px) {
     flex-direction: column;
+    align-items: center;
 
     .mobile {
       display: flex;
