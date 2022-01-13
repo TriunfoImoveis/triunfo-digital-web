@@ -29,10 +29,6 @@ export const Container = styled.div`
 export const NavBarContainer = styled.nav`
   display: flex;
   height: 100%;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
 `;
 export const NavItemContent = styled.div`
   display: flex;
@@ -69,5 +65,11 @@ export const NavItemContent = styled.div`
   > button {
     background: none;
     border: 0;
+  }
+
+  @media (max-width:768px) {
+    > a, button {
+      font-size: 1.2rem;
+    }
   }
 `;

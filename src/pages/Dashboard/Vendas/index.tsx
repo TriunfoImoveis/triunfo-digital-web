@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import DashboardCard from '../../../components/Dashboard/Card';
 import DashbordLayout from '../../Layouts/dashboard';
@@ -25,6 +25,7 @@ import {
   transformPorcent,
 } from '../../../utils/dashboard';
 import { useFetch } from '../../../hooks/useFetch';
+import { useFilter } from '../../../context/FilterContext';
 
 interface IDashboardData {
   quantity: {
@@ -70,8 +71,8 @@ interface IDashboardData {
 
 const DashboardVendas: React.FC = () => {
   const {userAuth} = useAuth();
-  const [selectedYear, setSelectedYear] = useState('2020');
-  const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(selectedYear)}`);
+  const {handleSetYear, year} = useFilter();
+  const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(year)}`);
 
   const types = [data?.sales.types.new || 0, data?.sales.types.used || 0];
   const typeRealty = data?.sales.properties.filter(item => item.quantity > 0).map(item => (
@@ -83,7 +84,7 @@ const DashboardVendas: React.FC = () => {
   ));
 
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedYear(event.target.value);
+    handleSetYear(Number(event.target.value));
   }
 
   const years = optionYear.map(item => (
@@ -109,7 +110,7 @@ const DashboardVendas: React.FC = () => {
           <Select 
             options={years}  
             nameLabel='Ano' 
-            defaultValue={selectedYear} 
+            defaultValue={year} 
             onChange={handleSelectedYear}/>
         </Filter>
         <Main>

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import DashboardCard from '../../../components/Dashboard/Card';
 import DashbordLayout from '../../Layouts/dashboard';
@@ -20,6 +20,7 @@ import {
 import { useFetch } from '../../../hooks/useFetch';
 import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
 import { transformPorcent } from '../../../utils/dashboard';
+import { useFilter } from '../../../context/FilterContext';
 
 interface IDashboardData {
   quantity: {
@@ -80,8 +81,8 @@ interface IDashboardData {
 
 const DashboardPersona: React.FC = () => {
   const {userAuth} = useAuth();
-  const [selectedYear, setSelectedYear] = useState('2020');
-  const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(selectedYear)}`);
+  const {year, handleSetYear} = useFilter();
+  const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(year)}`);
 
   const gender = data?.client.genders.filter(item => item.percentage > 0).map(item => (
     {label: item.gender, value: item.percentage}
@@ -96,7 +97,7 @@ const DashboardPersona: React.FC = () => {
   ));
 
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedYear(event.target.value);
+    handleSetYear(Number(event.target.value));
   }
 
   const years = optionYear.map(item => (
@@ -118,7 +119,7 @@ const DashboardPersona: React.FC = () => {
           <Select 
             options={years}  
             nameLabel='Ano' 
-            defaultValue={selectedYear} 
+            defaultValue={year} 
             onChange={handleSelectedYear}/>
         </Filter>
         <Main>
