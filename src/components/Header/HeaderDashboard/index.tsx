@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
 import { LogoHeader } from '../../../assets/images';
 
-import MenuResponsive from '../../MenuResponsive';
-
 import { Container, NavBarContainer, NavItemContent } from './styled';
 import LogoutModal from '../../ReactModal/LogoutModal';
 
@@ -34,8 +32,6 @@ const Header: React.FC = () => {
           </button>
         </NavItemContent>
       </NavBarContainer>
-
-      <MenuResponsive />
       <LogoutModal isOpen={logoutModal} setIsOpen={toggleLogoutModal} />
     </Container>
   );
