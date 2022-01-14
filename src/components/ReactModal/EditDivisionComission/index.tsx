@@ -1,7 +1,7 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import Modal from '..';
 import Input from '../../Input';
@@ -168,7 +168,7 @@ const EditComissionDivision: React.FC<IModalProps> = ({
           className="add-button"
           onClick={() => formRef.current?.submitForm()}
         >
-          <BsCheckBox />
+          <BsCheck />
           Confirmar Divisão
         </Button>
       </Container>

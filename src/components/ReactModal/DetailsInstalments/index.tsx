@@ -1,5 +1,5 @@
 import React from 'react';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import Modal from '..';
 import Input from '../../InputDisabled';
@@ -48,7 +48,7 @@ const DetailsInstalments: React.FC<IModalProps> = ({
         </div>
         <Button className="add-button">
           <Link to={`/financeiro/calculadora/${installment.id}`}>
-            <BsCheckBox />
+            <BsCheck />
             Calcular
           </Link>
         </Button>

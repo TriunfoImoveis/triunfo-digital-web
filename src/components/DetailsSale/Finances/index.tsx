@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { BiEditAlt } from 'react-icons/bi';
 import { VscEdit } from 'react-icons/vsc';
 import { FaCheck } from 'react-icons/fa';
-import { BsCheckBox } from 'react-icons/bs';
+import { BsCheck } from 'react-icons/bs';
 
 import { toast } from 'react-toastify';
 import { useHistory } from 'react-router-dom';
@@ -551,7 +551,7 @@ const Finances: React.FC<IFinancesProps> = ({
                 className="submit"
                 onClick={handleValidSale}
               >
-                <BsCheckBox size={25} />
+                <BsCheck size={25} />
                 <span>Validar Venda</span>
               </button>
             )}
