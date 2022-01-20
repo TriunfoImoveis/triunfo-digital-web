@@ -1,31 +1,30 @@
 import React, { useCallback, useState } from 'react';
-import { FaRegEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaTrashAlt } from 'react-icons/fa';
 import { IoMdSync } from 'react-icons/io';
 import { toast } from 'react-toastify';
 import api from '../../../../services/api';
-import ModalPaymentAccount from '../../../ReactModal/PaymentAccount';
-import ModalEditAccount from '../../../ReactModal/EditAccount';
+import ModalEditAccount from '../../../ReactModal/EditAccountExit';
 
 import { Container } from './styles';
 
-type Entry = {
+type Exit = {
   id: string;
   sede: string;
-  tipo: 'ENTRADA' | 'SAIDA';
+  grupo: string;
   descricao: string;
   valor: string;
+  valorPago: string;
   contaDeSaida: string;
   data: string;
 };
 
 interface ActionsProps {
-  item: Entry; 
+  item: Exit; 
 }
 
 
 const Actions: React.FC<ActionsProps> = ({ item }) => {
   const {id} = item;
-  const [modalPaymentAccount, setPaymentAccount] = useState(false);
   const [modalEditAccount, setEditAccount] = useState(false);
 
   const handleRemoveAccout = useCallback(async () => {
@@ -37,10 +36,6 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
     }
   }, [id]);
 
-  const tooglePaymentAccount = useCallback(() => {
-    setPaymentAccount(prevState => !prevState);
-  }, []);
-
   const toogleEditAccount = useCallback(() => {
     setEditAccount(prevState => !prevState);
   }, []);
@@ -48,9 +43,6 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
   return (
     <>
     <Container>
-      <button type="button" onClick={() => tooglePaymentAccount()}>
-        <FaRegEdit />
-      </button>
       {/* <button>
         <IoMdEye />
       </button> */}
@@ -61,11 +53,6 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
         <FaTrashAlt />
       </button> 
     </Container>
-    <ModalPaymentAccount 
-      isOpen={modalPaymentAccount} 
-      setIsOpen={tooglePaymentAccount} 
-      accountId={id} 
-    />
     <ModalEditAccount 
       isOpen={modalEditAccount} 
       setIsOpen={toogleEditAccount} 

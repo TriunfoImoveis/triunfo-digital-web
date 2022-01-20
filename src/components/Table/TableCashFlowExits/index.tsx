@@ -1,5 +1,6 @@
 import React from 'react';
 import NotFound from '../../Errors/NotFound';
+import Actions from './Actions'
 
 import { Table } from './styles';
 
@@ -46,6 +47,9 @@ const TableCashFlowEntry: React.FC<TableProps> = ({ cols, collums, rows}) => {
                 <td>{item.valor}</td>
                 <td>{item.valorPago}</td>
                 <td>{item.contaDeSaida}</td>
+                <td>
+                  <Actions item={item} />
+                  </td>
               </tr>
             ))}
           </>
