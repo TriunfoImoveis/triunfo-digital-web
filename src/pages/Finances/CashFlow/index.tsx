@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, ChangeEvent } from 'react';
+import React, { useState, useCallback, useEffect, ChangeEvent, useMemo } from 'react';
 import { Form } from '@unform/web';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import api from '../../../services/api';
@@ -22,6 +22,8 @@ import { format, subDays } from 'date-fns';
 import { useAuth } from '../../../context/AuthContext';
 import { filterGroup } from '../../../utils/filters';
 import ExportCashFlow from '../../../components/ReactModal/ExportCashFlow';
+import { useFetch } from '../../../hooks/useFetch';
+import { useFilter } from '../../../context/FilterContext';
 
 interface Params {
   data_inicio: string;
@@ -107,6 +109,10 @@ const CashFlow: React.FC = () => {
     data_inicio: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
     data_fim: format(new Date(), 'yyyy-MM-dd'),
   } as Params);
+  
+  const {data: fetchDespesa} = useFetch('/despesa', parms);
+
+  const {selectedFiliais, seletedContas, handleSetFiliais, handleSetContas} = useFilter();
 
   const formatEntry = (data: Despesa[]): Despesa[] => {
     const dataFormated = data.map(item => {
@@ -166,13 +172,25 @@ const CashFlow: React.FC = () => {
     }
   };
 
-  const loadDespesas = useCallback(async () => {
-    try {
-      const response = await api.get<ReponseData>('/despesa', {
-        params: parms,
-      })
+  const orderByAscEntry = useCallback(function (a: Despesa, b: Despesa) {
+    let data1 = new Date(a.data_pagamento);
+    let data2 = new Date(b.data_pagamento);
+    return data1 > data2 ? 0 : -1;
+  }, []);
 
-      const { saldo_entrada, saldo_saida, saldo_total, despesas, expenses } = response.data;
+  const orderByAscExpense = useCallback(function (a: Expense, b: Expense) {
+    let data1 = new Date(a.pay_date);
+    let data2 = new Date(b.pay_date);
+    return data1 > data2 ? 0 : -1;
+  }, []);
+
+  useMemo(async () => {
+    try {
+      if (!fetchDespesa) {
+        throw new Error();
+      }
+
+      const { saldo_entrada, saldo_saida, saldo_total, despesas, expenses } = fetchDespesa;
 
       const entradas = selectedGroup === '' ? formatEntry(despesas
         .filter(item => item.tipo_despesa === 'ENTRADA'))
@@ -182,25 +200,24 @@ const CashFlow: React.FC = () => {
         formatExit(expenses)
         : formatExit(expenses).filter(item => filterGroup(selectedGroup, item.group.id));
 
-      setEntradas(entradas);
-      setSaidas(saidas);
+      setEntradas(entradas.sort(orderByAscEntry));
+      setSaidas(saidas.sort(orderByAscExpense));
       setSaldos({
         saldo_entrada: formatPrice(saldo_entrada),
         saldo_saida: formatPrice(saldo_saida),
         saldo_total: formatPrice(saldo_total)
-      })
-
+      });
     } catch (error) {
       console.warn(error);
     }
-  }, [parms, selectedGroup]);
+  }, [fetchDespesa, selectedGroup, orderByAscEntry, orderByAscExpense]);
+
 
   useEffect(() => {
-    loadDespesas();
     loadContas();
     loadFiliais();
     loadGroups()
-  }, [loadDespesas, loadContas, loadFiliais, loadGroups]);
+  }, [loadContas, loadFiliais, loadGroups]);
 
   const optionsFilial = filiais.map(item => ({
     label: item.name,
@@ -231,8 +248,10 @@ const CashFlow: React.FC = () => {
         ...prevState,
         escritorio: value
       }));
+      handleSetFiliais(value);
     } else {
       initialParams();
+      handleSetFiliais('');
     }
   };
 
@@ -244,7 +263,9 @@ const CashFlow: React.FC = () => {
         ...prevState,
         conta: value
       }));
+      handleSetContas(value);
     } else {
+      handleSetContas('');
       initialParams();
     }
   };
@@ -282,7 +303,7 @@ const CashFlow: React.FC = () => {
             <FilterButtonGroup>
               <FiltersBottonItems>
                 <span>Cidade: </span>
-                <select defaultValue={""} onChange={handleSelectCity}>
+                <select defaultValue={selectedFiliais} onChange={handleSelectCity}>
                   <option value="">Todas</option>
                   {optionsFilial.map(item => (
                     <option key={item.value} value={item.value}>{item.label}</option>
@@ -292,7 +313,7 @@ const CashFlow: React.FC = () => {
 
               <FiltersBottonItems>
                 <span>Contas: </span>
-                <select defaultValue={""} onChange={handleSelectContas}>
+                <select defaultValue={seletedContas} onChange={handleSelectContas}>
                   <option value="">Todas</option>
                   {optionsContas.map(item => (
                     <option key={item.value} value={item.value}>{item.label}</option>

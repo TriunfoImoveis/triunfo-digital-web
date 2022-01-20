@@ -1,15 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
 
-type ListSales = {
-  id: string;
-  name: string;
-  vgv: string;
-  dateSale: string;
-  sallers: {
-    name: string;
-    avatar_url: string;
-  };
-};
 interface FilterContextData {
   city: string;
   status: string;
@@ -18,6 +8,8 @@ interface FilterContextData {
   year: number;
   group: string;
   subsidiary: string;
+  selectedFiliais: string;
+  seletedContas: string;
   handleSetCity: (city: string) => void;
   handleSetStatus: (status: string) => void;
   handleSetName: (name: string) => void;
@@ -25,6 +17,8 @@ interface FilterContextData {
   handleSetYear: (year: number) => void;
   handleSetGroup: (group: string) => void;
   handleSetSubsidiary: (subsidiary: string) => void;
+  handleSetFiliais: (filiais:string) => void;
+  handleSetContas: (contas: string) => void;
 }
 
 const FilterContext = createContext({} as FilterContextData);
@@ -37,7 +31,8 @@ const FilterProvider: React.FC = ({ children }) => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [group, setGroup] = useState('');
   const [subsidiary, setSubsidiary] = useState<string>('');
-
+  const [selectedFiliais, setSelectedFiliais] = useState<string>('');
+  const [seletedContas, setSelectedContas] = useState<string>('');
 
   const handleSetCity = (city: string) => {
     setCity(city);
@@ -59,9 +54,18 @@ const FilterProvider: React.FC = ({ children }) => {
     setYear(year);
   };
 
+  const handleSetFiliais = (filial: string) => {
+    setSelectedFiliais(filial);
+  };
+
+  const handleSetContas = (contas:string) => {
+    setSelectedContas(contas);
+  };
+
   const handleSetGroup = (group: string) => {
     setGroup(group);
   };
+
   return (
     <FilterContext.Provider
       value={{
@@ -71,6 +75,8 @@ const FilterProvider: React.FC = ({ children }) => {
         month,
         year,
         group,
+        selectedFiliais,
+        seletedContas,
         subsidiary,
         handleSetCity,
         handleSetName,
@@ -78,7 +84,9 @@ const FilterProvider: React.FC = ({ children }) => {
         handleSetMonth,
         handleSetYear,
         handleSetGroup,
-        handleSetSubsidiary
+        handleSetSubsidiary,
+        handleSetFiliais,
+        handleSetContas,
       }}
     >
       {children}
