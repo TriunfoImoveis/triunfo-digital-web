@@ -38,6 +38,7 @@ const CashFlowExits: React.FC<CashFlowEntryProps> = ({saidas}) => {
     { name: 'Valor'},
     { name: 'Valor pago'},
     { name: 'Conta de Saída'},
+    {name: 'Ações'}
   ];
 
   const rows = saidas.map(item => ({
@@ -53,7 +54,7 @@ const CashFlowExits: React.FC<CashFlowEntryProps> = ({saidas}) => {
 
   return (
     <>
-      <Table cols={7} collums={columns} rows={rows} />
+      <Table cols={8} collums={columns} rows={rows} />
     </>
   );
 }
