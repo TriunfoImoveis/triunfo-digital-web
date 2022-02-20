@@ -18,7 +18,7 @@ type Entry = {
 };
 
 interface ActionsProps {
-  item: Entry; 
+  item: Entry;
 }
 
 
