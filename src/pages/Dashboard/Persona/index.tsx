@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import DashboardCard from '../../../components/Dashboard/Card';
 import DashbordLayout from '../../Layouts/dashboard';
@@ -21,6 +21,7 @@ import { useFetch } from '../../../hooks/useFetch';
 import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
 import { transformPorcent } from '../../../utils/dashboard';
 import { useFilter } from '../../../context/FilterContext';
+import api from '../../../services/api';
 
 interface IDashboardData {
   quantity: {
@@ -79,10 +80,55 @@ interface IDashboardData {
   }
 }
 
+interface IRealtor {
+  id: string;
+  name: string;
+  avatar_url: string;
+}
+
+interface ISubsidiary {
+  id: string;
+  name: string;
+  city: string;
+}
+
 const DashboardPersona: React.FC = () => {
-  const {userAuth} = useAuth();
-  const {year, handleSetYear} = useFilter();
-  const {data} = useFetch<IDashboardData>(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(year)}`);
+  const { userAuth } = useAuth();
+  const { handleSetYear, year, selectedSubsidiary, selectedRealtor, handleSetSelectedSubsidiaries, handleSetSelectedRealtors } = useFilter();
+  const [url, setUrl] = useState('');
+  const [realtors, setRealtors] = useState<IRealtor[]>([]);
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
+  const { data } = useFetch<IDashboardData>(url);
+
+  const getSubsidiaries = useCallback(async () => {
+    const response = await api.get(`/subsidiary`);
+    setSubsidiaries(response.data);
+  }, []);
+  const getAllRealtors = useCallback(async (subsidiary: string) => {
+    const response = await api.get(`/users?city=${subsidiary}&office=Corretor`);
+    setRealtors(response.data);
+    if (selectedRealtor === ''){
+      handleSetSelectedRealtors(response.data[0].id)
+    }
+  }, [selectedRealtor, handleSetSelectedRealtors]);
+
+  useEffect(() => {
+    if (userAuth.office.name !== 'Corretor') {
+      getSubsidiaries();
+      getAllRealtors(selectedSubsidiary);
+    } 
+  }, [userAuth.office.name, getSubsidiaries, getAllRealtors, selectedSubsidiary]);
+  useEffect(() => {
+    if (userAuth.office.name === 'Corretor') {
+      setUrl(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(year)}`);
+    } else {
+      setUrl(`/dashboard/sellers?user=${selectedRealtor}&ano=${Number(year)}`);
+    }
+  }, [userAuth.office.name, userAuth.id, year, selectedRealtor]);
+
+  const optionsRealtors = realtors.map(realtor => ({ label: realtor.name, value: realtor.id }));
+  const optionsSubsidiary = subsidiaries.map(subsidiary => ({ label: subsidiary.name, value: subsidiary.city }));
+
 
   const gender = data?.client.genders.filter(item => item.percentage > 0).map(item => (
     {label: item.gender, value: item.percentage}
@@ -104,23 +150,74 @@ const DashboardPersona: React.FC = () => {
     {label: item.label, value: String(item.value)}
   ));
 
+  const handleSelectedSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target;
+    handleSetSelectedSubsidiaries(value);
+  }, [handleSetSelectedSubsidiaries]);
+
+  const handleSelectedRealtor = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target;
+    handleSetSelectedRealtors(value);
+  }, [handleSetSelectedRealtors]);
+
   return (
     <DashbordLayout>
       <Container>
         <Filter>
-          <Avatar>
-            <img
-              src={userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'}
-              alt={userAuth.name || 'Corretor'}
-            />
-          </Avatar>
-          <AvatarName>{userAuth.name}</AvatarName>
+        {userAuth.office.name === 'Corretor' && (
+            <>
+              <Avatar>
+                <img
+                  src={userAuth.avatar_url || 'https://imgur.com/I80W1Q0.png'}
+                  alt={userAuth.name || 'Corretor'}
+                />
+              </Avatar>
+              <AvatarName>{userAuth.name}</AvatarName>
+            </>
+          )}
 
-          <Select 
-            options={years}  
-            nameLabel='Ano' 
-            defaultValue={year} 
-            onChange={handleSelectedYear}/>
+          {userAuth.office.name !== 'Corretor' && (
+            <>
+              {realtors.map(item => item.id === selectedRealtor && (
+                <>
+                  <Avatar>
+                    <img
+                      src={item.avatar_url || 'https://imgur.com/I80W1Q0.png'}
+                      alt={item.name || 'Corretor'}
+                    />
+                  </Avatar>
+                  <AvatarName>{item.name}</AvatarName>
+                </>
+              ))}
+
+            </>
+          )}
+          <Select
+            options={years}
+            nameLabel='Ano'
+            defaultValue={year}
+            onChange={handleSelectedYear}
+          />
+
+          {userAuth.office.name !== 'Corretor' && (
+            <>
+              {userAuth.office.name !== 'Diretor' && (
+                <Select
+                  options={optionsSubsidiary}
+                  nameLabel='Filiais'
+                  defaultValue={selectedSubsidiary}
+                  onChange={handleSelectedSubsidiary}
+                />
+              )}
+
+              <Select
+                options={optionsRealtors}
+                nameLabel='Corretores'
+                defaultValue={selectedRealtor}
+                onChange={handleSelectedRealtor}
+              />
+            </>
+          )}
         </Filter>
         <Main>
           <CardContainer>
