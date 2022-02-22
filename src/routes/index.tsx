@@ -33,6 +33,8 @@ import DashboardFinances from '../pages/Finances/Dashboard';
 import CashFlow from '../pages/Finances/CashFlow';
 import DashboardVendas from '../pages/Dashboard/Vendas';
 import DashboardPersona from '../pages/Dashboard/Persona';
+import DashboardMenu from '../pages/Dashboard/Menu';
+
 
 
 const Routes: React.FC = () => (
@@ -96,6 +98,7 @@ const Routes: React.FC = () => (
 
     <Route path="/dashboard/vendas" component={DashboardVendas} isPrivate />
     <Route path="/dashboard/persona" component={DashboardPersona} isPrivate />
+    <Route path="/dashboard/menu" component={DashboardMenu} isPrivate />
   </Switch>
 );
 

@@ -1,5 +1,8 @@
 import { formatPrice } from "./format";
 
+export const transformNumberInString = (value: number) => {
+  return String(value);
+}
 export const transformValue = (value: number) => {
   let zeros = 0
   const number = formatPrice(value);
