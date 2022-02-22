@@ -1,5 +1,17 @@
 import React, { createContext, useContext, useState } from 'react';
 
+interface IRealtor {
+  id: string;
+  name: string;
+  avatar_url: string;
+}
+
+interface ISubsidiary {
+  id: string;
+  name: string;
+  city: string;
+}
+
 interface FilterContextData {
   city: string;
   status: string;
@@ -10,6 +22,10 @@ interface FilterContextData {
   subsidiary: string;
   selectedFiliais: string;
   seletedContas: string;
+  selectedSubsidiary: string;
+  selectedRealtor: string;
+  realtors: IRealtor[];
+  subsidiaries: ISubsidiary[];
   handleSetCity: (city: string) => void;
   handleSetStatus: (status: string) => void;
   handleSetName: (name: string) => void;
@@ -19,6 +35,10 @@ interface FilterContextData {
   handleSetSubsidiary: (subsidiary: string) => void;
   handleSetFiliais: (filiais:string) => void;
   handleSetContas: (contas: string) => void;
+  handleSetSelectedSubsidiaries: (subsidiary: string) => void;
+  handleSetSelectedRealtors: (realtor: string) => void;
+  handleSetSubsidiaries: (subsidiaries: ISubsidiary[]) => void;
+  handleSetRealtors: (realtors: IRealtor[]) => void;
 }
 
 const FilterContext = createContext({} as FilterContextData);
@@ -33,6 +53,27 @@ const FilterProvider: React.FC = ({ children }) => {
   const [subsidiary, setSubsidiary] = useState<string>('');
   const [selectedFiliais, setSelectedFiliais] = useState<string>('');
   const [seletedContas, setSelectedContas] = useState<string>('');
+  const [realtors, setRealtors] = useState<IRealtor[]>([]);
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState("");
+  const [selectedRealtor, setselectedRealtor] = useState('');
+
+
+  const handleSetSubsidiaries = (subsidiaries: ISubsidiary[]) => {
+    setSubsidiaries(subsidiaries);
+  };
+  
+  const handleSetRealtors = (realtors: IRealtor[]) => {
+    setRealtors(realtors);
+  };
+
+  const handleSetSelectedSubsidiaries = (subsidiary: string) => {
+    setSelectedSubsidiary(subsidiary);
+  };
+
+  const handleSetSelectedRealtors = (realtor: string) => {
+    setselectedRealtor(realtor);
+  };
 
   const handleSetCity = (city: string) => {
     setCity(city);
@@ -78,6 +119,10 @@ const FilterProvider: React.FC = ({ children }) => {
         selectedFiliais,
         seletedContas,
         subsidiary,
+        realtors,
+        subsidiaries,
+        selectedSubsidiary,
+        selectedRealtor,
         handleSetCity,
         handleSetName,
         handleSetStatus,
@@ -87,6 +132,10 @@ const FilterProvider: React.FC = ({ children }) => {
         handleSetSubsidiary,
         handleSetFiliais,
         handleSetContas,
+        handleSetSelectedSubsidiaries,
+        handleSetSelectedRealtors,
+        handleSetSubsidiaries,
+        handleSetRealtors
       }}
     >
       {children}
