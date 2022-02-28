@@ -1,5 +1,8 @@
 import styled from 'styled-components';
 
+interface DivDesktopPros {
+  width: string;
+} 
 export const Container = styled.div`
   width: 100%;
   display: flex;
@@ -143,6 +146,21 @@ export const GraficContainer = styled.div`
     .desktop {
     display: none;
   }
+  }
+`;
+
+export const DivDesktop = styled.div<DivDesktopPros>`
+  display: flex;
+  max-width: 100%;
+  height: 40rem;
+  overflow-y: auto;
+  width: ${(props) => props.width};
+  ::-webkit-scrollbar {
+  width: 1px;
+}
+
+  @media (max-width: 500px) {
+    display: none;
   }
 `;
 
