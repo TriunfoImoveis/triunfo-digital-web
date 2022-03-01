@@ -1,11 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import DashbordLayout from '../../Layouts/dashboard';
 
 import {
   Container,
   Filter,
-  Avatar,
-  AvatarName,
   Main,
   CardContainer,
   GraficContainer,
@@ -21,6 +19,11 @@ import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
 import HorizontalBar from '../../../components/Dashboard/Graphics/HorizontalBar';
 import Ranking from './components/Ranking';
 import { useFetch } from '../../../hooks/useFetch';
+import Select from '../../../components/SelectSimple';
+import { useFilter } from '../../../context/FilterContext';
+import { optionYear } from '../../../utils/loadOptions';
+import api from '../../../services/api';
+
 
 interface IDashboardData {
   quantity_sales: number;
@@ -60,11 +63,35 @@ interface IRealtorData {
   vgv: string;
 }
 
+interface ISubsidiary {
+  id: string;
+  name: string;
+  city: string;
+}
+
 
 const DashboardSubsidiary: React.FC = () => {
-  const { data } = useFetch<IDashboardData>('/dashboard/subsidiaries?subsidiary=825712b9-4441-40b9-ba58-b0b420e522fe&year=2021');
-  const { data: rankingData } = useFetch<IRealtorData[]>('/ranking?year=2021&city=S%C3%A3o%20Lu%C3%ADs&user=Corretor');
-  
+  const {
+    handleSetYear,
+    year,
+    selectedSubsidiary,
+    handleSetSelectedSubsidiaries,
+    city,
+    handleSetCity
+  } = useFilter();
+
+  const { data } = useFetch<IDashboardData>(`/dashboard/subsidiaries?subsidiary=${selectedSubsidiary}&year=${year}`);
+  const { data: rankingData } = useFetch<IRealtorData[]>(`/ranking?year=${year}&city=${city}&user=Corretor`);
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
+  const getSubsidiaries = useCallback(async () => {
+    const response = await api.get(`/subsidiary`);
+    setSubsidiaries(response.data);
+  }, []);
+
+  useEffect(() => {
+    getSubsidiaries();
+  }, [getSubsidiaries]);
+
   const ranking = useMemo(() => {
     return rankingData?.map(r => ({
       id: r.id,
@@ -74,23 +101,55 @@ const DashboardSubsidiary: React.FC = () => {
     }));
   }, [rankingData]);
 
-  const neighborhoods = data?.sales.neighborhoods
-  .filter(item => item.quantity > 0)
-  .map(item => ({ label: item.neighborhood, value: item.quantity}));
-  const types = [data?.sales.types.new || 0, data?.sales.types.used || 0];
+  const optionsSubsidiary = useMemo(
+    () => subsidiaries
+      .map(subsidiary => ({ label: subsidiary.name, value: subsidiary.id })),
+    [subsidiaries]
+  );
 
+  const neighborhoods = useMemo(() => data?.sales.neighborhoods
+    .filter(item => item.quantity > 0)
+    .map(item => ({ label: item.neighborhood, value: item.quantity })), [data]);
+
+  const types = useMemo(() => [data?.sales.types.new || 0, data?.sales.types.used || 0], [data]);
+
+  const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetYear(Number(event.target.value));
+  }
+
+  const handleSelectedSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target;
+    handleSetSelectedSubsidiaries(value);
+  }, [handleSetSelectedSubsidiaries]);
+
+  useMemo(() => {
+    if (selectedSubsidiary !== '') {
+      const subsidiary = subsidiaries.find(item => item.id === selectedSubsidiary && item);
+      handleSetCity(subsidiary?.city || '');
+    }
+  }, [subsidiaries, selectedSubsidiary, handleSetCity]);
+
+  const years = optionYear.map(item => (
+    { label: item.label, value: String(item.value) }
+  ));
 
   return (
     <DashbordLayout>
       <Container>
         <Filter>
-          <Avatar>
-            <img
-              src="https://www.triunfoimoveis.com/wp-content/uploads/2021/12/TRIUNFO-IMOVEIS-logovestical2.png"
-              alt="logo triunfo"
-            />
-          </Avatar>
-          <AvatarName>Filial</AvatarName>
+          <Select
+            options={years}
+            nameLabel='Ano'
+            defaultValue={''}
+            onChange={handleSelectedYear}
+          />
+
+          <Select
+            options={optionsSubsidiary}
+            nameLabel='Filiais'
+            defaultValue={selectedSubsidiary}
+            onChange={handleSelectedSubsidiary}
+          />
         </Filter>
 
         <Main>
@@ -136,7 +195,7 @@ const DashboardSubsidiary: React.FC = () => {
 
           <GraficContainer>
             <DivDesktop width="60%" >
-              <Ranking data={ranking || []}/>
+              <Ranking data={ranking || []} />
             </DivDesktop>
             <DivDesktop width="40%">
               <PieGraphic
