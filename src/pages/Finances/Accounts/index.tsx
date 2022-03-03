@@ -35,6 +35,7 @@ import {
 import { useFilter } from '../../../context/FilterContext';
 import { useFetch } from '../../../hooks/useFetch';
 import TableFix from '../../../components/Table/TableAccount';
+import { toast } from 'react-toastify';
 
 
 interface AccountData {
@@ -94,6 +95,7 @@ const Account: React.FC = () => {
   const [dateFinal, setDateFinal] = useState('');
   const [optionsGroup, setOptionsGroup] = useState<Options[]>([]);
   const [optionsSubsidiary, setOptionsSubsidiary] = useState<Options[]>([]);
+  const [selectedsEntry, setSelectedsEntry] = useState<String[]>([]);
   const { data: account } = useFetch<AccountData[]>('/expense');
   const {
     handleSetMonth, 
@@ -415,7 +417,29 @@ const Account: React.FC = () => {
     handleSetGroup(event.target.value);
   };
 
+  const handleSelected = (event: ChangeEvent<HTMLInputElement>, id: string) => {
+    if(event.target.checked) {
+      setSelectedsEntry(prevState => [...prevState, id])
+    } else {
+      const arr = selectedsEntry;
+      const index = arr.indexOf(id);
+      arr.splice(index, 1);
+      setSelectedsEntry(arr);
+    }
+  };
+
+  const handleRemoveAllIds = async () => {
+    try {
+      await api.delete(`/expense?ids=${selectedsEntry.toString()}`);
+      setSelectedsEntry([]);
+      toast.success('Exclusão feita com sucesso');
+    } catch {
+      toast.error('Não foi possivel remover os itens');
+    }
+  }
+
   const collumAccount = [
+    {name: ''},
     {name: 'Filial'},
     {name: 'Descrição'},
     {name: 'Vencimento'},
@@ -526,7 +550,7 @@ const Account: React.FC = () => {
               >
                 <TabBootstrap eventKey="fix" title="Contas Fixas">
                   <TitlePane>Contas Fixas</TitlePane>
-                  <TableFix cols={7} collums={collumAccount} rows={listFixedExpense} />
+                  <TableFix cols={8} collums={collumAccount} rows={listFixedExpense} handleSelected={handleSelected}/>
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
@@ -536,7 +560,7 @@ const Account: React.FC = () => {
                 </TabBootstrap>
                 <TabBootstrap eventKey="variable" title="Contas Variáveis">
                   <TitlePane>Contas Variáveis</TitlePane>
-                  <TableFix cols={7} collums={collumAccount} rows={listVariableExpense} />
+                  <TableFix cols={9} collums={collumAccount} rows={listVariableExpense} handleSelected={handleSelected}/>
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
@@ -554,6 +578,7 @@ const Account: React.FC = () => {
                 <span>Adiconar nova conta</span>
               </button> 
             </ButtonGroup>
+            {selectedsEntry.length > 0 && <Button onClick={handleRemoveAllIds}>Excluir</Button>}
           </Footer>
         </Container>
       </Background>
