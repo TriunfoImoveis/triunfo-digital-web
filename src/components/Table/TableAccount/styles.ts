@@ -24,7 +24,7 @@ export const Table = styled.table<TableProps>`
     text-align: center;
     > tr {
       display: grid;
-      grid-template-columns: repeat(${props => props.cols}, 140px);
+      grid-template-columns: repeat(${props => props.cols}, 1fr);
       border: 1px solid #504c4c;
 
       > th {

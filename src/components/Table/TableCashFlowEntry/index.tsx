@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import NotFound from '../../Errors/NotFound';
 import Actions from './Actions'
 
@@ -23,13 +23,15 @@ interface TableProps {
   cols: number;
   collums: Array<collumProps>;
   rows: CashFlowEntryProps[];
+  handleSelected: (event: ChangeEvent<HTMLInputElement>, id: string) => void;
 }
 
-const TableCashFlowEntry: React.FC<TableProps> = ({ cols, collums, rows}) => {
+const TableCashFlowEntry: React.FC<TableProps> = ({ cols, collums, rows, handleSelected}) => {
   return (
     <Table cols={cols}>
       <thead>
         <tr>
+          <th />
           {collums.map(item => (<th>{item.name}</th>))}
         </tr>
       </thead>
@@ -40,6 +42,9 @@ const TableCashFlowEntry: React.FC<TableProps> = ({ cols, collums, rows}) => {
           <>
             {rows.map(item => (
               <tr key={item.id}>
+                <td>
+                  <input type="checkbox" name="selected" onChange={event => handleSelected(event, item.id)}/>
+                </td>
                 <td>{item.sede}</td>
                 <td>{item.data}</td>
                 <td>{item.grupo}</td>

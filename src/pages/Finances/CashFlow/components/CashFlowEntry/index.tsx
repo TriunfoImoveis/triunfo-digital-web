@@ -1,8 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, ChangeEvent } from 'react';
 import ModalAddEntryAndExits from '../../../../../components/ReactModal/AddEntryAndExits';
 import Button from '../../../../../components/Button';
 import { DateBRL } from '../../../../../utils/format';
 import Table from '../../../../../components/Table/TableCashFlowEntry';
+import api from '../../../../../services/api';
+import { toast } from 'react-toastify';
 
  
 // import { Container } from './styles';
@@ -31,10 +33,32 @@ interface CashFlowEntryProps {
 }
 const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
   const [modalAddEntryAndExits, setModalAddEntryAndExits] = useState(false);
+  const [selectedsEntry, setSelectedsEntry] = useState<String[]>([]);
+
   const toogleModal = useCallback(() => {
     setModalAddEntryAndExits(!modalAddEntryAndExits);
   }, [modalAddEntryAndExits]);
 
+  const handleSelected = (event: ChangeEvent<HTMLInputElement>, id: string) => {
+    if(event.target.checked) {
+      setSelectedsEntry(prevState => [...prevState, id])
+    } else {
+      const arr = selectedsEntry;
+      const index = arr.indexOf(id);
+      arr.splice(index, 1);
+      setSelectedsEntry(arr);
+    }
+  };
+
+  const handleRemoveAllIds = async () => {
+    try {
+      await api.delete(`/despesa?ids=${selectedsEntry.toString()}`);
+      setSelectedsEntry([]);
+      toast.success('Exclusão feita com sucesso');
+    } catch {
+      toast.error('Não foi possivel remover os itens');
+    }
+  }
 
   const collums = [
     {name: 'Filial'},
@@ -59,7 +83,8 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
   
   return (
     <>
-      <Table cols={7} collums={collums} rows={rows}  />
+      <Table cols={8} collums={collums} rows={rows} handleSelected={handleSelected} />
+      {selectedsEntry.length > 0 && <Button onClick={handleRemoveAllIds}>Excluir todos</Button>}
       <Button onClick={toogleModal}>Adicionar entrada</Button>
       <ModalAddEntryAndExits isOpen={modalAddEntryAndExits} setIsOpen={toogleModal} />
     </>

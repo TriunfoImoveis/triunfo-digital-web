@@ -18,7 +18,7 @@ type Entry = {
 };
 
 interface ActionsProps {
-  item: Entry; 
+  item: Entry;
 }
 
 
@@ -32,7 +32,7 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
 
   const handleRemoveAccout = useCallback(async () => {
     try {
-      await api.delete(`/despesa/${id}`);
+      await api.delete(`/despesa?ids=${id}`);
       toast.success('Entrada excluida');
     } catch (err) {
       toast.error(`${err}`);
