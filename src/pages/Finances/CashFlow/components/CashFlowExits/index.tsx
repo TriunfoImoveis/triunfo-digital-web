@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { ChangeEvent, useState } from 'react';
+import { toast } from 'react-toastify';
+import Button from '../../../../../components/Button';
 import Table from '../../../../../components/Table/TableCashFlowExits';
+import api from '../../../../../services/api';
 
 interface Subsidiary {
   id: string;
@@ -30,7 +33,30 @@ interface CashFlowEntryProps {
 }
 
 const CashFlowExits: React.FC<CashFlowEntryProps> = ({saidas}) => {
+  const [selectedsEntry, setSelectedsEntry] = useState<String[]>([]);
+  const handleSelected = (event: ChangeEvent<HTMLInputElement>, id: string) => {
+    if(event.target.checked) {
+      setSelectedsEntry(prevState => [...prevState, id])
+    } else {
+      const arr = selectedsEntry;
+      const index = arr.indexOf(id);
+      arr.splice(index, 1);
+      setSelectedsEntry(arr);
+    }
+  };
+
+  const handleRemoveAllIds = async () => {
+    try {
+      await api.delete(`/expense?ids=${selectedsEntry.toString()}`);
+      setSelectedsEntry([]);
+      toast.success('Exclusão feita com sucesso');
+    } catch {
+      toast.error('Não foi possivel remover os itens');
+    }
+  }
+
   const columns = [
+    { name: '' },
     { name: 'Sede' },
     { name: 'Data'},
     { name: 'Grupo'},
@@ -54,7 +80,8 @@ const CashFlowExits: React.FC<CashFlowEntryProps> = ({saidas}) => {
 
   return (
     <>
-      <Table cols={8} collums={columns} rows={rows} />
+      <Table cols={9} collums={columns} rows={rows} handleSelected={handleSelected} />
+      {selectedsEntry.length > 0 && <Button onClick={handleRemoveAllIds}>Excluir todos</Button>}
     </>
   );
 }

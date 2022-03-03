@@ -32,7 +32,7 @@ const Actions: React.FC<ActionsProps> = ({ item }) => {
 
   const handleRemoveAccout = useCallback(async () => {
     try {
-      await api.delete(`/expense/${id}`);
+      await api.delete(`/expense?ids=${id}`);
       toast.success('Conta Excluída');
     } catch (err) {
       toast.error(`${err}`);
