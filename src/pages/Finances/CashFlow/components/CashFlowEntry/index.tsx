@@ -52,13 +52,10 @@ const CashFlowEntry: React.FC<CashFlowEntryProps> = ({entradas}) => {
 
   const handleRemoveAllIds = async () => {
     try {
-      await api.delete('/despesa', { 
-        data: { 
-          ids: selectedsEntry
-        }
-      });
+      await api.delete(`/despesa?ids=${selectedsEntry.toString()}`);
+      setSelectedsEntry([]);
       toast.success('Exclusão feita com sucesso');
-    } finally {
+    } catch {
       toast.error('Não foi possivel remover os itens');
     }
   }
