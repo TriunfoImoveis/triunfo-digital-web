@@ -560,7 +560,7 @@ const Account: React.FC = () => {
                 </TabBootstrap>
                 <TabBootstrap eventKey="variable" title="Contas Variáveis">
                   <TitlePane>Contas Variáveis</TitlePane>
-                  <TableFix cols={9} collums={collumAccount} rows={listVariableExpense} handleSelected={handleSelected}/>
+                  <TableFix cols={8} collums={collumAccount} rows={listVariableExpense} handleSelected={handleSelected}/>
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
