@@ -338,9 +338,6 @@ const CashFlow: React.FC = () => {
                   <Button type="submit">Filtrar</Button>
                 </Form>
               </FiltersBottonItems>
-              <FiltersBottonItems>
-                <Button type="submit">Sel. vários</Button>
-              </FiltersBottonItems>
             </FilterButtonGroup>
           </FiltersBotton>
         </FiltersContainer>
