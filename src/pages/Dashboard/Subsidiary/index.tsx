@@ -28,7 +28,13 @@ import api from '../../../services/api';
 interface IDashboardData {
   quantity_sales: number;
   ticket_medium: number;
-  comission: number;
+  comission: {
+    total: number;
+    months: {
+      month: string;
+      vgv: number;
+    }[];
+  }
   vgv: {
     total: number;
     months: {
@@ -157,7 +163,7 @@ const DashboardSubsidiary: React.FC = () => {
             <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value={formatPrice(data?.vgv.total || 0)} />
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Qtde de Imóveis" value={String(data?.quantity_sales || 0)} />
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value={formatPrice(data?.ticket_medium || 0)} />
-            <DashboardCard icon={GiStairsGoal} title="Comissão" value={formatPrice(data?.comission || 0)} />
+            <DashboardCard icon={GiStairsGoal} title="Comissão" value={formatPrice(data?.comission.total || 0)} />
           </CardContainer>
 
 
