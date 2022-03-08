@@ -38,7 +38,13 @@ interface IDashboardData {
     sales: number;
     captivators: number;
   },
-  comission: number;
+  comission: {
+    total: number;
+    months: {
+      month: string;
+      vgv: number;
+    }[]
+  };
   vgv: {
     sales: {
       total: number;
@@ -95,12 +101,6 @@ const DashboardVendas: React.FC = () => {
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
   const { data } = useFetch<IDashboardData>(url);
 
-  useEffect(() => {
-    if (userAuth.office.name !== 'Corretor') {
-      handleSetSelectedSubsidiaries(userAuth.subsidiary.city);
-    }
-  }, [userAuth.office.name, userAuth.subsidiary.city, handleSetSelectedSubsidiaries]);
-
   const getSubsidiaries = useCallback(async () => {
     const response = await api.get(`/subsidiary`);
     setSubsidiaries(response.data);
@@ -109,10 +109,7 @@ const DashboardVendas: React.FC = () => {
   const getAllRealtors = useCallback(async (subsidiary: string) => {
     const response = await api.get(`/users?city=${subsidiary}&office=Corretor`);
     setRealtors(response.data);
-    if (selectedRealtor === '') {
-      handleSetSelectedRealtors(response.data[0].id)
-    }
-  }, [selectedRealtor, handleSetSelectedRealtors]);
+  }, []);
 
   useEffect(() => {
     const { office } = userAuth;
@@ -201,7 +198,7 @@ const DashboardVendas: React.FC = () => {
           <Select
             options={years}
             nameLabel='Ano'
-            defaultValue={year}
+            defaultValue={''}
             onChange={handleSelectedYear}
           />
 
@@ -211,14 +208,14 @@ const DashboardVendas: React.FC = () => {
                 <Select
                   options={optionsSubsidiary}
                   nameLabel='Filiais'
-                  defaultValue={selectedSubsidiary}
+                  defaultValue={''}
                   onChange={handleSelectedSubsidiary}
                 />
               )}
               <Select
                 options={optionsRealtors}
                 nameLabel='Corretores'
-                defaultValue={selectedRealtor}
+                defaultValue={''}
                 onChange={handleSelectedRealtor}
               />
             </>
@@ -228,7 +225,7 @@ const DashboardVendas: React.FC = () => {
           <CardContainer>
             <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value={formatPrice(data?.vgv.sales.total || 0)} />
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value={formatPrice(data?.ticket_medium.sales || 0)} />
-            <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value={formatPrice(data?.comission || 0)} />
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value={formatPrice(data?.comission.total || 0)} />
             <DashboardCard icon={GiStairsGoal} title="Meta" value={formatPrice(Number(userAuth.goal))} />
           </CardContainer>
           <GraficContainer>
