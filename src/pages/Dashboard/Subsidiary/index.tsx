@@ -94,9 +94,8 @@ const DashboardSubsidiary: React.FC = () => {
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
   const [isDirector, setIsDirector] = useState(false);
   const [dashboardUrl, setDashboardUrl] = useState(`/dashboard/subsidiaries?subsidiary=${selectedSubsidiary}&year=${year}`);
-  const [rankingUrl, setRankingUrl] = useState(`/ranking?year=${year}&city=${city}&user=Corretor`);
   const { data } = useFetch<IDashboardData>(dashboardUrl);
-  const { data: rankingData } = useFetch<IRealtorData[]>(rankingUrl);
+  const { data: rankingData } = useFetch<IRealtorData[]>(`/ranking?year=${year}&city=${city}&user=Corretor`);
 
   const loadData = useCallback(async () => {
     const { office, subsidiary } = userAuth;
@@ -142,7 +141,6 @@ const DashboardSubsidiary: React.FC = () => {
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetYear(Number(event.target.value));
     setDashboardUrl(`/dashboard/subsidiaries?subsidiary=${selectedSubsidiary}&year=${Number(event.target.value)}`);
-    setRankingUrl(`/ranking?year=${Number(event.target.value)}&city=${city}&user=Corretor`)
   }
 
   const handleSelectedSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
@@ -150,6 +148,7 @@ const DashboardSubsidiary: React.FC = () => {
     handleSetSelectedSubsidiaries(value);
     setDashboardUrl(`/dashboard/subsidiaries?subsidiary=${value}&year=${year}`);
   }, [handleSetSelectedSubsidiaries, year]);
+
 
   useMemo(() => {
     if (selectedSubsidiary !== '') {
@@ -193,7 +192,7 @@ const DashboardSubsidiary: React.FC = () => {
         <Main>
           <CardContainer>
             <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value={formatPrice(data?.vgv.total || 0)} />
-            <DashboardCard icon={RiMoneyDollarCircleFill} title="Qtde de Imóveis" value={String(data?.vgv.quantity || 0)} />
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="Qtde de Imóveis" value={String(data?.quantity_sales || 0)} />
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value={formatPrice(data?.ticket_medium || 0)} />
             <DashboardCard icon={GiStairsGoal} title="Comissão" value={formatPrice(data?.comission.total || 0)} />
           </CardContainer>
