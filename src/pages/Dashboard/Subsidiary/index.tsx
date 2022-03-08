@@ -115,7 +115,7 @@ const DashboardSubsidiary: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    isDirector && getSubsidiaries();
+    !isDirector && getSubsidiaries();
   }, [isDirector, getSubsidiaries]);
 
   const ranking = useMemo(() => {
