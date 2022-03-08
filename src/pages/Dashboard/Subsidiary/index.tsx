@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import DashbordLayout from '../../Layouts/dashboard';
+import DashbordLayout from '../../Layouts/dashboardTime';
 
 import {
   Container,
@@ -23,6 +23,7 @@ import Select from '../../../components/SelectSimple';
 import { useFilter } from '../../../context/FilterContext';
 import { optionYear } from '../../../utils/loadOptions';
 import api from '../../../services/api';
+import { useAuth } from '../../../context/AuthContext';
 
 
 interface IDashboardData {
@@ -37,6 +38,7 @@ interface IDashboardData {
   }
   vgv: {
     total: number;
+    quantity: number;
     months: {
       month: string;
       vgv: number;
@@ -86,17 +88,35 @@ const DashboardSubsidiary: React.FC = () => {
     handleSetCity
   } = useFilter();
 
-  const { data } = useFetch<IDashboardData>(`/dashboard/subsidiaries?subsidiary=${selectedSubsidiary}&year=${year}`);
-  const { data: rankingData } = useFetch<IRealtorData[]>(`/ranking?year=${year}&city=${city}&user=Corretor`);
+  const { userAuth } = useAuth();
+
+
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
+  const [isDirector, setIsDirector] = useState(false);
+  const [dashboardUrl, setDashboardUrl] = useState(`/dashboard/subsidiaries?subsidiary=${selectedSubsidiary}&year=${year}`);
+  const [rankingUrl, setRankingUrl] = useState(`/ranking?year=${year}&city=${city}&user=Corretor`);
+  const { data } = useFetch<IDashboardData>(dashboardUrl);
+  const { data: rankingData } = useFetch<IRealtorData[]>(rankingUrl);
+
+  const loadData = useCallback(async () => {
+    const { office, subsidiary } = userAuth;
+    if (office.name === 'Diretor') {
+      setIsDirector(true);
+      setDashboardUrl(`/dashboard/subsidiaries?subsidiary=${subsidiary.id}&year=${year}`)
+    }
+  }, [userAuth, year]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
   const getSubsidiaries = useCallback(async () => {
     const response = await api.get(`/subsidiary`);
     setSubsidiaries(response.data);
   }, []);
 
   useEffect(() => {
-    getSubsidiaries();
-  }, [getSubsidiaries]);
+    isDirector && getSubsidiaries();
+  }, [isDirector, getSubsidiaries]);
 
   const ranking = useMemo(() => {
     return rankingData?.map(r => ({
@@ -121,12 +141,15 @@ const DashboardSubsidiary: React.FC = () => {
 
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetYear(Number(event.target.value));
+    setDashboardUrl(`/dashboard/subsidiaries?subsidiary=${selectedSubsidiary}&year=${Number(event.target.value)}`);
+    setRankingUrl(`/ranking?year=${Number(event.target.value)}&city=${city}&user=Corretor`)
   }
 
   const handleSelectedSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const { value } = event.target;
     handleSetSelectedSubsidiaries(value);
-  }, [handleSetSelectedSubsidiaries]);
+    setDashboardUrl(`/dashboard/subsidiaries?subsidiary=${value}&year=${year}`);
+  }, [handleSetSelectedSubsidiaries, year]);
 
   useMemo(() => {
     if (selectedSubsidiary !== '') {
@@ -139,6 +162,14 @@ const DashboardSubsidiary: React.FC = () => {
     { label: item.label, value: String(item.value) }
   ));
 
+  const typeRealty = data?.sales.properties.filter(item => item.quantity > 0).map(item => (
+    { label: item.property, value: item.quantity }
+  ));
+
+  const origins = data?.sales.origins.filter(item => item.value > 0).map(item => (
+    {label: item.origin, value: item.value}
+  ));
+
   return (
     <DashbordLayout>
       <Container>
@@ -149,19 +180,20 @@ const DashboardSubsidiary: React.FC = () => {
             defaultValue={''}
             onChange={handleSelectedYear}
           />
-
-          <Select
-            options={optionsSubsidiary}
-            nameLabel='Filiais'
-            defaultValue={selectedSubsidiary}
-            onChange={handleSelectedSubsidiary}
-          />
+          {userAuth.office.name !== 'Diretor' && (
+            <Select
+              options={optionsSubsidiary}
+              nameLabel='Filiais'
+              defaultValue={selectedSubsidiary}
+              onChange={handleSelectedSubsidiary}
+            />
+          )}
         </Filter>
 
         <Main>
           <CardContainer>
             <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value={formatPrice(data?.vgv.total || 0)} />
-            <DashboardCard icon={RiMoneyDollarCircleFill} title="Qtde de Imóveis" value={String(data?.quantity_sales || 0)} />
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="Qtde de Imóveis" value={String(data?.vgv.quantity || 0)} />
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value={formatPrice(data?.ticket_medium || 0)} />
             <DashboardCard icon={GiStairsGoal} title="Comissão" value={formatPrice(data?.comission.total || 0)} />
           </CardContainer>
@@ -211,6 +243,22 @@ const DashboardSubsidiary: React.FC = () => {
                 formatter={transformPorcent}
               />
             </DivDesktop>
+          </GraficContainer>
+
+          <GraficContainer>
+            <PieGraphic
+              title='Tipo do Imóvel'
+              labels={typeRealty?.map(item => item.label) || []}
+              data={typeRealty?.map(item => item.value) || []}
+              formatter={transformPorcent}
+            />
+
+            <BarGraphics
+              title='Origem da Venda'
+              labels={origins?.map(item => item.label) || []}
+              data={origins?.map(item => item.value) || []}
+              formatter={transformValue}
+            />
           </GraficContainer>
         </Main>
       </Container>

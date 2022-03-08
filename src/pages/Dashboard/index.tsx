@@ -94,8 +94,6 @@ const Dashboard: React.FC = () => {
     {label: item.month, value: item.vgv }
   ));
 
-  console.log(mobileSales?.filter(item => item.value > 0).map(item => item.label) || []);
-  console.log(mobileSales?.filter(item => item.value > 0).map(item => item.value) || [])
 
 
   return (

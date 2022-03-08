@@ -35,6 +35,7 @@ import DashboardVendas from '../pages/Dashboard/Vendas';
 import DashboardPersona from '../pages/Dashboard/Persona';
 import DashboardMenu from '../pages/Dashboard/Menu';
 import DashboardSubsidiary from '../pages/Dashboard/Subsidiary';
+import DashboardTime from '../pages/Dashboard/Time';
 
 
 
@@ -100,6 +101,7 @@ const Routes: React.FC = () => (
     <Route path="/dashboard/vendas" component={DashboardVendas} isPrivate />
     <Route path="/dashboard/persona" component={DashboardPersona} isPrivate />
     <Route path="/dashboard/filial" component={DashboardSubsidiary} isPrivate />
+    <Route path="/dashboard/time" component={DashboardTime} isPrivate />
     <Route path="/dashboard/menu" component={DashboardMenu} isPrivate />
   </Switch>
 );

@@ -75,3 +75,7 @@ export const isEmptyObject = obj => {
 
   return true;
 };
+
+export const calculationPorcent = (partial: number, total: number) => {
+  return (100 * partial) / total;
+}
