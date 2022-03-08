@@ -17,7 +17,7 @@ import { optionYear } from '../../../utils/loadOptions';
 import { useFetch } from '../../../hooks/useFetch';
 import api from '../../../services/api';
 import BarGraphics from '../../../components/Dashboard/Graphics/Bar';
-import { calculationPorcent, transformPorcent, transformValue } from '../../../utils/dashboard';
+import { transformNumberInString, transformPorcent, transformValue } from '../../../utils/dashboard';
 import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
 
 
@@ -78,7 +78,9 @@ interface ISubsidiary {
 const DashboardTime: React.FC = () => {
   const {
     handleSetYear,
-    year
+    year,
+    selectedSubsidiary,
+    handleSetSelectedSubsidiaries
   } = useFilter();
 
   const [realtors, setRealtors] = useState<IRealtorData[]>([]);
@@ -89,7 +91,7 @@ const DashboardTime: React.FC = () => {
   const [city1, setCity1] = useState<ISubsidiary>({} as ISubsidiary);
   const [city2, setCity2] = useState<ISubsidiary>({} as ISubsidiary);
   const [city3, setCity3] = useState<ISubsidiary>({} as ISubsidiary);
-
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
   const { data: realtorsSLZ } = useFetch<IRealtorData[]>(`/ranking?city=${`São Luís`}&year=${year}&user=Corretor`);
   const { data: realtorsFTZ } = useFetch<IRealtorData[]>(`/ranking?city=Fortaleza&year=${year}&user=Corretor`);
   const { data: realtorsTRZ } = useFetch<IRealtorData[]>(`/ranking?city=Teresina&year=${year}&user=Corretor`);
@@ -99,7 +101,7 @@ const DashboardTime: React.FC = () => {
     setCity1(response.data[0]);
     setCity2(response.data[1]);
     setCity3(response.data[2]);
-
+    setSubsidiaries(response.data);
   }, [])
   useEffect(() => {
     getSubsidiaries();
@@ -109,6 +111,7 @@ const DashboardTime: React.FC = () => {
   const { data: subsidiary2 } = useFetch<IDashboardData>(`/dashboard/subsidiaries?subsidiary=${city2.id}&year=${year}`);
   const { data: subsidiary3 } = useFetch<IDashboardData>(`/dashboard/subsidiaries?subsidiary=${city3.id}&year=${year}`);
 
+  const {data: selectedSubsidiaryData } = useFetch<IDashboardData>(`/dashboard/subsidiaries?subsidiary=${selectedSubsidiary}&year=${year}`);
 
   const qtdSale = useMemo(() => {
     let quanty = 0;
@@ -133,27 +136,6 @@ const DashboardTime: React.FC = () => {
     { label: item.label, value: String(item.value) }
   ));
 
-  const allTypes = useMemo(() => {
-    let type = {
-      new: 0,
-      used: 0
-    }
-    if (subsidiary1 && subsidiary2 && subsidiary3 !== undefined) {
-      const novo = ((subsidiary1.sales.types.new || 0) + (subsidiary2.sales.types.new || 0) + (subsidiary3.sales.types.new || 0)) / 3;
-      const usado =  ((subsidiary1.sales.types.used || 0) + (subsidiary2.sales.types.used || 0) + (subsidiary3.sales.types.used || 0)) / 3;
-
-      const total = novo + usado;
-
-      const novoPorcent = calculationPorcent(novo, total);
-      const usadoPorcent = calculationPorcent(usado, total);
-      type = {
-        new: novoPorcent,
-        used: usadoPorcent
-      }
-    }
-    return type;
-  }, [subsidiary1, subsidiary2, subsidiary3]);
-
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetYear(Number(event.target.value));
   }
@@ -162,7 +144,7 @@ const DashboardTime: React.FC = () => {
     if (realtorsSLZ !== undefined && realtorsFTZ !== undefined && realtorsTRZ !== undefined) {
       const realtors = realtorsSLZ.concat(realtorsFTZ, realtorsTRZ);
       const sortbyVGV = realtors.sort((a, b) => {
-        return a.vgv >  b.vgv ? -1 : (a.vgv < b.vgv) ? 1 : 0;
+        return a.vgv > b.vgv ? -1 : (a.vgv < b.vgv) ? 1 : 0;
       })
 
       setRealtorCity1(realtorsSLZ)
@@ -209,7 +191,30 @@ const DashboardTime: React.FC = () => {
       vgv: Number(r.vgv),
     }));
   }, [realtorCity3]);
-  
+
+  const optionsSubsidiary = useMemo(
+    () => subsidiaries
+      .map(subsidiary => ({ label: subsidiary.name, value: subsidiary.id })),
+    [subsidiaries]
+  );
+
+  const handleSelectedSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target;
+    handleSetSelectedSubsidiaries(value);
+  }, [handleSetSelectedSubsidiaries]);
+
+  const types = [selectedSubsidiaryData?.sales.types.new || 0, selectedSubsidiaryData?.sales.types.used || 0];
+
+  const typeRealty = selectedSubsidiaryData?.sales.properties.filter(item => item.quantity > 0).map(item => (
+    {label: item.property, value: item.quantity}
+  ));
+
+  const origins = selectedSubsidiaryData?.sales.origins.filter(item => item.value > 0).map(item => (
+    { label: item.origin, value: item.value }
+  ));
+
+  const neighborhoods = selectedSubsidiaryData?.sales.neighborhoods.filter(item => item.quantity > 0).map(item => ({ label: item.neighborhood, value: item.quantity}));
+
   return (
     <DashbordLayout>
       <Container>
@@ -217,8 +222,15 @@ const DashboardTime: React.FC = () => {
           <Select
             options={years}
             nameLabel='Ano'
-            defaultValue={''}
+            defaultValue={year}
             onChange={handleSelectedYear}
+          />
+
+          <Select
+            options={optionsSubsidiary}
+            nameLabel='Filiais'
+            defaultValue={selectedSubsidiary}
+            onChange={handleSelectedSubsidiary}
           />
         </Filter>
 
@@ -246,7 +258,7 @@ const DashboardTime: React.FC = () => {
             />
           </GraficContainer>
           <GraficContainer>
-          <BarGraphics
+            <BarGraphics
               labels={[ranking2[0]?.name, ranking2[1]?.name, ranking2[2]?.name]}
               title={`Top 3 Corretor ${city2.city}`}
               formatter={transformValue}
@@ -262,11 +274,33 @@ const DashboardTime: React.FC = () => {
 
           </GraficContainer>
           <GraficContainer>
-            <PieGraphic
-              title='Class. do Imóvel'
-              labels={['Construtoras', 'Usados']}
-              data={[allTypes.new, allTypes.used]}
+            <PieGraphic 
+              title='Class. do Imóvel' 
+              labels={['Novos', 'Usados']} 
+              data={types}
               formatter={transformPorcent}
+             />
+             <PieGraphic 
+              title='Tipo do Imóvel' 
+              labels={typeRealty?.map(item => item.label) || []} 
+              data={typeRealty?.map(item => item.value) || []}
+              formatter={transformPorcent}
+             />
+          </GraficContainer>
+          <GraficContainer>
+            <BarGraphics
+              title='Bairros que mais vendem'
+              labels={neighborhoods?.map(item => item.label) || []}
+              data={neighborhoods?.map(item => item.value) || []}
+              formatter={transformNumberInString}
+            />
+          </GraficContainer>
+          <GraficContainer>
+            <BarGraphics
+              title='Origem da Venda'
+              labels={origins?.map(item => item.label) || []}
+              data={origins?.map(item => item.value) || []}
+              formatter={transformValue}
             />
           </GraficContainer>
         </Main>
