@@ -82,7 +82,6 @@ const RankingGeneral: React.FC = () => {
       vgv: formatPrice(Number(r.vgv)),
     }));
   }, [realtors]);
-
   const handleSelectMonth = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       if (Number(event.target.value) > 0) {

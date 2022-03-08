@@ -64,6 +64,7 @@ const Select: React.FC<SelectProps> = ({
         </IconContainer>
 
         <select onFocus={handleInputFocus} onBlur={handleInputBlur} {...rest}>
+          <option value="" disabled>Selecione</option>
           {options.map(option => (
             <option key={option.value} value={option.value}>
               {option.label}

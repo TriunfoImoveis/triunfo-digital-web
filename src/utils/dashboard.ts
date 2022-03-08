@@ -39,18 +39,18 @@ export const transformPorcent = (value: number) => {
 }
 
 export const labelsMonth = [
-  'Janeiro',  
-  'Fevereiro', 
-  'Março',  
-  'Abril', 
-  'Maio', 
-  'Junho', 
-  'Julho', 
-  'Agosto', 
-  'Setembro', 
-  'Outubro', 
-  'Novembro', 
-  'Dezembro'
+  'JAN',  
+  'Fev', 
+  'Mar',  
+  'ABR', 
+  'MAI', 
+  'JUN', 
+  'JUL', 
+  'AGO', 
+  'SET', 
+  'OUT', 
+  'NOV', 
+  'DEZ'
 ];
 
 export const labelClassImovel = [
@@ -63,3 +63,19 @@ export const labelTipoImovel = [
   'Apartamento',
   'Casa em condomínio'
 ];
+
+export const isEmptyObject = obj => {
+  if (obj == null || typeof obj === 'string') {
+    return true;
+  }
+
+  if (obj.keys !== 'undefined') {
+    return Object.keys(obj).length === 0;
+  }
+
+  return true;
+};
+
+export const calculationPorcent = (partial: number, total: number) => {
+  return (100 * partial) / total;
+}

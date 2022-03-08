@@ -34,11 +34,11 @@ const MenuDashboard: React.FC = () => {
         <OptionsContainer>
           <Option to="/dashboard/vendas">
           <DashboardIcon />
-            <span>Dashboard Vendas</span>
+            <span>Dashboard Corretores</span>
           </Option>
-          <Option to="/adm/lista-construtoras">
+          <Option to="/dashboard/filial">
           <DashboardIcon />
-            <span>Dashboard Comercial</span>
+            <span>Dashboard Filiais</span>
           </Option>
         </OptionsContainer>
       </Content>
