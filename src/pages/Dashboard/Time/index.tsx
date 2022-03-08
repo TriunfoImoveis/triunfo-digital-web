@@ -23,6 +23,7 @@ import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
 
 interface IDashboardData {
   ticket_medium: number;
+  quantity_sales: number;
   comission: {
     total: number;
     months: {
@@ -112,7 +113,7 @@ const DashboardTime: React.FC = () => {
   const qtdSale = useMemo(() => {
     let quanty = 0;
     if (subsidiary1 && subsidiary2 && subsidiary3 !== undefined) {
-      quanty = subsidiary1?.vgv.quantity + subsidiary2?.vgv.quantity + subsidiary3?.vgv.quantity;
+      quanty = subsidiary1?.quantity_sales + subsidiary2?.quantity_sales + subsidiary3?.quantity_sales;
     }
 
     return quanty;
@@ -160,10 +161,14 @@ const DashboardTime: React.FC = () => {
   const allRealtors = useCallback(() => {
     if (realtorsSLZ !== undefined && realtorsFTZ !== undefined && realtorsTRZ !== undefined) {
       const realtors = realtorsSLZ.concat(realtorsFTZ, realtorsTRZ);
+      const sortbyVGV = realtors.sort((a, b) => {
+        return a.vgv >  b.vgv ? -1 : (a.vgv < b.vgv) ? 1 : 0;
+      })
+
       setRealtorCity1(realtorsSLZ)
       setRealtorCity2(realtorsTRZ)
       setRealtorCity3(realtorsFTZ)
-      setRealtors(realtors);
+      setRealtors(sortbyVGV);
     }
   }, [realtorsSLZ, realtorsFTZ, realtorsTRZ]);
 
@@ -239,7 +244,9 @@ const DashboardTime: React.FC = () => {
               formatter={transformValue}
               data={ranking1?.map(item => Number(item.vgv)) || []}
             />
-            <BarGraphics
+          </GraficContainer>
+          <GraficContainer>
+          <BarGraphics
               labels={[ranking2[0]?.name, ranking2[1]?.name, ranking2[2]?.name]}
               title={`Top 3 Corretor ${city2.city}`}
               formatter={transformValue}
