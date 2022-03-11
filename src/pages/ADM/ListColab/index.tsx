@@ -3,13 +3,10 @@ import { Link } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
 import AdmLayout from '../../Layouts/Adm';
-import { Search } from '../../../assets/images';
 import {
   FiltersContainer,
-  FiltersTop,
   FiltersBotton,
   FiltersBottonItems,
-  Input,
   Content,
   SaleTableContainer,
   HeaderItem,
