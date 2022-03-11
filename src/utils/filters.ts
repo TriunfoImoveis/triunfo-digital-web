@@ -90,19 +90,20 @@ export const filterUserForSubsidiary = (
   users: IUser[],
   subsidiary: string,
 ): IUser[] => {
-  return users.filter(user => user.subsidiary.id === subsidiary);
+  console.log({subsidiary})
+  return users.filter(user => user.subsidiary.id === subsidiary && user);
 };
 export const filterUserForDepartament = (
   users: IUser[],
   departament: string,
 ): IUser[] => {
-  return users.filter(user => user.departament.id === departament);
+  return users.filter(user => user.departament.id === departament && user);
 };
 export const filterUserForOffice = (
   users: IUser[],
   office: string,
 ): IUser[] => {
-  return users.filter(user => user.office.id === office);
+  return users.filter(user => user.office.name === office && users);
 };
 
 export const formatTextStatus = (textStaus: string): string => {
