@@ -34,6 +34,7 @@ interface IDepartament {
 interface ISubsidiary {
   id: string;
   city: string;
+  name: string;
 }
 interface IOffice {
   id: string;
@@ -59,7 +60,8 @@ interface IUser {
 }
 const ListColab: React.FC = () => {
   const [selectedSubsidiary, setSelectedSubsidiary] = useState('');
-  const [selectedOffice, setSelectedOffice] = useState('Corretor');
+  const [selectedOffice, setSelectedOffice] = useState('0');
+  const [selectedDepartament, setSelectedDepartament] = useState('0');
   const { data: users } = useFetch<IUser[]>('/users');
   const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
   const { data: officies } = useFetch<IOffice[]>(`/office`);
@@ -71,63 +73,42 @@ const ListColab: React.FC = () => {
   useEffect(() => {
     users && setListUsers(users);
   }, [users]);
-  const filterUsers = (
-    users: IUser[],
-    typeFilter: 'office' | 'departament' | 'subsidiary',
-  ) => {
-    switch (typeFilter) {
-      case 'office': {
-        return filterUserForOffice(users, typeFilter);
-      }
-      case 'departament': {
-        return filterUserForDepartament(users, typeFilter);
-      }
-      case 'subsidiary': {
-        return filterUserForSubsidiary(users, typeFilter);
-      }
-      default:
-        break;
-    }
-  };
-
-  const handleSelectedSubsidiary = async (
+  
+  const handleSelectedSubsidiary = (
     event: ChangeEvent<HTMLSelectElement>,
   ) => {
     const { value } = event.target;
     setSelectedSubsidiary(value);
     if (users) {
-      const list = filterUsers(users, 'subsidiary');
+      const list = filterUserForSubsidiary(users, value);
       setListUsers(list);
     }
   };
-  const handleSelectedOffice = async (
+  const handleSelectedOffice = (
     event: ChangeEvent<HTMLSelectElement>,
   ) => {
     const { value } = event.target;
     setSelectedOffice(value);
     if (users) {
-      const list = filterUsers(users, 'office');
+      console.log({value})
+      const list = filterUserForOffice(users, value);
       setListUsers(list);
     }
   };
-
-  const searchUserByName = async (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
+  const handleSelecedDepartament = (
+    event: ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const { value } = event.target;
+    setSelectedDepartament(value)
+    if (users) {
+      const list = filterUserForDepartament(users, value);
+      setListUsers(list);
+    }
   };
 
   return (
     <AdmLayout>
       <FiltersContainer>
-        <FiltersTop>
-          <Input>
-            <Search />
-            <input
-              type="text"
-              placeholder="Buscar por corretor"
-              onChange={searchUserByName}
-            />
-          </Input>
-        </FiltersTop>
         <FiltersBotton>
           <FiltersBottonItems>
             <span>Cidade: </span>
@@ -137,7 +118,7 @@ const ListColab: React.FC = () => {
               </option>
               {subsidiaries?.map(subsidary => (
                 <option key={subsidary.id} value={subsidary.id}>
-                  {subsidary.city}
+                  {subsidary.name}
                 </option>
               ))}
             </select>
@@ -145,7 +126,7 @@ const ListColab: React.FC = () => {
 
           <FiltersBottonItems>
             <span>Departamento: </span>
-            <select defaultValue="0">
+            <select defaultValue={selectedDepartament} onChange={handleSelecedDepartament}>
               <option value="0" disabled>
                 Todas
               </option>
