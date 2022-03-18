@@ -98,7 +98,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
     subsidiary: '',
     cap: '',
   } as Comission);
-  const [editDivisionModal, setEditDivisionModal] = useState(false);
+  const [editDivisionModal, setEditDivisionModal] = useState(true);
   const { divisionData, calcDivision, sald, comission } = useCalculator();
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
@@ -367,6 +367,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                 name="valuePlot"
                 type="text"
                 defaultValue={comission.valueBRL}
+                disabled
               />
             </div>
             <div>
@@ -375,7 +376,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             </div>
             <div>
               <span>Debito ISS</span>
-              <Input mask="currency" name="issValue" type="text" />
+              <Input mask="currency" name="issValue" type="text" disabled />
             </div>
             <div>
               <span>Taxa total do Imposto NF</span>
@@ -387,7 +388,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
             </div>
             <div>
               <span>Recolhimento de Imposto</span>
-              <Input name="sald" type="text" />
+              <Input name="sald" type="text" disabled/>
             </div>
           </Form>
         </Asaid>
@@ -428,6 +429,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={comissionBrute.realtor}
+                          disabled
                         />
                       </td>
                       <td>
@@ -436,6 +438,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={porcentImpost}
+                          disabled
                         />
                       </td>
                       <td>
@@ -444,6 +447,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={impostValue.realtor}
+                          disabled
                         />
                       </td>
                       <td className="comission">
@@ -478,6 +482,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={comissionBrute.cap}
+                          disabled
                         />
                       </td>
                       <td>
@@ -486,6 +491,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={porcentImpost}
+                          disabled
                         />
                       </td>
                       <td>
@@ -494,6 +500,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={impostValue.cap}
+                          disabled
                         />
                       </td>
                       <td className="comission">
@@ -527,6 +534,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                         type="text"
                         className="input-background-dark"
                         defaultValue={comissionBrute.coordinator}
+                        disabled
                       />
                     </td>
                     <td>
@@ -535,6 +543,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                         type="text"
                         className="input-background-dark"
                         defaultValue={porcentImpost}
+                        disabled
                       />
                     </td>
                     <td>
@@ -543,6 +552,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                         type="text"
                         className="input-background-dark"
                         defaultValue={impostValue.coordinator}
+                        disabled
                       />
                     </td>
                     <td className="comission">
@@ -575,6 +585,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           name="impostCoordinator"
                           type="text"
                           defaultValue={comissionBrute.director}
+                          disabled
                         />
                       </td>
                       <td>
@@ -583,6 +594,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={porcentImpost}
+                          disabled
                         />
                       </td>
                       <td>
@@ -591,6 +603,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                           type="text"
                           className="input-background-dark"
                           defaultValue={impostValue.director}
+                          disabled
                         />
                       </td>
                       <td className="comission">
@@ -622,6 +635,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                       type="text"
                       className="input-background-dark"
                       defaultValue={comissionBrute.subsidiary}
+                      disabled
                     />
                   </td>
                   <td>
@@ -630,6 +644,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                       type="text"
                       className="input-background-dark"
                       defaultValue={porcentImpost}
+                      disabled
                     />
                   </td>
                   <td>
@@ -638,6 +653,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
                       type="text"
                       className="input-background-dark"
                       defaultValue={impostValue.subsidiary}
+                      disabled
                     />
                   </td>
                   <td className="comission">
