@@ -72,7 +72,7 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
     subsidiary: '',
     cap: '',
   } as Comission);
-  const [editDivisionModal, setEditDivisionModal] = useState(false);
+  const [editDivisionModal, setEditDivisionModal] = useState(true);
   const { divisionData, calcDivision, sald, comission } = useCalculator();
   const toogleEditDivisionModal = useCallback(() => {
     setEditDivisionModal(!editDivisionModal);
@@ -244,6 +244,7 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
                   name="builder"
                   type="text"
                   defaultValue={comission.builder}
+                  disabled
                 />
               </div>
             )}
@@ -254,6 +255,7 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
                 name="valuePlot"
                 type="text"
                 defaultValue={comission.valueBRL}
+                disabled
               />
             </div>
           </Form>
