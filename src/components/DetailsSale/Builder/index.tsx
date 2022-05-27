@@ -17,6 +17,8 @@ import api from '../../../services/api';
 import { SaleData, Legend, ButtonGroup } from '../styles';
 import getValidationErros from '../../../utils/getValidationErros';
 
+import theme from '../../../styles/theme';
+
 interface IBuilderProps {
   status: string;
   builder: {
@@ -98,7 +100,7 @@ const Builder: React.FC<IBuilderProps> = ({ builder, status, uf }) => {
             <legend>CONSTRUTORA</legend>
             {status !== 'CAIU' ? (
               <button type="button" onClick={() => setEdit(!edit)}>
-                <BiEditAlt size={20} color="#C32925" />
+                <BiEditAlt size={20} color={theme.colors.primary} />
                 <span>editar</span>
               </button>
             ) : null}

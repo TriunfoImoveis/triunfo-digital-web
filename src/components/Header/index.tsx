@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { IoIosLogOut } from 'react-icons/io';
 import { useAuth } from '../../context/AuthContext';
 import {
-  LogoHeader,
+  LogoTriunfoSmall,
   RegisterSellIcon,
   DashboardIcon,
   Realter,
@@ -33,7 +33,7 @@ const Header: React.FC<IHeaderProps> = ({ type = 'realtor' }) => {
   return (
     <Container>
       <Link to="/menu">
-        <LogoHeader />
+        <LogoTriunfoSmall />
       </Link>
       {type === 'adm' ? (
         <NavBarContainer>

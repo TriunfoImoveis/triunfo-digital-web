@@ -17,6 +17,9 @@ import getValidationErros from '../../../utils/getValidationErros';
 import { valiateDate } from '../../../utils/validateDate';
 import { DateYMD, unMaked } from '../../../utils/unMasked';
 
+import theme from '../../../styles/theme';
+
+
 interface IPropertyProps {
   status: string;
   clientBuyer: {
@@ -149,7 +152,7 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
             <legend>COMPRADOR</legend>
             {status !== 'CAIU' ? (
               <button type="button" onClick={() => setEdit(!edit)}>
-                <BiEditAlt size={20} color="#C32925" />
+                <BiEditAlt size={20} color={theme.colors.primary} />
                 <span>editar</span>
               </button>
             ) : null}

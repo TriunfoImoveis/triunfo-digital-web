@@ -26,6 +26,8 @@ import { useFetch } from '../../../../../hooks/useFetch';
 import NotFound from '../../../../../components/Errors/NotFound';
 import { useAuth } from '../../../../../context/AuthContext';
 
+import theme from '../../../../../styles/theme';
+
 interface ISale {
   id: string;
   realty_ammount: string;
@@ -174,7 +176,7 @@ const VisionDirector: React.FC = () => {
       <Content>
         {!sales ? (
           <LoadingContainer>
-            <Loader type="Bars" color="#c32925" height={100} width={100} />
+            <Loader type="Bars" color={theme.colors.gold} height={100} width={100} />
           </LoadingContainer>
         ) : listSales.length === 0 ? (
           <NotFound />
@@ -200,7 +202,7 @@ const VisionDirector: React.FC = () => {
                 <SaleItem>{sale.dateSale}</SaleItem>
                 <SaleItem>
                   <Link to={`/adm/detalhes-vendas/${sale.id}`}>
-                    <FaPlus size={15} color="#c32925" />
+                    <FaPlus size={15} color={theme.colors.primary} />
                     Detalhes
                   </Link>
                 </SaleItem>

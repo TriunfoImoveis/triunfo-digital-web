@@ -13,6 +13,9 @@ import { unMaked } from '../../../utils/unMasked';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 
+import theme from '../../../styles/theme';
+
+
 interface IPropertyProps {
   status: string;
   clientbuyer: {
@@ -112,7 +115,7 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
             <legend>VENDEDOR</legend>
             {status !== 'CAIU' ? (
               <button type="button" onClick={() => setEdit(!edit)}>
-                <BiEditAlt size={20} color="#C32925" />
+                <BiEditAlt size={20} color={theme.colors.primary} />
                 <span>editar</span>
               </button>
             ) : null}

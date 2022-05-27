@@ -1,4 +1,6 @@
 export { ReactComponent as Logo } from './logo-vertical.svg';
+export { ReactComponent as LogoTriunfo } from './logo-azul.svg';
+export { ReactComponent as LogoTriunfoSmall } from './logo-azul-small.svg';
 export { ReactComponent as LogoHeader } from './logo-horizontal.svg';
 export { ReactComponent as ArrowDown } from './arrow.svg';
 export { ReactComponent as RankingIcon } from './ranking-geral.svg';

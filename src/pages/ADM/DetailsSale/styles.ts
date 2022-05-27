@@ -6,7 +6,7 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #fff;
+  background-color: ${({ theme }) => theme.colors.secondary};
 
   h1 {
     margin-top: 2.4rem;
@@ -39,7 +39,7 @@ export const SaleData = styled.div`
       font-weight: bold;
       font-size: 20px;
       line-height: 23px;
-      color: #c32925;
+      color: ${({ theme }) => theme.colors.primary}; 
       margin-bottom: 2.5rem;
     }
 
@@ -55,7 +55,7 @@ export const SaleData = styled.div`
       margin-left: 2rem;
       width: 97%;
       display: flex;
-      align-items: center;
+      align-items: center; 
       justify-content: center;
       border: 0;
       outline: 0;
@@ -88,7 +88,7 @@ export const Legend = styled.div`
     font-weight: bold;
     font-size: 20px;
     line-height: 23px;
-    color: #c32925;
+    color: ${({ theme }) => theme.colors.primary};
     margin-bottom: 2.5rem;
   }
 
@@ -159,7 +159,7 @@ export const ButtonGroup = styled.div`
 
 export const PaymentInstallments = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: column; 
 
   > span {
     font-size: 1.6rem;

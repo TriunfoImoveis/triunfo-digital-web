@@ -1,9 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { IoIosLogOut } from 'react-icons/io';
 import { Link } from 'react-router-dom';
-import { LogoHeader } from '../../../assets/images';
+import { LogoTriunfoSmall } from '../../../assets/images';
 
 import LogoutModal from '../../ReactModal/LogoutModal';
+
+import theme from '../../../styles/theme';
 
 import { Container, NavBarContainer, NavItemContent } from './styles';
 
@@ -15,12 +17,12 @@ const SimpleHeader: React.FC = () => {
   return (
     <Container>
       <Link to="/menu">
-        <LogoHeader />
+        <LogoTriunfoSmall />
       </Link>
       <NavBarContainer>
         <NavItemContent>
           <button type="button" onClick={toggleLogoutModal}>
-            <IoIosLogOut size={30} color="#C32925" />
+            <IoIosLogOut size={30} color={theme.colors.primary} />
             <span>Sair</span>
           </button>
         </NavItemContent>

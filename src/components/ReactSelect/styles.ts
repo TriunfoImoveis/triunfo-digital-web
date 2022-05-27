@@ -86,7 +86,7 @@ export const Container = styled.div<ContainerProps>`
   }
 
   .select__indicators {
-    background-color: ${({ theme }) => theme.colors.danger};
+    background-color: ${({ theme }) => theme.colors.primary};
     border-radius: 0 0.4rem 0.4rem 0;
     cursor: pointer;
     > span {
@@ -115,7 +115,7 @@ export const Container = styled.div<ContainerProps>`
   ${props =>
     props.isErrored &&
     css`
-      border-color: #c53030;
+      border-color: ${({ theme }) => theme.colors.danger};
     `}
   ${props =>
     props.isFocused &&

@@ -5,6 +5,8 @@ import { Camera } from '../../../assets/images';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 
+import theme from '../../../styles/theme';
+
 import {
   ProfileContainer,
   BasicInfo,
@@ -60,7 +62,7 @@ const UserProfile: React.FC = () => {
 
           {loadingImg ? (
             <LoadingContainer>
-              <Loader type="Bars" color="#c32925" height={50} width={50} />
+              <Loader type="Bars" color={theme.colors.primary} height={50} width={50} />
             </LoadingContainer>
           ) : (
             <label htmlFor="avatar">

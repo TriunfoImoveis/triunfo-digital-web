@@ -36,6 +36,8 @@ declare module 'styled-components' {
 
       buttonAddColor?: string;
       buttonAddColorAlpha?: string;
+
+      gold?: string;
     };
     fontSize: {
       tiny?: string;
