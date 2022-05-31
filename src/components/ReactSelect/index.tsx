@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Select, { Props as SelectProps, OptionTypeBase } from 'react-select';
 import { useField } from '@unform/core';
 import { FaMinus, FaPlus } from 'react-icons/fa';
+
+import theme from '../../styles/theme';
 import { Container, ContainerWrapper, AddButton, Error } from './styles';
 
 interface Props extends SelectProps<OptionTypeBase, true | false> {
@@ -76,12 +78,12 @@ const SelectSimple: React.FC<Props> = ({
         />
         {add && (
           <AddButton type="button" onClick={addRealtors}>
-            <FaPlus size={20} color="#FFF" />
+            <FaPlus size={20} color={theme.colors.gold} />
           </AddButton>
         )}
         {remove && (
           <AddButton type="button" onClick={removeRealtors}>
-            <FaMinus size={20} color="#FFF" />
+            <FaMinus size={20} color={theme.colors.gold} />
           </AddButton>
         )}
       </Container>

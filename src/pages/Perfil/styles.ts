@@ -35,7 +35,7 @@ export const NavItemContent = styled.div`
   }
   > svg {
     path {
-      fill: #c32925;
+      fill: ${({ theme }) => theme.colors.primary};
     }
   }
   > a,

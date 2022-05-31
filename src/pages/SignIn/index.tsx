@@ -13,10 +13,12 @@ import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 
-import { Logo } from '../../assets/images';
+import { LogoTriunfo } from '../../assets/images';
 import { Container, Content, ForgotPassword } from './styles';
 import Select from '../../components/Select';
 import api from '../../services/api';
+
+import theme from '../../styles/theme';
 
 interface ISignData {
   email: string;
@@ -93,7 +95,7 @@ const SignIn: React.FC = () => {
   return (
     <Container>
       <Content>
-        <Logo />
+        <LogoTriunfo />
         <h1>Login</h1>
         <Form ref={formRef} onSubmit={handleSubmit}>
           <Input
@@ -112,9 +114,9 @@ const SignIn: React.FC = () => {
           />
 
           <Select nameLabel="Cargo" name="office" options={options} />
-          <Button type="submit">
+          <Button type="submit" color={theme.colors.primary}>
             {loading ? (
-              <Loader type="Bars" color="#fff" height={30} width={30} />
+              <Loader type="Bars" color={theme.colors.gold} height={30} width={30} />
             ) : (
               'ENTRAR'
             )}

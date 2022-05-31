@@ -49,17 +49,17 @@ export const FiltersBottonItems = styled.div`
     font-style: normal;
     font-weight: 500;
     font-size: 2rem;
-    color: #c32925;
+    color: ${({ theme }) => theme.colors.primary};
   }
   select {
     z-index: 10;
     width: 17rem;
     height: 4.8rem;
 
-    border: 0.1rem solid #818181;
+    border: 0.1rem solid ${({ theme }) => theme.colors.borderColor};
     box-sizing: border-box;
     border-radius: 0.4rem;
-    color: #818181;
+    color: ${({ theme }) => theme.colors.borderColor};
     padding: 0 0.5rem;
 
     font-size: 1.8rem;

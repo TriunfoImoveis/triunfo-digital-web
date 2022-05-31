@@ -216,7 +216,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           <Button type="reset" className="cancel">
             Cancelar
           </Button>
-          <Button type="submit" className="next">
+          <Button type="submit" className="next" >
             {loading ? '...' : 'Próximo'}
           </Button>
         </ButtonGroup>

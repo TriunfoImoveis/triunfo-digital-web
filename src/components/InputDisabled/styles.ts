@@ -32,8 +32,8 @@ export const Container = styled.div<ContainerProps>`
   ${props =>
     props.status === 'VENCIDO' &&
     css`
-      background-color: ${({ theme }) => theme.colors.primaryAlpha};
-      border-color: ${({ theme }) => theme.colors.primaryAlpha};
+      background-color: ${({ theme }) => theme.colors.dangerLight};
+      border-color: ${({ theme }) => theme.colors.dangerLight};
     `}
   ${props =>
     props.status === 'LIQUIDADO' &&

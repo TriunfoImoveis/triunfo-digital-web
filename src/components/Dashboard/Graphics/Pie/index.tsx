@@ -4,6 +4,8 @@ import { Pie } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Grafic, TitleGrafic} from './styles';
 
+import theme from '../../../../styles/theme';
+
 interface PieGraphicsProps {
     title: string;
     labels: Array<String>;
@@ -48,14 +50,14 @@ const PieGraphic: React.FC<PieGraphicsProps> = ({data: dataPie, formatter, label
           {
             data: dataPie,
             backgroundColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
+                `${theme.colors.gold}`,
+                `${theme.colors.primary}`,
+                `${theme.colors.orange}`
             ],
             borderColor: [
-              'rgba(255, 99, 132, 1)',
-              'rgba(54, 162, 235, 1)',
-              'rgba(255, 206, 86, 1)',
+              `${theme.colors.gold}`,
+              `${theme.colors.primary}`,
+              `${theme.colors.gold}`
             ],
             borderWidth: 2,
           },

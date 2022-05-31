@@ -15,6 +15,9 @@ import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 
+import theme from '../../../styles/theme';
+
+
 interface IBGECityResponse {
   nome: string;
 }
@@ -161,7 +164,7 @@ const Property: React.FC<IPropertyProps> = ({
             <legend>IMÓVEL</legend>
             {status !== 'CAIU' ? (
               <button type="button" onClick={() => setEdit(!edit)}>
-                <BiEditAlt size={20} color="#C32925" />
+                <BiEditAlt size={20} color={theme.colors.primary} />
                 <span>editar</span>
               </button>
             ) : null}

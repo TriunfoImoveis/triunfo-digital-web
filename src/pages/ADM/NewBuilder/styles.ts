@@ -23,7 +23,7 @@ export const Container = styled.div`
       border: 0;
       outline: 0;
       height: 6.4rem;
-      background: #6fcf97;
+      background: ${({ theme }) => theme.colors.success};
       box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
       border-radius: 4px;
       margin-bottom: 1.6rem;
@@ -49,7 +49,7 @@ export const InfoLogin = styled.div`
       font-weight: bold;
       font-size: 20px;
       line-height: 23px;
-      color: #c32925;
+      color: ${({ theme }) => theme.colors.primary};
       margin-bottom: 2.5rem;
     }
 
@@ -75,7 +75,7 @@ export const AdmissionsInfo = styled.div`
       font-weight: bold;
       font-size: 20px;
       line-height: 23px;
-      color: #c32925;
+      color: ${({ theme }) => theme.colors.primary};
       margin-bottom: 2.5rem;
     }
 
@@ -126,12 +126,18 @@ export const ButtonGroup = styled.div`
     box-sizing: border-box;
     border-radius: 4px;
 
+    > svg {
+      path {
+        fill: ${({ theme }) => theme.colors.primary};
+      }
+    }
+
     > span {
       margin-left: 3.7rem;
       font-size: 24px;
       line-height: 28px;
 
-      color: #c32925;
+      color: ${({ theme }) => theme.colors.primary};
     }
   }
 

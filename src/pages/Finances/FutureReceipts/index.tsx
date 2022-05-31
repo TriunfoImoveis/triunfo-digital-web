@@ -25,6 +25,7 @@ import {
   FilterButtonGroup,
   FiltersBottonItems,
 } from './styles';
+import theme from '../../../styles/theme';
 import NotFound from '../../../components/Errors/NotFound';
 import EntryRevenue from '../../../components/ReactModal/EntryRevenue';
 import { filterDay, filterMonth, filterTimeSlot } from '../../../utils/filters';
@@ -757,7 +758,7 @@ const FutureReceipts: React.FC = () => {
                                   className="details"
                                   onClick={() => handleOpenModal(item)}
                                 >
-                                  <AiOutlinePlus color="#C32925" />
+                                  <AiOutlinePlus color={theme.colors.primary} />
                                 </button>
                               </td>
                             </tr>
@@ -808,7 +809,7 @@ const FutureReceipts: React.FC = () => {
                                     handleOpenModalEntryRevenue(item)
                                   }
                                 >
-                                  <AiOutlinePlus color="#C32925" />
+                                  <AiOutlinePlus color={theme.colors.primary} />
                                 </button>
                               </td>
                             </tr>
@@ -859,7 +860,7 @@ const FutureReceipts: React.FC = () => {
                                     handleOpenModalEntryRevenue(item)
                                   }
                                 >
-                                  <AiOutlinePlus color="#C32925" />
+                                  <AiOutlinePlus color={theme.colors.primary} />
                                 </button>
                               </td>
                             </tr>

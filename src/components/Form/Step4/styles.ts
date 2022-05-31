@@ -67,13 +67,19 @@ export const ButtonGroup = styled.div`
     font-size: 1.6rem;
     line-height: 1.9rem;
 
-    color: #ffffff;
+    color: ${({ theme }) => theme.colors.gold};
   }
 
   .cancel {
     background: ${({ theme }) => theme.colors.background};
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.gold};
     border: 0.1rem solid ${({ theme }) => theme.colors.primary};
+  }
+
+  .next {
+    &:hover {
+      background: ${({ theme }) => theme.colors.primaryAlpha};
+    }
   }
 
   @media (max-width: 425px) {
@@ -172,7 +178,7 @@ export const AddButton = styled.button`
   height: 4.8rem;
   border: 0;
   border-radius: 0 0.4rem 0.4rem 0;
-  background: ${({ theme }) => theme.colors.danger};
+  background: ${({ theme }) => theme.colors.primary};
 
   &.valid {
     margin-top: 2.8rem;

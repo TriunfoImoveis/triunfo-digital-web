@@ -23,6 +23,8 @@ import {
   filterUserForSubsidiary,
 } from '../../../utils/filters';
 
+import theme from '../../../styles/theme';
+
 interface IDepartament {
   id: string;
   name: string;
@@ -165,7 +167,7 @@ const ListColab: React.FC = () => {
           </SaleHeader>
           {!users ? (
             <LoadingContainer>
-              <Loader type="Bars" color="#c32925" height={100} width={100} />
+              <Loader type="Bars" color={theme.colors.gold} height={100} width={100} />
             </LoadingContainer>
           ) : (
             listUsers?.map(user => (
@@ -181,7 +183,7 @@ const ListColab: React.FC = () => {
                 <SaleItem>{user.office.name}</SaleItem>
                 <SaleItem>
                   <Link to={`/adm/detalhes-colaborador/${user.id}`}>
-                    <BsPencil size={15} color="#c32925" />
+                    <BsPencil size={15} color={theme.colors.gold} />
                     Editar
                   </Link>
                 </SaleItem>

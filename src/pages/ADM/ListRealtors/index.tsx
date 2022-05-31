@@ -21,6 +21,7 @@ import {
 import { formatPrice } from '../../../utils/format';
 import { useFindRealtor } from '../../../hooks/findRealtor';
 import { useFilter } from '../../../context/FilterContext';
+import theme from '../../../styles/theme';
 
 interface IRealtorData {
   id: string;
@@ -114,7 +115,7 @@ const ListRealtors: React.FC = () => {
           {listRealtors?.map(realtor =>
             !realtors ? (
               <LoadingContainer>
-                <Loader type="Bars" color="#c32925" height={100} width={100} />
+                <Loader type="Bars" color={theme.colors.gold} height={100} width={100} />
               </LoadingContainer>
             ) : (
               <SaleBody key={realtor.id}>
@@ -128,7 +129,7 @@ const ListRealtors: React.FC = () => {
                 <SaleItem>{realtor.vgv}</SaleItem>
                 <SaleItem>
                   <Link to={`/adm/detalhes-colaborador/${realtor.id}`}>
-                    <BsPencil size={15} color="#c32925" />
+                    <BsPencil size={15} color={theme.colors.gold} />
                     Editar
                   </Link>
                 </SaleItem>

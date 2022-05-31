@@ -16,12 +16,14 @@ const AddAccount: React.FC = () => {
       <h2>ADICIONAR CONTAS</h2>
       <Header>
         <Button
+          colorsText='#FFF'
           onClick={() => setTypeAccount('FIXA')}
           active={typeAccount !== 'FIXA'}
         >
           FIXAS
         </Button>
         <Button
+          colorsText='#FFF'
           onClick={() => setTypeAccount('VARIAVEL')}
           active={typeAccount === 'FIXA'}
         >
