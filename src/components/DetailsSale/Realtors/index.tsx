@@ -17,6 +17,9 @@ import { Sync } from '../../../assets/images';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import getValidationErros from '../../../utils/getValidationErros';
 
+import theme from '../../../styles/theme';
+
+
 interface IRealtorsProps {
   status: string;
   saleType: string;
@@ -192,7 +195,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
               <legend>CORRETORES</legend>
               {status !== 'CAIU' ? (
                 <button type="button" onClick={() => setEdit(!edit)}>
-                  <BiEditAlt size={20} color="#C32925" />
+                  <BiEditAlt size={20} color={theme.colors.primary} />
                   <span>editar</span>
                 </button>
               ) : null}
@@ -257,7 +260,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
               <legend>CORRETORES</legend>
               {status !== 'CAIU' ? (
                 <button type="button" onClick={() => setEdit(!edit)}>
-                  <BiEditAlt size={20} color="#C32925" />
+                  <BiEditAlt size={20} color={theme.colors.primary} />
                   <span>editar</span>
                 </button>
               ) : null}

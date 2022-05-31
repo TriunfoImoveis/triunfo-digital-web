@@ -10,6 +10,7 @@ import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 import InputForm from '../../Input';
 import { Sync } from '../../../assets/images';
+import theme from '../../../styles/theme';
 
 import { LogonInfo, FormContent, Input } from './styles';
 
@@ -111,7 +112,7 @@ const UserUpdate: React.FC = () => {
         </FormContent>
         <button type="submit">
           {loading ? (
-            <Loader type="Bars" color="#C32925" height={30} width={30} />
+            <Loader type="Bars" color={theme.colors.primary} height={30} width={30} />
           ) : (
             <>
               <span>Atualizar</span>

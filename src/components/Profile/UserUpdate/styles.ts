@@ -34,6 +34,12 @@ export const LogonInfo = styled.div`
         font-weight: bold;
         color: ${({ theme }) => theme.colors.primary};
       }
+
+      > svg {
+        path {
+          fill: ${({ theme }) => theme.colors.primary};
+        }
+      }
     }
   }
 

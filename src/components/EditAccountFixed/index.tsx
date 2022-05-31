@@ -191,6 +191,7 @@ const EditAccountFixed: React.FC<EditAccountFixedProps> = ({ accountId }) => {
       </Form>
       <Button
         className="add-button"
+        colorsText='#FFF'
         onClick={() => formRef.current?.submitForm()}
       >
         <BsCheck />

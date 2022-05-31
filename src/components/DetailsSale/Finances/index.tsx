@@ -42,6 +42,8 @@ import { valiateDate } from '../../../utils/validateDate';
 import ValidAct from '../../ReactModal/ValidAct';
 import ValidInstallment from '../../ReactModal/ValidInstallment';
 
+import theme from '../../../styles/theme';
+
 interface IFinancesProps {
   status: string;
   sale: ISaleData;
@@ -264,7 +266,7 @@ const Finances: React.FC<IFinancesProps> = ({
               <legend>FINANÇAS</legend>
               {status !== 'CAIU' ? (
                 <button type="button" onClick={() => setEdit(!edit)}>
-                  <BiEditAlt size={20} color="#C32925" />
+                  <BiEditAlt size={20} color={theme.colors.primary} />
                   <span>editar</span>
                 </button>
               ) : null}
@@ -292,7 +294,7 @@ const Finances: React.FC<IFinancesProps> = ({
                   />
                   <div className="button-modal">
                     <ButtonModal type="button" onClick={toogleEditInstallments}>
-                      <VscEdit size={20} color="#C32925" />
+                      <VscEdit size={20} color={theme.colors.primary} />
                       <span>
                         {installments
                           ? 'Editar Parcelas'
@@ -374,7 +376,7 @@ const Finances: React.FC<IFinancesProps> = ({
 
                   <div className="button-modal">
                     <ButtonModal type="button" onClick={toogleEditInstallments}>
-                      <VscEdit size={20} color="#C32925" />
+                      <VscEdit size={20} color={theme.colors.primary} />
                       <span>
                         {installments
                           ? 'Editar Parcelas'

@@ -45,7 +45,7 @@ export const InfoContainer = styled.div`
     font-size: 3.2rem;
     line-height: 3.7rem;
 
-    color: #797777;
+    color: ${({ theme }) => theme.colors.gray};
     &.office {
       font-size: 2rem;
     }
@@ -76,7 +76,7 @@ export const OptionsContainer = styled.div`
 export const Option = styled(Link)`
   width: 100%;
   height: 20rem;
-  border: 0.2rem solid #c32925;
+  border: 0.2rem solid ${({ theme }) => theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,7 +91,7 @@ export const Option = styled(Link)`
     width: 10rem;
     height: 10rem;
     path {
-      fill: #c32925;
+      fill: ${({ theme }) => theme.colors.primary};
     }
   }
 
@@ -103,20 +103,21 @@ export const Option = styled(Link)`
     line-height: 3.7rem;
     text-align: center;
 
-    color: #c32925;
+    color: ${({ theme }) => theme.colors.primary};
   }
 
   &:hover {
-    background: #a11f1c;
+    text-decoration: none;
+    background: ${({ theme }) => theme.colors.primaryAlpha};
 
     > svg {
       path {
-        fill: #fff;
+        fill: ${({ theme }) => theme.colors.gold};
       }
     }
 
     span {
-      color: #fff;
+      color: ${({ theme }) => theme.colors.gold};
     }
   }
 

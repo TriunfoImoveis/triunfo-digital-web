@@ -37,10 +37,10 @@ export const NavItemContent = styled.div`
   padding-bottom: 1rem;
 
   &.active {
-    border-bottom: 3px solid #c32925;
+    border-bottom: 3px solid ${({ theme }) => theme.colors.primary};
   }
   &:hover {
-    border-bottom: 3px solid #c32925;
+    border-bottom: 3px solid ${({ theme }) => theme.colors.gold};
   }
 
   & + div {
@@ -49,7 +49,7 @@ export const NavItemContent = styled.div`
   > svg {
     width: 4rem;
     path {
-      fill: #c32925;
+      fill: ${({ theme }) => theme.colors.primary};
     }
   }
   > a,

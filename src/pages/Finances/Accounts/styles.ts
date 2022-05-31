@@ -21,7 +21,7 @@ export const Header = styled.div`
   width: 100%;
   h1 {
     font-size: 3.2rem;
-    color: #504c4c;
+    color: ${({ theme }) => theme.colors.gray};
   }
 `;
 
@@ -56,17 +56,17 @@ export const FiltersBottonItems = styled.div`
     font-style: normal;
     font-weight: 500;
     font-size: 2rem;
-    color: #c32925;
+    color:  ${({ theme }) => theme.colors.primary};
   }
   select {
     z-index: 10;
     width: 17rem;
     height: 4.8rem;
 
-    border: 0.1rem solid #818181;
+    border: 0.1rem solid  ${({ theme }) => theme.colors.borderColor};
     box-sizing: border-box;
     border-radius: 0.4rem;
-    color: #818181;
+    color:  ${({ theme }) => theme.colors.borderColor};
     padding: 0 0.5rem;
 
     font-size: 1.8rem;
@@ -128,7 +128,7 @@ export const Filter = styled.div`
   align-items: center;
   justify-content: space-between;
 
-  background-color: rgba(196, 196, 169, 0.2);
+  background-color: ${({ theme }) => theme.colors.grayAlpha};
   & + & {
     margin-left: 3rem;
   }
@@ -234,10 +234,10 @@ export const AccountContainer = styled.div`
 
   .nav-tabs .nav-link {
     padding: 0.5rem 3rem;
-    color: #504c4c;
+    color: ${({ theme }) => theme.colors.gray};
     font-size: 1.2rem;
     border-radius: 1rem 1rem 0 0;
-    border-color: rgba(195, 41, 37, 0.3);
+    border-color: ${({ theme }) => theme.colors.primaryAlpha};
     &:hover {
       border-color: ${({ theme }) => theme.colors.primary};
     }
@@ -249,7 +249,7 @@ export const TitlePane = styled.div`
   text-align: center;
   font-size: 1.6rem;
   font-weight: bold;
-  color: #504c4c;
+  color: ${({ theme }) => theme.colors.gray};
 `;
 
 export const Table = styled.table<TableProps>`
@@ -272,16 +272,16 @@ export const Table = styled.table<TableProps>`
     > tr {
       display: grid;
       grid-template-columns: repeat(${props => props.cols}, 140px);
-      border: 1px solid #504c4c;
+      border: 1px solid ${({ theme }) => theme.colors.gray};
 
       > th {
         display: block;
         width: 140px;
         font-size: 1.4rem;
         font-weight: 500;
-        color: #504c4c;
+        color: ${({ theme }) => theme.colors.gray};
         & + th {
-          border-left: 1px solid #504c4c;
+          border-left: 1px solid ${({ theme }) => theme.colors.gray};
         }
       }
     }
@@ -292,18 +292,18 @@ export const Table = styled.table<TableProps>`
     > tr {
       display: grid;
       grid-template-columns: repeat(${props => props.cols}, 1fr);
-      border-left: 1px solid #504c4c;
-      border-right: 1px solid #504c4c;
-      border-bottom: 1px solid #504c4c;
+      border-left: 1px solid ${({ theme }) => theme.colors.gray};
+      border-right: 1px solid ${({ theme }) => theme.colors.gray};
+      border-bottom: 1px solid ${({ theme }) => theme.colors.gray};
 
       > td {
         font-size: 1.6rem;
-        color: #504c4c;
+        color: ${({ theme }) => theme.colors.gray};
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         & + td {
-          border-left: 1px solid #504c4c;
+          border-left: 1px solid ${({ theme }) => theme.colors.gray};
         }
       }
       .border-none {
@@ -315,7 +315,7 @@ export const Table = styled.table<TableProps>`
 
       .total {
         padding: 1.2rem;
-        border-bottom: 1px solid #504c4c;
+        border-bottom: 1px solid ${({ theme }) => theme.colors.gray};
         font-size: 1.8rem;
         font-weight: 500;
       }

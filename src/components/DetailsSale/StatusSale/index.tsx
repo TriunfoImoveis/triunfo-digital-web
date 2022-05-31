@@ -13,6 +13,9 @@ import { ButtonGroup, Legend, SaleData } from '../styles';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
 
+import theme from '../../../styles/theme';
+
+
 interface StatusSaleProps {
   statusSale: string;
 }
@@ -64,7 +67,7 @@ const StatusSale: React.FC<StatusSaleProps> = ({ statusSale }) => {
             <legend>STATUS DA VENDA</legend>
             {statusSale !== 'CAIU' ? (
               <button type="button" onClick={() => setEdit(!edit)}>
-                <BiEditAlt size={20} color="#C32925" />
+                <BiEditAlt size={20} color={theme.colors.primary} />
                 <span>editar</span>
               </button>
             ) : null}

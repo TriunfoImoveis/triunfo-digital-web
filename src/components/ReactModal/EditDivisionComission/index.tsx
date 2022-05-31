@@ -166,6 +166,7 @@ const EditComissionDivision: React.FC<IModalProps> = ({
         </Form>
         <Button
           className="add-button"
+          colorsText="#FFF"
           onClick={() => formRef.current?.submitForm()}
         >
           <BsCheck />

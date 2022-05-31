@@ -112,6 +112,7 @@ const AddEntryDesp: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
         </Form>
         <Button
           className="add-button"
+          colorsText='#FFF'
           onClick={() => formRef.current?.submitForm()}
         >
           <BsCheck />

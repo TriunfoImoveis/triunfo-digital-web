@@ -88,7 +88,7 @@ const ExportCashFlow: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
                   <Input name='startDate' type='date' label='Data Inicial' />
                   <Input name='endDate' type='date' label='Data Final' />
 
-                  <Button type='submit' color="#40B236">Gerar o relatório</Button>
+                  <Button type='submit' color="#40B236" colorsText="#FFF">Gerar o relatório</Button>
                 </Form>
               </Container>
             </ContainerWrapper>
@@ -97,7 +97,7 @@ const ExportCashFlow: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
               <Container>
                 <p>Relatório gerado com sucesso, clique no botão para baixar!</p>
 
-                <Button color="#40B236">
+                <Button color="#40B236" colorsText="#FFF">
                   <a
                     href={linkDownloadReport}
                     target="_blank"

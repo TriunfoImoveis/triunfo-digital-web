@@ -41,10 +41,10 @@ const ValidAct: React.FC<ModalProps> = ({ isOpen, idSale, setIsOpen }) => {
           <strong>ATENÇÃO!!</strong>
           <p>Você esta realizando um operação inreverssível, tem certeza?</p>
           <ButtonGroup>
-            <Button color="#40B236" onClick={handlePaySignal}>
+            <Button color="#40B236" onClick={handlePaySignal} colorsText="#FFF">
               Sim
             </Button>
-            <Button onClick={setIsOpen}>Não</Button>
+            <Button onClick={setIsOpen} colorsText="#FFF">Não</Button>
           </ButtonGroup>
         </Container>
       </ContainerWrapper>

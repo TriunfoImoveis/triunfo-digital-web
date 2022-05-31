@@ -11,6 +11,8 @@ import {
   import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Bar } from 'react-chartjs-2';
 
+import theme from '../../../../styles/theme';
+
 
 import { Grafic, TitleGrafic } from './styles';
 
@@ -76,7 +78,7 @@ const data = {
     {
       label: 'Vendas',  
       data: dados,
-      backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      backgroundColor: `${theme.colors.gold}`,
     },
   ],
 };

@@ -62,7 +62,7 @@ export const SaleData = styled.div`
       font-weight: bold;
       font-size: 20px;
       line-height: 23px;
-      color: #c32925;
+      color: ${({ theme }) => theme.colors.primary};
       margin-bottom: 2.5rem;
     }
 
@@ -83,7 +83,7 @@ export const SaleData = styled.div`
       border: 0;
       outline: 0;
       height: 6.4rem;
-      background: #6fcf97;
+      background: ${({ theme }) => theme.colors.success};
       box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
       border-radius: 4px;
       margin-bottom: 1.6rem;
@@ -111,7 +111,7 @@ export const Legend = styled.div`
     font-weight: bold;
     font-size: 20px;
     line-height: 23px;
-    color: #c32925;
+    color: ${({ theme }) => theme.colors.primary};
     margin-bottom: 2.5rem;
   }
 
@@ -175,7 +175,13 @@ export const ButtonGroup = styled.div`
       font-size: 24px;
       line-height: 28px;
 
-      color: #c32925;
+      color: ${({ theme }) => theme.colors.primary};
+    }
+
+    > svg {
+      path {
+        fill: ${({ theme }) => theme.colors.primary}
+      }
     }
   }
 `;
@@ -219,7 +225,7 @@ export const AddButton = styled.button`
   height: 4.8rem;
   border: 0;
   border-radius: 0 0.4rem 0.4rem 0;
-  background: ${({ theme }) => theme.colors.primaryAlpha};
+  background: ${({ theme }) => theme.colors.danger};
 
   &.valid {
     margin-top: 2.8rem;

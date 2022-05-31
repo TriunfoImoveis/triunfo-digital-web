@@ -45,10 +45,10 @@ const ValidInstallment: React.FC<ModalProps> = ({
           <p>Você confirma que recebeu o pagamento da parcela!</p>
           <p>Você esta realizando um operação inreverssível, tem certeza?</p>
           <ButtonGroup>
-            <Button color="#40B236" onClick={handlePayPlot}>
+            <Button color="#40B236" onClick={handlePayPlot}  colorsText='#FFF'>
               Sim
             </Button>
-            <Button onClick={setIsOpen}>Não</Button>
+            <Button onClick={setIsOpen}  colorsText='#FFF'>Não</Button>
           </ButtonGroup>
         </Container>
       </ContainerWrapper>
