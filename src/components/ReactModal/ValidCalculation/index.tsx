@@ -123,11 +123,12 @@ const ValidCalculation: React.FC<ModalProps> = ({
           <ButtonGroup>
             <Button
               color="#40B236"
+              colorsText='#FFF'
               onClick={() => formRef.current?.submitForm()}
             >
               Sim
             </Button>
-            <Button onClick={setIsOpen}>Não</Button>
+            <Button onClick={setIsOpen}  colorsText='#FFF'>Não</Button>
           </ButtonGroup>
         </Container>
       </ContainerWrapper>

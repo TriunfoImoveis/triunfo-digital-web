@@ -30,6 +30,9 @@ declare module 'styled-components' {
       warning?: string;
       warningAlpha: string;
 
+      gray?: string;
+      grayAlpha?: string;
+
       background: string;
       textColor?: string;
       textColorAlpha?: string;

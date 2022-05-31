@@ -20,7 +20,9 @@ const theme: DefaultTheme = {
     textColorAlpha: 'rgba(121,119,119,0.5)',
     buttonAddColor: '#2d9cdb',
     buttonAddColorAlpha: 'rgba(45,156,219, 0.8)',
-    gold: '#BAA05C'
+    gold: '#BAA05C',
+    gray: '#707070',
+    grayAlpha: 'rgba(196, 196, 196, 0.2)'
   },
   fontSize: {
     tiny: '1.2rem',

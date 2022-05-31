@@ -12,8 +12,8 @@ export const Container = styled.div`
     border: none;
 
     svg:hover {
-      fill: red;
-      stroke: red;
+      fill: ${({ theme }) => theme.colors.gold};
+      stroke: ${({ theme }) => theme.colors.gold};
     }
   }
 `;

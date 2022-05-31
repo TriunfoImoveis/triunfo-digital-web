@@ -2,6 +2,7 @@ import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
 import Switch from 'react-switch';
 import { Form } from '@unform/web';
 import { AddEntry } from '../../../assets/images';
+import theme from '../../../styles/theme';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
 import ModalAddEntryCredit from '../../../components/ReactModal/AddEntryCredit';
@@ -714,8 +715,8 @@ const Balance: React.FC = () => {
               checked={checked}
               checkedIcon={false}
               uncheckedIcon={false}
-              onColor="#DC3545"
-              offColor="#DC3545"
+              onColor={theme.colors.gold}
+              offColor={theme.colors.gold}
             />
             <span>Entradas</span>
           </SwitchButton>

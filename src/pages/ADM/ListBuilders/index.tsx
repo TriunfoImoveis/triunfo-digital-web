@@ -4,6 +4,7 @@ import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
 import AdmLayout from '../../Layouts/Adm';
 import { Search } from '../../../assets/images';
+import theme from '../../../styles/theme';
 import {
   FiltersContainer,
   FiltersTop,
@@ -134,7 +135,7 @@ const ListBuilders: React.FC = () => {
           {builders.map(builder =>
             loading ? (
               <LoadingContainer>
-                <Loader type="Bars" color="#c32925" height={100} width={100} />
+                <Loader type="Bars" color={theme.colors.gold} height={100} width={100} />
               </LoadingContainer>
             ) : (
               <SaleBody key={builder.id}>
@@ -144,7 +145,7 @@ const ListBuilders: React.FC = () => {
                 <SaleItem>{builder.city}</SaleItem>
                 <SaleItem>
                   <Link to={`/adm/detalhes-construtora/${builder.id}`}>
-                    <BsPencil size={15} color="#c32925" />
+                    <BsPencil size={15} color={theme.colors.gold} />
                     Editar
                   </Link>
                 </SaleItem>

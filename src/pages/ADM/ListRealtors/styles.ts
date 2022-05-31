@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { darken } from 'polished';
+import theme from '../../../styles/theme';
 
 export const FiltersContainer = styled.div`
   width: 100%;
@@ -22,7 +23,7 @@ export const FiltersBotton = styled.div`
 export const Input = styled.div`
   display: flex;
   align-items: center;
-  background-color: rgba(196, 196, 196, 0.2);
+  background-color: ${({ theme }) => theme.colors.grayAlpha};
 
   width: 80rem;
   height: 4.4rem;
@@ -33,7 +34,7 @@ export const Input = styled.div`
     padding: 0.8rem;
     background: transparent;
     border: none;
-    color: #707070;
+    color: ${({ theme }) => theme.colors.gray};
     font-size: 2rem;
     z-index: 10;
   }
@@ -42,7 +43,7 @@ export const Input = styled.div`
 export const FilterDiv = styled.div`
   display: flex;
   align-items: center;
-  background-color: rgba(196, 196, 196, 0.2);
+  background-color: ${({ theme }) => theme.colors.grayAlpha};
   z-index: 10;
 
   width: 19rem;
@@ -55,7 +56,7 @@ export const FilterDiv = styled.div`
     background: transparent;
     border: 0;
     font-size: 2rem;
-    color: #707070;
+    color: ${({ theme }) => theme.colors.gray};
     padding: 0 1rem;
     z-index: 10;
   }
@@ -82,7 +83,7 @@ export const FilterItem = styled.div`
     height: 48px;
     padding-left: 2rem;
 
-    border: 0.1rem solid #818181;
+    border: 0.1rem solid ${({ theme }) => theme.colors.borderColor};
     box-sizing: border-box;
     border-radius: 0.4rem;
 
@@ -92,7 +93,7 @@ export const FilterItem = styled.div`
     font-size: 20px;
     line-height: 23px;
 
-    color: #818181;
+    color: ${({ theme}) => theme.colors.borderColor};
   }
 `;
 
@@ -106,17 +107,17 @@ export const FiltersBottonItems = styled.div`
     font-style: normal;
     font-weight: 500;
     font-size: 2rem;
-    color: #c32925;
+    color: ${({ theme }) => theme.colors.primary};
   }
   select {
     z-index: 10;
     width: 17rem;
     height: 4.8rem;
 
-    border: 0.1rem solid #818181;
+    border: 0.1rem solid ${({ theme}) => theme.colors.borderColor};
     box-sizing: border-box;
     border-radius: 0.4rem;
-    color: #818181;
+    color: ${({ theme}) => theme.colors.borderColor};
     padding: 0 0.5rem;
 
     font-size: 2rem;
@@ -126,15 +127,15 @@ export const FiltersBottonItems = styled.div`
     width: 17.1rem;
     height: 4.8rem;
 
-    background: #f2c94c;
+    background: ${({ theme}) => theme.colors.primary};
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 4px;
     border: 0;
-    color: #fff;
+    color: ${({ theme}) => theme.colors.gold};
     transition: background 0.2s;
 
     &:hover {
-      background: ${darken(0.05, '#F2C94C')};
+      background: ${darken(0.05, `${theme.colors.primary}`)};
     }
   }
 `;
@@ -175,7 +176,7 @@ export const HeaderItem = styled.div`
 
   /* Primary Triunfo */
 
-  color: #c32925;
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 export const SaleBody = styled.div`

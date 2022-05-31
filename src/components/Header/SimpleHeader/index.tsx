@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { IoIosLogOut } from 'react-icons/io';
 import { Link } from 'react-router-dom';
-import { LogoTriunfoSmall } from '../../../assets/images';
+import { LogoHeader } from '../../../assets/images';
 
 import LogoutModal from '../../ReactModal/LogoutModal';
 
@@ -17,7 +17,7 @@ const SimpleHeader: React.FC = () => {
   return (
     <Container>
       <Link to="/menu">
-        <LogoTriunfoSmall />
+        <LogoHeader />
       </Link>
       <NavBarContainer>
         <NavItemContent>
