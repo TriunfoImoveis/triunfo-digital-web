@@ -116,7 +116,7 @@ const DashboardTime: React.FC = () => {
   const qtdSale = useMemo(() => {
     let quanty = 0;
     if (subsidiary1 && subsidiary2 && subsidiary3 !== undefined) {
-      quanty = subsidiary1?.quantity_sales + subsidiary2?.quantity_sales + subsidiary3?.quantity_sales;
+      quanty = subsidiary1?.vgv?.quantity + subsidiary2?.vgv?.quantity + subsidiary3?.vgv?.quantity;
     }
 
     return quanty;
