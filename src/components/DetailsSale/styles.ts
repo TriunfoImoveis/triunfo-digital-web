@@ -90,6 +90,14 @@ export const SaleData = styled.div`
 
       color: #ffffff;
 
+      &:hover {
+        background: ${({ theme }) => theme.colors.secondaryLight}
+      }
+      &:disabled {
+        background: ${({ theme }) => theme.colors.textColor};
+        cursor: not-allowed;
+      }
+
       > span {
         margin-left: 1.2rem;
         font-size: 32px;
@@ -335,4 +343,15 @@ export const BonusConatainer = styled.div`
       font-size: 1.2rem;
     }
   }
+`;
+
+export const AlertDanger = styled.div`
+  margin-top: 1rem;
+  padding: 1rem;
+  width: 100%;
+  height: 5rem;
+  background: ${({ theme }) => theme.colors.dangerLight};
+  font-size: 1.6rem;
+  border-radius: 0.5rem;
+  border: 0.2rem solid ${({ theme }) => theme.colors.danger};
 `;
