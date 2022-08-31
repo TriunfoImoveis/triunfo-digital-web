@@ -34,7 +34,6 @@ import {
   ButtonModal,
   Plot,
   AddButton,
-  PaymentInstallments,
   ButtonGroup,
 } from '../styles';
 import FallSale from '../../ReactModal/FallSale';
@@ -43,6 +42,7 @@ import ValidAct from '../../ReactModal/ValidAct';
 import ValidInstallment from '../../ReactModal/ValidInstallment';
 
 import theme from '../../../styles/theme';
+import Installments from '../Installments';
 
 interface IFinancesProps {
   status: string;
@@ -82,9 +82,7 @@ const Finances: React.FC<IFinancesProps> = ({
   const history = useHistory();
   const { userAuth } = useAuth();
 
-  const installmentsUnsuccessful = installments.filter(
-    installment => installment.status === 'VENCIDO',
-  );
+  
 
   useEffect(() => {
     const loadPaymentType = async () => {
@@ -257,6 +255,8 @@ const Finances: React.FC<IFinancesProps> = ({
     [history, sale.id],
   );
 
+  console.log({sale: sale.payment_signal})
+
   return (
     <>
       <Form ref={formRef} onSubmit={handleSubmit}>
@@ -285,7 +285,7 @@ const Finances: React.FC<IFinancesProps> = ({
                     label="(%) da Venda"
                     data={String(sale.percentage_sale)}
                   />
-                  <InputDisable label="Comissão" data={sale.commission} />
+                  <InputDisable label="Comissão" data={sale.commissionFormatted} />
                 </InputGroup>
                 <InputGroup className="paymment_form_container">
                   <InputDisable
@@ -361,7 +361,7 @@ const Finances: React.FC<IFinancesProps> = ({
                     name="commission"
                     label="Comissão"
                     value={comissionValue}
-                    defaultValue={sale.commission}
+                    defaultValue={sale.commissionFormatted}
                     readOnly
                   />
                 </InputGroup>
@@ -406,119 +406,14 @@ const Finances: React.FC<IFinancesProps> = ({
               </>
             )}
 
-            {installments ? (
-              <PaymentInstallments>
-                {userAuth.office.name !== 'Diretor' ? (
-                  <>
-                    <span>Parcelas Vencidas</span>
-                    {installmentsUnsuccessful.length > 0 ? (
-                      <>
-                        {installmentsUnsuccessful.map(installment => (
-                          <Plot key={installment.installment_number}>
-                            <InputDisable
-                              label="Parcela"
-                              data={String(installment.installment_number)}
-                            />
-                            <InputDisable
-                              label="Valor da Parcela"
-                              data={installment.value}
-                            />
-                            <InputDisable
-                              label="Data de Vencimento"
-                              data={installment.due_date}
-                            />
-                            <InputDisable
-                              label="Status"
-                              data={installment.status}
-                              status={installment.status}
-                            />
-                            {!installment.pay_date && (
-                              <AddButton
-                                type="button"
-                                className="valid"
-                                onClick={() =>
-                                  handleSetDataMadalValidInstallmet(
-                                    installment?.id,
-                                  )
-                                }
-                              >
-                                <FaCheck size={20} color="#FCF9F9" />
-                              </AddButton>
-                            )}
-                          </Plot>
-                        ))}
-                      </>
-                    ) : (
-                      <strong>Nehuma parcela vencida</strong>
-                    )}
-                    <span>Parcelas Pendentes</span>
-                    {installments.map(
-                      installment =>
-                        installment.status === 'PENDENTE' && (
-                          <Plot key={installment.installment_number}>
-                            <InputDisable
-                              label="Parcela"
-                              data={String(installment.installment_number)}
-                            />
-                            <InputDisable
-                              label="Valor da Parcela"
-                              data={installment.value}
-                            />
-                            <InputDisable
-                              label="Data de Vencimento"
-                              data={installment.due_date}
-                            />
-                            <InputDisable
-                              label="Status"
-                              data={installment.status}
-                              status={installment.status}
-                            />
-                            {!installment.pay_date && (
-                              <AddButton
-                                type="button"
-                                className="valid"
-                                onClick={() =>
-                                  handleSetDataMadalValidInstallmet(
-                                    installment.id,
-                                  )
-                                }
-                              >
-                                <FaCheck size={20} color="#FCF9F9" />
-                              </AddButton>
-                            )}
-                          </Plot>
-                        ),
-                    )}
-                    <span>Parcelas Pagas</span>
-                    {installmentPay.length > 0 ? (
-                      installmentPay.map(installment => (
-                        <Plot key={installment.installment_number}>
-                          <InputDisable
-                            label="Parcela"
-                            data={String(installment.installment_number)}
-                          />
-                          <InputDisable
-                            label="Valor da Parcela"
-                            data={installment.value}
-                          />
-                          <InputDisable
-                            label="Data de Vencimento"
-                            data={installment.due_date}
-                          />
-                          <InputDisable
-                            label="Status"
-                            data={installment.status}
-                            status={installment.status}
-                          />
-                        </Plot>
-                      ))
-                    ) : (
-                      <strong>Nehuma Parcela paga</strong>
-                    )}
-                  </>
-                ) : null}
-              </PaymentInstallments>
-            ) : null}
+            <Installments 
+              installments={installments} 
+              installmentPay={installmentPay} 
+              handleSetDataMadalValidInstallmet={handleSetDataMadalValidInstallmet} 
+              paymentSignal={sale.payment_signal}
+              comission={sale.commission}
+            />
+
             <TextArea
               name="observation"
               label="Observação"
@@ -552,6 +447,7 @@ const Finances: React.FC<IFinancesProps> = ({
                 type="button"
                 className="submit"
                 onClick={handleValidSale}
+                disabled={!sale.payment_signal}
               >
                 <BsCheck size={25} />
                 <span>Validar Venda</span>

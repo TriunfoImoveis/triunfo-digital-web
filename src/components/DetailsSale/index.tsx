@@ -44,6 +44,7 @@ export interface ISaleData {
   }[];
   client_seller?: IClient;
   commission: string;
+  commissionFormatted: string;
   company?: {
     id: string;
     name: string;
@@ -99,6 +100,7 @@ export interface IInstallments {
   id?: string;
   installment_number: number;
   value: string;
+  valueFormatted: string;
   status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADO';
   pay_date?: string;
 }
@@ -210,7 +212,8 @@ const DetailsSale: React.FC = () => {
           );
         }
         const realtyAmmount = formatPrice(sale.realty_ammount);
-        const commission = formatPrice(sale.commission);
+        const commission = sale.commission;
+        const commissionFormatted = formatPrice(sale.commission);
         const saleDate = DateBRL(sale.sale_date);
         const valueSignal =
           sale.value_signal === null
@@ -224,7 +227,8 @@ const DetailsSale: React.FC = () => {
         const newInstallments = installmentData.map(i => ({
           ...i,
           due_date: DateBRL(i.due_date),
-          value: formatPrice(Number(i.value)),
+          value: i.value,
+          valueFormatted: formatPrice(Number(i.value)),
           pay_date: i.pay_date ? DateBRL(i.pay_date) : null,
         }));
 
@@ -232,6 +236,7 @@ const DetailsSale: React.FC = () => {
           sale,
           (sale.realty_ammount = realtyAmmount),
           (sale.commission = commission),
+          (sale.commissionFormatted = commissionFormatted),
           (sale.sale_date = saleDate),
           (sale.pay_date_signal = PayDateSignal),
           (sale.value_signal = valueSignal),
