@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
+import  { AxiosError } from 'axios';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
@@ -34,18 +35,12 @@ interface IBuilder {
   city: string;
 }
 
-interface IBGECityResponse {
-  nome: string;
-}
-
 const NewBuilders: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const [pageDetails, setPageDetails] = useState(false);
   const [builder, setBuilders] = useState<IBuilder>({} as IBuilder);
   const [selectedUf, setSelectedUf] = useState('MA');
-  // const [selectedCity, setSelectedCity] = useState('0');
-  // const [cities, setCities] = useState<string[]>([]);
   const token = localStorage.getItem('@TriunfoDigital:token');
   const history = useHistory();
 
@@ -72,26 +67,6 @@ const NewBuilders: React.FC = () => {
     }
   }, [id, token]);
 
-  // useEffect(() => {
-  //   if (selectedUf === '0') {
-  //     return;
-  //   }
-
-  //   Axios.get<IBGECityResponse[]>(
-  //     `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
-  //   ).then(response => {
-  //     const cityNames = response.data.map(city => city.nome);
-  //     setCities(cityNames);
-  //   });
-  // }, [selectedUf]);
-
-  // const handleSelectCity = useCallback(
-  //   (event: ChangeEvent<HTMLSelectElement>) => {
-  //     const city = event.target.value;
-  //     setSelectedCity(city);
-  //   },
-  //   [],
-  // );
 
   const optionsState = [
     { label: 'Maranhão', value: 'MA' },
@@ -107,7 +82,6 @@ const NewBuilders: React.FC = () => {
     [],
   );
 
-  // const optionsCities = cities.map(city => ({ value: city, label: city }));
   const unMasked = useCallback(() => {
     const fone = unMaked(formRef.current?.getFieldValue('phone'));
     formRef.current?.setFieldValue('phone', fone);
@@ -146,8 +120,15 @@ const NewBuilders: React.FC = () => {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
       }
-
-      toast.error('ERROR!, verifique as informações e tente novamente');
+      const errors = err as AxiosError
+      if (errors.response?.status === 400) {
+        toast.error(errors.response?.data.message);
+      } else if (errors.response?.status === 500) {
+        toast.error('Erro no servidor! contate o suporte');
+      } else {
+        toast.error('ERROR!, verifique as informações e tente novamente');
+      }
+      
       setLoading(false);
     }
   }, [unMasked, token, history]);
