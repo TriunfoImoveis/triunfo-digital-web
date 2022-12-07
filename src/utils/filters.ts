@@ -70,6 +70,16 @@ interface CalculatorData {
   };
 }
 
+export interface IInstallments {
+  due_date: string;
+  id?: string;
+  installment_number: number;
+  valueFormatted: string;
+  value: string;
+  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADO';
+  pay_date?: string;
+}
+
 export const filterOptions = (
   inputValue: string,
   options: OptionsData[],
@@ -257,3 +267,13 @@ export const filterGroup = (actualGroup: string, group: string) => {
   }
   return false;
 };
+
+export function sortingByPlotNumber(a: IInstallments, b: IInstallments) {
+  if (a.installment_number < b.installment_number) {
+    return -1;
+  }
+  if (a.installment_number > b.installment_number) {
+    return 1;
+  }
+  return 0;
+}
