@@ -85,7 +85,11 @@ export const Plot = styled.div`
   }
 `;
 
-export const AddButton = styled.button`
+interface AddButtonProps {
+  disabled?: boolean;
+}
+
+export const AddButton = styled.button<AddButtonProps>`
   margin-top: 2.8rem;
   display: flex;
   align-items: center;
@@ -94,7 +98,7 @@ export const AddButton = styled.button`
   height: 4rem;
   border: 0;
   border-radius: 0.4rem;
-  background: ${({ theme }) => theme.colors.primaryAlpha};
+  background: ${(props) => props.disabled ? 'transparent' :  props.theme.colors.primaryAlpha};
 
   &.valid {
     margin-top: 2.8rem;

@@ -101,7 +101,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   const calcComission = useCallback(() => {
     const valueSale = formRef.current?.getFieldValue('realty_ammount');
     const portcent = formRef.current?.getFieldValue('percentage_sale');
-    const comission = currency(valueSale) * (currency(portcent) / 100);
+    const comission = currency(valueSale) * (Number(portcent.replace(',','.')) / 100);
     setcomissionValue(money(comission));
   }, []);
 
@@ -128,7 +128,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     );
     formRef.current?.setFieldValue(
       'percentage_sale',
-      currency(formRef.current?.getFieldValue('percentage_sale')),
+      Number(formRef.current?.getFieldValue('percentage_sale').replace(',','.')),
     );
     formRef.current?.setFieldValue(
       'commission',
