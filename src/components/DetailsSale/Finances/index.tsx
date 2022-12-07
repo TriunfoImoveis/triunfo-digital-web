@@ -99,9 +99,7 @@ const Finances: React.FC<IFinancesProps> = ({
   const calcComission = useCallback(() => {
     const valueSale = formRef.current?.getFieldValue('realty_ammount');
     const portcent = formRef.current?.getFieldValue('percentage_sale');
-    console.log({portcent});
     const comission = currency(valueSale) * ((Number(portcent.replace(',', '.'))) / 100);
-    console.log(money(comission));
     setcomissionValue(money(comission));
   }, []);
 
