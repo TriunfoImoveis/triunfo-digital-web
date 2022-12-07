@@ -23,6 +23,7 @@ export interface IInstallments {
   due_date: string;
   id?: string;
   installment_number: number;
+  valueFormatted: string;
   value: string;
   status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADO';
   pay_date?: string;
@@ -54,8 +55,9 @@ const EditInstallments: React.FC<IModalProps> = ({
   const formRef = useRef<FormHandles>(null);
   const [newInstallements, setNewInstallments] = useState<IInstallments[]>([]);
 
+  
   useEffect(() => {
-    setNewInstallments(installments);
+    setNewInstallments(installments)
   }, [installments]);
 
   const handleSubmit = useCallback(
@@ -102,6 +104,7 @@ const EditInstallments: React.FC<IModalProps> = ({
       installment_number: numberPlot + 1,
       due_date: '',
       value: '',
+      valueFormatted: ''
     });
     setNewInstallments(listPlots);
   }, [newInstallements]);
@@ -123,72 +126,50 @@ const EditInstallments: React.FC<IModalProps> = ({
               <strong>{valueComission}</strong>
             </p>
           </Header>
-          {newInstallements.length !== 0 ? (
-            <PaymentInstallments>
-              {newInstallements.map((installment, index) =>
-                index === 0 ? (
-                  <Plot key={installment.installment_number}>
-                    <Input
-                      type="number"
-                      name={`installments[${index}].installment_number`}
-                      label="Parcela"
-                      min={1}
-                      readOnly
-                      defaultValue={installment.installment_number}
-                    />
-                    <Input
-                      mask="currency"
-                      name={`installments[${index}].value`}
-                      label="Valor da Parcela"
-                      placeholder="R$ 0,00"
-                      defaultValue={installment.value}
-                    />
-                    <Input
-                      mask="date"
-                      name={`installments[${index}].due_date`}
-                      className="date"
-                      label="Data de Vencimento"
-                      placeholder="07/01/2021"
-                      defaultValue={installment.due_date}
-                    />
+          <PaymentInstallments>
+            {newInstallements.map((installment, index) => (
+              <Plot key={installment.installment_number}>
+                
+                <AddButton type="button" onClick={addPlots}>
+                   <FaPlus size={20} color="#C32925" />
+                  </AddButton>
+            
+     
+                <Input
+                  type="number"
+                  name={`installments[${index}].installment_number`}
+                  label="Parcela"
+                  min={1}
+                  readOnly
+                  defaultValue={installment.installment_number}
+                />
+                <Input
+                  mask="currency"
+                  name={`installments[${index}].value`}
+                  label="Valor da Parcela"
+                  placeholder="R$ 0,00"
+                  defaultValue={installment.valueFormatted}
+                />
+                <Input
+                  mask="date"
+                  name={`installments[${index}].due_date`}
+                  className="date"
+                  label="Data de Vencimento"
+                  placeholder="07/01/2021"
+                  defaultValue={installment.due_date}
+                />
 
-                    <AddButton type="button" onClick={addPlots}>
-                      <FaPlus size={20} color="#C32925" />
-                    </AddButton>
-                  </Plot>
-                ) : (
-                  <Plot key={installment.installment_number}>
-                    <Input
-                      type="number"
-                      name={`installments[${index}].installment_number`}
-                      label="Parcela"
-                      min={1}
-                      readOnly
-                      defaultValue={index + 1}
-                    />
-                    <Input
-                      mask="currency"
-                      name={`installments[${index}].value`}
-                      label="Valor da Parcela"
-                      placeholder="R$ 0,00"
-                      defaultValue={installment.value}
-                    />
-                    <Input
-                      mask="date"
-                      name={`installments[${index}].due_date`}
-                      label="Data de Vencimento"
-                      placeholder="07/01/2021"
-                      defaultValue={installment.due_date}
-                    />
-
-                    <AddButton type="button" onClick={removePlots}>
-                      <FaMinus size={20} color="#C32925" />
-                    </AddButton>
-                  </Plot>
-                ),
-              )}
-            </PaymentInstallments>
-          ) : null}
+                {installment.installment_number > 1 ? (
+                  <AddButton type="button" onClick={removePlots}>
+                  <FaMinus size={20} color="#C32925" />
+                </AddButton>
+                ):(
+                  <AddButton type="button" disabled />
+                )}
+                
+              </Plot>
+            ))}
+          </PaymentInstallments>
         </Form>
         <Button
           className="add-button"

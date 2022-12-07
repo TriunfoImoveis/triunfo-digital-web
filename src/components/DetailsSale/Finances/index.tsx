@@ -43,6 +43,7 @@ import ValidInstallment from '../../ReactModal/ValidInstallment';
 
 import theme from '../../../styles/theme';
 import Installments from '../Installments';
+import { sortingByPlotNumber } from '../../../utils/filters';
 
 interface IFinancesProps {
   status: string;
@@ -98,7 +99,9 @@ const Finances: React.FC<IFinancesProps> = ({
   const calcComission = useCallback(() => {
     const valueSale = formRef.current?.getFieldValue('realty_ammount');
     const portcent = formRef.current?.getFieldValue('percentage_sale');
-    const comission = currency(valueSale) * (currency(portcent) / 100);
+    console.log({portcent});
+    const comission = currency(valueSale) * ((Number(portcent.replace(',', '.'))) / 100);
+    console.log(money(comission));
     setcomissionValue(money(comission));
   }, []);
 
@@ -127,7 +130,7 @@ const Finances: React.FC<IFinancesProps> = ({
       (data.value_signal = unMaked(value_signal)),
       (data.sale_date = DateYMD(dateSale)),
       (data.pay_date_signal = DateYMD(pay_date_signal)),
-      (data.commission = unMaked(comission)),
+      (data.commission = unMaked(comission))
     );
     return formData;
   }, []);
@@ -254,8 +257,6 @@ const Finances: React.FC<IFinancesProps> = ({
     },
     [history, sale.id],
   );
-
-  console.log({sale: sale.payment_signal})
 
   return (
     <>
@@ -459,10 +460,10 @@ const Finances: React.FC<IFinancesProps> = ({
       <EditInstallmentModal
         isOpen={editInstallments}
         setIsOpen={toogleEditInstallments}
-        valueComission={sale.commission}
+        valueComission={sale.commissionFormatted}
         handleEditInstallments={handleModalSubmit}
-        installments={installments}
-      />
+        installments={installments.sort(sortingByPlotNumber)}
+      /> 
       <ValidAct
         isOpen={modalValidAct}
         setIsOpen={toogleModalValidAct}
