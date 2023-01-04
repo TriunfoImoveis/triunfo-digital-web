@@ -149,18 +149,30 @@ const Ranking: React.FC = () => {
             </>
           )}
 
-          <MonthlyFilter>
+          <>
             <SelectSubsidiary>
-              <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
-                <option value="0">ANUAL</option>
-                <optgroup label="MESES">
-                  {months.map(month => (
-                    <option value={month.value}>{month.label}</option>
-                  ))}
-                </optgroup>
+              <select
+                defaultValue={selectedYear}
+                onChange={heandleSelectedYear}
+              >
+                {optionsYear.map(item => (
+                  <option value={item.value}>{item.label}</option>
+                ))}
               </select>
             </SelectSubsidiary>
-          </MonthlyFilter>
+            <MonthlyFilter>
+              <SelectSubsidiary>
+                <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
+                  <option value="0">ANUAL</option>
+                  <optgroup label="MESES">
+                    {months.map(month => (
+                      <option value={month.value}>{month.label}</option>
+                    ))}
+                  </optgroup>
+                </select>
+              </SelectSubsidiary>
+            </MonthlyFilter>
+          </>
         </Filters>
 
         <RankingContainer>
