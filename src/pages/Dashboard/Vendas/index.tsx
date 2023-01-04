@@ -112,10 +112,14 @@ const DashboardVendas: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const { office } = userAuth;
+    const { office, subsidiary } = userAuth;
     if (office.name !== 'Corretor') {
       getSubsidiaries();
       getAllRealtors(selectedSubsidiary);
+    }
+
+    if (office.name === 'Diretor') {
+      getAllRealtors(subsidiary.city);
     }
   }, [userAuth, getSubsidiaries, getAllRealtors, selectedSubsidiary]);
   useEffect(() => {
