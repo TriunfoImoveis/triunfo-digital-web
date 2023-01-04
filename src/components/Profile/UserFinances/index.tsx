@@ -133,21 +133,21 @@ const UserFinances: React.FC = () => {
           <FormContent>
             <InputDisabled
               label="Instituição Financeira"
-              data={userAuth.bank_data[0].bank_name}
+              data={userAuth?.bank_data[0]?.bank_name}
             />
             <InputGroup>
               <InputDisabled
                 label="Agência"
-                data={userAuth.bank_data[0].agency}
+                data={userAuth?.bank_data[0]?.agency}
               />
               <InputDisabled
                 label="Número da Conta"
-                data={userAuth.bank_data[0].account}
+                data={userAuth?.bank_data[0]?.account}
               />
             </InputGroup>
             <InputDisabled
               label="Tipo da Conta"
-              data={userAuth.bank_data[0].account_type}
+              data={userAuth?.bank_data[0]?.account_type}
             />
           </FormContent>
         )}
