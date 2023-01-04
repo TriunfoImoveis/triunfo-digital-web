@@ -40,11 +40,11 @@ interface IRealtorData {
 }
 
 const Ranking: React.FC = () => {
+  const { userAuth } = useAuth();
   const currentYear = new Date().getFullYear();
-  const [selectedSubsidiary, setSelectedSubsidiary] = useState('São Luís');
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.city);
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState('0');
-  const { userAuth } = useAuth();
   const [url, setUrl] = useState(
     `/ranking?city=${userAuth.subsidiary.city}&year=${currentYear}&user=Corretor`,
   );
