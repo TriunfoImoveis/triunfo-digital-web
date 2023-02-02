@@ -45,6 +45,10 @@ import theme from '../../../styles/theme';
 import Installments from '../Installments';
 import { sortingByPlotNumber } from '../../../utils/filters';
 
+interface Origin {
+  id: string;
+  name: string
+}
 interface IFinancesProps {
   status: string;
   sale: ISaleData;
@@ -75,6 +79,7 @@ const Finances: React.FC<IFinancesProps> = ({
   const [loading, setLoading] = useState(false);
   const [comissionValue, setcomissionValue] = useState(sale.commission);
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
+  const [originSales, setOriginSales] = useState<Origin[]>([]);
   const [editInstallments, setEditInstallments] = useState(false);
   const [modalFallSale, setModalFallSale] = useState(false);
   const [modalValidAct, setModalValidAct] = useState(false);
@@ -92,8 +97,13 @@ const Finances: React.FC<IFinancesProps> = ({
       );
       setPaymentTypes(response.data);
     };
+    const loadOriginSale = async () => {
+      const response = await api.get('/origin-sale');
+      setOriginSales(response.data);
+    };
 
     loadPaymentType();
+    loadOriginSale();
   }, [sale.sale_type, installments]);
 
   const calcComission = useCallback(() => {
@@ -137,6 +147,10 @@ const Finances: React.FC<IFinancesProps> = ({
     label: payment.name,
     value: payment.id,
   }));
+  const optionsOriginSales = originSales.map(origin => ({
+    label: origin.name,
+    value: origin.id,
+  }));
 
   const handleSetDataMadalValidInstallmet = (id: string | undefined) => {
     if (!id) {
@@ -174,6 +188,7 @@ const Finances: React.FC<IFinancesProps> = ({
             return isValid || createError({ path, message: 'Data Invalida' });
           })
           .required('Data do pagamento do sinal'),
+        origin: Yup.string().optional(),
         observation: Yup.string().required('Observação nescessária'),
       });
 
@@ -412,6 +427,21 @@ const Finances: React.FC<IFinancesProps> = ({
               paymentSignal={sale.payment_signal}
               comission={sale.commission}
             />
+
+            <InputGroup>
+              {!edit ? (
+                <Select
+                name="origin"
+                nameLabel="Origem da Venda"
+                disabled={edit}
+                options={optionsOriginSales}
+                defaultValue={sale?.origin?.id}
+              />
+              ): (
+                <InputDisable label="Origem da Venda" data={sale?.origin?.name} />
+              )}
+              
+            </InputGroup>
 
             <TextArea
               name="observation"
