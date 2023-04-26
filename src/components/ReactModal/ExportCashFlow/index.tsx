@@ -10,6 +10,7 @@ import { addDays, format } from 'date-fns';
 import { Form } from '@unform/web';
 import Input from '../../Input';
 import { FormHandles } from '@unform/core';
+import axios from 'axios';
 
 interface FormData {
   startDate: string,
@@ -56,9 +57,14 @@ const ExportCashFlow: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
       setLinkDownloadReport(response.data.link_url);
       setGeneretedReport(true);
     } catch (error) {
-      if (error.response) {
-        toast.error('error na conexão! contate o suporte');
+      if (axios?.isAxiosError(error)) {
+        if (error.response) {
+          toast.error('error na conexão! contate o suporte');
+        }
+      } else {
+        toast.error('error no servidor! contate o suporte');
       }
+      
       setGeneretedReport(false);
     } finally {
       setLoading(false);

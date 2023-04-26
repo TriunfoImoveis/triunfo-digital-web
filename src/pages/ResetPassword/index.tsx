@@ -15,6 +15,7 @@ import Button from '../../components/Button';
 import { Logo } from '../../assets/images';
 import { Container, Content } from './styles';
 import api from '../../services/api';
+import axios from 'axios';
 
 interface ISignData {
   email: string;
@@ -58,18 +59,18 @@ const ResetPassword: React.FC = () => {
         history.push('/');
         setLoading(false);
       } catch (err) {
-        if (err instanceof Yup.ValidationError) {
+        if (axios?.isAxiosError(err)) {
+          if (err.response) {
+            toast.error(`ERROR! ${err.response.data.message}`);
+          } else if (err.request) {
+            toast.error(
+              `ERROR! Falha ao connectar ao servidor! Entre em contato com o suporte.`,
+            );
+          }
+        } else if (err instanceof Yup.ValidationError) {
           const erros = getValidationErros(err);
           formRef.current?.setErrors(erros);
         }
-        if (err.response) {
-          toast.error(`ERROR! ${err.response.data.message}`);
-        } else if (err.request) {
-          toast.error(
-            `ERROR! Falha ao connectar ao servidor! Entre em contato com o suporte.`,
-          );
-        }
-
         setLoading(false);
       }
     },

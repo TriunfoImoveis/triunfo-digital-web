@@ -47,6 +47,7 @@ import TextArea from '../../../components/TextArea';
 import CheckboxInput from '../../../components/CheckBox';
 import InputDisable from '../../../components/InputDisabled';
 import { useAuth } from '../../../context/AuthContext';
+import axios from 'axios';
 
 interface IOptionsData {
   id: string;
@@ -396,13 +397,15 @@ const DetailsSale: React.FC = () => {
       });
       toast.success('Venda Validada com sucesso !');
       history.push('/ranking');
-    } catch (error) {
-      if (error.response) {
-        toast.error(`${error.response.data.message}`);
-      } else if (error.request) {
-        toast.error(
-          'Erro de Conexão!! tente recarregar a página, se não der certo contate o suporte',
-        );
+    } catch (error) { 
+      if(axios?.isAxiosError(error)) {
+        if (error.response) {
+          toast.error(`${error.response.data.message}`);
+        } else if (error.request) {
+          toast.error(
+            'Erro de Conexão!! tente recarregar a página, se não der certo contate o suporte',
+          );
+        } 
       } else {
         toast.error(' Erro desconhecido, contate o suporte');
       }
@@ -423,7 +426,7 @@ const DetailsSale: React.FC = () => {
           setEdits({ ...edits, realtos: !edits.realtos });
           break;
         case 'seller':
-          setEdits({ ...edits, seller: !edits.seller });
+          setEdits({ ...edits, seller: !edits.seller }); 
           break;
         case 'fall':
           setEdits({ ...edits, fall: false });
@@ -677,10 +680,12 @@ const DetailsSale: React.FC = () => {
         history.push('/adm/lista-vendas');
       } catch (errors) {
         setLoading(false);
-        if (errors.response) {
-          toast.error(`ERROR! ${errors.response.data.status}`);
-        } else if (errors.request) {
-          toast.error(`Erro interno do servidor contate o suporte`);
+        if (axios?.isAxiosError(errors)) {
+          if (errors.response) {
+            toast.error(`ERROR! ${errors.response.data.status}`);
+          } else if (errors.request) {
+            toast.error(`Erro interno do servidor contate o suporte`);
+          } 
         } else {
           toast.error('Erro ao atualizar contate o suporte');
         }
@@ -704,10 +709,12 @@ const DetailsSale: React.FC = () => {
         toast.success('status do pagamento atualizado');
         window.location.reload();
       } catch (error) {
-        if (error.response) {
-          toast.error(`ERROR! ${error.response.message}`);
-        } else if (error.response) {
-          toast.error(`Erro interno do servidor contate o suporte`);
+        if (axios?.isAxiosError(error)) {
+          if (error.response) {
+            toast.error(`ERROR! ${error.response?.data?.message}`);
+          } else if (error.response) {
+            toast.error(`Erro interno do servidor contate o suporte`);
+          } 
         } else {
           toast.error('Não foi possível confirmar o pagamento');
         }
@@ -730,10 +737,12 @@ const DetailsSale: React.FC = () => {
         toast.success('status do pagamento atualizado');
         window.location.reload();
       } catch (error) {
-        if (error.response) {
-          toast.error(`ERROR! ${error.response.message}`);
-        } else if (error.response) {
-          toast.error(`Erro interno do servidor contate o suporte`);
+        if (axios?.isAxiosError(error)) {
+          if (error.response) {
+            toast.error(`ERROR! ${error?.response?.data?.message}`);
+          } else if (error.response) {
+            toast.error(`Erro interno do servidor contate o suporte`);
+          } 
         } else {
           toast.error('Não foi possível confirmar o pagamento');
         }

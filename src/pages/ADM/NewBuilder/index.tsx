@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
-import  { AxiosError } from 'axios';
+import  axios from 'axios';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
@@ -116,15 +116,15 @@ const NewBuilders: React.FC = () => {
       history.push('/adm/lista-construtoras');
       setLoading(false);
     } catch (err) {
-      if (err instanceof Yup.ValidationError) {
+      if (axios?.isAxiosError(err)) {
+        if (err.response?.status === 400) {
+          toast.error(err.response?.data?.message);
+        } else if (err.response?.status === 500) {
+          toast.error('Erro no servidor! contate o suporte');
+        } 
+      } else if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
-      }
-      const errors = err as AxiosError
-      if (errors.response?.status === 400) {
-        toast.error(errors.response?.data.message);
-      } else if (errors.response?.status === 500) {
-        toast.error('Erro no servidor! contate o suporte');
       } else {
         toast.error('ERROR!, verifique as informações e tente novamente');
       }
