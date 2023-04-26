@@ -13,6 +13,7 @@ import { DateYMD, unMaked } from '../../utils/unMasked';
 import { valiateDate } from '../../utils/validateDate';
 import getValidationErros from '../../utils/getValidationErros';
 import { DateBRL, formatPrice } from '../../utils/format';
+import axios from 'axios';
 
 type Options = {
   label: string;
@@ -73,11 +74,12 @@ const EditExit: React.FC<EditExitProps> = ({ accountId }) => {
       await api.put(`/expense/${accountId}`, formData);
       toast.success('Conta atualizada com sucesso');
     } catch (err) {
-      console.log(err);
-      if (err.request) {
-        toast.error('Erro no servidor');
-      } else if (err.response) {
-        toast.error('Erro no servidor');
+      if (axios?.isAxiosError(err)) {
+        if (err.request) {
+          toast.error('Erro no servidor');
+        } else if (err.response) {
+          toast.error('Erro no servidor');
+        } 
       } else if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);

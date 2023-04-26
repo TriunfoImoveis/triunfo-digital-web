@@ -7,6 +7,7 @@ import { useForm } from '../../../context/FormContext';
 import { SuccesImage, ErrorRegisterSale } from '../../../assets/images';
 import { SuccessContainer, ButtonGroup, FailedRegisterSale } from './styles';
 import api from '../../../services/api';
+import axios from 'axios';
 
 interface ISuccessProps {
   typeSale: 'new' | 'used';
@@ -29,10 +30,12 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           toast.success('Venda cadastrada');
         } catch (err) {
           setStatusError(true);
-          if (err.response) {
-            toast.error(`${err.response.data.message}`);
-          } else if (err.request) {
-            toast.error('Error de Rede, verifique sua conexão');
+          if (axios?.isAxiosError(err)) {
+            if (err.response) {
+              toast.error(`${err.response.data.message}`);
+            } else if (err.request) {
+              toast.error('Error de Rede, verifique sua conexão');
+            } 
           } else {
             toast.error('Erro interno do servidor, contate o suporte');
           }
@@ -50,10 +53,12 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           toast.success('Venda cadastrada');
         } catch (err) {
           setStatusError(true);
-          if (err.response) {
-            toast.error(`${err.response.data.message}`);
-          } else if (err.request) {
-            toast.error('Error de Rede, verifique sua conexão');
+          if (axios?.isAxiosError(err)) {
+            if (err.response) {
+              toast.error(`${err.response.data.message}`);
+            } else if (err.request) {
+              toast.error('Error de Rede, verifique sua conexão');
+            } 
           } else {
             toast.error('Erro interno do servidor, contate o suporte');
           }

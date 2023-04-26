@@ -6,6 +6,7 @@ import api from '../../../services/api';
 import Button from '../../Button';
 
 import { Container, ContainerWrapper } from './styles';
+import axios from 'axios';
 
 interface ModalProps {
   isOpen: boolean;
@@ -36,9 +37,12 @@ const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
       
       
     } catch (error) {
-      if (error.response) {
-        toast.error('error na conexão! contate o suporte');
+      if (axios?.isAxiosError(error)) {
+        if (error.response) {
+          toast.error('error na conexão! contate o suporte');
+        }
       }
+      
     } finally {
       setLoading(false);
     }

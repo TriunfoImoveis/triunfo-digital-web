@@ -19,6 +19,7 @@ import api from '../../../services/api';
 import ReactSelect from '../../ReactSelect';
 import { valiateDate } from '../../../utils/validateDate';
 import { useAuth } from '../../../context/AuthContext';
+import axios from 'axios';
 
 type RevenueType = {
   id: string;
@@ -158,12 +159,13 @@ const EntryRevenue: React.FC<IModalProps> = ({
         window.location.reload();
       }
     } catch (err) {
-      if (err.request) {
-        toast.error('Erro no servidor');
-      } else if (err.response) {
-        toast.error('Erro no servidor');
-      }
-      if (err instanceof Yup.ValidationError) {
+      if (axios?.isAxiosError(err)) {
+        if (err.request) {
+          toast.error('Erro no servidor');
+        } else if (err.response) {
+          toast.error('Erro no servidor');
+        }
+      } else if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
       }

@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 import { DateYMD, unMaked } from '../../utils/unMasked';
 import { valiateDate } from '../../utils/validateDate';
 import getValidationErros from '../../utils/getValidationErros';
+import axios from 'axios';
 
 type Options = {
   label: string;
@@ -109,10 +110,12 @@ const AccountVariable: React.FC = () => {
       await api.post('/expense', formData);
       toast.success('Conta Cadastrada com sucesso');
     } catch (err) {
-      if (err.request) {
-        toast.error('Erro no servidor');
-      } else if (err.response) {
-        toast.error('Erro no servidor');
+      if (axios.isAxiosError(err)) {
+        if (err.request) {
+          toast.error('Erro no servidor');
+        } else if (err.response) {
+          toast.error('Erro no servidor');
+        }
       } else if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);

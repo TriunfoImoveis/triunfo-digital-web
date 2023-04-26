@@ -15,6 +15,7 @@ import { Container, FormContent, InputGroup, Header } from './styles';
 import getValidationErros from '../../../utils/getValidationErros';
 import api from '../../../services/api';
 import InputDisabled from '../../InputDisabled';
+import axios from 'axios';
 
 interface BankData {
   bank_data: {
@@ -66,17 +67,20 @@ const UserFinances: React.FC = () => {
         if (err instanceof Yup.ValidationError) {
           const erros = getValidationErros(err);
           formRef.current?.setErrors(erros);
-        }
-        if (err.response) {
-          const { data } = err.response;
-          if (data.status) {
-            toast.error(`erro no servidor, entre em contato com o suporte`);
+        } else if (axios?.isAxiosError(err)) {
+          if (err.response) {
+            const { data } = err.response;
+            if (data.status) {
+              toast.error(`ERROR! ${err.response.data.message}`);
+            }
+            
+          } else if (err.request) {
+            toast.error(
+              `ERROR! Falha ao connectar ao servidor! Entre em contato com o suporte.`,
+            );
           }
-          // toast.error(`ERROR! ${err.response.data.message}`);
-        } else if (err.request) {
-          toast.error(
-            `ERROR! Falha ao connectar ao servidor! Entre em contato com o suporte.`,
-          );
+        } else {
+          toast.error(`erro no servidor, entre em contato com o suporte`);
         }
         setLoading(false);
       }
