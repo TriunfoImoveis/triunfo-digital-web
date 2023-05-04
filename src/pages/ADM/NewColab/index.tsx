@@ -65,6 +65,7 @@ interface IUser {
     id: string;
     city: string;
   };
+  admission_date: string;
 }
 
 interface IUpdateUser {
@@ -75,6 +76,9 @@ interface IUpdateUser {
   phone: string;
   goal: string;
   admission_date: string;
+  subsidiary: string;
+  departament: string;
+  office: string;
 }
 
 const NewColab: React.FC = () => {
@@ -92,58 +96,60 @@ const NewColab: React.FC = () => {
 
   const { id } = useParams<IRoteparams>();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const response = await api.get(`/users/${id}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
-      const user = response.data;
-      const userFormatted = {
-        ...user,
-        goal: formatPrice(user.goal),
-        phone: FoneMask(user.phone),
-        admission_date: DateBRL(user.admission_date),
-      };
-      setUser(userFormatted);
+  const loadUser = useCallback(async () => {
+    const response = await api.get(`/users/${id}`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+    const user = response.data;
+    const userFormatted = {
+      ...user,
+      goal: formatPrice(user.goal),
+      phone: FoneMask(user.phone),
+      admission_date: DateBRL(user.admission_date),
     };
+    setUser(userFormatted);
+  }, [id, token]);
+
+  const loadSubsidiary = async () => {
+    try {
+      const response = await api.get('/subsidiary');
+      setSubsidiary(response.data);
+      setSelectedSubsidiary(response.data?.id)
+    } catch (error) {
+      toast.error('falha na conexão do servidor!');
+    }
+  };
+  const loadOfficies = async () => {
+    try {
+      const response = await api.get('/office');
+      setOfficies(response.data);
+    } catch (error) {
+      toast.error('falha na conexão do servidor!');
+    }
+  };
+
+  useEffect(() => {
     if (id) {
       setPageDetails(true);
       loadUser();
     }
-  }, [id, token]);
+  }, [id, loadUser]);
 
   useEffect(() => {
-    const loadSubsidiary = async () => {
-      try {
-        const response = await api.get('/subsidiary');
-        setSubsidiary(response.data);
-      } catch (error) {
-        toast.error('falha na conexão do servidor!');
-      }
-    };
-    const loadOfficies = async () => {
-      try {
-        const response = await api.get('/office');
-        setOfficies(response.data);
-      } catch (error) {
-        toast.error('falha na conexão do servidor!');
-      }
-    };
-    loadSubsidiary();
-    loadOfficies();
+    Promise.all([loadSubsidiary(),  loadOfficies()])
   }, []);
 
   useEffect(() => {
     api
       .get(`/departament`, {
         params: {
-          subsidiary: selectedSubsidiary,
+          subsidiary: selectedSubsidiary || user?.subsidiary?.id
         },
       })
       .then(response => setDepartament(response.data));
-  }, [selectedSubsidiary]);
+  }, [selectedSubsidiary, user]);
 
   const handleSelectedSubsidiary = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -234,14 +240,20 @@ const NewColab: React.FC = () => {
           goal,
           admission_date,
           phone,
+          subsidiary,
+          departament,
+          office
         } = data;
 
         const formData = {
           name,
           email,
+          subsidiary,
           goal,
+          departament,
           admission_date,
           phone,
+          office,
           ...(password
             ? {
                 password,
@@ -290,7 +302,16 @@ const NewColab: React.FC = () => {
       <Container>
         <h1>NOVO COLABORADOR</h1>
         {pageDetails ? (
-          <Form ref={formRef} onSubmit={updateRealtor} initialData={user}>
+          <Form ref={formRef} onSubmit={updateRealtor} initialData={{
+            name: user?.name,
+            email: user?.email,
+            phone: user?.phone,
+            goal: user?.goal,
+            subsidiary: user?.subsidiary?.id,
+            departament: user?.departament?.id,
+            admission_date: user?.admission_date,
+            office: user?.office?.id
+          }}>
             <InfoLogin>
               <fieldset className="login">
                 <legend>INFORMAÇÕES DE LOGIN</legend>
@@ -319,6 +340,27 @@ const NewColab: React.FC = () => {
                 </InputGroup>
 
                 <InputGroup>
+                  <Select
+                    name="subsidiary"
+                    nameLabel="Filial"
+                    options={optionsSubsidiary}
+                    onChange={handleSelectedSubsidiary}
+                  />
+
+                  <Select
+                    name="departament"
+                    nameLabel="Departamento"
+                    options={optionsDepartament}
+                    onChange={handleSelectedDepartament}
+                  />
+                </InputGroup>
+
+                <InputGroup>
+                  <Select
+                    name="office"
+                    nameLabel="Cargo"
+                    options={optionsOffice}
+                  />
                   <Input
                     mask="date"
                     label="Data de Admissão"
