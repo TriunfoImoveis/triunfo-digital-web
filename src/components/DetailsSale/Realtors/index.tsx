@@ -223,17 +223,17 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 isMulti
               />
             )}
-            {coordinator &&
-              (edit ? (
+            {edit  ?
+              (coordinator && (
                 <InputDisable label="Coordenador" data={coordinator.name} />
-              ) : (
+              )): (
                 <Select
                   name="user_coordinator"
                   label="Coordenador"
                   options={optionsCoordinators}
                   placeholder="Coordenador"
                 />
-              ))}
+              )}
             <InputGroup>
               {directors.map(director => (
                 <InputDisable
@@ -310,17 +310,17 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 isMulti
               />
             )}
-            {coordinator &&
-              (edit ? (
+            {edit ?
+              (coordinator && (
                 <InputDisable label="Coordenador" data={coordinator.name} />
-              ) : (
+              )):  (
                 <Select
                   name="user_coordinator"
                   label="Coordenador"
                   options={optionsCoordinators}
                   placeholder="Coordenador"
                 />
-              ))}
+              )}
             <InputGroup>
               {directors.map(director => (
                 <InputDisable
