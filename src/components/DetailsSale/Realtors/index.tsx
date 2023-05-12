@@ -81,21 +81,21 @@ const Realtors: React.FC<IRealtorsProps> = ({
     loadAllRealtors();
   }, []);
 
-  const realtors = allRealtors.filter(
+  const realtors = allRealtors?.filter(
     realtor => realtor.office?.name === 'Corretor',
   );
 
-  const optionsRealtors = realtors.map(realtor => ({
+  const optionsRealtors = realtors?.map(realtor => ({
     label: realtor.name,
     value: realtor.id,
   }));
-  const coordinators = allRealtors.filter(
+  const coordinators = allRealtors?.filter(
     realtor => realtor.office?.name === 'Coordenador',
   );
 
-  const optionsCoordinators = coordinators.map(coordinator => ({
-    label: coordinator.name,
-    value: coordinator.id,
+  const optionsCoordinators = coordinators?.map(coordinator => ({
+    label: coordinator?.name,
+    value: coordinator?.id,
   }));
   const handleSubmit = useCallback(
     async (data: FormData) => {
@@ -105,7 +105,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
       formRef.current?.setErrors({});
 
       if (users_sellers) {
-        const newUsersSellers = users_sellers.map((saller: any) => ({
+        const newUsersSellers = users_sellers?.map((saller: any) => ({
           id: saller,
         }));
         formData = {
@@ -114,10 +114,10 @@ const Realtors: React.FC<IRealtorsProps> = ({
         };
       }
       if (users_captivators) {
-        const newUsersSellers = users_sellers.map((saller: any) => ({
+        const newUsersSellers = users_sellers?.map((saller: any) => ({
           id: saller,
         }));
-        const newUsersCap = users_captivators.map((cap: any) => ({
+        const newUsersCap = users_captivators?.map((cap: any) => ({
           id: cap,
         }));
         formData = {
@@ -202,7 +202,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
             </Legend>
 
             {edit ? (
-              sallers.map((saller, index) => (
+              sallers?.map((saller, index) => (
                 <InputDisable
                   key={saller.name}
                   label={
@@ -235,7 +235,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 />
               )}
             <InputGroup>
-              {directors.map(director => (
+              {directors?.map(director => (
                 <InputDisable
                   key={director.name}
                   label="Diretor"
@@ -267,7 +267,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
             </Legend>
 
             {edit ? (
-              sallers.map((saller, index) => (
+              sallers?.map((saller, index) => (
                 <InputDisable
                   key={saller.name}
                   label={
@@ -322,7 +322,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 />
               )}
             <InputGroup>
-              {directors.map(director => (
+              {directors?.map(director => (
                 <InputDisable
                   key={director.name}
                   label="Diretor"
