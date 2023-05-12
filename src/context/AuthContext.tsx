@@ -28,6 +28,8 @@ interface UserAuth {
   }[];
   avatar_url: string | null;
   goal: string;
+  phone: string;
+  creci: string;
 }
 
 interface AuthState {
