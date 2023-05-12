@@ -13,12 +13,17 @@ import { Sync } from '../../../assets/images';
 import theme from '../../../styles/theme';
 
 import { LogonInfo, FormContent, Input } from './styles';
+import { FoneMask, money } from '../../../utils/masked';
+import { unMaked, currency } from '../../../utils/unMasked';
 
 interface FormData {
   email?: string;
   oldPassword?: string;
   newPassword?: string;
   confirmNewPassword?: string;
+  phone?: string;
+  goal?: string;
+  creci?: string;
 }
 
 const UserUpdate: React.FC = () => {
@@ -33,9 +38,7 @@ const UserUpdate: React.FC = () => {
       setLoading(true);
       const schema = Yup.object().shape({
         email: Yup.string().email('Digite um e-mail válido'),
-        oldPassword: Yup.string()
-          .min(6, 'senha tem que no mínimo 6 digitos')
-          .max(6, 'senha tem que no máximo de 6 digitos'),
+        oldPassword: Yup.string(),
         newPassword: Yup.string().when('oldPassword', {
           is: val => !!val.length,
           then: Yup.string().required('Campo obrigatório'),
@@ -48,15 +51,18 @@ const UserUpdate: React.FC = () => {
             otherwise: Yup.string(),
           })
           .oneOf([Yup.ref('newPassword'), undefined], 'Senhas não conferem'),
-      });
+      }).notRequired();
 
       await schema.validate(data, {
         abortEarly: false,
       });
 
-      const { email, oldPassword, newPassword, confirmNewPassword } = data;
+      const { email, oldPassword, newPassword, confirmNewPassword, phone, goal, creci } = data;
       const formData = {
         email,
+        phone: phone && unMaked(phone),
+        goal: goal && currency(goal),
+        creci,
         ...(oldPassword
           ? { password: newPassword, password_confirmation: confirmNewPassword }
           : {}),
@@ -82,14 +88,18 @@ const UserUpdate: React.FC = () => {
 
   return (
     <LogonInfo>
-      <h2>Atualização de dados</h2>
-      <Form ref={formProfileRef} onSubmit={handleSubmitProfile}>
+      <h2>Atualização de dados pessoais</h2>
+      <Form ref={formProfileRef} onSubmit={handleSubmitProfile} initialData={{
+        email: userAuth.email,
+        phone: FoneMask(userAuth.phone),
+        goal: money(Number(userAuth.goal)),
+        creci: userAuth?.creci,
+      }}>
         <FormContent>
           <Input>
             <InputForm
               label="Email"
               name="email"
-              defaultValue={userAuth.email}
             />
           </Input>
           <Input>
@@ -107,6 +117,29 @@ const UserUpdate: React.FC = () => {
               label="Repetetir Nova Senha"
               name="confirmNewPassword"
               type="password"
+            />
+          </Input>
+          <Input>
+            <InputForm
+              label="Telefone"
+              name="phone"
+              type="tel"
+            />
+          </Input>
+          <Input>
+            <InputForm
+              label="Meta de VGV (Anual)"
+              name="goal"
+              type="Text"
+              mask='fone'
+            />
+          </Input>
+          <Input>
+            <InputForm
+              label="CRECI"
+              name="creci"
+              type="text"
+              maxLength={6}
             />
           </Input>
         </FormContent>
