@@ -8,7 +8,7 @@ import React, {
 import { useHistory, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
+import { FormHandles } from '@unform/core'; 
 import { toast } from 'react-toastify';
 import AdmLayout from '../../Layouts/Adm';
 import Input from '../../../components/Input';
@@ -66,6 +66,7 @@ interface IUser {
     city: string;
   };
   admission_date: string;
+  creci: string;
 }
 
 interface IUpdateUser {
@@ -79,6 +80,7 @@ interface IUpdateUser {
   subsidiary: string;
   departament: string;
   office: string;
+  creci: string;
 }
 
 const NewColab: React.FC = () => {
@@ -242,7 +244,8 @@ const NewColab: React.FC = () => {
           phone,
           subsidiary,
           departament,
-          office
+          office,
+          creci
         } = data;
 
         const formData = {
@@ -254,6 +257,7 @@ const NewColab: React.FC = () => {
           admission_date,
           phone,
           office,
+          creci,
           ...(password
             ? {
                 password,
@@ -310,7 +314,8 @@ const NewColab: React.FC = () => {
             subsidiary: user?.subsidiary?.id,
             departament: user?.departament?.id,
             admission_date: user?.admission_date,
-            office: user?.office?.id
+            office: user?.office?.id,
+            creci: user?.creci
           }}>
             <InfoLogin>
               <fieldset className="login">
@@ -335,8 +340,12 @@ const NewColab: React.FC = () => {
               <fieldset className="login">
                 <legend>INFORMAÇÕES ADMISSIONAIS</legend>
                 <InputGroup>
-                  <Input label="Telefone" name="phone" mask="fone" />
+                  <Input label="CRECI" name="creci" maxLength={6} />
                   <Input label="Meta de Venda" name="goal" mask="currency" />
+                </InputGroup>
+
+                <InputGroup>
+                  <Input label="Telefone" name="phone" mask="fone" />
                 </InputGroup>
 
                 <InputGroup>
@@ -405,8 +414,12 @@ const NewColab: React.FC = () => {
               <fieldset className="login">
                 <legend>INFORMAÇÕES ADMISSIONAIS</legend>
                 <InputGroup>
-                  <Input label="Telefone" name="phone" mask="fone" />
+                  <Input label="CRECI" name="creci" maxLength={6} />
                   <Input label="Meta de Venda" name="goal" mask="currency" />
+                </InputGroup>
+
+                <InputGroup>
+                  <Input label="Telefone" name="phone" mask="fone" />
                 </InputGroup>
                 <InputGroup>
                   <Select
