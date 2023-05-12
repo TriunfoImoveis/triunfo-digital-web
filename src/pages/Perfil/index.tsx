@@ -89,7 +89,7 @@ const Perfil: React.FC = () => {
             defaultActiveKey="profile"
             variant="tabs"
           >
-            <TabBootstrap eventKey="profile" title="Perfil">
+            <TabBootstrap eventKey="profile" title="Dados Pessoais">
               <UserUpdate />
             </TabBootstrap>
             <TabBootstrap eventKey="finances" title="Financeiro">
