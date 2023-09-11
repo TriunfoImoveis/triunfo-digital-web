@@ -18,6 +18,7 @@ import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import getValidationErros from '../../../utils/getValidationErros';
 
 import theme from '../../../styles/theme';
+import InputDisabled from '../../InputDisabled';
 
 
 interface IRealtorsProps {
@@ -56,6 +57,7 @@ interface IParams {
 interface FormData {
   users_sellers: [];
   users_captivators: [];
+  users_coordiantor: "" | null
 }
 
 const Realtors: React.FC<IRealtorsProps> = ({
@@ -70,6 +72,8 @@ const Realtors: React.FC<IRealtorsProps> = ({
   const [edit, setEdit] = useState(true);
   const [loading, setLoading] = useState(false);
   const [allRealtors, setAllRealtors] = useState<IRealtos[]>([]);
+  const [isCoordinatorExist, setIsCoordinatorExist] = useState(true);
+
   const { id } = useParams<IParams>();
   const history = useHistory();
 
@@ -103,6 +107,13 @@ const Realtors: React.FC<IRealtorsProps> = ({
 
       let formData = {};
       formRef.current?.setErrors({});
+
+      if (!isCoordinatorExist) {
+        formData = {
+          ...formData,
+          users_coordiantor: null
+        }
+      }
 
       if (users_sellers) {
         const newUsersSellers = users_sellers?.map((saller: any) => ({
@@ -184,8 +195,13 @@ const Realtors: React.FC<IRealtorsProps> = ({
         setLoading(false);
       }
     },
-    [saleType, id, history],
+    [saleType, id, history, isCoordinatorExist],
   );
+
+  const handleNotCoordinator = () => {
+    setIsCoordinatorExist(!isCoordinatorExist);
+  };
+
   return (
     <Form ref={formRef} onSubmit={handleSubmit}>
       {saleType === 'NOVO' ? (
@@ -223,16 +239,34 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 isMulti
               />
             )}
-            {edit  ?
+            {edit ?
               (coordinator && (
                 <InputDisable label="Coordenador" data={coordinator.name} />
-              )): (
-                <Select
-                  name="user_coordinator"
-                  label="Coordenador"
-                  options={optionsCoordinators}
-                  placeholder="Coordenador"
-                />
+              )) : (
+                <>
+                  {isCoordinatorExist ? (
+                    <Select
+                      name="user_coordinator"
+                      label="Coordenador"
+                      options={optionsCoordinators}
+                      placeholder="Coordenador"
+                    />
+                  ) : (
+                    <InputDisabled label="Coordenador" data="Nenhum" />
+                  )}
+
+
+                  <div className="not-coordinator">
+                    <input
+                      type="checkbox"
+                      name="not-coordinators"
+                      id="not-coordinators"
+                      onChange={handleNotCoordinator}
+                    />
+                    <label htmlFor="not-coordinators">Não Possuí Coordenação</label>
+                  </div>
+                </>
+
               )}
             <InputGroup>
               {directors?.map(director => (
@@ -313,13 +347,31 @@ const Realtors: React.FC<IRealtorsProps> = ({
             {edit ?
               (coordinator && (
                 <InputDisable label="Coordenador" data={coordinator.name} />
-              )):  (
-                <Select
-                  name="user_coordinator"
-                  label="Coordenador"
-                  options={optionsCoordinators}
-                  placeholder="Coordenador"
-                />
+              )) : (
+                <>
+                  {isCoordinatorExist ? (
+                    <Select
+                      name="user_coordinator"
+                      label="Coordenador"
+                      options={optionsCoordinators}
+                      placeholder="Coordenador"
+                    />
+                  ) : (
+                    <InputDisabled label="Coordenador" data="Nenhum" />
+                  )}
+
+
+                  <div className="not-coordinator">
+                    <input
+                      type="checkbox"
+                      name="not-coordinators"
+                      id="not-coordinators"
+                      onChange={handleNotCoordinator}
+                    />
+                    <label htmlFor="not-coordinators">Não Possuí Coordenação</label>
+                  </div>
+                </>
+
               )}
             <InputGroup>
               {directors?.map(director => (
