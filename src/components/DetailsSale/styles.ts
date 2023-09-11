@@ -107,6 +107,23 @@ export const SaleData = styled.div`
       }
     }
   }
+
+  .not-coordinator {
+    display: flex;
+    align-items: center;
+
+    input[type='checkbox'] {
+      width: 2rem;
+      height: 2rem;
+      margin-left: 0;
+    }
+    > label {
+      margin-top: 0.5rem;
+      margin-left: 0.5rem;
+      font-size: 1.4rem;
+      color: ${({ theme }) => theme.colors.textColor};
+    }
+  }
 `;
 
 export const Legend = styled.div`
