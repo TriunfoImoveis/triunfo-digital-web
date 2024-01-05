@@ -375,7 +375,6 @@ const Realtors: React.FC<IRealtorsProps> = ({
               )}
             <InputGroup>
               {directors?.map(director => (
-              {directors?.map(director => (
                 <InputDisable
                   key={director.name}
                   label="Diretor"
