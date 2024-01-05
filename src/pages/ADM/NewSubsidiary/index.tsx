@@ -18,9 +18,9 @@ import { Container, InfoLogin, ButtonGroup } from './styles';
 import { Sync, Garb } from '../../../assets/images';
 import api from '../../../services/api';
 import Select from '../../../components/Select';
-import { unMaked, unMaskedCNPJ } from '../../../utils/unMasked';
+import { unMaked } from '../../../utils/unMasked';
 import getValidationErros from '../../../utils/getValidationErros';
-import { cnpj, FoneMask, money } from '../../../utils/masked';
+import { money } from '../../../utils/masked';
 
 import axios from 'axios';
 
