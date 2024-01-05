@@ -96,6 +96,10 @@ const Header: React.FC<IHeaderProps> = ({ type = 'realtor' }) => {
                     <Link to="/adm/lista-construtoras">Construtoras</Link>
                   </NavItemContent>
                   <NavItemContent>
+                    <RegisterSellIcon />
+                    <a href="/adm/lista-filiais">Filiais</a>
+                  </NavItemContent>
+                  <NavItemContent>
                     <IoIosLogOut size={30} color="#fff" />
                     <button type="button" onClick={toggleLogoutModal}>
                       Sair
@@ -109,7 +113,7 @@ const Header: React.FC<IHeaderProps> = ({ type = 'realtor' }) => {
       ) : (
         <NavBarContainer>
           {userAuth.office.name === 'Presidente' ||
-          userAuth.office.name === 'Gerente' ? (
+            userAuth.office.name === 'Gerente' ? (
             <NavItemContent>
               <AdmLogo />
               <Link to="/adm/lista-vendas">Administrativo</Link>

@@ -36,6 +36,8 @@ import DashboardPersona from '../pages/Dashboard/Persona';
 import DashboardMenu from '../pages/Dashboard/Menu';
 import DashboardSubsidiary from '../pages/Dashboard/Subsidiary';
 import DashboardTime from '../pages/Dashboard/Time';
+import ListSubsidiaries from '../pages/ADM/ListSubsidiaries';
+import NewSubisidiaries from '../pages/ADM/NewSubsidiary';
 
 
 
@@ -67,7 +69,14 @@ const Routes: React.FC = () => (
       component={NewBuilders}
       isPrivate
     />
+    <Route path="/adm/nova-filial" component={NewSubisidiaries} isPrivate />
+    <Route
+      path="/adm/detalhes-filiais/:id"
+      component={NewSubisidiaries}
+      isPrivate
+    />
     <Route path="/adm/relatorio-vendas" component={ReportSale} isPrivate />
+    <Route path="/adm/lista-filiais" component={ListSubsidiaries} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 
