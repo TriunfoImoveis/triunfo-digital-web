@@ -19,6 +19,12 @@ interface IOptionsData {
   name: string;
 }
 
+interface ISubsidiaries {
+  id: string,
+  name: string;
+  state: string;
+}
+
 interface IBGECityResponse {
   nome: string;
 }
@@ -40,6 +46,7 @@ interface IStep1FormData {
   builder?: string;
 }
 
+
 const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const { userAuth } = useAuth();
@@ -48,6 +55,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
 
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<IOptionsData[]>([]);
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiaries[]>([]);
   const [selectedUf, setSelectedUf] = useState(userAuth.subsidiary.state);
   const [cities, setCities] = useState<string[]>([]);
 
@@ -79,21 +87,22 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
       });
       setBuilders(response.data);
     };
+    const loadSubsidiaries = async () => {
+      const response = await api.get('/subsidiary');
+      setSubsidiaries(response.data);
+    };
     const loadPropertyType = async () => {
       const response = await api.get('/property-type');
       setPropertyTypes(response.data);
     };
     loadBuilders();
     loadPropertyType();
+    loadSubsidiaries();
   }, [typeSale, selectedUf]);
-  const optionsUFs = [
-    { label: 'Ceará', value: 'CE' },
-    { label: 'Maranhão', value: 'MA' },
-    { label: 'Piauí', value: 'PI' },
-    { label: 'Paraíba', value: 'PB' },
-    { label: 'São Paulo', value: 'SP' },
-  ];
 
+  const arrUfs= subsidiaries.map(subsidiary => subsidiary.state)
+  const filtredArrUfs = arrUfs.filter((item, i) => arrUfs.indexOf(item) === i)
+  const optionsUFs = filtredArrUfs.map(item => ({label: item, value: item}))
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
     value: builder.id,
@@ -181,7 +190,7 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
           <ReactSelect
             name="realty.state"
             placeholder="Informe o estado"
-            options={optionsUFs}
+            options={optionsUFs || []}
             onChange={handleSelectedUF}
             label="Estado"
           />
