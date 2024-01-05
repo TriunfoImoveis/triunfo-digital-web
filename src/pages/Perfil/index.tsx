@@ -13,6 +13,7 @@ import UserFinances from '../../components/Profile/UserFinances';
 import UserListSales from '../../components/Profile/UserListSales';
 
 import { Container, Content, TabWrapper } from './styles';
+import axios from 'axios';
 
 interface IUserSales {
   id: string;
@@ -63,12 +64,14 @@ const Perfil: React.FC = () => {
 
         setUserSales(salesFormated);
       } catch (error) {
-        if (error.response) {
-          toast.error(`ERROR! ${error.response.data.message}`);
-        } else if (error.request) {
-          toast.error(
-            `ERROR! Falha ao connectar ao servidor! Entre em contato com o suporte.`,
-          );
+        if (axios?.isAxiosError(error)) {
+          if (error.response) {
+            toast.error(`ERROR! ${error.response.data.message}`);
+          } else if (error.request) {
+            toast.error(
+              `ERROR! Falha ao connectar ao servidor! Entre em contato com o suporte.`,
+            );
+          }
         }
       }
     };

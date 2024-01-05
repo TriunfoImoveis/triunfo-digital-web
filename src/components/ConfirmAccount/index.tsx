@@ -15,6 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import { valiateDate } from '../../utils/validateDate';
 import getValidationErros from '../../utils/getValidationErros';
 import { DateYMD, unMaked } from '../../utils/unMasked';
+import axios from 'axios';
 
 type ConfirmAccountProps = {
   accountId: string;
@@ -57,10 +58,12 @@ const ConfirmAccount: React.FC<ConfirmAccountProps> = ({ accountId }) => {
       toast.success('Confirmação de pagamento feito com sucesso');
       history.push('/financeiro/contas');
     } catch (err) {
-      if (err.request) {
-        toast.error('Erro no servidor');
-      } else if (err.response) {
-        toast.error('Erro no servidor');
+      if (axios.isAxiosError(err)) {
+        if (err.request) {
+          toast.error('Erro no servidor');
+        } else if (err.response) {
+          toast.error('Erro no servidor');
+        }
       } else if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);

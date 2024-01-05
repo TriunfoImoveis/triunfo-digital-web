@@ -44,6 +44,7 @@ import ValidInstallment from '../../ReactModal/ValidInstallment';
 import theme from '../../../styles/theme';
 import Installments from '../Installments';
 import { sortingByPlotNumber } from '../../../utils/filters';
+import axios from 'axios';
 
 interface Origin {
   id: string;
@@ -228,8 +229,10 @@ const Finances: React.FC<IFinancesProps> = ({
       toogleEditInstallments();
       window.location.reload();
     } catch (err) {
-      if (err.response) {
-        toast.error(`${err.response.data.message}`);
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          toast.error(`${err.response.data.message}`);
+        }
       } else {
         toast.error('ERROR ao adicionar as parcela!');
       }
@@ -242,12 +245,14 @@ const Finances: React.FC<IFinancesProps> = ({
       toast.success('Venda Validada com sucesso !');
       history.push('/ranking');
     } catch (error) {
-      if (error.response) {
-        toast.error(`${error.response.data.message}`);
-      } else if (error.request) {
-        toast.error(
-          'Erro de Conexão tente recarregar a página, contate o suporte',
-        );
+      if (axios.isAxiosError(error)) {
+        if (error?.request) {
+          toast.error(
+            'Erro de Conexão tente recarregar a página, contate o suporte',
+          );
+        } else if (error.response) {
+          toast.error(`${error.response.data.message}`);
+        }
       } else {
         toast.error(' Erro desconhecido, contate o suporte');
       }
@@ -261,8 +266,10 @@ const Finances: React.FC<IFinancesProps> = ({
         toast.success('Atualização Realizada');
         history.push('/adm/lista-vendas');
       } catch (err) {
-        if (err.response.data) {
-          toast.error(`${err.response.data.message}`);
+        if (axios?.isAxiosError(err)) {
+          if (err?.response?.data) {
+            toast.error(`${err.response.data.message}`);
+          } 
         } else {
           toast.error('Erro ao desativar a venda');
         }
