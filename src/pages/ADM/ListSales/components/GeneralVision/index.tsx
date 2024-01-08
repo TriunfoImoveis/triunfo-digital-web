@@ -41,6 +41,12 @@ interface ISale {
   }[];
 }
 
+interface ISubsidiary {
+  id: string;
+  city: string;
+  state: string;
+}
+
 const GeneralVision: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const {
@@ -53,9 +59,10 @@ const GeneralVision: React.FC = () => {
     month,
     handleSetMonth,
   } = useFilter();
-  const [url, setUrl] = useState(`/sale?city=${city}&status=${status}`);
+  const [url, setUrl] = useState(`/sale?state=${'MA'}&status=${status}`);
   const [year, setYear] = useState(currentYear);
   const { data: sales } = useFetch<ISale[]>(url);
+  const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
   const optionsYear = optionYear.filter(year => year.value <= currentYear);
 
 
@@ -107,12 +114,20 @@ const GeneralVision: React.FC = () => {
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetCity(event.target.value);
-    setUrl(`/sale?city=${event.target.value}&status=${status}`);
+    setUrl(`/sale?state=${event.target.value}&status=${status}`);
   };
   const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetStatus(event.target.value);
     setUrl(`/sale?city=${city}&status=${event.target.value}`);
   };
+
+  const listStates = useMemo(() => {
+    const stateArr = subsidiaries ? subsidiaries.map(subsidiary => subsidiary.state) : []
+    const states = stateArr.filter((item, i) => stateArr.indexOf(item) === i)
+    return states
+  }, [subsidiaries])
+
+ 
 
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -153,11 +168,11 @@ const GeneralVision: React.FC = () => {
           <FiltersBotton>
             <FilterButtonGroup>
               <FiltersBottonItems>
-                <span>Cidade: </span>
+                <span>Estado: </span>
                 <select defaultValue={city} onChange={handleSelectCity}>
-                  <option value="São Luís">São Luís</option>
-                  <option value="Fortaleza">Fortaleza</option>
-                  <option value="Teresina">Teresina</option>
+                  {listStates.map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
                 </select>
               </FiltersBottonItems>
               <FiltersBottonItems>
