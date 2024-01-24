@@ -21,6 +21,7 @@ import Select from '../../../components/Select';
 import { unMaked, unMaskedCNPJ } from '../../../utils/unMasked';
 import getValidationErros from '../../../utils/getValidationErros';
 import { cnpj, FoneMask } from '../../../utils/masked';
+import { states } from '../../../utils/loadOptions';
 
 interface IRoteparams {
   id: string;
@@ -35,11 +36,17 @@ interface IBuilder {
   city: string;
 }
 
+interface ISubsidiary {
+  id: string;
+  state: string;
+}
+
 const NewBuilders: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const [pageDetails, setPageDetails] = useState(false);
   const [builder, setBuilders] = useState<IBuilder>({} as IBuilder);
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
   const [selectedUf, setSelectedUf] = useState('MA');
   const token = localStorage.getItem('@TriunfoDigital:token');
   const history = useHistory();
@@ -61,18 +68,31 @@ const NewBuilders: React.FC = () => {
       };
       setBuilders(builderFormatted);
     };
+    const loadSubsidiary = async () => {
+      const response = await api.get(`/subsidiary`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+      setSubsidiaries(response.data)
+      
+    }
     if (id) {
       setPageDetails(true);
       loadBuilder();
     }
+    loadSubsidiary();
   }, [id, token]);
 
 
-  const optionsState = [
-    { label: 'Maranhão', value: 'MA' },
-    { label: 'Ceará', value: 'CE' },
-    { label: 'Piauí', value: 'PI' },
-  ];
+
+
+  const optionsState = subsidiaries.map(subsiary => {
+    return {
+      label: states[subsiary.state],
+      value: subsiary.state
+    }
+  });
 
   const handleSelectedUF = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {

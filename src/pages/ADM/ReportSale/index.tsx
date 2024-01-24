@@ -121,14 +121,14 @@ const ReportSale: React.FC = () => {
   const location = useLocation();
   const queries = useCallback(() => {
     const query = new URLSearchParams(location.search);
-    const city = query.get('city');
+    const subsidiaryId = query.get('subsidiaryId');
     const status = query.get('status');
     const name = query.get('name');
-    return { city, status, name };
+    return { subsidiaryId, status, name };
   }, [location.search]);
 
   useEffect(() => {
-    const { city, name, status } = queries();
+    const { subsidiaryId, name, status } = queries();
     const formatSale = (sales: ISaleData[]): IReport[] => {
       const saleFormated = sales.map(sale => ({
         id: sale.id,
@@ -148,7 +148,7 @@ const ReportSale: React.FC = () => {
         if (name) {
           const response = await api.get('/sale', {
             params: {
-              city,
+              subsidiaryId,
               status,
               name,
             },
@@ -158,7 +158,7 @@ const ReportSale: React.FC = () => {
         } else {
           const response = await api.get('/sale', {
             params: {
-              city,
+              subsidiaryId,
               status,
             },
           });

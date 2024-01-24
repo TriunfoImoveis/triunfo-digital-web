@@ -16,7 +16,6 @@ export const FiltersTop = styled.div`
 export const FiltersBotton = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
   z-index: 10;
 `;
 
@@ -107,6 +106,11 @@ export const FiltersBottonItems = styled.div`
   z-index: 10;
   margin: 1.2rem 0;
 
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: baseline;
+
   span {
     z-index: 10;
     font-family: Roboto;
@@ -149,6 +153,19 @@ export const FiltersBottonItems = styled.div`
       color: ${({ theme }) => theme.colors.gold};
       text-decoration: none;
     }
+  }
+
+  button {
+    width: 8rem;
+    height: 4.8rem;
+    border: none;
+    background-color: ${({ theme }) => theme.colors.primary};
+
+    > svg {
+      stroke: ${({ theme }) => theme.colors.gold};
+    }
+
+    border-radius: 0.4rem;
   }
 `;
 

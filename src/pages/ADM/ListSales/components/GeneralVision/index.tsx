@@ -1,6 +1,6 @@
-import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import React, { ChangeEvent, FormEvent, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaFilter } from 'react-icons/fa';
 import Loader from 'react-loader-spinner';
 import { getMonth, parseISO } from 'date-fns';
 import AdmLayout from '../../../../Layouts/Adm';
@@ -25,7 +25,7 @@ import { useFilter } from '../../../../../context/FilterContext';
 import { useFetch } from '../../../../../hooks/useFetch';
 import NotFound from '../../../../../components/Errors/NotFound';
 import { filterYear } from '../../../../../utils/filters';
-import { optionYear } from '../../../../../utils/loadOptions';
+import { optionYear, states } from '../../../../../utils/loadOptions';
 
 import theme from '../../../../../styles/theme';
 
@@ -45,26 +45,41 @@ interface ISubsidiary {
   id: string;
   city: string;
   state: string;
+  name: string;
+}
+
+interface IParamsFilterSales {
+  name?: string;
+  subsidiaryId?: string;
+  status?: string;
+  year?: number | string;
+  month?: number | string;
 }
 
 const GeneralVision: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const currentMonth = getMonth(new Date()) + 1;
   const {
     city,
     status,
     name,
-    handleSetCity,
     handleSetStatus,
     handleSetName,
-    month,
-    handleSetMonth,
+    subsidiary,
+    handleSetFiliais,
+    selectedFiliais
   } = useFilter();
-  const [url, setUrl] = useState(`/sale?state=${'MA'}&status=${status}`);
+  const [url, setUrl] = useState(`/sale`);
   const [year, setYear] = useState(currentYear);
-  const { data: sales } = useFetch<ISale[]>(url);
+  const [month, setMonth] = useState(currentMonth);
+  const [params, setParams] = useState({
+    status,
+    month: currentMonth,
+    year: currentYear   
+  } as IParamsFilterSales);
+  const { data: sales } = useFetch<ISale[]>(url, params);
   const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
   const optionsYear = optionYear.filter(year => year.value <= currentYear);
-
 
   const listSales = useMemo(() => {
     if (!sales) {
@@ -81,79 +96,69 @@ const GeneralVision: React.FC = () => {
         avatar_url: s.sale_has_sellers[0].avatar_url,
       },
     }));
-    if (month === 0) {
-      return salesFormatted.filter(sale => filterYear(sale.sale_date, year));
-    }
-    const salesFiltredMonth = sales.filter(sale => {
-      const parsedDate = parseISO(sale.sale_date);
-      const monthDateSale = getMonth(parsedDate) + 1;
-      if (!(monthDateSale === month)) {
-        // eslint-disable-next-line
-        return;
-      }
-      return {
-        ...sale,
-        sale_date: parsedDate,
-      };
-    });
 
-    const salesFiltred = salesFiltredMonth.map(s => ({
-      id: s.id,
-      name: 'Teste',
-      vgv: formatPrice(Number(s.realty_ammount)),
-      sale_date: s.sale_date,
-      dateSale: DateBRL(s.sale_date),
-      sallers: {
-        name: s.sale_has_sellers[0].name,
-        avatar_url: s.sale_has_sellers[0].avatar_url,
-      },
-    }));
+    return salesFormatted;
+  }, [sales]);
 
-    return salesFiltred.filter(sale => filterYear(sale.sale_date, year));
-  }, [sales, month, year]);
-
-  const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetCity(event.target.value);
-    setUrl(`/sale?state=${event.target.value}&status=${status}`);
+  const handleSelectSubsidiaries = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetFiliais(event.target.value);
+    const subsidiaryId = event.target.value
+    setParams(prevState => ({
+      ...prevState,
+      subsidiaryId
+    }))
   };
   const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
     handleSetStatus(event.target.value);
-    setUrl(`/sale?city=${city}&status=${event.target.value}`);
+    const status = event.target.value 
+    setParams(prevState => ({
+      ...prevState,
+      status
+    }))
   };
-
-  const listStates = useMemo(() => {
-    const stateArr = subsidiaries ? subsidiaries.map(subsidiary => subsidiary.state) : []
-    const states = stateArr.filter((item, i) => stateArr.indexOf(item) === i)
-    return states
-  }, [subsidiaries])
-
- 
 
   const searchRealtorByName = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const name = event.target.value;
       handleSetName(name);
       if (name.length > 0) {
-        setUrl(`/sale?city=${city}&status=${status}&name=${name}`);
+        setParams(prevState => ({
+          ...prevState,
+          name  
+        }))
       } else {
-        setUrl(`/sale?city=${city}&status=${status}`);
+        setParams(prevState => ({
+          ...prevState,
+          name: ''
+        }))
       }
       return;
     },
-    [handleSetName, city, status],
+    [handleSetName, subsidiary, status],
   );
 
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetMonth(Number(event.currentTarget.value));
+    setMonth(Number(event.currentTarget.value));
+    const month = Number(event.currentTarget.value)
+    
+    setParams(prevState => ({
+      ...prevState,
+      month: month === 0 ? '' : month
+    }))
   };
 
   const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
     setYear(Number(event.currentTarget.value));
+    const year = Number(event.currentTarget.value)
+    setParams(prevState => ({
+      ...prevState,
+      year: year === 0 ? '' : year
+    }))
   };
 
   return (
     <AdmLayout>
-      <form>
+      <form style={{ width: '100%' }}>
         <FiltersContainer>
           <FiltersTop>
             <Input>
@@ -169,15 +174,17 @@ const GeneralVision: React.FC = () => {
             <FilterButtonGroup>
               <FiltersBottonItems>
                 <span>Estado: </span>
-                <select defaultValue={city} onChange={handleSelectCity}>
-                  {listStates.map(state => (
-                    <option key={state} value={state}>{state}</option>
+                <select defaultValue={city} onChange={handleSelectSubsidiaries}>
+                  <option value={''}>Todas</option>
+                  {subsidiaries &&subsidiaries.map(subsidiary => (
+                    <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
                   ))}
                 </select>
               </FiltersBottonItems>
               <FiltersBottonItems>
                 <span>Status da Venda: </span>
                 <select defaultValue={status} onChange={handleSelectedStatus}>
+                  <option value={''}>Todas</option>
                   <option value="NAO_VALIDADO">NÃO VALIDADO</option>
                   <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
                   <option value="PAGO_TOTAL">PAGO</option>
@@ -205,20 +212,13 @@ const GeneralVision: React.FC = () => {
               <FiltersBottonItems>
                 <span>Ano: </span>
                 <select defaultValue={year} onChange={handleSelectYear}>
+                  <option value={''}>Todas</option>
                   {optionsYear.map(year => (
                     <option value={year.value}>{year.value}</option>
                   ))}
                 </select>
               </FiltersBottonItems>
             </FilterButtonGroup>
-            <FiltersBottonItems>
-              <Link
-                to={`/adm/relatorio-vendas?city=${city}&status=${status}&name=${name}`}
-                target="_blank"
-              >
-                Ir ao relatório
-              </Link>
-            </FiltersBottonItems>
           </FiltersBotton>
         </FiltersContainer>
       </form>

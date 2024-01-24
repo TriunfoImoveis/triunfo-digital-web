@@ -49,7 +49,7 @@ const VisionDirector: React.FC = () => {
   } = useFilter();
   const { userAuth } = useAuth();
   const { city } = userAuth.subsidiary;
-  const [url, setUrl] = useState(`/sale?city=${city}&status=${status}`);
+  const [url, setUrl] = useState(`/sale`);
   const { data: sales } = useFetch<ISale[]>(url);
 
   const listSales = useMemo(() => {

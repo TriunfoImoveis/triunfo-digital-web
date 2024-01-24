@@ -13,6 +13,8 @@ import ReactSelect from '../../ReactSelect';
 
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
 import { useAuth } from '../../../context/AuthContext';
+import { unicItensArray } from '../../../utils/format';
+import { states } from '../../../utils/loadOptions';
 
 interface IOptionsData {
   id: string;
@@ -100,13 +102,13 @@ const Step1: React.FC<ISaleNewData> = ({ nextStep, typeSale }) => {
     loadSubsidiaries();
   }, [typeSale, selectedUf]);
 
-  const arrUfs= subsidiaries.map(subsidiary => subsidiary.state)
-  const filtredArrUfs = arrUfs.filter((item, i) => arrUfs.indexOf(item) === i)
-  const optionsUFs = filtredArrUfs.map(item => ({label: item, value: item}))
+  const optionsUFs = 
+  unicItensArray(subsidiaries.map(subsidiary => subsidiary.state))
+  .map(item => ({label: states[item], value: item}))
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
     value: builder.id,
-  }));
+  })); 
 
   const optionsPropertyType = propertyTypes.map(property => ({
     label: property.name,

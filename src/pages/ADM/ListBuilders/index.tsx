@@ -21,6 +21,8 @@ import {
 } from './styles';
 import api from '../../../services/api';
 import { FoneMask } from '../../../utils/masked';
+import { states } from '../../../utils/loadOptions';
+import { unicItensArray } from '../../../utils/format';
 
 interface ISubsidiary {
   id: string;
@@ -94,6 +96,11 @@ const ListBuilders: React.FC = () => {
     [selectedSubsidiary.state],
   );
 
+  const optionsStates = unicItensArray(subsidiaries.map(subsidiary => subsidiary.state)).map(item => ({
+    label: states[item],
+    value: item
+  }))
+
   return (
     <AdmLayout>
       <FiltersContainer>
@@ -111,9 +118,9 @@ const ListBuilders: React.FC = () => {
           <FiltersBottonItems>
             <span>Estado: </span>
             <select onChange={handleSelectUf}>
-              {subsidiaries.map(subsidary => (
-                <option key={subsidary.id} value={subsidary.state}>
-                  {subsidary.state}
+              {optionsStates.map(states => (
+                <option key={states.value} value={states.value}>
+                  {states.label}
                 </option>
               ))}
             </select>

@@ -48,7 +48,7 @@ const FilterProvider: React.FC = ({ children }) => {
   const [status, setStatus] = useState<string>('NAO_VALIDADO');
   const [name, setName] = useState('');
   const [month, setMonth] = useState(0);
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState(0);
   const [group, setGroup] = useState('');
   const [subsidiary, setSubsidiary] = useState<string>('');
   const [selectedFiliais, setSelectedFiliais] = useState<string>('');
