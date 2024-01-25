@@ -18,6 +18,7 @@ import Finances from './Finances';
 import StatusSale from './StatusSale';
 import ClientBuyerPJ from './ClientBuyerPJ';
 import ClientSellerPJ from './ClientSellerPJ';
+import SubsidiarySale from './Subsidiary';
 
 interface IParamsData {
   id: string;
@@ -84,6 +85,11 @@ export interface ISaleData {
     id: string;
     name: string;
   }[];
+
+  subsidiary?:{
+    id: string;
+    name: string;
+  }
 
   value_signal: string;
   payment_signal: boolean;
@@ -310,6 +316,9 @@ const DetailsSale: React.FC = () => {
                   directors={directors}
                 />
               </TabBootstrap>
+              <TabBootstrap eventKey="subsidiaries" title="Filial">
+                  <SubsidiarySale subsbisiary={sale.subsidiary} />
+              </TabBootstrap>
               <TabBootstrap eventKey="finances" title="Financeiro">
                 <Finances
                   status={sale.status}
@@ -319,11 +328,9 @@ const DetailsSale: React.FC = () => {
                   paymentType={sale.payment_type}
                 />
               </TabBootstrap>
-              {sale.status === 'PENDENTE' || sale.status === 'PAGO_TOTAL' ? (
-                <TabBootstrap eventKey="staus" title="Status">
+              <TabBootstrap eventKey="staus" title="Status">
                   <StatusSale statusSale={sale.status} />
                 </TabBootstrap>
-              ) : null}
             </Tabs>
           )}
           {sale.sale_type === 'USADO' && (
