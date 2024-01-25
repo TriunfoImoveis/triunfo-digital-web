@@ -2,7 +2,7 @@ import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
 import Loader from 'react-loader-spinner';
-import { getMonth, parseISO } from 'date-fns';
+import { getMonth } from 'date-fns';
 import AdmLayout from '../../../../Layouts/Adm';
 import { Search } from '../../../../../assets/images';
 import {
@@ -50,7 +50,6 @@ interface IParamsFilterSales {
 const VisionDirector: React.FC = () => {
   const {
     status,
-    name,
     handleSetStatus,
     handleSetName,
   } = useFilter();
