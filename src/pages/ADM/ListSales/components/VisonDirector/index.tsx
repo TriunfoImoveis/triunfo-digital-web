@@ -27,6 +27,7 @@ import NotFound from '../../../../../components/Errors/NotFound';
 import { useAuth } from '../../../../../context/AuthContext';
 
 import theme from '../../../../../styles/theme';
+import { optionYear } from '../../../../../utils/loadOptions';
 
 interface ISale {
   id: string;
@@ -38,19 +39,37 @@ interface ISale {
   }[];
 }
 
+interface IParamsFilterSales {
+  name?: string;
+  subsidiaryId?: string;
+  status?: string;
+  year?: number | string;
+  month?: number | string;
+}
+
 const VisionDirector: React.FC = () => {
   const {
     status,
     name,
     handleSetStatus,
     handleSetName,
-    month,
-    handleSetMonth,
   } = useFilter();
+  const currentYear = new Date().getFullYear();
+  const currentMonth = getMonth(new Date()) + 1;
   const { userAuth } = useAuth();
-  const { city } = userAuth.subsidiary;
-  const [url, setUrl] = useState(`/sale`);
-  const { data: sales } = useFetch<ISale[]>(url);
+  const { id: subsidiaryId } = userAuth.subsidiary;
+  const [year, setYear] = useState(currentYear);
+  const [month, setMonth] = useState(currentMonth);
+  const [params, setParams] = useState({
+    subsidiaryId,
+    status,
+    month: currentMonth,
+    year: currentYear   
+  } as IParamsFilterSales);
+  const optionsYear = optionYear.filter(year => year.value <= currentYear);
+
+
+  const { data: sales } = useFetch<ISale[]>('/sale', params);
 
   const listSales = useMemo(() => {
     if (!sales) {
@@ -66,38 +85,18 @@ const VisionDirector: React.FC = () => {
         avatar_url: s.sale_has_sellers[0].avatar_url,
       },
     }));
-    if (month === 0) {
-      return salesFormatted;
-    }
-    const salesFiltredMonth = sales.filter(sale => {
-      const parsedDate = parseISO(sale.sale_date);
-      const monthDateSale = getMonth(parsedDate) + 1;
-      if (!(monthDateSale === month)) {
-        // eslint-disable-next-line
-        return;
-      }
-      return {
-        ...sale,
-        sale_date: parsedDate,
-      };
-    });
 
-    const salesFiltred = salesFiltredMonth.map(s => ({
-      id: s.id,
-      name: 'Teste',
-      vgv: formatPrice(Number(s.realty_ammount)),
-      dateSale: DateBRL(s.sale_date),
-      sallers: {
-        name: s.sale_has_sellers[0].name,
-        avatar_url: s.sale_has_sellers[0].avatar_url,
-      },
-    }));
-
-    return salesFiltred;
-  }, [sales, month]);
+    return salesFormatted;
+  }, [sales]);
+  
   const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetStatus(event.target.value);
-    setUrl(`/sale?city=${city}&status=${event.target.value}`);
+    const selectedStatus = event.target.value
+    handleSetStatus(selectedStatus);
+    setParams(prevState => ({
+      ...prevState,
+      status: selectedStatus
+    }))
+    
   };
 
   const searchRealtorByName = useCallback(
@@ -105,22 +104,43 @@ const VisionDirector: React.FC = () => {
       const name = event.target.value;
       handleSetName(name);
       if (name.length > 0) {
-        setUrl(`/sale?city=${city}&status=${status}&name=${name}`);
+        setParams(prevState => ({
+          ...prevState,
+          name
+        }))
       } else {
-        setUrl(`/sale?city=${city}&status=${status}`);
+        setParams(prevState => ({
+          ...prevState,
+          name: ''
+        }))
       }
       return;
     },
-    [handleSetName, city, status],
+    [handleSetName],
   );
 
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetMonth(Number(event.currentTarget.value));
+    setMonth(Number(event.currentTarget.value));
+    const month = Number(event.currentTarget.value)
+    
+    setParams(prevState => ({
+      ...prevState,
+      month: month === 0 ? '' : month
+    }))
+  };
+
+  const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    setYear(Number(event.currentTarget.value));
+    const year = Number(event.currentTarget.value)
+    setParams(prevState => ({
+      ...prevState,
+      year: year === 0 ? '' : year
+    }))
   };
 
   return (
     <AdmLayout>
-      <form>
+      <form  style={{ width: '100%' }}>
         <FiltersContainer>
           <FiltersTop>
             <Input>
@@ -161,15 +181,17 @@ const VisionDirector: React.FC = () => {
                   <option value={12}>Dezembro</option>
                 </select>
               </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Ano: </span>
+                <select defaultValue={year} onChange={handleSelectYear}>
+                  <option value={''}>Todas</option>
+                  {optionsYear.map(year => (
+                    <option value={year.value}>{year.value}</option>
+                  ))}
+                </select>
+              </FiltersBottonItems>
             </FilterButtonGroup>
-            <FiltersBottonItems>
-              <Link
-                to={`/adm/relatorio-vendas?city=${city}&status=${status}&name=${name}`}
-                target="_blank"
-              >
-                Ir ao relatório
-              </Link>
-            </FiltersBottonItems>
+           
           </FiltersBotton>
         </FiltersContainer>
       </form>
