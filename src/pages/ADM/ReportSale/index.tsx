@@ -1,15 +1,11 @@
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import ExportReport from '../../../components/ReactModal/ExportReport';
-import api from '../../../services/api';
 import { DateBRL, formatPrice } from '../../../utils/format';
 import AdmLayout from '../../Layouts/Adm';
 import { AiOutlineDownload } from "react-icons/ai";
 
 
 import {
-  Export,
   TableSaleWrapper,
   Footer,
   Header,
@@ -27,6 +23,8 @@ import { getMonth } from 'date-fns';
 import { useFilter } from '../../../context/FilterContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { optionYear } from '../../../utils/loadOptions';
+import { useAuth } from '../../../context/AuthContext';
+import { isFullAccessAdmin } from './utils';
 
 interface IReport {
   id: string;
@@ -147,7 +145,9 @@ const ReportSale: React.FC = () => {
   const [modalCreateReoport, setModalCreateReoport] = useState(false);
   const currentYear = new Date().getFullYear();
   const currentMonth = getMonth(new Date()) + 1;
-  const {
+  const {userAuth} = useAuth();
+  const isFullAcess = isFullAccessAdmin(userAuth.office.name);
+    const {
     status,
     handleSetStatus,
     handleSetName,
@@ -158,6 +158,7 @@ const ReportSale: React.FC = () => {
   const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
   const optionsYear = optionYear.filter(year => year.value <= currentYear);
   const [params, setParams] = useState({
+    subsidiaryId: !isFullAcess ? userAuth.subsidiary.id : '',
     status,
     month: currentMonth,
     year: currentYear   
@@ -268,7 +269,8 @@ const ReportSale: React.FC = () => {
           </FiltersTop>
           <FiltersBotton>
             <FilterButtonGroup>
-              <FiltersBottonItems>
+              { isFullAcess&& (
+                <FiltersBottonItems>
                 <span>Estado: </span>
                 <select defaultValue={''} onChange={handleSelectSubsidiaries}>
                   <option value={''}>Todas</option>
@@ -277,6 +279,7 @@ const ReportSale: React.FC = () => {
                   ))}
                 </select>
               </FiltersBottonItems>
+              )}
               <FiltersBottonItems>
                 <span>Status da Venda: </span>
                 <select defaultValue={status} onChange={handleSelectedStatus}>

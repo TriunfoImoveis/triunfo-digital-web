@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, {useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import Modal from '..';
 import { useAuth } from '../../../context/AuthContext';
@@ -55,7 +55,7 @@ const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen, params }) => {
     } finally {
       setLoading(false);
     }
-  }, [name, userAuth.subsidiary.state, params]);
+  }, [name, params]);
 
   return (
     <Modal isOpen={isOpen} setIsOpen={handleCloseModal}>
