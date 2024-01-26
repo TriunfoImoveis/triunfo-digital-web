@@ -7,7 +7,6 @@ import { AiOutlineDownload } from "react-icons/ai";
 
 import {
   TableSaleWrapper,
-  Footer,
   Header,
   Table,
   Body,
@@ -358,9 +357,6 @@ const ReportSale: React.FC = () => {
           </Body>
         </Table>
       </TableSaleWrapper>
-      <Footer>
-        <button type="button">Voltar</button>
-      </Footer>
       <ExportReport
         params={params}
         isOpen={modalCreateReoport}
