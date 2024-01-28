@@ -28,3 +28,7 @@ export const formatTextStatus = (textStaus: string): string => {
   }
   return textFormatted;
 };
+
+export const unicItensArray = (array: string[]): string[] => {
+  return array.filter((item, i) => array.indexOf(item) === i)
+}

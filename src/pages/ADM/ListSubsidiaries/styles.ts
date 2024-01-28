@@ -1,4 +1,6 @@
 import styled from 'styled-components';
+import { darken } from 'polished';
+import theme from '../../../styles/theme';
 
 export const FiltersContainer = styled.div`
   width: 100%;
@@ -7,7 +9,6 @@ export const FiltersContainer = styled.div`
 export const FiltersTop = styled.div`
   display: flex;
   align-items: center;
-  width: 100%;
 
   div + div {
     margin-left: 0.8rem;
@@ -16,21 +17,15 @@ export const FiltersTop = styled.div`
 export const FiltersBotton = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   z-index: 10;
-`;
-
-export const FilterButtonGroup = styled.div`
-  display: flex;
-  > div + div {
-    margin-left: 1.6rem;
-  }
 `;
 export const Input = styled.div`
   display: flex;
   align-items: center;
-  background-color: rgba(196, 196, 196, 0.2);
+  background-color: ${({ theme }) => theme.colors.grayAlpha};
 
-  width: 100%;
+  width: 80rem;
   height: 4.4rem;
   padding: 0 0.5rem;
 
@@ -39,7 +34,7 @@ export const Input = styled.div`
     padding: 0.8rem;
     background: transparent;
     border: none;
-    color: #707070;
+    color: ${({ theme }) => theme.colors.gray};
     font-size: 2rem;
     z-index: 10;
   }
@@ -48,7 +43,7 @@ export const Input = styled.div`
 export const FilterDiv = styled.div`
   display: flex;
   align-items: center;
-  background-color: rgba(196, 196, 196, 0.2);
+  background-color: ${({ theme }) => theme.colors.grayAlpha};
   z-index: 10;
 
   width: 19rem;
@@ -61,7 +56,7 @@ export const FilterDiv = styled.div`
     background: transparent;
     border: 0;
     font-size: 2rem;
-    color: #707070;
+    color: ${({ theme }) => theme.colors.gray};
     padding: 0 1rem;
     z-index: 10;
   }
@@ -95,7 +90,7 @@ export const FilterItem = styled.div`
     font-family: Roboto;
     font-style: normal;
     font-weight: 500;
-    font-size: 2rem;
+    font-size: 20px;
     line-height: 23px;
 
     color: ${({ theme }) => theme.colors.borderColor};
@@ -106,18 +101,13 @@ export const FiltersBottonItems = styled.div`
   z-index: 10;
   margin: 1.2rem 0;
 
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  justify-content: baseline;
-
   span {
     z-index: 10;
     font-family: Roboto;
     font-style: normal;
     font-weight: 500;
     font-size: 2rem;
-    color: ${({ theme }) => theme.colors.gold};
+    color: ${({ theme }) => theme.colors.primary};
   }
   select {
     z-index: 10;
@@ -130,42 +120,29 @@ export const FiltersBottonItems = styled.div`
     color: ${({ theme }) => theme.colors.borderColor};
     padding: 0 0.5rem;
 
-    font-size: 1.8rem;
+    font-size: 2rem;
+    margin-right: 1.6rem;
   }
 
-  a {
+  > a {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-decoration: none;
     width: 17.1rem;
     height: 4.8rem;
-    font-size: 1.4rem;
+
     background: ${({ theme }) => theme.colors.primary};
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 4px;
     border: 0;
-    color: #fff;
+    color: ${({ theme }) => theme.colors.gold};
+    font-size: 1.4rem;
     transition: background 0.2s;
-    margin-left: 0.8rem;
 
     &:hover {
-      background: ${({ theme }) => theme.colors.primaryAlpha};
-      color: ${({ theme }) => theme.colors.gold};
-      text-decoration: none;
+      background: ${darken(0.05, `${theme.colors.primary}`)};
     }
-  }
-
-  button {
-    width: 8rem;
-    height: 4.8rem;
-    border: none;
-    background-color: ${({ theme }) => theme.colors.primary};
-
-    > svg {
-      stroke: ${({ theme }) => theme.colors.gold};
-    }
-
-    border-radius: 0.4rem;
   }
 `;
 
@@ -205,15 +182,15 @@ export const HeaderItem = styled.div`
 
   /* Primary Triunfo */
 
-  color: ${({ theme }) => theme.colors.gold};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 export const SaleBody = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   height: 10rem;
-  box-shadow: ${({ theme }) => theme.boxShadow};
   border-radius: 10rem;
+  box-shadow: ${({ theme }) => theme.boxShadow};
   z-index: 10;
   background-color: ${({ theme }) => theme.colors.background};
 
@@ -240,7 +217,7 @@ export const SaleItem = styled.div`
   font-size: 2rem;
   color: ${({ theme }) => theme.colors.textColor};
 
-  a {
+  > a {
     text-decoration: none;
     color: ${({ theme }) => theme.colors.textColor};
     transition: color 0.2s;

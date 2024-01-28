@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
-import  { AxiosError } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
@@ -18,95 +18,117 @@ import { Container, InfoLogin, ButtonGroup } from './styles';
 import { Sync, Garb } from '../../../assets/images';
 import api from '../../../services/api';
 import Select from '../../../components/Select';
-import { unMaked, unMaskedCNPJ } from '../../../utils/unMasked';
+import { unMaked } from '../../../utils/unMasked';
 import getValidationErros from '../../../utils/getValidationErros';
-import { cnpj, FoneMask } from '../../../utils/masked';
-import { states } from '../../../utils/loadOptions';
+import { money } from '../../../utils/masked';
+
+import axios from 'axios';
 
 interface IRoteparams {
   id: string;
 }
 
-interface IBuilder {
-  id: string;
-  name: string;
-  cnpj: string;
-  email: string;
-  phone: string;
-  city: string;
-}
-
 interface ISubsidiary {
   id: string;
+  name: string;
+  goal: string;
+  city: string;
   state: string;
 }
 
-const NewBuilders: React.FC = () => {
+interface IIBGEResponse {
+  id: number;
+  sigla: string;
+  nome: string;
+}
+
+interface IUF {
+  label: string,
+  value: string;
+}
+interface ICity {
+  name: string
+}
+
+interface IBGECityResponse {
+  nome: string;
+}
+
+const NewSubisidiaries: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const [pageDetails, setPageDetails] = useState(false);
-  const [builder, setBuilders] = useState<IBuilder>({} as IBuilder);
-  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
-  const [selectedUf, setSelectedUf] = useState('MA');
+  const [subsidiary, setSubsidiary] = useState<ISubsidiary>({} as ISubsidiary);
+  const [ufs, setUfs] = useState<IUF[]>([])
+  const [cities, setcities] = useState<ICity[]>([])
+  const [selectedUf, setSelectedUf] = useState('0');
   const token = localStorage.getItem('@TriunfoDigital:token');
   const history = useHistory();
 
   const { id } = useParams<IRoteparams>();
 
+  const getCities = async (selectedUf: string) => {
+    if (selectedUf === '0') return;
+
+   const response = await axios.get<IBGECityResponse[]>( `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
+   const cities = response.data.map(item => ({name: item.nome}))
+    setcities(cities)
+  }
+
   useEffect(() => {
-    const loadBuilder = async () => {
-      const response = await api.get(`/builder/${id}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
-      const builder = response.data;
-      const builderFormatted = {
-        ...builder,
-        cnpj: cnpj(builder.cnpj),
-        phone: FoneMask(builder.phone),
-      };
-      setBuilders(builderFormatted);
-    };
     const loadSubsidiary = async () => {
-      const response = await api.get(`/subsidiary`, {
+      const response = await api.get(`/subsidiary/${id}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
-      setSubsidiaries(response.data)
-      
+      const subsidiary = response.data;
+     ;
+     setSubsidiary({
+      ...subsidiary,
+      goal: money(Number(subsidiary.goal))
+     });
+     setSelectedUf(subsidiary.state)
+    };
+    const loadUfs = async () => {
+      const response = await axios.get<any, AxiosResponse<IIBGEResponse[]>>('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+      const ufs = response.data.map(item => {
+        return {
+          label: item.nome,
+          value: item.sigla
+        }
+      })
+
+      setUfs(ufs)
     }
     if (id) {
       setPageDetails(true);
-      loadBuilder();
+      loadSubsidiary();
     }
-    loadSubsidiary();
+    loadUfs()
   }, [id, token]);
 
+  useEffect(() => {
+    getCities(selectedUf)
+  }, [selectedUf])
 
 
+  const optionsState = ufs;
 
-  const optionsState = subsidiaries.map(subsiary => {
-    return {
-      label: states[subsiary.state],
-      value: subsiary.state
-    }
-  });
+ 
 
   const handleSelectedUF = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const uf = event.target.value;
       setSelectedUf(uf);
+
     },
     [],
   );
 
   const unMasked = useCallback(() => {
-    const fone = unMaked(formRef.current?.getFieldValue('phone'));
-    formRef.current?.setFieldValue('phone', fone);
-    const cnpj = unMaskedCNPJ(formRef.current?.getFieldValue('cnpj'));
-    formRef.current?.setFieldValue('cnpj', cnpj);
+    const goal = unMaked(formRef.current?.getFieldValue('goal'));
+    formRef.current?.setFieldValue('goal', goal);
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -117,23 +139,27 @@ const NewBuilders: React.FC = () => {
       setLoading(true);
 
       const schema = Yup.object().shape({
-        name: Yup.string().required('Nome da Contrutora obrigatório'),
-        cnpj: Yup.string().required('CNPJ obrigatório'),
-        email: Yup.string().email().required('E-mail obrigatório'),
-        phone: Yup.string().required('Telefone obrigatório'),
-        responsible: Yup.string().required('Nome do Responsável obrigatório'),
+        name: Yup.string().required('Nome da Filial'),
+        goal: Yup.string().required('Meta Anual obritória'),
+        state: Yup.string().required('Estado obrigatório'),
+        city: Yup.string().required('Cidade obrigatório'),
       });
 
       await schema.validate(data, {
         abortEarly: false,
       });
-      await api.post('/builder', data, {
+
+      const paylaod = {
+        ...data,
+        country: 'Brasil'
+      }
+      await api.post('/subsidiary', paylaod, {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
-      toast.success('Nova Construtora Cadastrada');
-      history.push('/adm/lista-construtoras');
+      toast.success('Nova Filial Cadastrada');
+      history.push('/adm/lista-filiais');
       setLoading(false);
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
@@ -153,71 +179,78 @@ const NewBuilders: React.FC = () => {
     }
   }, [unMasked, token, history]);
 
-  const updateBuilder = useCallback(async () => {
+  const updateSubsidiary = useCallback(async () => {
     unMasked();
     const data = formRef.current?.getData();
     try {
-      await api.put(`/builder/${id}`, data, {
+      await api.put(`/subsidiary/${id}`, data, {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
-      toast.success('Dados da Construtora Atualizadaos');
+      toast.success('Dados da Filial Atualizadaos');
       window.location.reload();
     } catch (error) {
       toast.error('ERRO!');
     }
   }, [unMasked, id, token]);
-  const deleteBuilder = useCallback(async () => {
+  const deleteSubsidiary = useCallback(async () => {
+    const payload = {
+      active: false
+    }
     try {
-      await api.patch(`/builder/deactivate/${id}`, {
+      await api.put(`/subsidiary/${id}`, payload, {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
-      toast.success('Contrutora desativada');
-      history.push('/adm/lista-construtoras');
+      toast.success('Filial desativada');
+      history.push('/adm/lista-filiais');
     } catch (error) {
       toast.error('ERROR! Contate o suporte');
     }
   }, [history, id, token]);
 
+  const optionsCities = cities.map(city => {
+    return {
+      label: city.name,
+      value: city.name,
+    }
+  })
+
   return (
     <AdmLayout>
       <Container>
-        <h1>NOVA CONSTRUTORA</h1>
+        <h1>Nova Filial</h1>
         {pageDetails ? (
-          <Form ref={formRef} onSubmit={handleSubmit} initialData={builder}>
+          <Form ref={formRef} onSubmit={handleSubmit} initialData={subsidiary}>
             <InfoLogin>
               <fieldset className="login">
-                <legend>INFORMAÇÕES DA CONSTRUTORA</legend>
-                <Input label="Nome" name="name" />
-                <Input label="CNPJ" name="cnpj" maxlength={14} mask="cnpj" />
-                <Input label="E-mail" name="email" type="email" />
-                <Input
-                  label="Telefone"
-                  name="phone"
-                  mask="fone"
-                  maxlength={11}
-                />
-                <Input label="Nome do Responsável" name="responsible" />
+                <legend>INFORMAÇÕES DA FILIAL</legend>
+                <Input label="Nome" name="name"/>
+                <Input label="Meta" name="goal" />
                 <Select
                   name="state"
                   nameLabel="Estado"
                   options={optionsState}
-                  defaultValue={selectedUf}
                   onChange={handleSelectedUF}
+                  defaultValue={subsidiary.state}
+                />
+               <Select
+                  name="city"
+                  nameLabel="Cidade"
+                  options={optionsCities}
                 />
               </fieldset>
             </InfoLogin>
 
             {pageDetails && (
               <ButtonGroup>
-                <button type="button" onClick={updateBuilder}>
+                <button type="button" onClick={updateSubsidiary}>
                   <Sync />
                   <span>Atualizar</span>
                 </button>
-                <button type="button" onClick={deleteBuilder}>
+                <button type="button" onClick={deleteSubsidiary}>
                   <Garb />
                   <span>Remover</span>
                 </button>
@@ -238,32 +271,13 @@ const NewBuilders: React.FC = () => {
                 <Input
                   label="Nome"
                   name="name"
-                  placeholder="Contrutora Triunfo"
+                  placeholder="Nome da Filial"
                 />
                 <Input
-                  label="CNPJ"
-                  name="cnpj"
-                  maxlength={14}
-                  mask="cnpj"
-                  placeholder="00.000.000/0001-12"
-                />
-                <Input
-                  label="E-mail"
-                  name="email"
-                  type="email"
-                  placeholder="triunfocontrutora@gmail.com"
-                />
-                <Input
-                  label="Telefone"
-                  name="phone"
-                  mask="fone"
-                  maxlength={11}
-                  placeholder="(99) 9999-9999"
-                />
-                <Input
-                  label="Nome do Responsável"
-                  name="responsible"
-                  placeholder="Francistelmo Santos"
+                  label="Meta"
+                  name="goal"
+                  mask="currency"
+                  placeholder="R$ 1000.000.000,00"
                 />
                 <Select
                   name="state"
@@ -272,7 +286,12 @@ const NewBuilders: React.FC = () => {
                   defaultValue={selectedUf}
                   onChange={handleSelectedUF}
                 />
-                <Input name="city" label="Cidade" />
+                 <Select
+                  name="city"
+                  nameLabel="Cidade"
+                  defaultValue={'0'}
+                  options={optionsCities}
+                />
               </fieldset>
             </InfoLogin>
 
@@ -291,7 +310,7 @@ const NewBuilders: React.FC = () => {
 
             {!pageDetails && (
               <button type="submit" className="submit">
-                {loading ? 'Aguarde' : 'Cadastrar Colaborador'}
+                {loading ? 'Aguarde' : 'Cadastrar Filial'}
               </button>
             )}
           </Form>
@@ -301,4 +320,4 @@ const NewBuilders: React.FC = () => {
   );
 };
 
-export default NewBuilders;
+export default NewSubisidiaries;

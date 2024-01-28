@@ -1,5 +1,4 @@
 import React, {
-  ChangeEvent,
   useCallback,
   useEffect,
   useRef,
@@ -9,7 +8,6 @@ import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
-import { useAuth } from '../../../context/AuthContext';
 import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
 
@@ -23,9 +21,7 @@ import {
   UserSallersContainer,
   UserCaptivators,
   Directors,
-  Coordinator,
-  FilterCity,
-  SelectedCity,
+  Coordinator
 } from './styles';
 import api from '../../../services/api';
 import InputDisabled from '../../InputDisabled';
@@ -46,58 +42,42 @@ interface IOptions {
   name: string;
 }
 
+interface ISubsidiaries {
+  id: string;
+  name: string;
+}
+
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
   const [allRealtors, setAllRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
   const [directors, setDirectors] = useState<IDirectores[]>([]);
-  const [user_directors, setUserDirectors] = useState([]);
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiaries[]>([]);
   const [isCoordinatorExist, setIsCoordinatorExist] = useState(true);
 
   const { updateFormData } = useForm();
-  const { userAuth } = useAuth();
-
-  const [city, setCity] = useState(() => userAuth.subsidiary.city);
 
   useEffect(() => {
-    const loadAllRealtors = async () => {
-      const response = await api.get(
-        `/users?city=${city}&departament=Comercial`,
-      );
-      setAllRealtors(response.data);
+    const loadAllOptions = async () => {
+      const [
+        responseRealtors,
+        responseCoordinators,
+        responseDirectors,
+        responseSubsidiary
+      ] = await Promise.all([
+        api.get(`/users?departament=Comercial`),
+        api.get(`/users?office=Coordenador`),
+        api.get(`/users?office=Diretor`),
+        api.get(`/subsidiary`)
+      ])
+      setAllRealtors(responseRealtors.data);
+      setCoordinators(responseCoordinators.data);
+      setDirectors(responseDirectors.data)
+      setSubsidiaries(responseSubsidiary.data)
     };
-    loadAllRealtors();
-  }, [city]);
-
-  useEffect(() => {
-    const loadCoordinator = async () => {
-      const response = await api.get(`/users?city=${city}&office=Coordenador`);
-      setCoordinators(response.data);
-    };
-    loadCoordinator();
-  }, [city]);
-
-  useEffect(() => {
-    const loadDirector = async () => {
-      const response = await api.get(`/users?city=${city}&office=Diretor`);
-      const directors = response.data.map((response: any) => ({
-        id: response.id,
-      }));
-      setUserDirectors(directors);
-      setDirectors(response.data);
-    };
-    loadDirector();
-  }, [city]);
-
-  const setDirector = useCallback(() => {
-    const D1 = directors.map(d => ({
-      id: d.id,
-      name: d.name,
-    }));
-    const direcs = D1.map(d => d.name).toString();
-    return direcs;
-  }, [directors]);
+    loadAllOptions();
+  }, []);
 
   const optionsCoordenador = cordinators.map(coordinator => ({
     label: coordinator.name,
@@ -113,46 +93,49 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     value: all.id,
   }));
 
+  const optionsAllDirectores = directors.map(director => {
+    return {
+      label: director.name,
+      value: director.id
+    }
+  })
+  const optionsSubsidiaries = subsidiaries.map(subsidiary => {
+    return {
+      label: subsidiary.name,
+      value: subsidiary.id
+    }
+  })
+
   const handleNotCoordinator = () => {
     setIsCoordinatorExist(!isCoordinatorExist);
   };
 
-  const handleSelectedCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      setCity(event.target.value);
-    },
-    [],
-  );
-
   const handleSubmit = useCallback(
     async data => {
-      const { users_sellers, users_captivators } = data;
+      const { users_sellers, users_captivators, users_directors } = data;
+      console.log(data)
       let formData = {};
       formRef.current?.setErrors({});
-      formRef.current?.setFieldValue('user_director', user_directors);
-      if (users_sellers) {
-        const newUsersSellers = users_sellers.map((saller: any) => ({
-          id: saller,
-        }));
-        formData = {
-          ...data,
-          users_sellers: newUsersSellers,
-          users_directors: user_directors,
-        };
-      }
+      const newDirectors = users_directors.map((director: any) => ({
+        id: director,
+      }));
+      const newUsersSellers = users_sellers.map((saller: any) => ({
+        id: saller,
+      }));
       if (users_captivators) {
-        const newUsersSellers = users_sellers.map((saller: any) => ({
-          id: saller,
-        }));
         const newUsersCap = users_captivators.map((cap: any) => ({
           id: cap,
         }));
         formData = {
-          ...data,
-          users_sellers: newUsersSellers,
           users_captivators: newUsersCap,
-          users_directors: user_directors,
         };
+      }
+
+      formData = {
+        ...data,
+        ...formData,
+        users_sellers: newUsersSellers,
+        users_directors: newDirectors
       }
 
       try {
@@ -167,6 +150,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               )
               .required('Vendedor(es) Obrigatório'),
             user_coordinator: Yup.string(),
+            users_directors: Yup.array()
+              .of(
+                Yup.object().shape({
+                  id: Yup.string().required('Diretor Obrigatório'),
+                }),
+              ).max(2, 'No máximo dois diretores')
+              .required('Diretor(es) Obrigatório'),
           });
           await schema.validate(formData, {
             abortEarly: false,
@@ -187,6 +177,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 }),
               )
               .required('Captador Obrigatório'),
+            users_directors: Yup.array()
+              .of(
+                Yup.object().shape({
+                  id: Yup.string().required('Diretor Obrigatório'),
+                }),
+              ).max(2, 'No máximo dois diretores')
+              .required('Diretor(es) Obrigatório'),
           });
           await schema.validate(formData, {
             abortEarly: false,
@@ -204,23 +201,17 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [nextStep, typeSale, updateFormData, user_directors],
+    [nextStep, typeSale, updateFormData],
   );
   return (
     <Container>
-      {userAuth.office.name.includes('Gerente' || 'Presidente') && (
-        <FilterCity>
-          <SelectedCity>
-            <span>Em qual cidade é a venda ?</span>
-            <select value={city} onChange={handleSelectedCity}>
-              <option value="São Luís">São Luís</option>
-              <option value="Fortaleza">Fortaleza</option>
-              <option value="Teresina">Teresina</option>
-            </select>
-          </SelectedCity>
-        </FilterCity>
-      )}
       <Form ref={formRef} onSubmit={handleSubmit}>
+        <Select
+          name="subsidiary"
+          options={optionsSubsidiaries}
+          label="Filial da Venda"
+          placeholder="Filial Maranhão"
+        />
         {typeSale === 'new' && (
           <>
             <Select
@@ -253,8 +244,13 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               </div>
             </Coordinator>
             <Directors>
-              <span>Diretores</span>
-              <input defaultValue={setDirector()} readOnly />
+              <Select
+                name="users_directors"
+                placeholder="Selecione os diretores"
+                options={optionsAllDirectores}
+                label="Coordenador"
+                isMulti
+              />
             </Directors>
           </>
         )}
@@ -281,37 +277,40 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 />
               </UserCaptivators>
             </InputGroup>
-            {city.includes('Teresina') && (
-              <>
-                <Coordinator>
-                  {isCoordinatorExist ? (
-                    <Select
-                      name="user_coordinator"
-                      placeholder="Selecione o coordernador"
-                      options={optionsCoordenador}
-                      label="Coordenador"
-                    />
-                  ) : (
-                    <InputDisabled label="Coordenador" data="Nenhum" />
-                  )}
+            <>
+              <Coordinator>
+                {isCoordinatorExist ? (
+                  <Select
+                    name="user_coordinator"
+                    placeholder="Selecione o coordernador"
+                    options={optionsCoordenador}
+                    label="Coordenador"
+                  />
+                ) : (
+                  <InputDisabled label="Coordenador" data="Nenhum" />
+                )}
 
-                  <div className="not-coordinator">
-                    <input
-                      type="checkbox"
-                      name="not-coordinators"
-                      id="not-coordinators"
-                      onChange={handleNotCoordinator}
-                    />
-                    <label htmlFor="not-coordinators">
-                      Não Possuí Coordenação
-                    </label>
-                  </div>
-                </Coordinator>
-              </>
-            )}
+                <div className="not-coordinator">
+                  <input
+                    type="checkbox"
+                    name="not-coordinators"
+                    id="not-coordinators"
+                    onChange={handleNotCoordinator}
+                  />
+                  <label htmlFor="not-coordinators">
+                    Não Possuí Coordenação
+                  </label>
+                </div>
+              </Coordinator>
+            </>
             <Directors>
-              <span>Diretores</span>
-              <input defaultValue={setDirector()} readOnly />
+              <Select
+                name="users_directors"
+                placeholder="Selecione os diretores"
+                options={optionsAllDirectores}
+                label="Diretores"
+                isMultiS
+              />
             </Directors>
           </>
         )}

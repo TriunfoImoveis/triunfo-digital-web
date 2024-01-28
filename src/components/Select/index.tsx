@@ -87,8 +87,10 @@ const Select: React.FC<SelectProps> = ({
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           ref={selectRef}
+          defaultValue={defaultValue}
           {...rest}
         >
+          <option value="0" disabled hidden>Selecione uma opção</option> 
           {options.map(option => (
             <option key={option.value} value={option.value} selected={option.value === defaultValue}>
               {option.label}

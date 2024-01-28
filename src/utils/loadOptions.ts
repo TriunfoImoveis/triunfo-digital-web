@@ -49,11 +49,41 @@ export const loadOptionsTypeAccount = (inputValue: string, callback: any) => {
 };
 
 // CIDADES
+export const states = {
+  AC: 'Acre',
+  AL: 'Alagoas',
+  AP: 'Amapá',
+  AM: 'Amazonas',
+  BA: 'Bahia',
+  CE: 'Ceará',
+  DF: 'Distrito Federal',
+  ES: 'Espírito Santo',
+  GO: 'Goiás',
+  MA: 'Maranhão',
+  MT: 'Mato Grosso',
+  MS: 'Mato Grosso do Sul',
+  MG: 'Minas Gerais',
+  PA: 'Pará',
+  PB: 'Paraíba',
+  PR: 'Paraná',
+  PE: 'Pernanbuco',
+  PI: 'Piauí',
+  RJ: 'Rio de Janeiro',
+  RN: 'Rio Grande do Norte',
+  RS: 'Rio Grande do Sul',
+  RO: 'Rondônia',
+  RR: 'Roraima',
+  SC: 'Santa Catarina',
+  SP: 'São Paulo',
+  SE: 'Sergipe',
+  TO: 'Tocantins'
+}
 const optionsStates: OptionsData[] = [
   { label: 'Maranhão', value: 'MA' },
   { label: 'Ceará', value: 'CE' },
   { label: 'PI', value: 'MA' },
 ];
+
 export const loadStates = async (inputValue: string, callback: any) => {
   setTimeout(() => {
     callback(filterOptions(inputValue, optionsStates));

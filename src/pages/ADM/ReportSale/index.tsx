@@ -1,19 +1,29 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import ExportReport from '../../../components/ReactModal/ExportReport';
-import api from '../../../services/api';
 import { DateBRL, formatPrice } from '../../../utils/format';
 import AdmLayout from '../../Layouts/Adm';
+import { AiOutlineDownload } from "react-icons/ai";
+
 
 import {
-  Export,
   TableSaleWrapper,
-  Footer,
   Header,
   Table,
   Body,
+  FiltersContainer,
+  FiltersTop,
+  Input,
+  FiltersBotton,
+  FilterButtonGroup,
+  FiltersBottonItems,
 } from './styles';
+import { Search } from '../../../assets/images';
+import { getMonth } from 'date-fns';
+import { useFilter } from '../../../context/FilterContext';
+import { useFetch } from '../../../hooks/useFetch';
+import { optionYear } from '../../../utils/loadOptions';
+import { useAuth } from '../../../context/AuthContext';
+import { isFullAccessAdmin } from './utils';
 
 interface IReport {
   id: string;
@@ -115,77 +125,207 @@ interface ISaleData {
   }[];
 }
 
+interface ISubsidiary {
+  id: string;
+  city: string;
+  state: string;
+  name: string;
+}
+
+interface IParamsFilterSales {
+  name?: string;
+  subsidiaryId?: string;
+  status?: string;
+  year?: number | string;
+  month?: number | string;
+}
+
 const ReportSale: React.FC = () => {
-  const [reports, setReports] = useState<IReport[]>([]);
   const [modalCreateReoport, setModalCreateReoport] = useState(false);
-  const location = useLocation();
-  const queries = useCallback(() => {
-    const query = new URLSearchParams(location.search);
-    const city = query.get('city');
-    const status = query.get('status');
-    const name = query.get('name');
-    return { city, status, name };
-  }, [location.search]);
+  const currentYear = new Date().getFullYear();
+  const currentMonth = getMonth(new Date()) + 1;
+  const {userAuth} = useAuth();
+  const isFullAcess = isFullAccessAdmin(userAuth.office.name);
+    const {
+    status,
+    handleSetStatus,
+    handleSetName,
+    handleSetFiliais,
+  } = useFilter();
+  const [year, setYear] = useState(currentYear);
+  const [month, setMonth] = useState(currentMonth);
+  const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
+  const optionsYear = optionYear.filter(year => year.value <= currentYear);
+  const [params, setParams] = useState({
+    subsidiaryId: !isFullAcess ? userAuth.subsidiary.id : '',
+    status,
+    month: currentMonth,
+    year: currentYear   
+  } as IParamsFilterSales);
+  const { data: sales } = useFetch<ISaleData[]>('/sale', params);
 
-  useEffect(() => {
-    const { city, name, status } = queries();
-    const formatSale = (sales: ISaleData[]): IReport[] => {
-      const saleFormated = sales.map(sale => ({
-        id: sale.id,
-        sallers: sale.sale_has_sellers.map(salle => salle.name),
-        sale_date: DateBRL(sale.sale_date),
-        client_buyer: sale.client_buyer.name,
-        builder: sale.sale_type === 'NOVO' ? sale.builder.name : '',
-        realty: sale.realty.enterprise,
-        realty_ammount: formatPrice(Number(sale.realty_ammount)),
-        percentage_sale: sale.percentage_sale.toString(),
-        type_sale: sale.sale_type,
-      }));
-      return saleFormated;
-    };
-    const loadSale = async () => {
-      try {
-        if (name) {
-          const response = await api.get('/sale', {
-            params: {
-              city,
-              status,
-              name,
-            },
-          });
-          const sales = formatSale(response.data);
-          setReports(sales);
-        } else {
-          const response = await api.get('/sale', {
-            params: {
-              city,
-              status,
-            },
-          });
-          const sales = formatSale(response.data);
-          setReports(sales);
-        }
-      } catch (error) {
-        toast.error(
-          'falha ao carregar o relatório, entre em contato com o suporte',
-        );
-      }
-    };
+  const formatSale = (sales: ISaleData[]): IReport[] => {
+    const saleFormated = sales.map(sale => ({
+      id: sale.id,
+      sallers: sale.sale_has_sellers.map(salle => salle.name),
+      sale_date: DateBRL(sale.sale_date),
+      client_buyer: sale.client_buyer.name,
+      builder: sale.sale_type === 'NOVO' ? sale.builder.name : '',
+      realty: sale.realty.enterprise,
+      realty_ammount: formatPrice(Number(sale.realty_ammount)),
+      percentage_sale: sale.percentage_sale.toString(),
+      type_sale: sale.sale_type,
+    }));
+    return saleFormated;
+  };
 
-    loadSale();
-  }, [queries]);
+  const listSales = useMemo(() => {
+    if (!sales) {
+      return [];
+    }
+   
+    const salesFormatted = formatSale(sales);
+    return salesFormatted;
+  }, [sales]);
+
+  
 
   const toogleCreateReportModal = useCallback(() => {
     setModalCreateReoport(!modalCreateReoport);
   }, [modalCreateReoport]);
 
+  
+
+  const handleSelectSubsidiaries = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetFiliais(event.target.value);
+    const subsidiaryId = event.target.value
+    setParams(prevState => ({
+      ...prevState,
+      subsidiaryId
+    }))
+  };
+  const handleSelectedStatus = (event: ChangeEvent<HTMLSelectElement>) => {
+    handleSetStatus(event.target.value);
+    const status = event.target.value
+    setParams(prevState => ({
+      ...prevState,
+      status
+    }))
+  };
+
+  const searchRealtorByName = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const name = event.target.value;
+      handleSetName(name);
+      if (name.length > 0) {
+        setParams(prevState => ({
+          ...prevState,
+          name
+        }))
+      } else {
+        setParams(prevState => ({
+          ...prevState,
+          name: ''
+        }))
+      }
+      return;
+    },
+    [handleSetName],
+  );
+
+  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
+    setMonth(Number(event.currentTarget.value));
+    const month = Number(event.currentTarget.value)
+    setParams(prevState => ({
+      ...prevState,
+      month: month === 0 ? '' : month
+    }))
+
+  };
+
+  const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    setYear(Number(event.currentTarget.value));
+    const year = Number(event.currentTarget.value)
+    setParams(prevState => ({
+      ...prevState,
+      year: year === 0 ? '' : year
+    }))
+  };
+
   return (
     <AdmLayout>
-      <Export>
-        <button type="button" onClick={toogleCreateReportModal}>
-          gerar relatório completo
-        </button>
-      </Export>
+      <form style={{ width: '100%' }}>
+        <FiltersContainer>
+          <FiltersTop>
+            <Input>
+              <Search />
+              <input
+                type="text"
+                placeholder="Nome do corretor"
+                onChange={searchRealtorByName}
+              />
+            </Input>
+          </FiltersTop>
+          <FiltersBotton>
+            <FilterButtonGroup>
+              { isFullAcess&& (
+                <FiltersBottonItems>
+                <span>Estado: </span>
+                <select defaultValue={''} onChange={handleSelectSubsidiaries}>
+                  <option value={''}>Todas</option>
+                  {subsidiaries && subsidiaries.map(subsidiary => (
+                    <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
+                  ))}
+                </select>
+              </FiltersBottonItems>
+              )}
+              <FiltersBottonItems>
+                <span>Status da Venda: </span>
+                <select defaultValue={status} onChange={handleSelectedStatus}>
+                  <option value={''}>Todas</option>
+                  <option value="NAO_VALIDADO">NÃO VALIDADO</option>
+                  <option value="PENDENTE">PENDENTE DE PAGAMENTO</option>
+                  <option value="PAGO_TOTAL">PAGO</option>
+                  <option value="CAIU">CAIU</option>
+                </select>
+              </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Mês: </span>
+                <select defaultValue={month} onChange={handleSelectDate}>
+                  <option value={0}>Todas</option>
+                  <option value={1}>Janeiro</option>
+                  <option value={2}>Fevereiro</option>
+                  <option value={3}>Março</option>
+                  <option value={4}>Abril</option>
+                  <option value={5}>Maio</option>
+                  <option value={6}>Junho</option>
+                  <option value={7}>Julho</option>
+                  <option value={8}>Agosto</option>
+                  <option value={9}>Setembro</option>
+                  <option value={10}>Outubro</option>
+                  <option value={11}>Novembro</option>
+                  <option value={12}>Dezembro</option>
+                </select>
+              </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Ano: </span>
+                <select defaultValue={year} onChange={handleSelectYear}>
+                  <option value={''}>Todas</option>
+                  {optionsYear.map(year => (
+                    <option value={year.value}>{year.value}</option>
+                  ))}
+                </select>
+              </FiltersBottonItems>
+              <FiltersBottonItems>
+                <span>Baixar relatório</span>
+                <button type="button" onClick={toogleCreateReportModal}>
+                  <AiOutlineDownload size={30} color='#BAA05C' />
+                </button>
+              </FiltersBottonItems>
+            </FilterButtonGroup>
+          </FiltersBotton>
+        </FiltersContainer>
+      </form>
       <TableSaleWrapper>
         <Table>
           <Header>
@@ -201,7 +341,7 @@ const ReportSale: React.FC = () => {
             <th>Coordenação</th>
           </Header>
           <Body>
-            {reports.map(sale => (
+            {listSales.map(sale => (
               <tr>
                 <td>{sale.type_sale === 'NOVO' ? sale.builder : '-'}</td>
                 <td>{sale.type_sale || '-'}</td>
@@ -217,10 +357,8 @@ const ReportSale: React.FC = () => {
           </Body>
         </Table>
       </TableSaleWrapper>
-      <Footer>
-        <button type="button">Voltar</button>
-      </Footer>
       <ExportReport
+        params={params}
         isOpen={modalCreateReoport}
         setIsOpen={toogleCreateReportModal}
       />

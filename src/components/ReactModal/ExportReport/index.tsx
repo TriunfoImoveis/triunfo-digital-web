@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, {useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import Modal from '..';
 import { useAuth } from '../../../context/AuthContext';
@@ -7,16 +7,31 @@ import Button from '../../Button';
 
 import { Container, ContainerWrapper } from './styles';
 
+interface IParams {
+  name?: string;
+  subsidiaryId?: string;
+  status?: string;
+  year?: number | string;
+  month?: number | string;
+}
+
 interface ModalProps {
   isOpen: boolean;
   setIsOpen: () => void;
+  params: IParams
 }
 
-const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
+const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen, params }) => {
   const { userAuth } = useAuth();
   const { name } = userAuth.office;
   const [loading, setLoading] = useState(false);
-  const [linkDownloadReport, setLinkDownloadReport] = useState();
+  const [linkDownloadReport, setLinkDownloadReport] = useState('');
+  
+  const handleCloseModal = useCallback(() => {
+    setIsOpen();
+    setLinkDownloadReport('');
+    setLoading(false);
+  }, [setIsOpen])
 
 
   const createReport = useCallback(async () => {
@@ -24,13 +39,11 @@ const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
     try {
       if (name === 'Diretor') {
         const response = await api.get('/sale/export/excel', {
-          params: {
-            state: userAuth.subsidiary.state
-          }
+          params
         });
         setLinkDownloadReport(response.data.link_url);
       } else {
-        const response = await api.get('/sale/export/excel');
+        const response = await api.get('/sale/export/excel', {params});
         setLinkDownloadReport(response.data.link_url);
       }
       
@@ -42,28 +55,20 @@ const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
     } finally {
       setLoading(false);
     }
-  }, [name, userAuth.subsidiary.state]);
-
-  useEffect(() => {
-    createReport();
-  }, [createReport]);
+  }, [name, params]);
 
   return (
-    <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
-      {loading ? (
-        <ContainerWrapper>
-          <h3>Gerando Relatório</h3>
-          <Container>
-            <p>Carregando..............</p>
-          </Container>
-        </ContainerWrapper>
-      ) : (
-        <ContainerWrapper>
+    <Modal isOpen={isOpen} setIsOpen={handleCloseModal}>
+      <ContainerWrapper>
           <h3>Relatório</h3>
           <Container>
-            <p>Relatório gerado com sucesso, clique no botão para baixar!</p>
+            <p>Clique no botão para gerar o Relatorio em Excel</p>
 
-            <Button color="#40B236">
+            <Button color="#40B236" onClick={createReport}>
+              {loading ? 'Carregando...' : 'Gerar Relatório'}
+            </Button>
+            {linkDownloadReport.length> 0 && !loading && (
+              <Button color="#40B236">
               <a
                 href={linkDownloadReport}
                 target="_blank"
@@ -72,9 +77,9 @@ const ExportReport: React.FC<ModalProps> = ({ isOpen, setIsOpen }) => {
                 Baixar relatório completo em Excel
               </a>
             </Button>
+            )}
           </Container>
         </ContainerWrapper>
-      )}
     </Modal>
   );
 };
