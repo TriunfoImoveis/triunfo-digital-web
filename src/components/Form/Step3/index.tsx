@@ -248,7 +248,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 name="users_directors"
                 placeholder="Selecione os diretores"
                 options={optionsAllDirectores}
-                label="Coordenador"
+                label="Diretor(es)"
                 isMulti
               />
             </Directors>
@@ -309,7 +309,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 placeholder="Selecione os diretores"
                 options={optionsAllDirectores}
                 label="Diretores"
-                isMultiS
+                isMulti
               />
             </Directors>
           </>
