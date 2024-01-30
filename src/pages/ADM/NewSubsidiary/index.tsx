@@ -153,14 +153,30 @@ const NewSubisidiaries: React.FC = () => {
         ...data,
         country: 'Brasil'
       }
-      await api.post('/subsidiary', paylaod, {
+      const response = await api.post('/subsidiary', paylaod, {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
-      toast.success('Nova Filial Cadastrada');
-      history.push('/adm/lista-filiais');
-      setLoading(false);
+      if (response.status === 200) {
+        const payloadDepartament = {
+          name: "Comercial",
+          initials: "COM",
+          goal: 150000.00,
+          subsidiary: response.data.id
+        };
+        const responseDepartaments = await api.post('/departament', payloadDepartament, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (responseDepartaments.status === 200) {
+          toast.success('Nova Filial Cadastrada');
+          history.push('/adm/lista-filiais');
+          setLoading(false);
+        }
+      }
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
@@ -267,7 +283,7 @@ const NewSubisidiaries: React.FC = () => {
           <Form ref={formRef} onSubmit={handleSubmit}>
             <InfoLogin>
               <fieldset className="login">
-                <legend>INFORMAÇÕES DE LOGIN</legend>
+                <legend>INFORMAÇÕES DA FILIAL</legend>
                 <Input
                   label="Nome"
                   name="name"
