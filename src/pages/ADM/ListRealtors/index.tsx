@@ -22,6 +22,8 @@ import { formatPrice } from '../../../utils/format';
 import { useFindRealtor } from '../../../hooks/findRealtor';
 import { useFilter } from '../../../context/FilterContext';
 import theme from '../../../styles/theme';
+import { useFetch } from '../../../hooks/useFetch';
+import NotFound from '../../../components/Errors/NotFound';
 
 interface IRealtorData {
   id: string;
@@ -30,10 +32,25 @@ interface IRealtorData {
   vgv: string;
 }
 
+interface ISubsidiary {
+  id: string;
+  city: string;
+  state: string;
+  name: string;
+}
+
 const ListRealtors: React.FC = () => {
   const history = useHistory();
   const { city, handleSetCity, name, handleSetName } = useFilter();
+  const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
   const { data: realtors } = useFindRealtor<IRealtorData[]>({ city });
+
+  const optionsSubsidiary = useMemo(() => {
+    return subsidiaries?.map(subsidiary => ({
+      value: subsidiary.city,
+      label: subsidiary.name,
+    }));
+  }, [subsidiaries]);
 
   const listRealtors = useMemo(() => {
     if (name !== '') {
@@ -88,9 +105,12 @@ const ListRealtors: React.FC = () => {
             <FiltersBottonItems>
               <span>Cidade: </span>
               <select value={city} onChange={handleSelectCity}>
-                <option value="São Luís">São Luís</option>
-                <option value="Fortaleza">Fortaleza</option>
-                <option value="Teresina">Teresina</option>
+
+                {optionsSubsidiary?.map(subsidiary => (
+                  <option key={subsidiary.value} value={subsidiary.value}>
+                    {subsidiary.label}
+                  </option>
+                ))}
               </select>
             </FiltersBottonItems>
 
@@ -112,6 +132,9 @@ const ListRealtors: React.FC = () => {
             <HeaderItem>Nome</HeaderItem>
             <HeaderItem>VGV</HeaderItem>
           </SaleHeader>
+          {listRealtors?.length === 0 ? (
+            <NotFound />
+          ): null}
           {listRealtors?.map(realtor =>
             !realtors ? (
               <LoadingContainer>
