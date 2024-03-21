@@ -17,11 +17,11 @@ import {
   CardContainer,
   GraficContainer, 
 } from '../styled';
-import { useFetch } from '../../../hooks/useFetch';
 import PieGraphic from '../../../components/Dashboard/Graphics/Pie';
 import { transformPorcent } from '../../../utils/dashboard';
 import { useFilter } from '../../../context/FilterContext';
 import api from '../../../services/api';
+import Loading from '../Vendas/Loading';
 
 interface IDashboardData {
   quantity: {
@@ -32,7 +32,13 @@ interface IDashboardData {
     sales: number;
     captivators: number;
   },
-  comission: number;
+  comission: {
+    total: number;
+    months: {
+      month: string;
+      vgv: number;
+    }[]
+  };
   vgv: {
     sales: {
       total: number;
@@ -92,20 +98,35 @@ interface ISubsidiary {
   city: string;
 }
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 const DashboardPersona: React.FC = () => {
   const { userAuth } = useAuth();
-  const { handleSetYear, year, selectedSubsidiary, selectedRealtor, handleSetSelectedSubsidiaries, handleSetSelectedRealtors } = useFilter();
-  const [url, setUrl] = useState('');
+  const { selectedSubsidiary, selectedRealtor, handleSetSelectedSubsidiaries, handleSetSelectedRealtors } = useFilter();
+  const [year, setYear] = useState(CURRENT_YEAR);
   const [realtors, setRealtors] = useState<IRealtor[]>([]);
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
-  const { data } = useFetch<IDashboardData>(url);
+  const [data, setData] = useState<IDashboardData>({} as IDashboardData)
+  const [isLoading, setIsLoading] = useState(false);
+
+  const getDashboardData = useCallback(async (user, currentYear) => {
+    setIsLoading(true);
+    const response = await api.get<IDashboardData>('/dashboard/sellers', {
+      params: {
+        user,
+        ano: currentYear
+      }
+    })
+    setData(response.data)
+    setIsLoading(false);
+  }, [])
 
   const getSubsidiaries = useCallback(async () => {
     const response = await api.get(`/subsidiary`);
     setSubsidiaries(response.data);
   }, []);
   const getAllRealtors = useCallback(async (subsidiary: string) => {
-    const response = await api.get(`/users?city=${subsidiary}&office=Corretor`);
+    const response = await api.get(`/users?subsidiary=${subsidiary}&office=Corretor`);
     setRealtors(response.data);
     if (selectedRealtor === ''){
       handleSetSelectedRealtors(response.data[0].id)
@@ -113,21 +134,33 @@ const DashboardPersona: React.FC = () => {
   }, [selectedRealtor, handleSetSelectedRealtors]);
 
   useEffect(() => {
+    if (userAuth.office.name === 'Corretor') {
+      getDashboardData(userAuth.id, year);
+    }
+
     if (userAuth.office.name !== 'Corretor') {
       getSubsidiaries();
       getAllRealtors(selectedSubsidiary);
-    } 
-  }, [userAuth.office.name, getSubsidiaries, getAllRealtors, selectedSubsidiary]);
-  useEffect(() => {
-    if (userAuth.office.name === 'Corretor') {
-      setUrl(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(year)}`);
-    } else {
-      setUrl(`/dashboard/sellers?user=${selectedRealtor}&ano=${Number(year)}`);
+      getDashboardData(userAuth.id, year);
     }
-  }, [userAuth.office.name, userAuth.id, year, selectedRealtor]);
+  }, 
+  [
+    userAuth.office.name, 
+    userAuth.id, 
+    year, 
+    selectedRealtor, 
+    getAllRealtors, 
+    getDashboardData, 
+    getSubsidiaries, 
+    selectedSubsidiary
+  ]);
+
+  if (Object.values(data).length === 0 || isLoading) {
+    return <Loading />
+  }
 
   const optionsRealtors = realtors.map(realtor => ({ label: realtor.name, value: realtor.id }));
-  const optionsSubsidiary = subsidiaries.map(subsidiary => ({ label: subsidiary.name, value: subsidiary.city }));
+  const optionsSubsidiary = subsidiaries.map(subsidiary => ({ label: subsidiary.name, value: subsidiary.id }));
 
 
   const gender = data?.client.genders.filter(item => item.percentage > 0).map(item => (
@@ -143,22 +176,22 @@ const DashboardPersona: React.FC = () => {
   ));
 
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetYear(Number(event.target.value));
+    setYear(Number(event.target.value));
   }
 
   const years = optionYear.map(item => (
     {label: item.label, value: String(item.value)}
   ));
 
-  const handleSelectedSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectedSubsidiary = (event: ChangeEvent<HTMLSelectElement>) => {
     const { value } = event.target;
     handleSetSelectedSubsidiaries(value);
-  }, [handleSetSelectedSubsidiaries]);
+  };
 
-  const handleSelectedRealtor = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectedRealtor = (event: ChangeEvent<HTMLSelectElement>) => {
     const { value } = event.target;
     handleSetSelectedRealtors(value);
-  }, [handleSetSelectedRealtors]);
+  };
 
   return (
     <DashbordLayout>
@@ -223,7 +256,7 @@ const DashboardPersona: React.FC = () => {
           <CardContainer>
             <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value={formatPrice(data?.vgv.sales.total || 0)} />
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value={formatPrice(data?.ticket_medium.sales || 0)} />
-            <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value={formatPrice(data?.comission || 0)} />
+            <DashboardCard icon={RiMoneyDollarCircleFill} title="Comissão" value={formatPrice(data?.comission.total || 0)} />
             <DashboardCard icon={GiStairsGoal} title="Meta" value={formatPrice(Number(userAuth.goal))} />
           </CardContainer>
 

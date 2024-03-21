@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useMemo } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
@@ -18,12 +18,9 @@ import {
   SaleItem,
   LoadingContainer,
 } from './styles';
-import { formatPrice } from '../../../utils/format';
-import { useFindRealtor } from '../../../hooks/findRealtor';
-import { useFilter } from '../../../context/FilterContext';
 import theme from '../../../styles/theme';
-import { useFetch } from '../../../hooks/useFetch';
 import NotFound from '../../../components/Errors/NotFound';
+import api from '../../../services/api';
 
 interface IRealtorData {
   id: string;
@@ -41,48 +38,52 @@ interface ISubsidiary {
 
 const ListRealtors: React.FC = () => {
   const history = useHistory();
-  const { city, handleSetCity, name, handleSetName } = useFilter();
-  const { data: subsidiaries } = useFetch<ISubsidiary[]>(`/subsidiary`);
-  const { data: realtors } = useFindRealtor<IRealtorData[]>({ city });
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState('');
+  const [name, setName] = useState('');
+  const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
+  const [realtors, setRealtors] = useState<IRealtorData[]>([]);
 
-  const optionsSubsidiary = useMemo(() => {
-    return subsidiaries?.map(subsidiary => ({
-      value: subsidiary.city,
-      label: subsidiary.name,
-    }));
-  }, [subsidiaries]);
+  const loadSubsidiary = useCallback(async () => {
+    const response = await api.get('/subsidiary');
+    setSubsidiaries(response.data);
+  }, [])
 
-  const listRealtors = useMemo(() => {
-    if (name !== '') {
-      return realtors
-        ?.map(realtor => ({
-          id: realtor.id,
-          name: realtor.name,
-          avatar_url: realtor.avatar_url,
-          vgv: formatPrice(Number(realtor.vgv)),
-        }))
-        .filter(realtor => realtor.name.toLowerCase().includes(name) === true);
-    }
-    return realtors?.map(realtor => ({
+  const loadRealtors = useCallback(async () => {
+    const response = await api.get('/users', {
+      params: {
+        subsidiary: selectedSubsidiary,
+        name,
+        office: 'Corretor'
+      }
+    });
+    setRealtors(response.data);
+  }, [selectedSubsidiary, name])
+
+  useEffect(() => {
+    loadSubsidiary();
+    loadRealtors();
+  }, [loadSubsidiary, loadRealtors])
+  
+  const optionsSubsidiary = subsidiaries.map(subsidiary => ({
+    label: subsidiary.name,
+    value: subsidiary.id
+  })) || [];
+
+  const listRealtors = realtors.map(realtor =>{
+    return {
       id: realtor.id,
       name: realtor.name,
       avatar_url: realtor.avatar_url,
-      vgv: formatPrice(Number(realtor.vgv)),
-    }));
-  }, [realtors, name]);
-  const handleSelectCity = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      handleSetCity(event.target.value);
-    },
-    [handleSetCity],
-  );
-  const searchRealtorByName = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const name = event.target.value.toLowerCase();
-      handleSetName(name);
-    },
-    [handleSetName],
-  );
+    }
+  } )
+
+  const handleSelectSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSubsidiary(event.target.value);
+  }, []);
+  const searchRealtorByName = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const name = event.target.value.toLowerCase();
+    setName(name);
+  }, []);
 
   const handleNavigateToNewRealtor = useCallback(() => {
     history.push(`/adm/novo-colaborador`);
@@ -103,8 +104,8 @@ const ListRealtors: React.FC = () => {
           </FiltersTop>
           <FiltersBotton>
             <FiltersBottonItems>
-              <span>Cidade: </span>
-              <select value={city} onChange={handleSelectCity}>
+              <span>Filial: </span>
+              <select value={selectedSubsidiary} onChange={handleSelectSubsidiary}>
 
                 {optionsSubsidiary?.map(subsidiary => (
                   <option key={subsidiary.value} value={subsidiary.value}>
@@ -130,7 +131,6 @@ const ListRealtors: React.FC = () => {
           <SaleHeader>
             <HeaderItem />
             <HeaderItem>Nome</HeaderItem>
-            <HeaderItem>VGV</HeaderItem>
           </SaleHeader>
           {listRealtors?.length === 0 ? (
             <NotFound />
@@ -149,7 +149,6 @@ const ListRealtors: React.FC = () => {
                   />
                 </SaleItem>
                 <SaleItem>{realtor.name}</SaleItem>
-                <SaleItem>{realtor.vgv}</SaleItem>
                 <SaleItem>
                   <Link to={`/adm/detalhes-colaborador/${realtor.id}`}>
                     <BsPencil size={15} color={theme.colors.gold} />

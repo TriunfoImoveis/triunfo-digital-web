@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useMemo } from 'react';
 import Loader from 'react-loader-spinner';
 import { useAuth } from '../../context/AuthContext';
+import { months } from '../../utils/months';
+import { optionYear } from '../../utils/loadOptions';
 import Header from '../../components/Header';
 
 import { BackgroundImage } from '../../assets/images';
@@ -21,13 +23,19 @@ import {
   Separator,
   Name,
   VGV,
-  ButtonGroup,
   LoadingContainer,
   SelectSubsidiary,
+  Filters,
+  Bar,
+  MonthlyFilter,
 } from './styles';
 import { formatPrice } from '../../utils/format';
-import api from '../../services/api';
+import { useFetch } from '../../hooks/useFetch';
 
+interface ISubsidiaryData {
+  id: string;
+  name: string;
+}
 interface IRealtorData {
   id: string;
   avatar_url: string;
@@ -35,153 +43,59 @@ interface IRealtorData {
   vgv: string;
 }
 
+interface IParams {
+  subsidiary: string;
+  year: string;
+  user: 'Corretor' | 'Captador';
+  month: string;
+}
+
 const RankingCapture: React.FC = () => {
-  const [realtors, setRealtors] = useState<IRealtorData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState(false);
-  const [selectedSubsidiary, setSelectedSubsidiary] = useState('São Luís');
-  const [token] = useState(() => localStorage.getItem('@TriunfoDigital:token'));
   const { userAuth } = useAuth();
+  const currentYear = new Date().getFullYear();
+  const [params, setParams] = useState<IParams>({
+    subsidiary: userAuth.subsidiary.id,
+    month: 'all',
+    year: currentYear.toString(),
+    user: 'Captador',
+  });
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.id);
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const { data: realtors } = useFetch<IRealtorData[]>('/ranking', params);
+  const { data: subsidiaries } = useFetch<ISubsidiaryData[]>('/subsidiary');
+  const optionsYear = optionYear.filter(year => year.value <= currentYear);
+  const ranking = useMemo(() => {
+    return realtors?.map(r => ({
+      id: r.id,
+      avatar_url: r.avatar_url,
+      name: r.name,
+      vgv: formatPrice(Number(r.vgv)),
+    }));
+  }, [realtors]);
 
-  useEffect(() => {
-    const loadRanking = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get('/ranking', {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-          params: {
-            city: userAuth.subsidiary.city,
-            user: 'Captador',
-          },
-        });
-        const ranking = response.data;
-        const rankingFormatted = ranking.map(r => ({
-          id: r.id,
-          avatar_url: r.avatar_url,
-          name: r.name,
-          vgv: formatPrice(r.vgv),
-        }));
-        setRealtors(rankingFormatted);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-    const loadRankingAdm = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get('/ranking', {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-          params: {
-            city: selectedSubsidiary,
-            user: 'Captador',
-          },
-        });
-        const ranking = response.data;
-        const rankingFormatted = ranking.map(r => ({
-          id: r.id,
-          avatar_url: r.avatar_url,
-          name: r.name,
-          vgv: formatPrice(r.vgv),
-        }));
-        setRealtors(rankingFormatted);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
+  const handleSelectSubsidiary = (event: ChangeEvent<HTMLSelectElement>) => {
+    const subsidiary = event.target.value;
+    setSelectedSubsidiary(subsidiary);
+    setParams(prevState => ({ ...prevState, subsidiary }));
+  }
 
-    userAuth.office.name === 'Presidente' || userAuth.office.name === 'Gerente'
-      ? loadRankingAdm()
-      : loadRanking();
-  }, [
-    token,
-    userAuth.subsidiary.city,
-    selectedSubsidiary,
-    userAuth.office.name,
-  ]);
-
-  const handleSwichVGVToYear = async (filter: string) => {
-    setSelected(!selected);
-    switch (filter) {
-      case 'month': {
-        setLoading(true);
-        try {
-          const response = await api.get('/ranking', {
-            headers: {
-              authorization: `Bearer ${token}`,
-            },
-            params: {
-              city:
-                userAuth.office.name === 'Presidente' ||
-                userAuth.office.name === 'Gerente'
-                  ? selectedSubsidiary
-                  : userAuth.subsidiary.city,
-              user: 'Captador',
-              type: 'MENSAL',
-            },
-          });
-          const ranking = response.data;
-          const rankingFormatted = ranking.map(r => ({
-            id: r.id,
-            avatar_url: r.avatar_url,
-            name: r.name,
-            vgv: formatPrice(r.vgv),
-          }));
-          setRealtors(rankingFormatted);
-          setLoading(false);
-        } catch (error) {
-          setLoading(false);
-        }
-        break;
-      }
-      case 'year': {
-        setLoading(true);
-        try {
-          const response = await api.get('/ranking', {
-            headers: {
-              authorization: `Bearer ${token}`,
-            },
-            params: {
-              city:
-                userAuth.office.name === 'Presidente' ||
-                userAuth.office.name === 'Gerente'
-                  ? selectedSubsidiary
-                  : userAuth.subsidiary.city,
-              user: 'Captador',
-              type: 'ANUAL',
-            },
-          });
-          const ranking = response.data;
-          const rankingFormatted = ranking.map(r => ({
-            id: r.id,
-            avatar_url: r.avatar_url,
-            name: r.name,
-            vgv: formatPrice(r.vgv),
-          }));
-          setRealtors(rankingFormatted);
-          setLoading(false);
-        } catch (error) {
-          setLoading(false);
-        }
-        break;
-      }
-      default:
-        break;
+  const handleSelectMonth =  (event: ChangeEvent<HTMLSelectElement>) => {
+    if (Number(event.target.value) > 0) {
+      const month = Number(event.target.value);
+      setSelectedMonth(month.toString());
+      setParams(prevState => ({ ...prevState, month: month.toString() }));
+    } else {
+      setSelectedMonth('all');
+      setParams(prevState => ({ ...prevState, month: 'all' }));
     }
-  };
+  }
 
-  const handleSelectSubsidiary = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const subsidiaryCity = event.target.value;
-      setSelectedSubsidiary(subsidiaryCity);
-    },
-    [],
-  );
+  const heandleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    const year = event.target.value;
+    setSelectedYear(year.toString());
+    setParams(prevState => ({ ...prevState, year: year.toString() }));
+  }
 
   return (
     <Container>
@@ -189,64 +103,78 @@ const RankingCapture: React.FC = () => {
       <BackgroundImage />
       <Content>
         <Title>Top Five</Title>
-        {userAuth.office.name === 'Presidente' && (
-          <SelectSubsidiary>
-            <select
-              defaultValue={selectedSubsidiary}
-              onChange={handleSelectSubsidiary}
-            >
-              <option value="São Luís">São Luís</option>
-              <option value="Fortaleza">Fortaleza</option>
-              <option value="Teresina">Teresina</option>
-            </select>
-          </SelectSubsidiary>
-        )}
-        {userAuth.office.name === 'Gerente' && (
-          <SelectSubsidiary>
-            <select
-              defaultValue={selectedSubsidiary}
-              onChange={handleSelectSubsidiary}
-            >
-              <option value="São Luís">São Luís</option>
-              <option value="Fortaleza">Fortaleza</option>
-              <option value="Teresina">Teresina</option>
-            </select>
-          </SelectSubsidiary>
-        )}
+        <Filters>
+          {userAuth.office.name === 'Presidente' && (
+            <SelectSubsidiary>
+              <select
+                defaultValue={selectedSubsidiary}
+                onChange={handleSelectSubsidiary}
+              >
+                {subsidiaries && subsidiaries.map(subsidiary => (
+                  <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
+                ))}
+              </select>
+            </SelectSubsidiary>
+          )}
+          {userAuth.office.name === 'Gerente' && (
+
+            <SelectSubsidiary>
+              <select
+                defaultValue={selectedSubsidiary}
+                onChange={handleSelectSubsidiary}
+              >
+                {subsidiaries && subsidiaries.map(subsidiary => (
+                  <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
+                ))}
+              </select>
+            </SelectSubsidiary>
+          )}
+
+          <>
+            <SelectSubsidiary>
+              <select
+                defaultValue={selectedYear}
+                onChange={heandleSelectedYear}
+              >
+                <option value='all'>Todos os anos</option>
+                {optionsYear.map(item => (
+                  <option value={item.value.toString()}>{item.label}</option>
+                ))}
+              </select>
+            </SelectSubsidiary>
+            <MonthlyFilter>
+              <SelectSubsidiary>
+                <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
+                  <option value='all'>ANUAL</option>
+                  <optgroup label="MESES">
+                    {months.map(month => (
+                      <option value={month.value.toString()}>{month.label}</option>
+                    ))}
+                  </optgroup>
+                </select>
+              </SelectSubsidiary>
+            </MonthlyFilter>
+          </>
+        </Filters>
 
         <RankingContainer>
+          <Bar />
           <LabelContainer>
             <div />
             <LabelItems>
               <img src={Crown} alt="Campeão" />
               <span className="nameTitle">Nome</span>
               <span className="vgvTitle">VGV</span>
-              <ButtonGroup>
-                <button
-                  type="button"
-                  className={selected ? 'selected' : undefined}
-                  onClick={() => handleSwichVGVToYear('month')}
-                >
-                  Mês
-                </button>
-                <button
-                  type="button"
-                  className={!selected ? 'selected' : undefined}
-                  onClick={() => handleSwichVGVToYear('year')}
-                >
-                  Ano
-                </button>
-              </ButtonGroup>
             </LabelItems>
           </LabelContainer>
-          {loading ? (
+          {!ranking ? (
             <LoadingContainer>
               <Loader type="Bars" color="#c32925" height={100} width={100} />
             </LoadingContainer>
           ) : (
             <>
               <PodiumContainer>
-                {realtors.map((realtor, i) => {
+                {ranking.map((realtor, i) => {
                   return i <= 4 ? (
                     <PositionItem key={realtor.id}>
                       <Position>{`${i + 1}°`}</Position>
@@ -271,7 +199,7 @@ const RankingCapture: React.FC = () => {
               </PodiumContainer>
               <Separator />
               <RealtorContainer>
-                {realtors.map((realtor, i) => {
+                {ranking?.map((realtor, i) => {
                   return i >= 5 ? (
                     <PositionItem key={realtor.id}>
                       <Position>{`${i + 1}°`}</Position>

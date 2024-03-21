@@ -25,9 +25,9 @@ import {
   transformPorcent,
   transformNumberInString
 } from '../../../utils/dashboard';
-import { useFetch } from '../../../hooks/useFetch';
 import { useFilter } from '../../../context/FilterContext';
 import api from '../../../services/api';
+import Loading from './Loading';
 
 interface IDashboardData {
   quantity: {
@@ -93,48 +93,84 @@ interface ISubsidiary {
   city: string;
 }
 
+interface IDashboardSalesParms {
+  user: string;
+  ano?: string;
+}
+
+const CURRENT_YEAR = new Date().getFullYear();
 const DashboardVendas: React.FC = () => {
   const { userAuth } = useAuth();
-  const { handleSetYear, year, selectedSubsidiary, selectedRealtor, handleSetSelectedSubsidiaries, handleSetSelectedRealtors } = useFilter();
-  const [url, setUrl] = useState('');
+  const {selectedRealtor, handleSetSelectedSubsidiaries, handleSetSelectedRealtors } = useFilter();
   const [realtors, setRealtors] = useState<IRealtor[]>([]);
+  const [year, setYear] = useState(CURRENT_YEAR);
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
-  const { data } = useFetch<IDashboardData>(url);
+  const [data, setData] = useState<IDashboardData>({} as IDashboardData)
+  const [isLoading, setIsLoading] = useState(false);
 
+  const getDashboardData = useCallback(async (user, currentYear) => {
+    setIsLoading(true);
+    const response = await api.get<IDashboardData>('/dashboard/sellers', {
+      params: {
+        user,
+        ano: currentYear
+      }
+    })
+    setData(response.data)
+    setIsLoading(false);
+  }, [])
   const getSubsidiaries = useCallback(async () => {
     const response = await api.get(`/subsidiary`);
     setSubsidiaries(response.data);
   }, []);
 
   const getAllRealtors = useCallback(async (subsidiary: string) => {
-    const response = await api.get(`/users?city=${subsidiary}&office=Corretor`);
+    const response = await api.get<IRealtor[]>(`/users`, {
+      params: {
+        subsidiary,
+        office: 'Corretor'
+      }
+    });
     setRealtors(response.data);
   }, []);
+  const getAllRealtorsAndGetDashboardData = useCallback(async (subsidiary: string) => {
+    const response = await api.get<IRealtor[]>(`/users`, {
+      params: {
+        subsidiary,
+        office: 'Corretor'
+      }
+    });
+    setRealtors(response.data);
+    const fristRealtorId = response.data[0].id;
+    await getDashboardData(fristRealtorId, year);
+  }, [getDashboardData, year]);
 
   useEffect(() => {
     const { office, subsidiary } = userAuth;
-    if (office.name !== 'Corretor') {
-      getSubsidiaries();
-      getAllRealtors(selectedSubsidiary);
+    if (office.name === 'Corretor') {
+      getDashboardData(userAuth.id, year);
     }
 
-    if (office.name === 'Diretor') {
-      getAllRealtors(subsidiary.city);
+    if 
+      (
+        office.name.includes('Diretor') ||
+        office.name.includes('Gerente') || 
+        office.name.includes('Presidente')
+      ) {
+        getSubsidiaries();
+        getAllRealtorsAndGetDashboardData(subsidiary.id);
     }
-  }, [userAuth, getSubsidiaries, getAllRealtors, selectedSubsidiary]);
-  useEffect(() => {
-    if (userAuth.office.name === 'Corretor') {
-      setUrl(`/dashboard/sellers?user=${userAuth.id}&ano=${Number(year)}`);
-    } else {
-      setUrl(`/dashboard/sellers?user=${selectedRealtor}&ano=${Number(year)}`);
-    }
-  }, [userAuth.office.name, userAuth.id, year, selectedRealtor]);
+  }, [userAuth, getDashboardData, getSubsidiaries, getAllRealtors, year, getAllRealtorsAndGetDashboardData]);
+  
+  if (Object.values(data).length === 0 || isLoading) {
+    return <Loading />
+  }
 
   const optionsRealtors = realtors.map(realtor => ({ label: realtor.name, value: realtor.id }));
-  const optionsSubsidiary = subsidiaries.map(subsidiary => ({ label: subsidiary.name, value: subsidiary.city }));
+  const optionsSubsidiary = subsidiaries.map(subsidiary => ({ label: subsidiary.name, value: subsidiary.id }));
 
 
-  const types = [data?.sales.types.new || 0, data?.sales.types.used || 0];
+  const types = data ? [data?.sales.types.new || 0, data?.sales.types.used || 0] : [0, 0];
   const typeRealty = data?.sales.properties.filter(item => item.quantity > 0).map(item => (
     { label: item.property, value: item.quantity }
   ));
@@ -146,7 +182,7 @@ const DashboardVendas: React.FC = () => {
   const neighborhoods = data?.sales.neighborhoods.filter(item => item.quantity > 0).map(item => ({ label: item.neighborhood, value: item.quantity}));
 
   const handleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetYear(Number(event.target.value));
+    setYear(Number(event.target.value));
   }
 
   const years = optionYear.map(item => (
@@ -157,15 +193,17 @@ const DashboardVendas: React.FC = () => {
     { label: item.month, value: item.vgv }
   ));
 
-  const handleSelectedSubsidiary = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectedSubsidiary = async (event: ChangeEvent<HTMLSelectElement>) => {
     const { value } = event.target;
     handleSetSelectedSubsidiaries(value);
-  }, [handleSetSelectedSubsidiaries]);
+    await getAllRealtorsAndGetDashboardData(value)
+  };
 
-  const handleSelectedRealtor = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectedRealtor = async (event: ChangeEvent<HTMLSelectElement>) => {
     const { value } = event.target;
     handleSetSelectedRealtors(value);
-  }, [handleSetSelectedRealtors]);
+    await getDashboardData(value, year);
+  };
 
   return (
     <DashbordLayout>
@@ -202,7 +240,7 @@ const DashboardVendas: React.FC = () => {
           <Select
             options={years}
             nameLabel='Ano'
-            defaultValue={''}
+            defaultValue={year.toString()}
             onChange={handleSelectedYear}
           />
 
@@ -219,13 +257,14 @@ const DashboardVendas: React.FC = () => {
               <Select
                 options={optionsRealtors}
                 nameLabel='Corretores'
-                defaultValue={''}
+                defaultValue={selectedRealtor}
                 onChange={handleSelectedRealtor}
               />
             </>
           )}
         </Filter>
         <Main>
+
           <CardContainer>
             <DashboardCard icon={RiMoneyDollarCircleFill} title="VGV Total" value={formatPrice(data?.vgv.sales.total || 0)} />
             <DashboardCard icon={RiMoneyDollarCircleFill} title="Ticket Médio" value={formatPrice(data?.ticket_medium.sales || 0)} />

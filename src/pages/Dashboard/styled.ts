@@ -165,4 +165,9 @@ export const DivDesktop = styled.div<DivDesktopPros>`
   }
 `;
 
-
+export const LoadingContainer = styled.div`
+  margin-top: 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
