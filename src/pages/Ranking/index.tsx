@@ -1,4 +1,4 @@
-import React, { useState, useCallback, ChangeEvent, useMemo } from 'react';
+import React, { useState, ChangeEvent, useMemo } from 'react';
 import Loader from 'react-loader-spinner';
 import { useAuth } from '../../context/AuthContext';
 import { months } from '../../utils/months';
@@ -32,6 +32,10 @@ import {
 import { formatPrice } from '../../utils/format';
 import { useFetch } from '../../hooks/useFetch';
 
+interface ISubsidiaryData {
+  id: string;
+  name: string;
+}
 interface IRealtorData {
   id: string;
   avatar_url: string;
@@ -39,16 +43,27 @@ interface IRealtorData {
   vgv: string;
 }
 
+interface IParams {
+  subsidiary: string;
+  year: string;
+  user: 'Corretor' | 'Captador';
+  month: string;
+}
+
 const Ranking: React.FC = () => {
   const { userAuth } = useAuth();
   const currentYear = new Date().getFullYear();
-  const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.city);
-  const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [selectedMonth, setSelectedMonth] = useState('0');
-  const [url, setUrl] = useState(
-    `/ranking?city=${userAuth.subsidiary.city}&year=${currentYear}&user=Corretor`,
-  );
-  const { data: realtors } = useFetch<IRealtorData[]>(url);
+  const [params, setParams] = useState<IParams>({
+    subsidiary: userAuth.subsidiary.id,
+    month: 'all',
+    year: currentYear.toString(),
+    user: 'Corretor',
+  });
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.id);
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const { data: realtors } = useFetch<IRealtorData[]>('/ranking', params);
+  const { data: subsidiaries } = useFetch<ISubsidiaryData[]>('/subsidiary');
   const optionsYear = optionYear.filter(year => year.value <= currentYear);
   const ranking = useMemo(() => {
     return realtors?.map(r => ({
@@ -59,50 +74,28 @@ const Ranking: React.FC = () => {
     }));
   }, [realtors]);
 
-  const handleSelectSubsidiary = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const subsidiaryCity = event.target.value;
-      setSelectedSubsidiary(subsidiaryCity);
-      if (Number(selectedMonth) > 0) {
-        setUrl(
-          `/ranking?city=${subsidiaryCity}&month=${selectedMonth}&year=${selectedYear}&user=Corretor`,
-        );
-      } else {
-        setUrl(
-          `/ranking?city=${subsidiaryCity}&year=${selectedYear}&user=Corretor`,
-        );
-      }
-    },
-    [selectedMonth, selectedYear],
-  );
+  const handleSelectSubsidiary = (event: ChangeEvent<HTMLSelectElement>) => {
+    const subsidiary = event.target.value;
+    setSelectedSubsidiary(subsidiary);
+    setParams(prevState => ({ ...prevState, subsidiary }));
+  }
 
-  const handleSelectMonth = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      if (Number(event.target.value) > 0) {
-        const month = Number(event.target.value);
-        setSelectedMonth(event.target.value);
-        setUrl(
-          `/ranking?city=${selectedSubsidiary}&month=${month}&year=${selectedYear}&user=Corretor`,
-        );
-      } else {
-        setSelectedMonth('0');
-        setUrl(
-          `/ranking?city=${selectedSubsidiary}&year=${selectedYear}&user=Corretor`,
-        );
-      }
-    },
-    [selectedSubsidiary, selectedYear],
-  );
+  const handleSelectMonth =  (event: ChangeEvent<HTMLSelectElement>) => {
+    if (Number(event.target.value) > 0) {
+      const month = Number(event.target.value);
+      setSelectedMonth(month.toString());
+      setParams(prevState => ({ ...prevState, month: month.toString() }));
+    } else {
+      setSelectedMonth('all');
+      setParams(prevState => ({ ...prevState, month: 'all' }));
+    }
+  }
 
-  const heandleSelectedYear = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-    const year = Number(event.target.value);
-    setSelectedYear(year);
-    setUrl(`/ranking?city=${selectedSubsidiary}&year=${year}&user=Corretor`);
-  }, [selectedSubsidiary]);
-
-  // useEffect(() => {
-  //   handleSwichVGVToYear('month');
-  // }, [setSelectedMonth, handleSwichVGVToYear]);
+  const heandleSelectedYear = (event: ChangeEvent<HTMLSelectElement>) => {
+    const year = event.target.value;
+    setSelectedYear(year.toString());
+    setParams(prevState => ({ ...prevState, year: year.toString() }));
+  }
 
   return (
     <Container>
@@ -117,36 +110,24 @@ const Ranking: React.FC = () => {
                 defaultValue={selectedSubsidiary}
                 onChange={handleSelectSubsidiary}
               >
-                <option value="São Luís">São Luís</option>
-                <option value="Fortaleza">Fortaleza</option>
-                <option value="Teresina">Teresina</option>
+                {subsidiaries && subsidiaries.map(subsidiary => (
+                  <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
+                ))}
               </select>
             </SelectSubsidiary>
           )}
           {userAuth.office.name === 'Gerente' && (
-            <>
-              <SelectSubsidiary>
-                <select
-                  defaultValue={selectedSubsidiary}
-                  onChange={handleSelectSubsidiary}
-                >
-                  <option value="São Luís">São Luís</option>
-                  <option value="Fortaleza">Fortaleza</option>
-                  <option value="Teresina">Teresina</option>
-                </select>
-              </SelectSubsidiary>
 
-              <SelectSubsidiary>
-                <select
-                  defaultValue={selectedYear}
-                  onChange={heandleSelectedYear}
-                >
-                  {optionsYear.map(item => (
-                    <option value={item.value}>{item.label}</option>
-                  ))}
-                </select>
-              </SelectSubsidiary>
-            </>
+            <SelectSubsidiary>
+              <select
+                defaultValue={selectedSubsidiary}
+                onChange={handleSelectSubsidiary}
+              >
+                {subsidiaries && subsidiaries.map(subsidiary => (
+                  <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
+                ))}
+              </select>
+            </SelectSubsidiary>
           )}
 
           <>
@@ -155,18 +136,19 @@ const Ranking: React.FC = () => {
                 defaultValue={selectedYear}
                 onChange={heandleSelectedYear}
               >
+                <option value='all'>Todos os anos</option>
                 {optionsYear.map(item => (
-                  <option value={item.value}>{item.label}</option>
+                  <option value={item.value.toString()}>{item.label}</option>
                 ))}
               </select>
             </SelectSubsidiary>
             <MonthlyFilter>
               <SelectSubsidiary>
                 <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
-                  <option value="0">ANUAL</option>
+                  <option value='all'>ANUAL</option>
                   <optgroup label="MESES">
                     {months.map(month => (
-                      <option value={month.value}>{month.label}</option>
+                      <option value={month.value.toString()}>{month.label}</option>
                     ))}
                   </optgroup>
                 </select>
