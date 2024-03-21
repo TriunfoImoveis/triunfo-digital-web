@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { BsPencil } from 'react-icons/bs';
 import Loader from 'react-loader-spinner';
@@ -18,13 +18,9 @@ import {
   SaleItem,
   LoadingContainer,
 } from './styles';
-import { formatPrice } from '../../../utils/format';
-import { useFindRealtor } from '../../../hooks/findRealtor';
 import theme from '../../../styles/theme';
-import { useFetch } from '../../../hooks/useFetch';
 import NotFound from '../../../components/Errors/NotFound';
 import api from '../../../services/api';
-import { valueContainerCSS } from 'react-select/src/components/containers';
 
 interface IRealtorData {
   id: string;
