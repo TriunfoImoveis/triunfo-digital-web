@@ -46,18 +46,20 @@ interface IRealtorData {
 interface IParams {
   subsidiary: string;
   year: string;
-  user: 'Corretor' | 'Captador';
+  office: 'Corretor' | 'Coordenador';
   month: string;
+  typeRanking: 'sales' | 'captivator' | 'coordinator'
 }
 
 const RankingCapture: React.FC = () => {
   const { userAuth } = useAuth();
   const currentYear = new Date().getFullYear();
   const [params, setParams] = useState<IParams>({
-    subsidiary: userAuth.subsidiary.id,
-    month: 'all',
+    subsidiary: userAuth.office.name === 'Corretor' || userAuth.office.name === 'Coordenador' || userAuth.office.name === 'Diretor' ? userAuth.subsidiary.id : '',
+    month: '',
     year: currentYear.toString(),
-    user: 'Captador',
+    office: 'Corretor',
+    typeRanking: 'captivator'
   });
   const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.id);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
@@ -86,8 +88,8 @@ const RankingCapture: React.FC = () => {
       setSelectedMonth(month.toString());
       setParams(prevState => ({ ...prevState, month: month.toString() }));
     } else {
-      setSelectedMonth('all');
-      setParams(prevState => ({ ...prevState, month: 'all' }));
+      setSelectedMonth('');
+      setParams(prevState => ({ ...prevState, month: '' }));
     }
   }
 
@@ -110,6 +112,7 @@ const RankingCapture: React.FC = () => {
                 defaultValue={selectedSubsidiary}
                 onChange={handleSelectSubsidiary}
               >
+                <option value="">Todas as filiais</option>
                 {subsidiaries && subsidiaries.map(subsidiary => (
                   <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
                 ))}
@@ -123,6 +126,7 @@ const RankingCapture: React.FC = () => {
                 defaultValue={selectedSubsidiary}
                 onChange={handleSelectSubsidiary}
               >
+                <option value="">Todas as filiais</option>
                 {subsidiaries && subsidiaries.map(subsidiary => (
                   <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
                 ))}
@@ -136,7 +140,7 @@ const RankingCapture: React.FC = () => {
                 defaultValue={selectedYear}
                 onChange={heandleSelectedYear}
               >
-                <option value='all'>Todos os anos</option>
+                <option value=''>Todos os anos</option>
                 {optionsYear.map(item => (
                   <option value={item.value.toString()}>{item.label}</option>
                 ))}
@@ -145,7 +149,7 @@ const RankingCapture: React.FC = () => {
             <MonthlyFilter>
               <SelectSubsidiary>
                 <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
-                  <option value='all'>ANUAL</option>
+                  <option value=''>ANUAL</option>
                   <optgroup label="MESES">
                     {months.map(month => (
                       <option value={month.value.toString()}>{month.label}</option>

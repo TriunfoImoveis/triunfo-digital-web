@@ -60,6 +60,10 @@ const Menu: React.FC = () => {
                 <RankingIcon />
                 <span>Ranking de Captação</span>
               </Option>
+              <Option to="/ranking-coordenadores">
+                <RankingIcon />
+                <span>Ranking de Coordenação</span>
+              </Option>
               <Option to="/dashboard/menu">
                 <DashboardIcon />
                 <span>Dashboard</span>
@@ -75,8 +79,7 @@ const Menu: React.FC = () => {
             </>
           ) : null}
 
-          {userAuth.office.name === 'Corretor' ||
-          userAuth.office.name === 'Coordenador' ? (
+          {userAuth.office.name === 'Corretor' ? (
             <>
               <Option to="/actions">
                 <RegisterSellIcon />
@@ -91,7 +94,35 @@ const Menu: React.FC = () => {
                 <RankingIcon />
                 <span>Ranking de Captação</span>
               </Option>
-             
+              <Option to="/dashboard/vendas">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </Option>
+              <Option to="/perfil">
+                <Perfil />
+                <span>Perfil</span>
+              </Option>
+            </>
+          ) : null}
+          {userAuth.office.name === 'Coordenador' ? (
+            <>
+              <Option to="/actions">
+                <RegisterSellIcon />
+                <span>Cadastar Vendas</span>
+              </Option>
+              
+              <Option to="/ranking">
+                <RankingIcon />
+                <span>Ranking de Vendas</span>
+              </Option>
+              <Option to="/ranking-captacao">
+                <RankingIcon />
+                <span>Ranking de Captação</span>
+              </Option>
+              <Option to="/ranking-coordenadores">
+                <RankingIcon />
+                <span>Ranking de Coordenação</span>
+              </Option>
               <Option to="/dashboard/vendas">
                 <DashboardIcon />
                 <span>Dashboard</span>
@@ -119,6 +150,10 @@ const Menu: React.FC = () => {
               <Option to="/ranking-captacao">
                 <RankingIcon />
                 <span>Ranking de Captação</span>
+              </Option>
+              <Option to="/ranking-coordenadores">
+                <RankingIcon />
+                <span>Ranking de Coordenação</span>
               </Option>
               <Option to="/dashboard/menu">
                 <DashboardIcon />
