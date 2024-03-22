@@ -40,19 +40,22 @@ interface IRealtorData {
 
 interface IParams {
   year: string;
-  user: 'Corretor' | 'Captador';
+  office: 'Corretor' | 'Coordenador';
   month: string;
+  typeRanking: 'sales' | 'captivator' | 'coordinator'
 }
 
 const RankingGeneral: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const [params, setParams] = useState<IParams>({
-    month: 'all',
-    year: 'all',
-    user: 'Corretor',
+    month: '',
+    year: currentYear.toString(),
+    office: 'Corretor',
+    typeRanking: 'sales'
+
   });
-  const [selectedYear, setSelectedYear] = useState('all');
-  const [selectedMonth, setSelectedMonth] = useState('all');
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [selectedMonth, setSelectedMonth] = useState('');
   const { data: realtors } = useFetch<IRealtorData[]>('/ranking', params);
   const optionsYear = optionYear.filter(year => year.value <= currentYear);
   const ranking = useMemo(() => {
@@ -64,14 +67,15 @@ const RankingGeneral: React.FC = () => {
     }));
   }, [realtors]);
 
-  const handleSelectMonth = (event: ChangeEvent<HTMLSelectElement>) => {
+
+  const handleSelectMonth =  (event: ChangeEvent<HTMLSelectElement>) => {
     if (Number(event.target.value) > 0) {
       const month = Number(event.target.value);
       setSelectedMonth(month.toString());
       setParams(prevState => ({ ...prevState, month: month.toString() }));
     } else {
-      setSelectedMonth('all');
-      setParams(prevState => ({ ...prevState, month: 'all' }));
+      setSelectedMonth('');
+      setParams(prevState => ({ ...prevState, month: '' }));
     }
   }
 
@@ -88,29 +92,31 @@ const RankingGeneral: React.FC = () => {
       <Content>
         <Title>Top Five</Title>
         <Filters>
-          <SelectSubsidiary>
-            <select
-              defaultValue={selectedYear}
-              onChange={heandleSelectedYear}
-            >
-              <option value='all'>Todos os anos</option>
-              {optionsYear.map(item => (
-                <option value={item.value.toString()}>{item.label}</option>
-              ))}
-            </select>
-          </SelectSubsidiary>
-          <MonthlyFilter>
+          <>
             <SelectSubsidiary>
-              <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
-                <option value='all'>ANUAL</option>
-                <optgroup label="MESES">
-                  {months.map(month => (
-                    <option value={month.value.toString()}>{month.label}</option>
-                  ))}
-                </optgroup>
+              <select
+                defaultValue={selectedYear}
+                onChange={heandleSelectedYear}
+              >
+                <option value=''>Todos os anos</option>
+                {optionsYear.map(item => (
+                  <option value={item.value.toString()}>{item.label}</option>
+                ))}
               </select>
             </SelectSubsidiary>
-          </MonthlyFilter>
+            <MonthlyFilter>
+              <SelectSubsidiary>
+                <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
+                  <option value=''>ANUAL</option>
+                  <optgroup label="MESES">
+                    {months.map(month => (
+                      <option value={month.value.toString()}>{month.label}</option>
+                    ))}
+                  </optgroup>
+                </select>
+              </SelectSubsidiary>
+            </MonthlyFilter>
+          </>
         </Filters>
 
         <RankingContainer>

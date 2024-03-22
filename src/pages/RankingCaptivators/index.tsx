@@ -51,15 +51,15 @@ interface IParams {
   typeRanking: 'sales' | 'captivator' | 'coordinator'
 }
 
-const Ranking: React.FC = () => {
+const RankingCaptivators: React.FC = () => {
   const { userAuth } = useAuth();
   const currentYear = new Date().getFullYear();
   const [params, setParams] = useState<IParams>({
     subsidiary: userAuth.office.name === 'Corretor' || userAuth.office.name === 'Coordenador' || userAuth.office.name === 'Diretor' ? userAuth.subsidiary.id : '',
     month: '',
     year: currentYear.toString(),
-    office: 'Corretor',
-    typeRanking: 'sales'
+    office: 'Coordenador',
+    typeRanking: 'coordinator'
 
   });
   const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.id);
@@ -113,7 +113,6 @@ const Ranking: React.FC = () => {
                 defaultValue={selectedSubsidiary}
                 onChange={handleSelectSubsidiary}
               >
-                <option value={''}>Todas as filiais</option>
                 {subsidiaries && subsidiaries.map(subsidiary => (
                   <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
                 ))}
@@ -150,7 +149,7 @@ const Ranking: React.FC = () => {
             <MonthlyFilter>
               <SelectSubsidiary>
                 <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
-                  <option value=''>ANUAL</option>
+                  <option value='all'>ANUAL</option>
                   <optgroup label="MESES">
                     {months.map(month => (
                       <option value={month.value.toString()}>{month.label}</option>
@@ -235,4 +234,4 @@ const Ranking: React.FC = () => {
   );
 };
 
-export default Ranking;
+export default RankingCaptivators;
