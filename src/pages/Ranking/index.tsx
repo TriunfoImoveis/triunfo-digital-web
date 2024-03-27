@@ -54,15 +54,16 @@ interface IParams {
 const Ranking: React.FC = () => {
   const { userAuth } = useAuth();
   const currentYear = new Date().getFullYear();
+  const currentSubsidiary = userAuth.office.name === 'Corretor' || userAuth.office.name === 'Coordenador' || userAuth.office.name === 'Diretor' ? userAuth.subsidiary.id : ''
   const [params, setParams] = useState<IParams>({
-    subsidiary: userAuth.office.name === 'Corretor' || userAuth.office.name === 'Coordenador' || userAuth.office.name === 'Diretor' ? userAuth.subsidiary.id : '',
+    subsidiary: currentSubsidiary,
     month: '',
     year: currentYear.toString(),
     office: 'Corretor',
     typeRanking: 'sales'
 
   });
-  const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.id);
+  const [selectedSubsidiary, setSelectedSubsidiary] = useState(currentSubsidiary);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedMonth, setSelectedMonth] = useState('all');
   const { data: realtors } = useFetch<IRealtorData[]>('/ranking', params);

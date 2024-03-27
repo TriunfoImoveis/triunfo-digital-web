@@ -145,7 +145,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             pay_date: DateBRL(item.calculation.pay_date),
-            city: item.sale.sale_has_sellers[0].subsidiary.city,
+            city: item.sale.subsidiary.city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${item.sale.sale_type === 'NOVO'
               ? item.sale.builder.name
@@ -227,7 +227,7 @@ const Balance: React.FC = () => {
           return {
             id: item.id,
             pay_date: DateBRL(item.calculation.pay_date),
-            city: item.sale.sale_has_sellers[0].subsidiary.city,
+            city: item.sale.subsidiary.city,
             description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
             paying_source: `${item.sale.sale_type === 'NOVO'
               ? item.sale.builder.name

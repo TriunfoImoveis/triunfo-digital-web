@@ -24,6 +24,7 @@ import {
   FiltersBotton,
   FilterButtonGroup,
   FiltersBottonItems,
+  LoadingContainer,
 } from './styles';
 import theme from '../../../styles/theme';
 import NotFound from '../../../components/Errors/NotFound';
@@ -31,6 +32,13 @@ import EntryRevenue from '../../../components/ReactModal/EntryRevenue';
 import { filterDay, filterMonth, filterTimeSlot } from '../../../utils/filters';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
+import useSWR from 'swr';
+import { ResponseInstallments, getInstallments, getInstallmentsParams } from '../../../api/get-installments';
+import TableInstallmentPending from './TableInstallmentPending';
+import TableInstallmentsPay from './TableInstallmentsPay';
+import { Pagination } from '../../../components/Pagination';
+import Loader from 'react-loader-spinner';
+import { useFetch } from '../../../hooks/useFetch';
 
 type FutureReceiptsType = {
   id: string;
@@ -59,6 +67,7 @@ type RevenueType = {
   city: string;
   cliente_name: string;
 };
+
 const FutureReceipts: React.FC = () => {
   const [typeTab, setTypeTab] = useState('RECEBIDO');
   const [modalDetails, setModalDetails] = useState(false);
@@ -68,7 +77,6 @@ const FutureReceipts: React.FC = () => {
   const [totalRecepient, setTotalRecepient] = useState('R$ 0,00');
   const [totalDespachante, setTotalDespachante] = useState('R$ 0,00');
   const [totalCredit, setTotalCredit] = useState('R$ 0,00');
-  const [future, setFuture] = useState<FutureReceiptsType[]>([]);
   const [futureRecepient, setFutureRecepient] = useState<FutureReceiptsType[]>(
     [],
   );
@@ -83,493 +91,278 @@ const FutureReceipts: React.FC = () => {
   const [dateInitial, setDateInitial] = useState('');
   const [dateFinal, setDateFinal] = useState('');
 
-  useEffect(() => {
-    const loadingFutureReceipts = async () => {
-      const response = await api.get(`/installment?city=${city}`);
-      const recipientsPay = response.data.filter(
-        item => item.status === 'PAGO',
-      );
+  const [paramsInstallmentsPay, setParamsInstallmentsPay] = useState<getInstallmentsParams>({
+    status: 'PAGO',
+    page: 1,
+    perPage: 8
+  })
+  const [paramsInstallmentsPending, setParamsInstallmentsPending] = useState<getInstallmentsParams>({
+    status: 'PENDENTE,VENCIDO',
+    page: 1,
+    perPage: 8
+  })
 
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const futureReceipt = recipientsPay.filter(item =>
-          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
-        );
-        const dataFormated = futureReceipt.map(item => {
-          return {
-            id: item.id,
-            pay_date: DateBRL(item.pay_date),
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            }, ${money(Number(item.sale.realty_ammount))}`,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.sale.realty.city,
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            sale_type: item.sale.sale_type,
-          };
-        });
-        if (futureReceipt.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalRecepient(money(total));
-        } else {
-          setTotalRecepient(money(0));
-        }
-        setFutureRecepient(dataFormated);
-      } else if (!isTimeSlot && month > 0) {
-        const futureReceipt = recipientsPay.filter(item =>
-          filterMonth(item.pay_date, month),
-        );
+  const {data: futureReceipts} = useFetch('/installment',paramsInstallmentsPay)
+  const {data: future} = useFetch('/installment',paramsInstallmentsPending)
+ 
+  // TODO:  despachante e credito
 
-        const dataFormated = futureReceipt.map(item => {
-          return {
-            id: item.id,
-            pay_date: DateBRL(item.pay_date),
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            }, ${money(Number(item.sale.realty_ammount))}`,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.sale.realty.city,
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            sale_type: item.sale.sale_type,
-          };
-        });
-        if (futureReceipt.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalRecepient(money(total));
-        } else {
-          setTotalRecepient(money(0));
-        }
+  // useEffect(() => {
+  //   const loadingFutureReceiptsDespachante = async () => {
+  //     const response = await api.get(`/revenue`);
+  //     if (isTimeSlot && dateInitial.length !== 0) {
+  //       const futureReceiptsPending = response.data
+  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+  //         .filter(item => item.status.includes('PENDENTE') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterDay(item.due_date));
+  //       const futureReceiptsExpired = response.data
+  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+  //         .filter(item => item.status.includes('VENCIDO') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterDay(item.due_date));
 
-        setFutureRecepient(dataFormated);
-      } else {
-        const dataFormated = recipientsPay.map(item => {
-          return {
-            id: item.id,
-            pay_date: DateBRL(item.pay_date),
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            }, ${money(Number(item.sale.realty_ammount))}`,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.sale.realty.city,
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            sale_type: item.sale.sale_type,
-          };
-        });
-        if (recipientsPay.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalRecepient(money(total));
-        } else {
-          setTotalRecepient(money(0));
-        }
-        setFutureRecepient(dataFormated);
-      }
-    };
-    loadingFutureReceipts();
-  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
-  useEffect(() => {
-    const loadingFutureReceipts = async () => {
-      const response = await api.get(`/installment?city=${city}`);
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const futureReceiptsPending = response.data
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item =>
-            filterTimeSlot(item.due_date, dateInitial, dateFinal),
-          );
-        const futureReceiptsExpired = response.data
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item =>
-            filterTimeSlot(item.due_date, dateInitial, dateFinal),
-          );
+  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+  //       const dataFormated = data.map(item => {
+  //         return {
+  //           id: item.id,
+  //           revenue_type: item.revenue_type,
+  //           due_date: DateBRL(item.due_date),
+  //           description: item.description,
+  //           cliente_name: item.client,
+  //           value: Number(item.value_integral),
+  //           valueBRL: money(Number(item.value_integral)),
+  //           tax_rate: item.tax_rate,
+  //           invoice_value: Number(item.invoice_value),
+  //           invoiceValueBRL: money(Number(item.invoice_value)),
+  //           status: item.status,
+  //           city: item.subsidiary.city,
+  //         };
+  //       });
+  //       if (data.length > 0) {
+  //         const arrayValues = dataFormated.map(item => item.value);
+  //         const reducer = (accumulator, currentValue) =>
+  //           accumulator + currentValue;
+  //         const total = arrayValues.reduce(reducer);
+  //         setTotalDespachante(money(total));
+  //       } else {
+  //         setTotalDespachante(money(0));
+  //       }
 
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            sale_id: item.sale.id,
-            due_date: DateBRL(item.due_date),
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            }, ${money(Number(item.sale.realty_ammount))}`,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.sale.realty.city,
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            sale_type: item.sale.sale_type,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotal(money(total));
-        } else {
-          setTotal(money(0));
-        }
+  //       setFutureDespachante(dataFormated);
+  //     } else if (!isTimeSlot && month > 0) {
+  //       const futureReceiptsPending = response.data
+  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+  //         .filter(item => item.status.includes('PENDENTE') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterMonth(item.due_date, month));
+  //       const futureReceiptsExpired = response.data
+  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+  //         .filter(item => item.status.includes('VENCIDO') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterMonth(item.due_date, month));
 
-        setFuture(dataFormated);
-      } else if (!isTimeSlot && month > 0) {
-        const futureReceiptsPending = response.data
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => filterMonth(item.due_date, month));
-        const futureReceiptsExpired = response.data
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => filterMonth(item.due_date, month));
+  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+  //       const dataFormated = data.map(item => {
+  //         return {
+  //           id: item.id,
+  //           revenue_type: item.revenue_type,
+  //           due_date: DateBRL(item.due_date),
+  //           description: item.description,
+  //           cliente_name: item.client,
+  //           value: Number(item.value_integral),
+  //           valueBRL: money(Number(item.value_integral)),
+  //           tax_rate: item.tax_rate,
+  //           invoice_value: Number(item.invoice_value),
+  //           invoiceValueBRL: money(Number(item.invoice_value)),
+  //           status: item.status,
+  //           city: item.subsidiary.city,
+  //         };
+  //       });
+  //       if (data.length > 0) {
+  //         const arrayValues = dataFormated.map(item => item.value);
+  //         const reducer = (accumulator, currentValue) =>
+  //           accumulator + currentValue;
+  //         const total = arrayValues.reduce(reducer);
+  //         setTotalDespachante(money(total));
+  //       } else {
+  //         setTotalDespachante(money(0));
+  //       }
 
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            sale_id: item.sale.id,
-            due_date: DateBRL(item.due_date),
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            }, ${money(Number(item.sale.realty_ammount))}`,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.sale.realty.city,
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            sale_type: item.sale.sale_type,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotal(money(total));
-        } else {
-          setTotal(money(0));
-        }
+  //       setFutureDespachante(dataFormated);
+  //     } else {
+  //       const futureReceiptsPending = response.data
+  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+  //         .filter(item => item.status.includes('PENDENTE') && item)
+  //         .filter(item => item.subsidiary.city === city && item);
+  //       const futureReceiptsExpired = response.data
+  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
+  //         .filter(item => item.status.includes('VENCIDO') && item)
+  //         .filter(item => item.subsidiary.city === city && item);
 
-        setFuture(dataFormated);
-      } else {
-        const futureReceiptsPending = response.data.filter(
-          item => item.status.includes('PENDENTE') && item,
-        );
-        const futureReceiptsExpired = response.data.filter(
-          item => item.status.includes('VENCIDO') && item,
-        );
+  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+  //       const dataFormated = data.map(item => {
+  //         return {
+  //           id: item.id,
+  //           revenue_type: item.revenue_type,
+  //           due_date: DateBRL(item.due_date),
+  //           description: item.description,
+  //           cliente_name: item.client,
+  //           value: Number(item.value_integral),
+  //           valueBRL: money(Number(item.value_integral)),
+  //           tax_rate: item.tax_rate,
+  //           invoice_value: Number(item.invoice_value),
+  //           invoiceValueBRL: money(Number(item.invoice_value)),
+  //           status: item.status,
+  //           city: item.subsidiary.city,
+  //         };
+  //       });
+  //       if (data.length > 0) {
+  //         const arrayValues = dataFormated.map(item => item.value);
+  //         const reducer = (accumulator, currentValue) =>
+  //           accumulator + currentValue;
+  //         const total = arrayValues.reduce(reducer);
+  //         setTotalDespachante(money(total));
+  //       } else {
+  //         setTotalDespachante(money(0));
+  //       }
 
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            sale_id: item.sale.id,
-            due_date: DateBRL(item.due_date),
-            description: `${item.installment_number}° Parcela, ${
-              item.sale.realty.enterprise
-            }, ${money(Number(item.sale.realty_ammount))}`,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.sale.realty.city,
-            realtors: item.sale.sale_has_sellers
-              .map(realtor => realtor.name)
-              .toString(),
-            sale_type: item.sale.sale_type,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotal(money(total));
-        } else {
-          setTotal(money(0));
-        }
+  //       setFutureDespachante(dataFormated);
+  //     }
+  //   };
+  //   loadingFutureReceiptsDespachante();
+  // }, [city, month, dateInitial, dateFinal, isTimeSlot]);
+  // useEffect(() => {
+  //   const loadingFutureReceiptsCredit = async () => {
+  //     const response = await api.get(`/revenue`);
+  //     if (isTimeSlot && dateInitial.length !== 0) {
+  //       const futureReceiptsPending = response.data
+  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
+  //         .filter(item => item.status.includes('PENDENTE') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterDay(item.due_date));
+  //       const futureReceiptsExpired = response.data
+  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
+  //         .filter(item => item.status.includes('VENCIDO') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterDay(item.due_date));
 
-        setFuture(dataFormated);
-      }
-    };
-    loadingFutureReceipts();
-  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
-  useEffect(() => {
-    const loadingFutureReceiptsDespachante = async () => {
-      const response = await api.get(`/revenue`);
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const futureReceiptsPending = response.data
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterDay(item.due_date));
-        const futureReceiptsExpired = response.data
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterDay(item.due_date));
+  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+  //       const dataFormated = data.map(item => {
+  //         return {
+  //           id: item.id,
+  //           revenue_type: item.revenue_type,
+  //           due_date: DateBRL(item.due_date),
+  //           description: item.description,
+  //           cliente_name: item.client,
+  //           value: Number(item.value_integral),
+  //           valueBRL: money(Number(item.value_integral)),
+  //           tax_rate: item.tax_rate,
+  //           invoice_value: Number(item.invoice_value),
+  //           invoiceValueBRL: money(Number(item.invoice_value)),
+  //           status: item.status,
+  //           city: item.subsidiary.city,
+  //         };
+  //       });
+  //       if (data.length > 0) {
+  //         const arrayValues = dataFormated.map(item => item.value);
+  //         const reducer = (accumulator, currentValue) =>
+  //           accumulator + currentValue;
+  //         const total = arrayValues.reduce(reducer);
+  //         setTotalCredit(money(total));
+  //       } else {
+  //         setTotalCredit(money(0));
+  //       }
 
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            revenue_type: item.revenue_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            cliente_name: item.client,
-            value: Number(item.value_integral),
-            valueBRL: money(Number(item.value_integral)),
-            tax_rate: item.tax_rate,
-            invoice_value: Number(item.invoice_value),
-            invoiceValueBRL: money(Number(item.invoice_value)),
-            status: item.status,
-            city: item.subsidiary.city,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalDespachante(money(total));
-        } else {
-          setTotalDespachante(money(0));
-        }
+  //       setFutureCredit(dataFormated);
+  //     } else if (!isTimeSlot && month > 0) {
+  //       const futureReceiptsPending = response.data
+  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
+  //         .filter(item => item.status.includes('PENDENTE') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterMonth(item.due_date, month));
+  //       const futureReceiptsExpired = response.data
+  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
+  //         .filter(item => item.status.includes('VENCIDO') && item)
+  //         .filter(item => item.subsidiary.city === city && item)
+  //         .filter(item => filterMonth(item.due_date, month));
 
-        setFutureDespachante(dataFormated);
-      } else if (!isTimeSlot && month > 0) {
-        const futureReceiptsPending = response.data
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterMonth(item.due_date, month));
-        const futureReceiptsExpired = response.data
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterMonth(item.due_date, month));
+  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+  //       const dataFormated = data.map(item => {
+  //         return {
+  //           id: item.id,
+  //           revenue_type: item.revenue_type,
+  //           due_date: DateBRL(item.due_date),
+  //           description: item.description,
+  //           cliente_name: item.client,
+  //           value: Number(item.value_integral),
+  //           valueBRL: money(Number(item.value_integral)),
+  //           tax_rate: item.tax_rate,
+  //           invoice_value: Number(item.invoice_value),
+  //           invoiceValueBRL: money(Number(item.invoice_value)),
+  //           status: item.status,
+  //           city: item.subsidiary.city,
+  //         };
+  //       });
+  //       if (data.length > 0) {
+  //         const arrayValues = dataFormated.map(item => item.value);
+  //         const reducer = (accumulator, currentValue) =>
+  //           accumulator + currentValue;
+  //         const total = arrayValues.reduce(reducer);
+  //         setTotalCredit(money(total));
+  //       } else {
+  //         setTotalCredit(money(0));
+  //       }
 
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            revenue_type: item.revenue_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            cliente_name: item.client,
-            value: Number(item.value_integral),
-            valueBRL: money(Number(item.value_integral)),
-            tax_rate: item.tax_rate,
-            invoice_value: Number(item.invoice_value),
-            invoiceValueBRL: money(Number(item.invoice_value)),
-            status: item.status,
-            city: item.subsidiary.city,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalDespachante(money(total));
-        } else {
-          setTotalDespachante(money(0));
-        }
+  //       setFutureCredit(dataFormated);
+  //     } else {
+  //       const futureReceiptsPending = response.data
+  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
+  //         .filter(item => item.status.includes('PENDENTE') && item)
+  //         .filter(item => item.subsidiary.city === city && item);
+  //       const futureReceiptsExpired = response.data
+  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
+  //         .filter(item => item.status.includes('VENCIDO') && item)
+  //         .filter(item => item.subsidiary.city === city && item);
 
-        setFutureDespachante(dataFormated);
-      } else {
-        const futureReceiptsPending = response.data
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => item.subsidiary.city === city && item);
-        const futureReceiptsExpired = response.data
-          .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => item.subsidiary.city === city && item);
+  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
 
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
+  //       const dataFormated = data.map(item => {
+  //         return {
+  //           id: item.id,
+  //           revenue_type: item.revenue_type,
+  //           due_date: DateBRL(item.due_date),
+  //           description: item.description,
+  //           cliente_name: item.client,
+  //           value: Number(item.value_integral),
+  //           valueBRL: money(Number(item.value_integral)),
+  //           tax_rate: item.tax_rate,
+  //           invoice_value: Number(item.invoice_value),
+  //           invoiceValueBRL: money(Number(item.invoice_value)),
+  //           status: item.status,
+  //           city: item.subsidiary.city,
+  //         };
+  //       });
+  //       if (data.length > 0) {
+  //         const arrayValues = dataFormated.map(item => item.value);
+  //         const reducer = (accumulator, currentValue) =>
+  //           accumulator + currentValue;
+  //         const total = arrayValues.reduce(reducer);
+  //         setTotalCredit(money(total));
+  //       } else {
+  //         setTotalCredit(money(0));
+  //       }
 
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            revenue_type: item.revenue_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            cliente_name: item.client,
-            value: Number(item.value_integral),
-            valueBRL: money(Number(item.value_integral)),
-            tax_rate: item.tax_rate,
-            invoice_value: Number(item.invoice_value),
-            invoiceValueBRL: money(Number(item.invoice_value)),
-            status: item.status,
-            city: item.subsidiary.city,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalDespachante(money(total));
-        } else {
-          setTotalDespachante(money(0));
-        }
-
-        setFutureDespachante(dataFormated);
-      }
-    };
-    loadingFutureReceiptsDespachante();
-  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
-  useEffect(() => {
-    const loadingFutureReceiptsCredit = async () => {
-      const response = await api.get(`/revenue`);
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const futureReceiptsPending = response.data
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterDay(item.due_date));
-        const futureReceiptsExpired = response.data
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterDay(item.due_date));
-
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            revenue_type: item.revenue_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            cliente_name: item.client,
-            value: Number(item.value_integral),
-            valueBRL: money(Number(item.value_integral)),
-            tax_rate: item.tax_rate,
-            invoice_value: Number(item.invoice_value),
-            invoiceValueBRL: money(Number(item.invoice_value)),
-            status: item.status,
-            city: item.subsidiary.city,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalCredit(money(total));
-        } else {
-          setTotalCredit(money(0));
-        }
-
-        setFutureCredit(dataFormated);
-      } else if (!isTimeSlot && month > 0) {
-        const futureReceiptsPending = response.data
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterMonth(item.due_date, month));
-        const futureReceiptsExpired = response.data
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => item.subsidiary.city === city && item)
-          .filter(item => filterMonth(item.due_date, month));
-
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            revenue_type: item.revenue_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            cliente_name: item.client,
-            value: Number(item.value_integral),
-            valueBRL: money(Number(item.value_integral)),
-            tax_rate: item.tax_rate,
-            invoice_value: Number(item.invoice_value),
-            invoiceValueBRL: money(Number(item.invoice_value)),
-            status: item.status,
-            city: item.subsidiary.city,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalCredit(money(total));
-        } else {
-          setTotalCredit(money(0));
-        }
-
-        setFutureCredit(dataFormated);
-      } else {
-        const futureReceiptsPending = response.data
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.status.includes('PENDENTE') && item)
-          .filter(item => item.subsidiary.city === city && item);
-        const futureReceiptsExpired = response.data
-          .filter(item => item.revenue_type.includes('CREDITO') && item)
-          .filter(item => item.status.includes('VENCIDO') && item)
-          .filter(item => item.subsidiary.city === city && item);
-
-        const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            revenue_type: item.revenue_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            cliente_name: item.client,
-            value: Number(item.value_integral),
-            valueBRL: money(Number(item.value_integral)),
-            tax_rate: item.tax_rate,
-            invoice_value: Number(item.invoice_value),
-            invoiceValueBRL: money(Number(item.invoice_value)),
-            status: item.status,
-            city: item.subsidiary.city,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalCredit(money(total));
-        } else {
-          setTotalCredit(money(0));
-        }
-
-        setFutureCredit(dataFormated);
-      }
-    };
-    loadingFutureReceiptsCredit();
-  }, [city, month, dateInitial, dateFinal, isTimeSlot]);
+  //       setFutureCredit(dataFormated);
+  //     }
+  //   };
+  //   loadingFutureReceiptsCredit();
+  // }, [city, month, dateInitial, dateFinal, isTimeSlot]);
 
   const toogleIsTimeSlot = useCallback(() => {
     setIsTimeSlot(!isTimeSlot);
@@ -614,6 +407,18 @@ const FutureReceipts: React.FC = () => {
     [toogleModalEntryRevenue],
   );
 
+  function handlePaginateInstallmentPay(pageIndex: number) {
+    setParamsInstallmentsPay(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
+  function handlePaginateInstallmentPending(pageIndex: number) {
+    setParamsInstallmentsPending(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
   return (
     <FinancesLayout>
       <Background>
@@ -682,101 +487,62 @@ const FutureReceipts: React.FC = () => {
               >
                 <TabBootstrap eventKey="RECEBER" title="Vendas | A receber">
                   <TitlePane>Entradas Futuras</TitlePane>
-                  <Table cols={6}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Vencimento</th>
-                        <th>Descrição</th>
-                        <th>Valor Bruto</th>
-                        <th>Corretor</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {future.length === 0 ? (
-                        <NotFound />
-                      ) : (
-                        future.map(item => (
-                          <>
-                            <tr key={item.id}>
-                              <td>{item.city}</td>
-                              <td>{item.due_date}</td>
-                              <td>{item.description}</td>
-                              <td>{item.valueBRL}</td>
-                              <td>{item.realtors}</td>
-                              <td>
-                                <Link
-                                  to={`/adm/detalhes-vendas/${item.sale_id}`}
-                                >
-                                  Ver detalhes
-                                </Link>
-                              </td>
-                            </tr>
-                          </>
-                        ))
-                      )}
-                    </tbody>
-                  </Table>
-                  <BalanceAmount>
-                    <p>
-                      <span>Total</span>
-                      <strong>{total}</strong>
-                    </p>
-                  </BalanceAmount>
+                  {!future && (
+                    <LoadingContainer>
+                      <Loader type='Bars' color={theme.colors.primary} height={50} width={50} />
+                    </LoadingContainer>
+                  )}
+                  {future && (
+                    <>
+                      <TableInstallmentPending
+                        installments={future?.installments || []}
+                      />
+                      <BalanceAmount>
+                        <Pagination
+                          totalCount={future?.totalInstallments || 0}
+                          perPage={paramsInstallmentsPending.perPage || 8}
+                          pageIndex={paramsInstallmentsPending.page || 1}
+                          onPageChange={handlePaginateInstallmentPending}
+                        />
+                        <p>
+                          <span>Total</span>
+                          <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(future?.amountInstallmentRecived || 0)}</strong>
+                        </p>
+                      </BalanceAmount>
+                    </>
+                  )}
                 </TabBootstrap>
                 <TabBootstrap eventKey="RECEBIDO" title="Vendas | Recebidos">
-                  <TitlePane>Entradas Futuras</TitlePane>
-                  <Table cols={7}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Vencimento</th>
-                        <th>Descrição</th>
-                        <th>Valor Bruto</th>
-                        <th>Corretor</th>
-                        <th>Status</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {futureRecepient.length === 0 ? (
-                        <NotFound />
-                      ) : (
-                        futureRecepient.map(item => (
-                          <>
-                            <tr key={item.id}>
-                              <td>{item.city}</td>
-                              <td>{item.pay_date}</td>
-                              <td>{item.description}</td>
-                              <td>{item.valueBRL}</td>
-                              <td>{item.realtors}</td>
-                              <td className={item.status}>{item.status}</td>
-                              <td>
-                                <button
-                                  type="button"
-                                  className="details"
-                                  onClick={() => handleOpenModal(item)}
-                                >
-                                  <AiOutlinePlus color={theme.colors.primary} />
-                                </button>
-                              </td>
-                            </tr>
-                          </>
-                        ))
-                      )}
-                    </tbody>
-                  </Table>
-                  <BalanceAmount>
-                    <p>
-                      <span>Total</span>
-                      <strong>{totalRecepient}</strong>
-                    </p>
-                  </BalanceAmount>
+                  <TitlePane>Entradas</TitlePane>
+                  {!futureReceipts && (
+                    <LoadingContainer>
+                      <Loader type='Bars' color={theme.colors.primary} height={50} width={50} />
+                    </LoadingContainer>
+                  )}
+                  {futureReceipts && (
+                    <>
+                      <TableInstallmentsPay
+                        installments={futureReceipts?.installments || []}
+                      />
+                      <BalanceAmount>
+                        <Pagination
+                          totalCount={futureReceipts?.totalInstallments || 0}
+                          perPage={paramsInstallmentsPay.perPage || 8}
+                          pageIndex={paramsInstallmentsPay.page || 1}
+                          onPageChange={handlePaginateInstallmentPay}
+                        />
+                        <p>
+                          <span>Total</span>
+                          <strong>{new Intl.NumberFormat('pt-br', { style: 'currency', currency: 'BRL' }).format(futureReceipts?.amountInstallmentPay || 0)}</strong>
+                        </p>
+                      </BalanceAmount>
+                    </>
+
+                  )}
                 </TabBootstrap>
                 <TabBootstrap eventKey="DESPACHANTE" title="Despachante">
                   <TitlePane>Entradas Futuras</TitlePane>
-                  <Table cols={7}>
+                  {/* <Table cols={7}>
                     <thead>
                       <tr>
                         <th>Filial</th>
@@ -823,11 +589,11 @@ const FutureReceipts: React.FC = () => {
                       <span>Total</span>
                       <strong>{totalDespachante}</strong>
                     </p>
-                  </BalanceAmount>
+                  </BalanceAmount> */}
                 </TabBootstrap>
                 <TabBootstrap eventKey="CREDITO" title="Crédito">
                   <TitlePane>Entradas Futuras</TitlePane>
-                  <Table cols={7}>
+                  {/* <Table cols={7}>
                     <thead>
                       <tr>
                         <th>Filial</th>
@@ -874,14 +640,14 @@ const FutureReceipts: React.FC = () => {
                       <span>Total</span>
                       <strong>{totalCredit}</strong>
                     </p>
-                  </BalanceAmount>
+                  </BalanceAmount> */}
                 </TabBootstrap>
               </Tabs>
             </AccountContainer>
           </Content>
         </Container>
       </Background>
-      <DetailsInstalments
+      {/* <DetailsInstalments
         isOpen={modalDetails}
         setIsOpen={toogleModalSaleDetails}
         installment={selectedInstallment}
@@ -890,7 +656,7 @@ const FutureReceipts: React.FC = () => {
         isOpen={modalEntryRevenue}
         setIsOpen={toogleModalEntryRevenue}
         revenue={selectedRevenue}
-      />
+      /> */}
     </FinancesLayout>
   );
 };
