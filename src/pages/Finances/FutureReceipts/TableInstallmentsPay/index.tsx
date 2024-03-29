@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Table } from '../styles';
 import NotFound from '../../../../components/Errors/NotFound';
 import { AiOutlinePlus } from 'react-icons/ai';
 import theme from '../../../../styles/theme';
 import { Installment } from '../../../../api/get-installments';
 import { format, parseISO } from 'date-fns';
+import DetailsInstalments from '../../../../components/ReactModal/DetailsInstalments';
 
 interface TableInstallmentProps {
   installments: Installment[],
 };
 const TableInstallmentsPay: React.FC<TableInstallmentProps> = (props) => {
   const { installments } = props;
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedInstallment, setSelectedInstallment] = useState({} as Installment);
+  const toogleModal = () => {
+    setIsOpen(!isOpen);
+  }
+
+  const handleOpenModal = (item: Installment) => {
+    setSelectedInstallment(item);
+    toogleModal();
+  }
+  
   return (
     <Table cols={7}>
       <thead>
@@ -41,7 +53,7 @@ const TableInstallmentsPay: React.FC<TableInstallmentProps> = (props) => {
                   <button
                     type="button"
                     className="details"
-                    // onClick={() => handleOpenModal(item)}
+                    onClick={() => handleOpenModal(item)}
                   >
                     <AiOutlinePlus color={theme.colors.primary} />
                   </button>
@@ -51,7 +63,13 @@ const TableInstallmentsPay: React.FC<TableInstallmentProps> = (props) => {
           ))
         )}
       </tbody>
+      <DetailsInstalments
+        isOpen={isOpen}
+        setIsOpen={toogleModal}
+        installment={selectedInstallment}
+      />
     </Table>
+    
   );
 }
 

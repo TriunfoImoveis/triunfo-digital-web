@@ -28,13 +28,15 @@ interface Sale {
   sale_has_sellers: User[];
   realty: Realty;
   realty_ammount: string;
-  subsidiary: Subsidiary  
+  subsidiary: Subsidiary 
+  sale_type: 'NOVO' | 'USADO';
 }
 
 export interface Installment {
   id: string;
   installment_number: number;
   due_date: string;
+  pay_date: string;
   status: string;
   value: string;
   sale: Sale;

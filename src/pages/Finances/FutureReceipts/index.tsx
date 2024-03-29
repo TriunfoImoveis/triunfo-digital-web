@@ -39,7 +39,14 @@ import TableInstallmentsPay from './TableInstallmentsPay';
 import { Pagination } from '../../../components/Pagination';
 import Loader from 'react-loader-spinner';
 import { useFetch } from '../../../hooks/useFetch';
+import { TableFowardAgent } from './TableFowardAgent';
+import { TableCredit } from './TableCredit';
+import { useFetchFinances } from '../../../hooks/useFetchFinances';
 
+interface SubsidiaryData {
+  id: string;
+  name: string;
+}
 type FutureReceiptsType = {
   id: string;
   sale_id?: string;
@@ -68,30 +75,41 @@ type RevenueType = {
   cliente_name: string;
 };
 
+interface RevenueParams {
+  subsidiary?: string;
+  revenue_type: 'DESPACHANTE' | 'CREDITO';
+  status?: string;
+  month?: string;
+  year?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  page?: number;
+  perPage?: number;
+}
+
+interface FowardAgent {
+  id: string;
+  revenue_type: 'DESPACHANTE' | 'CREDITO';
+  description: string;
+  due_date: string;
+  value_integral: number;
+  client: string;
+  subsidiary: {
+    id: string;
+    name: string;
+  };
+  status: string;
+}
+
+interface RevenueData {
+  revenues: FowardAgent[];
+  total: number;
+  totalValueIntegralRevenues: number;
+}
 const FutureReceipts: React.FC = () => {
   const [typeTab, setTypeTab] = useState('RECEBIDO');
-  const [modalDetails, setModalDetails] = useState(false);
-  const [modalEntryRevenue, setModalEntryRevenue] = useState(false);
-  const [city, setCity] = useState('São Luís');
-  const [total, setTotal] = useState('R$ 0,00');
-  const [totalRecepient, setTotalRecepient] = useState('R$ 0,00');
-  const [totalDespachante, setTotalDespachante] = useState('R$ 0,00');
-  const [totalCredit, setTotalCredit] = useState('R$ 0,00');
-  const [futureRecepient, setFutureRecepient] = useState<FutureReceiptsType[]>(
-    [],
-  );
-  const [futureDespachante, setFutureDespachante] = useState<RevenueType[]>([]);
-  const [futureCredit, setFutureCredit] = useState<RevenueType[]>([]);
-  const [selectedInstallment, setSelectedInstalment] = useState(
-    {} as FutureReceiptsType,
-  );
-  const [selectedRevenue, setSelectedRevenue] = useState({} as RevenueType);
-  const [month, setMonth] = useState(0);
-  const [isTimeSlot, setIsTimeSlot] = useState(false);
-  const [dateInitial, setDateInitial] = useState('');
-  const [dateFinal, setDateFinal] = useState('');
-
   const [paramsInstallmentsPay, setParamsInstallmentsPay] = useState<getInstallmentsParams>({
+    subsidiary: '',
     status: 'PAGO',
     page: 1,
     perPage: 8
@@ -101,272 +119,24 @@ const FutureReceipts: React.FC = () => {
     page: 1,
     perPage: 8
   })
+  const [paramsRevenueForwardingAgent, setParamsRevenueForwardingAgent] = useState<RevenueParams>({
+    revenue_type: 'DESPACHANTE',
+    status: 'PENDENTE,VENCIDO',
+    page: 1,
+    perPage: 8
+  })
+  const [paramsRevenueCorresponding, setParamsRevenueCorresponding] = useState<RevenueParams>({
+    revenue_type: 'CREDITO',
+    status: 'PENDENTE,VENCIDO',
+    page: 1,
+    perPage: 8
+  })
 
-  const {data: futureReceipts} = useFetch('/installment',paramsInstallmentsPay)
-  const {data: future} = useFetch('/installment',paramsInstallmentsPending)
- 
-  // TODO:  despachante e credito
-
-  // useEffect(() => {
-  //   const loadingFutureReceiptsDespachante = async () => {
-  //     const response = await api.get(`/revenue`);
-  //     if (isTimeSlot && dateInitial.length !== 0) {
-  //       const futureReceiptsPending = response.data
-  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-  //         .filter(item => item.status.includes('PENDENTE') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterDay(item.due_date));
-  //       const futureReceiptsExpired = response.data
-  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-  //         .filter(item => item.status.includes('VENCIDO') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterDay(item.due_date));
-
-  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-  //       const dataFormated = data.map(item => {
-  //         return {
-  //           id: item.id,
-  //           revenue_type: item.revenue_type,
-  //           due_date: DateBRL(item.due_date),
-  //           description: item.description,
-  //           cliente_name: item.client,
-  //           value: Number(item.value_integral),
-  //           valueBRL: money(Number(item.value_integral)),
-  //           tax_rate: item.tax_rate,
-  //           invoice_value: Number(item.invoice_value),
-  //           invoiceValueBRL: money(Number(item.invoice_value)),
-  //           status: item.status,
-  //           city: item.subsidiary.city,
-  //         };
-  //       });
-  //       if (data.length > 0) {
-  //         const arrayValues = dataFormated.map(item => item.value);
-  //         const reducer = (accumulator, currentValue) =>
-  //           accumulator + currentValue;
-  //         const total = arrayValues.reduce(reducer);
-  //         setTotalDespachante(money(total));
-  //       } else {
-  //         setTotalDespachante(money(0));
-  //       }
-
-  //       setFutureDespachante(dataFormated);
-  //     } else if (!isTimeSlot && month > 0) {
-  //       const futureReceiptsPending = response.data
-  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-  //         .filter(item => item.status.includes('PENDENTE') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterMonth(item.due_date, month));
-  //       const futureReceiptsExpired = response.data
-  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-  //         .filter(item => item.status.includes('VENCIDO') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterMonth(item.due_date, month));
-
-  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-  //       const dataFormated = data.map(item => {
-  //         return {
-  //           id: item.id,
-  //           revenue_type: item.revenue_type,
-  //           due_date: DateBRL(item.due_date),
-  //           description: item.description,
-  //           cliente_name: item.client,
-  //           value: Number(item.value_integral),
-  //           valueBRL: money(Number(item.value_integral)),
-  //           tax_rate: item.tax_rate,
-  //           invoice_value: Number(item.invoice_value),
-  //           invoiceValueBRL: money(Number(item.invoice_value)),
-  //           status: item.status,
-  //           city: item.subsidiary.city,
-  //         };
-  //       });
-  //       if (data.length > 0) {
-  //         const arrayValues = dataFormated.map(item => item.value);
-  //         const reducer = (accumulator, currentValue) =>
-  //           accumulator + currentValue;
-  //         const total = arrayValues.reduce(reducer);
-  //         setTotalDespachante(money(total));
-  //       } else {
-  //         setTotalDespachante(money(0));
-  //       }
-
-  //       setFutureDespachante(dataFormated);
-  //     } else {
-  //       const futureReceiptsPending = response.data
-  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-  //         .filter(item => item.status.includes('PENDENTE') && item)
-  //         .filter(item => item.subsidiary.city === city && item);
-  //       const futureReceiptsExpired = response.data
-  //         .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-  //         .filter(item => item.status.includes('VENCIDO') && item)
-  //         .filter(item => item.subsidiary.city === city && item);
-
-  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-  //       const dataFormated = data.map(item => {
-  //         return {
-  //           id: item.id,
-  //           revenue_type: item.revenue_type,
-  //           due_date: DateBRL(item.due_date),
-  //           description: item.description,
-  //           cliente_name: item.client,
-  //           value: Number(item.value_integral),
-  //           valueBRL: money(Number(item.value_integral)),
-  //           tax_rate: item.tax_rate,
-  //           invoice_value: Number(item.invoice_value),
-  //           invoiceValueBRL: money(Number(item.invoice_value)),
-  //           status: item.status,
-  //           city: item.subsidiary.city,
-  //         };
-  //       });
-  //       if (data.length > 0) {
-  //         const arrayValues = dataFormated.map(item => item.value);
-  //         const reducer = (accumulator, currentValue) =>
-  //           accumulator + currentValue;
-  //         const total = arrayValues.reduce(reducer);
-  //         setTotalDespachante(money(total));
-  //       } else {
-  //         setTotalDespachante(money(0));
-  //       }
-
-  //       setFutureDespachante(dataFormated);
-  //     }
-  //   };
-  //   loadingFutureReceiptsDespachante();
-  // }, [city, month, dateInitial, dateFinal, isTimeSlot]);
-  // useEffect(() => {
-  //   const loadingFutureReceiptsCredit = async () => {
-  //     const response = await api.get(`/revenue`);
-  //     if (isTimeSlot && dateInitial.length !== 0) {
-  //       const futureReceiptsPending = response.data
-  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
-  //         .filter(item => item.status.includes('PENDENTE') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterDay(item.due_date));
-  //       const futureReceiptsExpired = response.data
-  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
-  //         .filter(item => item.status.includes('VENCIDO') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterDay(item.due_date));
-
-  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-  //       const dataFormated = data.map(item => {
-  //         return {
-  //           id: item.id,
-  //           revenue_type: item.revenue_type,
-  //           due_date: DateBRL(item.due_date),
-  //           description: item.description,
-  //           cliente_name: item.client,
-  //           value: Number(item.value_integral),
-  //           valueBRL: money(Number(item.value_integral)),
-  //           tax_rate: item.tax_rate,
-  //           invoice_value: Number(item.invoice_value),
-  //           invoiceValueBRL: money(Number(item.invoice_value)),
-  //           status: item.status,
-  //           city: item.subsidiary.city,
-  //         };
-  //       });
-  //       if (data.length > 0) {
-  //         const arrayValues = dataFormated.map(item => item.value);
-  //         const reducer = (accumulator, currentValue) =>
-  //           accumulator + currentValue;
-  //         const total = arrayValues.reduce(reducer);
-  //         setTotalCredit(money(total));
-  //       } else {
-  //         setTotalCredit(money(0));
-  //       }
-
-  //       setFutureCredit(dataFormated);
-  //     } else if (!isTimeSlot && month > 0) {
-  //       const futureReceiptsPending = response.data
-  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
-  //         .filter(item => item.status.includes('PENDENTE') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterMonth(item.due_date, month));
-  //       const futureReceiptsExpired = response.data
-  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
-  //         .filter(item => item.status.includes('VENCIDO') && item)
-  //         .filter(item => item.subsidiary.city === city && item)
-  //         .filter(item => filterMonth(item.due_date, month));
-
-  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-  //       const dataFormated = data.map(item => {
-  //         return {
-  //           id: item.id,
-  //           revenue_type: item.revenue_type,
-  //           due_date: DateBRL(item.due_date),
-  //           description: item.description,
-  //           cliente_name: item.client,
-  //           value: Number(item.value_integral),
-  //           valueBRL: money(Number(item.value_integral)),
-  //           tax_rate: item.tax_rate,
-  //           invoice_value: Number(item.invoice_value),
-  //           invoiceValueBRL: money(Number(item.invoice_value)),
-  //           status: item.status,
-  //           city: item.subsidiary.city,
-  //         };
-  //       });
-  //       if (data.length > 0) {
-  //         const arrayValues = dataFormated.map(item => item.value);
-  //         const reducer = (accumulator, currentValue) =>
-  //           accumulator + currentValue;
-  //         const total = arrayValues.reduce(reducer);
-  //         setTotalCredit(money(total));
-  //       } else {
-  //         setTotalCredit(money(0));
-  //       }
-
-  //       setFutureCredit(dataFormated);
-  //     } else {
-  //       const futureReceiptsPending = response.data
-  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
-  //         .filter(item => item.status.includes('PENDENTE') && item)
-  //         .filter(item => item.subsidiary.city === city && item);
-  //       const futureReceiptsExpired = response.data
-  //         .filter(item => item.revenue_type.includes('CREDITO') && item)
-  //         .filter(item => item.status.includes('VENCIDO') && item)
-  //         .filter(item => item.subsidiary.city === city && item);
-
-  //       const data = [...futureReceiptsPending, ...futureReceiptsExpired];
-
-  //       const dataFormated = data.map(item => {
-  //         return {
-  //           id: item.id,
-  //           revenue_type: item.revenue_type,
-  //           due_date: DateBRL(item.due_date),
-  //           description: item.description,
-  //           cliente_name: item.client,
-  //           value: Number(item.value_integral),
-  //           valueBRL: money(Number(item.value_integral)),
-  //           tax_rate: item.tax_rate,
-  //           invoice_value: Number(item.invoice_value),
-  //           invoiceValueBRL: money(Number(item.invoice_value)),
-  //           status: item.status,
-  //           city: item.subsidiary.city,
-  //         };
-  //       });
-  //       if (data.length > 0) {
-  //         const arrayValues = dataFormated.map(item => item.value);
-  //         const reducer = (accumulator, currentValue) =>
-  //           accumulator + currentValue;
-  //         const total = arrayValues.reduce(reducer);
-  //         setTotalCredit(money(total));
-  //       } else {
-  //         setTotalCredit(money(0));
-  //       }
-
-  //       setFutureCredit(dataFormated);
-  //     }
-  //   };
-  //   loadingFutureReceiptsCredit();
-  // }, [city, month, dateInitial, dateFinal, isTimeSlot]);
-
-  const toogleIsTimeSlot = useCallback(() => {
-    setIsTimeSlot(!isTimeSlot);
-  }, [isTimeSlot]);
+  const { data: futureReceipts } = useFetchFinances({ url: '/installment', params: paramsInstallmentsPay, config: { refreshInterval: 0 } })
+  const { data: future } = useFetchFinances({ url: '/installment', params: paramsInstallmentsPending, config: { refreshInterval: 0 } })
+  const { data: revenueForwardingAgent } = useFetchFinances<RevenueData>({ url: '/revenue', params: paramsRevenueForwardingAgent, config: { refreshInterval: 0 } })
+  const { data: revenueCorresponding } = useFetchFinances<RevenueData>({ url: '/revenue', params: paramsRevenueCorresponding, config: { refreshInterval: 0 } })
+  const { data: subsidiaries } = useFetchFinances<SubsidiaryData[]>({ url: '/subsidiary', config: { refreshInterval: 0 } })
 
   const handleSetTab = (tabName: string | null) => {
     if (tabName) {
@@ -375,38 +145,48 @@ const FutureReceipts: React.FC = () => {
   };
 
   const handleSubmit = ({ date_initial, date_final }) => {
-    setDateInitial(date_initial);
-    setDateFinal(date_final);
+    setParamsInstallmentsPay(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
+    setParamsInstallmentsPending(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
+    setParamsRevenueCorresponding(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
+    setParamsRevenueForwardingAgent(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
   };
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    setCity(event.target.value);
+    const { value = '' } = event.target
+    setParamsInstallmentsPay(prevState => ({
+      ...prevState,
+      subsidiary: value
+    }))
+    setParamsInstallmentsPending(prevState => ({
+      ...prevState,
+      subsidiary: value
+    }))
+    setParamsRevenueCorresponding(prevState => ({
+      ...prevState,
+      subsidiary: value
+    }))
+    setParamsRevenueForwardingAgent(prevState => ({
+      ...prevState,
+      subsidiary: value
+    }))
   };
-  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    setMonth(Number(event.target.value));
-  };
-  const toogleModalSaleDetails = useCallback(() => {
-    setModalDetails(!modalDetails);
-  }, [modalDetails]);
-  const toogleModalEntryRevenue = useCallback(() => {
-    setModalEntryRevenue(!modalEntryRevenue);
-  }, [modalEntryRevenue]);
-
-  const handleOpenModal = useCallback(
-    (item: FutureReceiptsType) => {
-      setSelectedInstalment(item);
-      toogleModalSaleDetails();
-    },
-    [toogleModalSaleDetails],
-  );
-  const handleOpenModalEntryRevenue = useCallback(
-    (item: RevenueType) => {
-      setSelectedRevenue(item);
-      toogleModalEntryRevenue();
-    },
-    [toogleModalEntryRevenue],
-  );
-
+  
   function handlePaginateInstallmentPay(pageIndex: number) {
     setParamsInstallmentsPay(prevState => ({
       ...prevState,
@@ -415,6 +195,18 @@ const FutureReceipts: React.FC = () => {
   }
   function handlePaginateInstallmentPending(pageIndex: number) {
     setParamsInstallmentsPending(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
+  function handlePaginateRevenueForwardingAgent(pageIndex: number) {
+    setParamsRevenueForwardingAgent(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
+  function handlePaginateRevenueCorresponding(pageIndex: number) {
+    setParamsRevenueForwardingAgent(prevState => ({
       ...prevState,
       page: pageIndex
     }))
@@ -430,48 +222,19 @@ const FutureReceipts: React.FC = () => {
             <FiltersBotton>
               <FilterButtonGroup>
                 <FiltersBottonItems>
-                  <span>Cidade: </span>
-                  <select defaultValue={city} onChange={handleSelectCity}>
-                    <option value="São Luís">São Luís</option>
-                    <option value="Fortaleza">Fortaleza</option>
-                    <option value="Teresina">Teresina</option>
+                  <select defaultValue={''} onChange={handleSelectCity}>
+                    <option value="">Todas as Filiais</option>
+                    {subsidiaries?.map(subsidiary => (
+                      <option value={subsidiary.id}>{subsidiary.name}</option>
+                    ))}
                   </select>
                 </FiltersBottonItems>
-                {!isTimeSlot ? (
-                  <FiltersBottonItems>
-                    <span>Mês: </span>
-                    <select
-                      defaultValue={month}
-                      onChange={handleSelectDate}
-                      disabled={isTimeSlot}
-                    >
-                      <option value={0}>Todas</option>
-                      <option value={1}>Janeiro</option>
-                      <option value={2}>Fevereiro</option>
-                      <option value={3}>Março</option>
-                      <option value={4}>Abril</option>
-                      <option value={5}>Maio</option>
-                      <option value={6}>Junho</option>
-                      <option value={7}>Julho</option>
-                      <option value={8}>Agosto</option>
-                      <option value={9}>Setembro</option>
-                      <option value={10}>Outubro</option>
-                      <option value={11}>Novembro</option>
-                      <option value={12}>Dezembro</option>
-                    </select>
-                  </FiltersBottonItems>
-                ) : (
-                  <FiltersBottonItems>
-                    <Form onSubmit={handleSubmit}>
-                      <Input name="date_initial" mask="date" type="date" />
-                      <Input name="date_final" mask="date" type="date" />
-                      <Button type="submit">Filtrar</Button>
-                    </Form>
-                  </FiltersBottonItems>
-                )}
                 <FiltersBottonItems>
-                  <span>intervalo de tempo: </span>
-                  <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
+                  <Form onSubmit={handleSubmit}>
+                    <Input name="date_initial" mask="date" type="date" />
+                    <Input name="date_final" mask="date" type="date" />
+                    <Button type="submit">Filtrar</Button>
+                  </Form>
                 </FiltersBottonItems>
               </FilterButtonGroup>
             </FiltersBotton>
@@ -542,121 +305,65 @@ const FutureReceipts: React.FC = () => {
                 </TabBootstrap>
                 <TabBootstrap eventKey="DESPACHANTE" title="Despachante">
                   <TitlePane>Entradas Futuras</TitlePane>
-                  {/* <Table cols={7}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Vencimento</th>
-                        <th>Descrição</th>
-                        <th>Cliente</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {futureDespachante.length === 0 ? (
-                        <NotFound />
-                      ) : (
-                        futureDespachante.map(item => (
-                          <>
-                            <tr key={item.id}>
-                              <td>{item.city}</td>
-                              <td>{item.due_date}</td>
-                              <td>{item.description}</td>
-                              <td>{item.cliente_name || '-------'}</td>
-                              <td>{item.valueBRL}</td>
-                              <td className={item.status}>{item.status}</td>
-                              <td>
-                                <button
-                                  type="button"
-                                  className="details"
-                                  onClick={() =>
-                                    handleOpenModalEntryRevenue(item)
-                                  }
-                                >
-                                  <AiOutlinePlus color={theme.colors.primary} />
-                                </button>
-                              </td>
-                            </tr>
-                          </>
-                        ))
-                      )}
-                    </tbody>
-                  </Table>
-                  <BalanceAmount>
-                    <p>
-                      <span>Total</span>
-                      <strong>{totalDespachante}</strong>
-                    </p>
-                  </BalanceAmount> */}
+                  {!revenueForwardingAgent?.revenues && (
+                    <LoadingContainer>
+                      <Loader type='Bars' color={theme.colors.primary} height={50} width={50} />
+                    </LoadingContainer>
+                  )}
+                  {revenueForwardingAgent?.revenues && (
+                    <>
+                      <TableFowardAgent revenues={revenueForwardingAgent?.revenues || []} />
+                      <BalanceAmount>
+
+                        <Pagination
+                          totalCount={revenueForwardingAgent?.total || 0}
+                          perPage={paramsRevenueForwardingAgent.perPage || 8}
+                          pageIndex={paramsRevenueForwardingAgent.page || 1}
+                          onPageChange={handlePaginateRevenueForwardingAgent}
+                        />
+                        <p>
+                          <span>Total</span>
+                          <strong>{
+                            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+                              .format(revenueForwardingAgent?.totalValueIntegralRevenues)}
+                          </strong>
+                        </p>
+                      </BalanceAmount>
+                    </>
+                  )}
                 </TabBootstrap>
                 <TabBootstrap eventKey="CREDITO" title="Crédito">
                   <TitlePane>Entradas Futuras</TitlePane>
-                  {/* <Table cols={7}>
-                    <thead>
-                      <tr>
-                        <th>Filial</th>
-                        <th>Vencimento</th>
-                        <th>Descrição</th>
-                        <th>Cliente</th>
-                        <th>Valor</th>
-                        <th>Status</th>
-                        <th>Detalhes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {futureCredit.length === 0 ? (
-                        <NotFound />
-                      ) : (
-                        futureCredit.map(item => (
-                          <>
-                            <tr key={item.id}>
-                              <td>{item.city}</td>
-                              <td>{item.due_date}</td>
-                              <td>{item.description}</td>
-                              <td>{item.cliente_name || '-------'}</td>
-                              <td>{item.valueBRL}</td>
-                              <td className={item.status}>{item.status}</td>
-                              <td>
-                                <button
-                                  type="button"
-                                  className="details"
-                                  onClick={() =>
-                                    handleOpenModalEntryRevenue(item)
-                                  }
-                                >
-                                  <AiOutlinePlus color={theme.colors.primary} />
-                                </button>
-                              </td>
-                            </tr>
-                          </>
-                        ))
-                      )}
-                    </tbody>
-                  </Table>
-                  <BalanceAmount>
-                    <p>
-                      <span>Total</span>
-                      <strong>{totalCredit}</strong>
-                    </p>
-                  </BalanceAmount> */}
+                  {!revenueCorresponding && (
+                    <LoadingContainer>
+                      <Loader type='Bars' color={theme.colors.primary} height={50} width={50} />
+                    </LoadingContainer>
+                  )}
+                  {revenueCorresponding && (
+                    <>
+                      <TableFowardAgent revenues={revenueCorresponding?.revenues || []} />
+                      <BalanceAmount>
+                        <Pagination
+                          totalCount={revenueCorresponding?.total || 0}
+                          perPage={paramsRevenueCorresponding.perPage || 8}
+                          pageIndex={paramsRevenueCorresponding.page || 1}
+                          onPageChange={handlePaginateRevenueCorresponding}
+                        />
+                        <p>
+                          <span>Total</span>
+                          <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(revenueCorresponding?.totalValueIntegralRevenues || 0)}</strong>
+                        </p>
+                      </BalanceAmount>
+                    </>
+                  )}
+
+
                 </TabBootstrap>
               </Tabs>
             </AccountContainer>
           </Content>
         </Container>
       </Background>
-      {/* <DetailsInstalments
-        isOpen={modalDetails}
-        setIsOpen={toogleModalSaleDetails}
-        installment={selectedInstallment}
-      />
-      <EntryRevenue
-        isOpen={modalEntryRevenue}
-        setIsOpen={toogleModalEntryRevenue}
-        revenue={selectedRevenue}
-      /> */}
     </FinancesLayout>
   );
 };

@@ -4,7 +4,6 @@ import NotFound from '../../../../components/Errors/NotFound';
 import { Link } from 'react-router-dom';
 import { Installment } from '../../../../api/get-installments';
 import { format, parseISO } from 'date-fns';
-
 interface TableInstallmentProps {
   installments: Installment[],
 };
@@ -48,7 +47,6 @@ const TableInstallmentPending: React.FC<TableInstallmentProps> = (props) => {
           )}
         </tbody>
       </Table>
-      
     </>
   );
 }
