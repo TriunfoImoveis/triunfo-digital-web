@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useCallback, useEffect, useState, useMemo } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import { SiOneplus } from 'react-icons/si';
-import Switch from 'react-switch';
 import { Form } from '@unform/web';
 
 import FinancesLayout from '../../Layouts/FinancesLayout';
@@ -27,18 +26,12 @@ import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
-import {
-  filterMonth,
-  filterTimeSlot,
-  filterYear,
-} from '../../../utils/filters';
 import { useFilter } from '../../../context/FilterContext';
-import { useFetch } from '../../../hooks/useFetch';
 import TableFix from '../../../components/Table/TableAccount';
 import { toast } from 'react-toastify';
+import { useFetchFinances } from '../../../hooks/useFetchFinances'; 
 
-
-interface AccountData {
+interface Expense {
   id: string;
   expense_type: string;
   description: string;
@@ -63,21 +56,14 @@ interface AccountData {
     name: string;
   }
 }
-
-type AccountProps = {
-  id: string;
-  expense_type: string;
-  due_date: string;
-  description: string;
-  value: number;
-  valueBRL: string;
-  status: string;
-  city: string;
-  group: string;
-};
+interface AccountData {
+  expenses: Expense[];
+  totalExpenses: number;
+  totalValue: number;
+}
 
 interface GroupsResponse {
-  id: string; 
+  id: string;
   name: string;
 }
 
@@ -85,43 +71,56 @@ interface Options {
   label: string;
   value: string;
 }
+type ExpenseStatus = "PENDENTE" | "VENCIDO" | "PAGO" | "CANCELADO";
+type ExpenseType = "FIXA" | "VARIAVEL";
+interface ParamsExpense {
+  subsidiary?: string;
+  expense_type?: ExpenseType;
+  status?: ExpenseStatus | ExpenseStatus[];
+  month?: string;
+  year?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  group?: string;
+  page?: number;
+  perPage?: number;
+  sort?: 'ASC' | 'DESC';
+}
 
 const Account: React.FC = () => {
   const [typeTab, setTypeTab] = useState('fix');
-  const [totalFixed, setTotalFixed] = useState('R$ 0,00');
-  const [totalVariable, setTotalVariable] = useState('R$ 0,00');
-  const [isTimeSlot, setIsTimeSlot] = useState(false);
-  const [dateInitial, setDateInitial] = useState('');
-  const [dateFinal, setDateFinal] = useState('');
   const [optionsGroup, setOptionsGroup] = useState<Options[]>([]);
   const [optionsSubsidiary, setOptionsSubsidiary] = useState<Options[]>([]);
   const [selectedsEntry, setSelectedsEntry] = useState<String[]>([]);
-  const { data: account } = useFetch<AccountData[]>('/expense');
+
+  const [paramsExpenseFixed, setParamsExpenseFixed] = useState<ParamsExpense>({
+    sort: 'ASC',
+    subsidiary: '',
+    expense_type: 'FIXA',
+    status: 'PAGO'
+  });
+  const [paramsExpenseVariable, setParamsExpenseVariable] = useState<ParamsExpense>({
+    sort: 'ASC',
+    subsidiary: '',
+    expense_type: 'VARIAVEL',
+    status: 'PAGO'
+  });
+  const { data: expenseFixed } = useFetchFinances<AccountData>({ url: '/expense', params: paramsExpenseFixed, config: { refreshInterval: undefined } });
+  const { data: expenseVariable } = useFetchFinances<AccountData>({ url: '/expense', params: paramsExpenseVariable, config: { refreshInterval: undefined } });
   const {
-    handleSetMonth, 
-    month, 
-    year,
-    handleSetYear,
     group,
-    handleSetGroup,
     subsidiary,
-    handleSetSubsidiary
   } = useFilter();
 
   const [modalAddAccount, setAddAccount] = useState(false);
 
-  const orderByAsc = useCallback(function (a: AccountData, b: AccountData) {
-    let data1 = new Date(a.due_date);
-    let data2 = new Date(b.due_date);
-    return data1 > data2 ? 0 : -1;
-  }, []);
   const toogleAddAccount = useCallback(() => {
     setAddAccount(prevState => !prevState);
   }, []);
 
   const loadGroupsAccount = useCallback(async () => {
     const response = await api.get<GroupsResponse[]>('/expense/groups');
-    const options = response.data.map(item => ({ 
+    const options = response.data.map(item => ({
       label: item.name,
       value: item.id
     }));
@@ -130,271 +129,21 @@ const Account: React.FC = () => {
 
   const loadSubsidiary = useCallback(async () => {
     const response = await api.get('/subsidiary');
-    const options = response.data.map(item => ({ 
+    const options = response.data.map(item => ({
       label: item.name,
-      value: item.name
+      value: item.id
     }));
     setOptionsSubsidiary(options);
   }, []);
 
-  const accountFixed = useCallback((account: AccountData[]): AccountProps[] => {
-    const responseAccount = account
-        .filter(item => {
-          if (item.subsidiary.name === subsidiary) {
-            return item;
-          } else if (subsidiary === '') {
-            return item
-          }
-          // eslint-disable-next-line
-          return;
-        })
-        .filter(item => item.expense_type.includes('FIXA') && item)
-        .filter(item => item.pay_date === null && item)
-        .filter(item => {
-          if (group === '') {
-            // eslint-disable-next-line
-            return item;
-          }
-          return item.group.id === group && item;
-        });
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const account = responseAccount.filter(item =>
-          filterTimeSlot(item.due_date, dateInitial, dateFinal),
-        );
-
-        const data = account;
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            expense_type: item.expense_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.subsidiary.name,
-            group: item.group.name,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalFixed(money(total));
-        } else {
-          setTotalFixed(money(0));
-        }
-
-        return dataFormated;
-      } else if (month > 0) {
-        const account = responseAccount
-          .filter(item => filterMonth(item.due_date, month))
-          .filter(item => filterYear(item.due_date, year));
-
-        const data = account;
-
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            expense_type: item.expense_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.subsidiary.name,
-            group: item.group.name,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalFixed(money(total));
-        } else {
-          setTotalFixed(money(0));
-        }
-
-        return dataFormated;
-      } else {
-        const account = responseAccount.filter(item =>
-          filterYear(item.due_date, year),
-        );
-
-        const data = account;
-
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            expense_type: item.expense_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.subsidiary.name,
-            group: item.group.name,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalFixed(money(total));
-        } else {
-          setTotalFixed(money(0));
-        }
-
-        return dataFormated;
-      }
-  }, [subsidiary, month, year, dateInitial, dateFinal, isTimeSlot, group]);
-
-  const accountVariable = useCallback((account: AccountData[]): AccountProps[] => {
-    const responseAccount = account
-        .filter(item => {
-          if (item.subsidiary.name === subsidiary) {
-            return item;
-          } else if (subsidiary === '') {
-            return item
-          }
-          // eslint-disable-next-line
-          return;
-        })
-        .filter(item => item.pay_date === null && item)
-        .filter(item => {
-          if (group === '') {
-            return item;
-          }
-          return item.group.id === group && item;
-        });
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const variable = responseAccount.filter(item =>
-          filterTimeSlot(item.due_date, dateInitial, dateFinal),
-        );
-
-        const data = variable;
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            expense_type: item.expense_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.subsidiary.name,
-            group: item.group.name,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalVariable(money(total));
-        } else {
-          setTotalVariable(money(0));
-        }
-
-       return dataFormated;
-      } else if (month > 0) {
-        const variable = responseAccount
-          .filter(item => filterMonth(item.due_date, month))
-          .filter(item => filterYear(item.due_date, year));
-
-        const data = variable;
-
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            expense_type: item.expense_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.subsidiary.name,
-            group: item.group.name,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalFixed(money(total));
-        } else {
-          setTotalFixed(money(0));
-        }
-
-        return dataFormated;
-      } else {
-        const variable = responseAccount.filter(item =>
-          filterYear(item.due_date, year),
-        );
-
-        const data = variable;
-
-        const dataFormated = data.map(item => {
-          return {
-            id: item.id,
-            expense_type: item.expense_type,
-            due_date: DateBRL(item.due_date),
-            description: item.description,
-            value: Number(item.value),
-            valueBRL: money(Number(item.value)),
-            status: item.status,
-            city: item.subsidiary.name,
-            group: item.group.name,
-          };
-        });
-        if (data.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalVariable(money(total));
-        } else {
-          setTotalVariable(money(0));
-        }
-
-        return dataFormated;
-      }
-  }, [subsidiary, month, year, dateInitial, dateFinal, isTimeSlot, group]);
-
-  const listFixedExpense = useMemo(() => {
-    if (!account) {
-      return [];
-    }
-
-    return accountFixed(account.sort(orderByAsc));
-  }, [account, accountFixed, orderByAsc]);
-
-  const listVariableExpense = useMemo(() => {
-    if (!account) {
-      return [];
-    }
-    const variableAccount = account.filter(item => item.expense_type.includes('VARIAVEL') && item);
-    return accountVariable(variableAccount.sort(orderByAsc));
-  }, [account, accountVariable, orderByAsc]);
-
-
-  
   useEffect(() => {
     loadGroupsAccount();
     loadSubsidiary();
   }, [loadGroupsAccount, loadSubsidiary]);
 
-  const toogleIsTimeSlot = useCallback(() => {
-    setIsTimeSlot(!isTimeSlot);
-  }, [isTimeSlot]);
-
   const handleSubmit = ({ date_initial, date_final }) => {
-    setDateInitial(date_initial);
-    setDateFinal(date_final);
+    setParamsExpenseFixed(prevState => ({ ...prevState, dateFrom: date_initial, dateTo: date_final }));
+    setParamsExpenseVariable(prevState => ({ ...prevState, dateFrom: date_initial, dateTo: date_final }));
   };
 
   const handleSetTab = (tabName: string | null) => {
@@ -403,22 +152,20 @@ const Account: React.FC = () => {
     }
   };
 
-  const handleSelectSubsidiary= (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetSubsidiary(event.target.value);
-  };
-  const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetYear(Number(event.target.value));
-  };
-  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetMonth(Number(event.target.value));
+  const handleSelectSubsidiary = (event: ChangeEvent<HTMLSelectElement>) => {
+    const subsidiary = event.target.value;
+    setParamsExpenseFixed(prevState => ({ ...prevState, subsidiary }));
+    setParamsExpenseVariable(prevState => ({ ...prevState, subsidiary }));
   };
 
   const handleSelectGroup = (event: ChangeEvent<HTMLSelectElement>) => {
-    handleSetGroup(event.target.value);
+    const group = event.target.value;
+    setParamsExpenseFixed(prevState => ({ ...prevState, group }));
+    setParamsExpenseVariable(prevState => ({ ...prevState, group }));
   };
 
   const handleSelected = (event: ChangeEvent<HTMLInputElement>, id: string) => {
-    if(event.target.checked) {
+    if (event.target.checked) {
       setSelectedsEntry(prevState => [...prevState, id])
     } else {
       const arr = selectedsEntry;
@@ -439,15 +186,42 @@ const Account: React.FC = () => {
   }
 
   const collumAccount = [
-    {name: ''},
-    {name: 'Filial'},
-    {name: 'Descrição'},
-    {name: 'Vencimento'},
-    {name: 'Grupo'},
-    {name: 'Valor'},
-    {name: 'Status'},
-    {name: 'Ações'},
+    { name: '' },
+    { name: 'Filial' },
+    { name: 'Descrição' },
+    { name: 'Vencimento' },
+    { name: 'Grupo' },
+    { name: 'Valor' },
+    { name: 'Status' },
+    { name: 'Ações' },
   ]
+
+  const accoutFixed = useMemo(() => {
+    return expenseFixed?.expenses ? expenseFixed?.expenses.map(item => ({
+      id: item.id,
+      expense_type: item.expense_type,
+      due_date: DateBRL(item.due_date),
+      description: item.description,
+      value: Number(item.value),
+      valueBRL: money(Number(item.value)),
+      status: item.status,
+      city: item.subsidiary.name,
+      group: item.group.name,
+    })) : []
+  }, [expenseFixed])
+  const accoutVariable = useMemo(() => {
+    return expenseVariable?.expenses ? expenseVariable?.expenses.map(item => ({
+      id: item.id,
+      expense_type: item.expense_type,
+      due_date: DateBRL(item.due_date),
+      description: item.description,
+      value: Number(item.value),
+      valueBRL: money(Number(item.value)),
+      status: item.status,
+      city: item.subsidiary.name,
+      group: item.group.name,
+    })) : []
+  }, [expenseVariable])
 
   return (
     <FinancesLayout>
@@ -468,63 +242,19 @@ const Account: React.FC = () => {
                     ))}
                   </select>
                 </FiltersBottonItems>
-                {!isTimeSlot ? (
-                  <>
-                    <FiltersBottonItems>
-                      <span>Ano: </span>
-                      <select
-                        disabled={isTimeSlot}
-                        defaultValue={year}
-                        onChange={handleSelectYear}
-                      >
-                        <option value={2021}>2021</option>
-                        <option value={2022}>2022</option>
-                        <option value={2023}>2023</option>
-                      </select>
-                    </FiltersBottonItems>
-
-                    <FiltersBottonItems>
-                      <span>Mês: </span>
-                      <select
-                        defaultValue={month}
-                        onChange={handleSelectDate}
-                        disabled={isTimeSlot}
-                      >
-                        <option value={0}>Todas</option>
-                        <option value={1}>Janeiro</option>
-                        <option value={2}>Fevereiro</option>
-                        <option value={3}>Março</option>
-                        <option value={4}>Abril</option>
-                        <option value={5}>Maio</option>
-                        <option value={6}>Junho</option>
-                        <option value={7}>Julho</option>
-                        <option value={8}>Agosto</option>
-                        <option value={9}>Setembro</option>
-                        <option value={10}>Outubro</option>
-                        <option value={11}>Novembro</option>
-                        <option value={12}>Dezembro</option>
-                      </select>
-                    </FiltersBottonItems>
-                  </>
-                ) : (
-                  <FiltersBottonItems>
-                    <Form onSubmit={handleSubmit}>
-                      <Input name="date_initial" mask="date" type="date" />
-                      <Input name="date_final" mask="date" type="date" />
-                      <Button type="submit">Filtrar</Button>
-                    </Form>
-                  </FiltersBottonItems>
-                )}
                 <FiltersBottonItems>
-                  <span>intervalo de tempo: </span>
-                  <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
+                  <Form onSubmit={handleSubmit}>
+                    <Input name="date_initial" mask="date" type="date" />
+                    <Input name="date_final" mask="date" type="date" />
+                    <Button type="submit">Filtrar</Button>
+                  </Form>
                 </FiltersBottonItems>
               </FilterButtonGroup>
             </FiltersBotton>
           </FiltersContainer>
           <FiltersContainer>
             <FiltersBotton>
-            <FiltersBottonItems>
+              <FiltersBottonItems>
                 <span>Grupo: </span>
                 <select
                   onChange={handleSelectGroup}
@@ -550,21 +280,27 @@ const Account: React.FC = () => {
               >
                 <TabBootstrap eventKey="fix" title="Contas Fixas">
                   <TitlePane>Contas Fixas</TitlePane>
-                  <TableFix cols={8} collums={collumAccount} rows={listFixedExpense} handleSelected={handleSelected}/>
+                  <TableFix cols={8} collums={collumAccount} rows={accoutFixed} handleSelected={handleSelected} />
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
-                      <strong>{totalFixed}</strong>
+                      <strong>{new Intl
+                        .NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+                        .format(expenseFixed?.totalValue ? expenseFixed?.totalValue : 0)}
+                      </strong>
                     </p>
                   </BalanceAmount>
                 </TabBootstrap>
                 <TabBootstrap eventKey="variable" title="Contas Variáveis">
                   <TitlePane>Contas Variáveis</TitlePane>
-                  <TableFix cols={8} collums={collumAccount} rows={listVariableExpense} handleSelected={handleSelected}/>
+                  <TableFix cols={8} collums={collumAccount} rows={accoutVariable} handleSelected={handleSelected} />
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
-                      <strong>{totalVariable}</strong>
+                      <strong>{new Intl
+                        .NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+                        .format(expenseVariable?.totalValue ? expenseVariable?.totalValue : 0)}
+                      </strong>
                     </p>
                   </BalanceAmount>
                 </TabBootstrap>
@@ -576,7 +312,7 @@ const Account: React.FC = () => {
               <button type="button" onClick={() => toogleAddAccount()}>
                 <SiOneplus />
                 <span>Adiconar nova conta</span>
-              </button> 
+              </button>
             </ButtonGroup>
             {selectedsEntry.length > 0 && <Button onClick={handleRemoveAllIds}>Excluir</Button>}
           </Footer>
