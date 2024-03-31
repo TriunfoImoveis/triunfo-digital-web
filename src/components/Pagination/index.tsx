@@ -1,7 +1,6 @@
 import React from 'react'
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from "react-icons/fi";
 import { ButtonPagination, ButtonsContainer, Container, Content, Text } from './styled'
-import Button from '../Button'
 
 export interface PaginationProps {
   pageIndex: number

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
+import React, { useState, useCallback, ChangeEvent, useMemo } from 'react';
 import Switch from 'react-switch';
 import { Form } from '@unform/web';
 import { AddEntry } from '../../../assets/images';
@@ -21,19 +21,15 @@ import {
   FiltersBottonItems,
 } from './styles';
 import TableBoxFinances from '../../../components/Finances/TableBoxFinances';
-import api from '../../../services/api';
 import { DateBRL } from '../../../utils/format';
 import { money } from '../../../utils/masked';
 import TableBoxFinancesAccount from '../../../components/Finances/TableBoxFinancesAccounts';
-import {
-  filterMonth,
-  filterTimeSlot,
-  filterYear,
-  generateValueBruteSubsidiary,
-  generateValueBruteSubsidiaryLiquid,
-} from '../../../utils/filters';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
+import { useFetchFinances } from '../../../hooks/useFetchFinances';
+import { getInstallmentsParams } from '../../../api/get-installments';
+import { format, parseISO } from 'date-fns';
+import { useFetch } from '../../../hooks/useFetch';
 
 type BalanceData = {
   id: string;
@@ -49,29 +45,17 @@ type BalanceData = {
   bank: string;
 };
 type EntryData = {
+  bank: string;
+  brute_value: number;
+  description: string;
+  empressBrute: number;
+  empressLiquid: number;
   id: string;
   pay_date: string;
-  city: string;
-  description: string;
   paying_source: string;
-  brute_value: string;
-  brute_valueBRL: string;
-  tax_rate: string;
-  value_note: string;
-  empressBrute: string;
-  empressLiquidBRL: string;
-  empressLiquid: string;
-  bank: string;
-};
-type ForwardingAgentData = {
-  id: string;
-  due_date: string;
-  city: string;
-  description: string;
-  client: string;
-  liquid_value: string;
-  liquid_valueBRL: string;
-  bank: string;
+  subsidiary: string;
+  tax_rate?: number;
+  value_note?: number;
 };
 
 type Account = {
@@ -84,503 +68,199 @@ type Account = {
   user: string;
   bank: string;
 };
+
+interface Subsidiary {
+  id: string;
+  name: string;
+}
+interface Expense {
+  id: string;
+  expense_type: 'FIXA' | 'VARIAVEL';
+  description: string;
+  due_date: string;
+  pay_date: string | null;
+  value_paid: string | null;
+  status: 'PENDENTE' | 'VENCIDO' | 'PAGO' | 'CANCELADO';
+  subsidiary: Subsidiary;
+  bank_data: {
+    id: string;
+    name: string;
+    account: string;
+  } | null;
+  group: {
+    id: string;
+    name: string;
+  }
+  user: {
+    id: string;
+    name: string;
+  }
+}
+
+interface Bank {
+  id: string;
+  name: string;
+  account: string;
+}
+interface ExpenseData {
+  expenses: Expense[];
+  totalExpenses: number;
+  totalValue: number;
+}
+interface InstallmentData {
+  entry: EntryData[];
+  totalInstallments: number;
+  totalValueInstallments: number;
+}
+
+interface Revenue {
+  id: string;
+  pay_date: string;
+  subsidiary: Subsidiary;
+  description: string;
+  client: string;
+  value_integral: number;
+  bank_data: Bank;
+  invoice_value?: number;
+  tax_rate?: number;
+}
+interface RevenueData {
+  revenues: Revenue[];
+  total: number;
+  totalValueIntegralRevenues: number;
+}
+
+interface revenueParams {
+  subsidiary?: string;
+  revenue_type: 'DESPACHANTE' | 'CREDITO';
+  status?: "PENDENTE" | "VENCIDO" | "PAGO" | "CANCELADO";
+  month?: string;
+  year?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  page?: number;
+  perPage?: number;
+  sort?: 'ASC' | 'DESC';
+}
+
 const Balance: React.FC = () => {
   const [typeTabEntry, setTypeTabEntry] = useState('sales');
   const [typeTabAccount, setTypeTabAccount] = useState('account');
-  const [city, setCity] = useState('');
-  const [month, setMonth] = useState(0);
-  const [year, setYear] = useState(2021);
-  const [totalDispatcherEntry, setTotalDispatcherEntry] = useState('R$ 0,00');
-  const [totalSalesEntry, setTotalSalesEntry] = useState('R$ 0,00');
-  const [totalCreditEntry, setTotalCreditEntry] = useState('R$ 0,00');
-  const [totalAccount, setTotalAccount] = useState('R$ 0,00');
-  const [salesEntry, setSalesEntry] = useState<EntryData[]>([]);
-  const [creditEntry, setCreditEntry] = useState<BalanceData[]>([]);
-  const [account, setAccount] = useState<Account[]>([]);
-  const [dispatcherEntry, setDispatcherEntry] = useState<ForwardingAgentData[]>(
-    [],
-  );
-
   const [modalCreditEntry, setModalCreditEnrey] = useState(false);
   const [modalDespEntry, setModalDespEnrey] = useState(false);
   const [checked, setChecked] = useState(false);
-  const [isTimeSlot, setIsTimeSlot] = useState(false);
-  const [dateInitial, setDateInitial] = useState('');
-  const [dateFinal, setDateFinal] = useState('');
 
+  const formatPrice = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
 
-  const orderByAscAccount = useCallback(function (a: Account, b: Account) {
-    let data1 = new Date(a.due_date);
-    let data2 = new Date(b.due_date);
-    return data1 > data2 ? 0 : -1;
-  }, []);
+  const formatPorcent = (porcent: number) => {
+    return (porcent / 100).toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })
+  }
 
-  const orderByAscSale = useCallback(function (a: EntryData, b: EntryData) {
-    let data1 = new Date(a.pay_date);
-    let data2 = new Date(b.pay_date);
-    return data1 > data2 ? 0 : -1;
-  }, []);
+  const [paramsInstalments, setParamsInstalments] = useState<getInstallmentsParams>({
+    subsidiary: '',
+    page: 1,
+    perPage: 10,
+    sort: 'ASC',
+  });
+  const [paramsExpense, setParamsExpense] = useState<getInstallmentsParams>({
+    subsidiary: '',
+    status: 'PAGO',
+    page: 1,
+    perPage: 10
+  });
+  const [paramsRevenueDispatcher, setParamsRevenueDispatcher] = useState<revenueParams>({
+    revenue_type: 'DESPACHANTE',
+    status: 'PAGO',
+    page: 1,
+    perPage: 10,
+    sort: 'ASC',
+  });
+  const [paramsRevenueCredit, setParamsRevenueCredit] = useState<revenueParams>({
+    revenue_type: 'CREDITO',
+    status: 'PAGO',
+    page: 1,
+    perPage: 10,
+    sort: 'ASC',
+  });
 
-  const orderByAscCredit = useCallback(function (a: BalanceData, b: BalanceData) {
-    let data1 = new Date(a.due_date);
-    let data2 = new Date(b.due_date);
-    return data1 > data2 ? 0 : -1;
-  }, []);
+  const {data: subsidiaries} = useFetch<Subsidiary[]>('/subsidiary');
 
-  const orderByAscFowardAgent = useCallback(function (a: ForwardingAgentData, b: ForwardingAgentData) {
-    let data1 = new Date(a.due_date);
-    let data2 = new Date(b.due_date);
-    return data1 > data2 ? 0 : -1;
-  }, []);
+  const { data: installmentsEntry } = useFetchFinances<InstallmentData>({ url: '/installment/entry', params: paramsInstalments, config: { refreshInterval: undefined } });
+  const { data: listExpenses } = useFetchFinances<ExpenseData>({ url: '/expense', params: paramsExpense, config: { refreshInterval: undefined } });
+  const { data: revenueDispacher } = useFetchFinances<RevenueData>({ url: '/revenue', params: paramsRevenueDispatcher, config: { refreshInterval: undefined } });
+  const { data: revenueCredit } = useFetchFinances<RevenueData>({ url: '/revenue', params: paramsRevenueCredit, config: { refreshInterval: undefined } });
 
-  useEffect(() => {
-    const loadingSalesEntry = async () => {
-      const url = city === '' ? `/installment?status=LIQUIDADA` : `/installment?city=${city}&status=LIQUIDADA`
-      const response = await api.get(url);
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const entry = response.data.filter(item =>
-          filterTimeSlot(item.calculation.pay_date, dateInitial, dateFinal),
-        ).sort(orderByAscSale);
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            pay_date: DateBRL(item.calculation.pay_date),
-            city: item.sale.subsidiary.city,
-            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
-            paying_source: `${item.sale.sale_type === 'NOVO'
-              ? item.sale.builder.name
-              : item.sale.client_buyer.name
-              }`,
-            brute_value: item.value ? Number(item.value) : 0,
-            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
-            tax_rate: item.calculation.tax_rate_nf
-              ? item.calculation.tax_rate_nf
-              : '0%',
-            value_note: item.calculation.note_value
-              ? money(Number(item.calculation.note_value))
-              : 'R$ 0,00',
-            empressBrute: money(generateValueBruteSubsidiary(item)),
-            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
-            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
-            bank: item.calculation.bank_data
-              ? `${item.calculation.bank_data.account}`
-              : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.empressLiquid);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalSalesEntry(money(Number(total)));
-        } else {
-          setTotalSalesEntry(money(0));
-        }
-
-        setSalesEntry(dataFormated);
-      } else if (month > 0) {
-        const entry = response.data
-          .filter(item => filterMonth(item.calculation.pay_date, month))
-          .filter(item => filterYear(item.calculation.pay_date, year));
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            pay_date: DateBRL(item.calculation.pay_date),
-            city: item.sale.sale_has_sellers[0].subsidiary.city,
-            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
-            paying_source: `${item.sale.sale_type === 'NOVO'
-              ? item.sale.builder.name
-              : item.sale.client_buyer.name
-              }`,
-            brute_value: item.value ? Number(item.value) : 0,
-            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
-            tax_rate: item.calculation.tax_rate_nf
-              ? item.calculation.tax_rate_nf
-              : '0%',
-            value_note: item.calculation.note_value
-              ? money(Number(item.calculation.note_value))
-              : 'R$ 0,00',
-            empressBrute: money(generateValueBruteSubsidiary(item)),
-            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
-            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
-            bank: item.calculation.bank_data
-              ? `${item.calculation.bank_data.account}`
-              : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.empressLiquid);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalSalesEntry(money(Number(total)));
-        } else {
-          setTotalSalesEntry(money(0));
-        }
-
-        setSalesEntry(dataFormated);
-      } else {
-        const entry = response.data.filter(item =>
-          filterYear(item.calculation.pay_date, year),
-        );
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            pay_date: DateBRL(item.calculation.pay_date),
-            city: item.sale.subsidiary.city,
-            description: `${item.installment_number}° Parcela - ${item.sale.realty.enterprise}`,
-            paying_source: `${item.sale.sale_type === 'NOVO'
-              ? item.sale.builder.name
-              : item.sale.client_buyer.name
-              }`,
-            brute_value: item.value ? Number(item.value) : 0,
-            brute_valueBRL: item.value ? money(Number(item.value)) : 'R$ 0,00',
-            tax_rate: item.calculation.tax_rate_nf
-              ? item.calculation.tax_rate_nf
-              : '0%',
-            value_note: item.calculation.note_value
-              ? money(Number(item.calculation.note_value))
-              : 'R$ 0,00',
-            empressBrute: money(generateValueBruteSubsidiary(item)),
-            empressLiquidBRL: money(generateValueBruteSubsidiaryLiquid(item)),
-            empressLiquid: generateValueBruteSubsidiaryLiquid(item),
-            bank: item.calculation.bank_data
-              ? `${item.calculation.bank_data.account}`
-              : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.empressLiquid);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalSalesEntry(money(total));
-        } else {
-          setTotalSalesEntry(money(0));
-        }
-
-        setSalesEntry(dataFormated);
+  const optionsSubsidiary = useMemo(() => {
+    return subsidiaries ? subsidiaries?.map(subsidiary => {
+      return {
+        value: subsidiary.id,
+        label: subsidiary.name
       }
-    };
-    loadingSalesEntry();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscSale]);
-
-  useEffect(() => {
-    const loadingDispachEntry = async () => {
-      const response = await api.get(`/revenue`);
-      const dispachEntry = response.data
-        .filter(item => {
-          if (item.subsidiary.city === city) {
-            return item;
-          } else if (city === '') {
-            return item
-          }
-          // eslint-disable-next-line
-          return;
-        })
-        .filter(item => item.revenue_type.includes('DESPACHANTE') && item)
-        .filter(item => item.pay_date !== null && item).sort(orderByAscFowardAgent);
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const entry = dispachEntry.filter(item =>
-          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
-        );
-
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            client: item.description,
-            liquid_value: item.value_liquid,
-            liquid_valueBRL: money(Number(item.value_liquid)),
-            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.liquid_value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalDispatcherEntry(money(total));
-        } else {
-          setTotalDispatcherEntry(money(0));
-        }
-
-        setDispatcherEntry(dataFormated);
-      } else if (!isTimeSlot && month > 0) {
-        const entry = dispachEntry
-          .filter(item => filterMonth(item.pay_date, month))
-          .filter(item => filterYear(item.pay_date, year));
-
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            client: item.description,
-            liquid_value: item.value_liquid,
-            liquid_valueBRL: money(Number(item.value_liquid)),
-            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.liquid_value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalDispatcherEntry(money(total));
-        } else {
-          setTotalDispatcherEntry(money(0));
-        }
-
-        setDispatcherEntry(dataFormated);
-      } else {
-        const entry = dispachEntry.filter(item =>
-          filterYear(item.pay_date, year),
-        );
-
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            client: item.description,
-            liquid_value: item.value_liquid,
-            liquid_valueBRL: money(Number(item.value_liquid)),
-            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.liquid_value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalDispatcherEntry(money(Number(total)));
-        } else {
-          setTotalDispatcherEntry(money(0));
-        }
-
-        setDispatcherEntry(dataFormated);
+    }) : []
+  }, [subsidiaries])
+  const salesEntry = useMemo(() => {
+    return installmentsEntry?.entry ? installmentsEntry?.entry.map(installment => {
+      return {
+        bank: installment.bank,
+        brute_value: formatPrice(installment.brute_value),
+        description: installment.description,
+        empressBrute: formatPrice(installment.empressBrute),
+        empressLiquid: formatPrice(installment.empressLiquid),
+        id: installment.id,
+        pay_date: format(parseISO(installment.pay_date), 'dd/MM/yyyy'),
+        paying_source: installment.paying_source,
+        subsidiary: installment.subsidiary,
+        tax_rate: installment.tax_rate ? formatPorcent(installment.tax_rate) : '0,0%',
+        value_note: installment.value_note ? formatPrice(installment.value_note) : 'SEM NF',
       }
+    }) : [];
+  }, [installmentsEntry])
+
+  const expenses = listExpenses?.expenses?.map(item => {
+    return {
+      id: item.id,
+      due_date: DateBRL(item.pay_date ? item.pay_date : item.due_date),
+      city: item.subsidiary.name,
+      description: item.description,
+      value: item.value_paid ? Number(item.value_paid) : 0,
+      valueBRL: item.value_paid ? money(Number(item.value_paid)) : '------',
+      user: item.user.name,
+      bank: item.bank_data ? item.bank_data.account : '-----',
     };
-    loadingDispachEntry();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscFowardAgent]);
-  useEffect(() => {
-    const loadingCreditEntry = async () => {
-      const response = await api.get(`/revenue`);
-      const entryCredit = response.data
-        .filter(item => {
-          if (item.subsidiary.city === city) {
-            return item;
-          } else if (city === '') {
-            return item
-          }
-          // eslint-disable-next-line
-          return;
-        })
-        .filter(item => item.revenue_type.includes('CREDITO') && item)
-        .filter(item => item.pay_date !== null && item).sort(orderByAscCredit);
+  });
 
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const entry = entryCredit.filter(item =>
-          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
-        );
-
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            brute_value: Number(item.value_liquid),
-            brute_valueBRL: money(Number(item.value_liquid)),
-            value_note: item.invoice_value ? item.invoice_value : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
-            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
-            client: item.client,
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.brute_value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalCreditEntry(money(total));
-        } else {
-          setTotalCreditEntry(money(0));
-        }
-
-        setCreditEntry(dataFormated);
-      } else if (month > 0) {
-        const entry = entryCredit
-          .filter(item => filterMonth(item.pay_date, month))
-          .filter(item => filterYear(item.pay_date, year));
-
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            brute_value: Number(item.value_liquid),
-            brute_valueBRL: money(Number(item.value_liquid)),
-            value_note: item.invoice_value ? item.invoice_value : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
-            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
-            client: item.client,
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.brute_value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalCreditEntry(money(total));
-        } else {
-          setTotalCreditEntry(money(0));
-        }
-
-        setCreditEntry(dataFormated);
-      } else {
-        const entry = entryCredit.filter(item =>
-          filterYear(item.pay_date, year),
-        );
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            brute_value: Number(item.value_liquid),
-            brute_valueBRL: money(Number(item.value_liquid)),
-            value_note: item.invoice_value ? item.invoice_value : '------',
-            tax_rate: item.tax_rate ? item.tax_rate : '------',
-            bank: item.bank_data ? `${item.bank_data.account}` : '-----',
-            client: item.client,
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.brute_value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalCreditEntry(money(total));
-        } else {
-          setTotalCreditEntry(money(0));
-        }
-
-        setCreditEntry(dataFormated);
+  const dispacherEntry = useMemo(() => {
+    return revenueDispacher?.revenues ? revenueDispacher?.revenues.map(revenue => {
+      return {
+        id: revenue.id,
+        due_date: DateBRL(revenue.pay_date),
+        city: revenue.subsidiary.name,
+        description: revenue.description,
+        client: revenue.client,
+        brute_value: formatPrice(revenue.value_integral),
+        bank: revenue.bank_data ? `${revenue.bank_data.account}` : '-----',
       }
-    };
-    loadingCreditEntry();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscCredit]);
+    }) : [];
 
-  useEffect(() => {
-    const loadingAccounts = async () => {
-      const response = await api.get(`/expense`);
-      const despense = response.data
-        .filter(item => {
-          if (item.subsidiary.city === city) {
-            return item;
-          } else if (city === '') {
-            return item
-          }
-          // eslint-disable-next-line
-          return;
-        })
-        .filter(item => item.pay_date !== null && item).sort(orderByAscAccount);
-      if (isTimeSlot && dateInitial.length !== 0) {
-        const entry = despense.filter(item =>
-          filterTimeSlot(item.pay_date, dateInitial, dateFinal),
-        );
+  }, [revenueDispacher]);
 
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            value: Number(item.value_paid),
-            valueBRL: money(Number(item.value_paid)),
-            user: item.user.name,
-            bank: item.bank_data ? item.bank_data.account : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalAccount(money(Number(total)));
-        } else {
-          setTotalAccount(money(0));
-        }
-
-        setAccount(dataFormated);
-      } else if (month > 0) {
-        const entry = despense
-          .filter(item => filterMonth(item.pay_date, month))
-          .filter(item => filterYear(item.pay_date, year));
-
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            value: Number(item.value_paid),
-            valueBRL: money(Number(item.value_paid)),
-            user: item.user.name,
-            bank: item.bank_data ? item.bank_data.account : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalAccount(money(Number(total)));
-        } else {
-          setTotalAccount(money(0));
-        }
-
-        setAccount(dataFormated);
-      } else {
-        const entry = despense.filter(item => filterYear(item.pay_date, year));
-        const dataFormated = entry.map(item => {
-          return {
-            id: item.id,
-            due_date: DateBRL(item.pay_date),
-            city: item.subsidiary.city,
-            description: item.description,
-            value: Number(item.value_paid),
-            valueBRL: money(Number(item.value_paid)),
-            user: item.user.name,
-            bank: item.bank_data ? item.bank_data.account : '-----',
-          };
-        });
-        if (entry.length > 0) {
-          const arrayValues = dataFormated.map(item => item.value);
-          const reducer = (accumulator, currentValue) =>
-            accumulator + currentValue;
-          const total = arrayValues.reduce(reducer);
-          setTotalAccount(money(Number(total)));
-        } else {
-          setTotalAccount(money(0));
-        }
-
-        setAccount(dataFormated);
+  const entryCredit = useMemo(() => {
+    return revenueCredit?.revenues ? revenueCredit?.revenues.map(revenue => {
+      return {
+        id: revenue.id,
+        pay_date: format(parseISO(revenue.pay_date), 'dd/MM/yyyy'),
+        city: revenue.subsidiary.name,
+        description: revenue.description,
+        brute_value: formatPrice(revenue.value_integral),
+        value_note: revenue.invoice_value ? formatPrice(revenue.invoice_value) : 'SEM NF',
+        tax_rate: revenue.tax_rate ? formatPorcent(revenue.tax_rate) : '0%',
+        bank: revenue.bank_data ? `${revenue.bank_data.account}` : '-----',
+        client: revenue.client,
       }
-    };
-    loadingAccounts();
-  }, [city, month, year, dateInitial, dateFinal, isTimeSlot, orderByAscAccount]);
-
-  const toogleIsTimeSlot = useCallback(() => {
-    setIsTimeSlot(!isTimeSlot);
-  }, [isTimeSlot]);
+    }) : [];
+  }, [revenueCredit]) 
 
   const handleSetTabEntry = (tabName: string | null) => {
     if (tabName) {
@@ -623,18 +303,46 @@ const Balance: React.FC = () => {
   ]);
 
   const handleSubmit = ({ date_initial, date_final }) => {
-    setDateInitial(date_initial);
-    setDateFinal(date_final);
+    setParamsInstalments(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
+    setParamsExpense(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
+    setParamsRevenueDispatcher(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
+    setParamsRevenueCredit(prevState => ({
+      ...prevState,
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
   };
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    setCity(event.target.value);
-  };
-  const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    setYear(Number(event.target.value));
-  };
-  const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    setMonth(Number(event.target.value));
+    const subsidiary = event.target.value;
+    setParamsInstalments(prevState => ({
+      ...prevState,
+      subsidiary
+    }))
+    setParamsExpense(prevState => ({
+      ...prevState,
+      subsidiary
+    }))
+    setParamsRevenueDispatcher(prevState => ({
+      ...prevState,
+      subsidiary
+    }))
+    setParamsRevenueCredit(prevState => ({
+      ...prevState,
+      subsidiary
+    }))
   };
 
   return (
@@ -644,65 +352,21 @@ const Balance: React.FC = () => {
           <FiltersBotton>
             <FilterButtonGroup>
               <FiltersBottonItems>
-                <span>Cidade: </span>
-                <select defaultValue={city} onChange={handleSelectCity}>
+                <select defaultValue={''} onChange={handleSelectCity}>
                   <option value="">Todas</option>
-                  <option value="São Luís">São Luís</option>
-                  <option value="Fortaleza">Fortaleza</option>
-                  <option value="Teresina">Teresina</option>
+                  {optionsSubsidiary.map(subsidiary => (
+                    <option key={subsidiary?.value} value={subsidiary?.value}>{subsidiary?.label}</option>
+                  ))}
                 </select>
               </FiltersBottonItems>
 
-              {!isTimeSlot ? (
-                <>
-                  <FiltersBottonItems>
-                    <span>Ano: </span>
-                    <select
-                      disabled={isTimeSlot}
-                      defaultValue={year}
-                      onChange={handleSelectYear}
-                    >
-                      <option value={2021}>2021</option>
-                      <option value={2022}>2022</option>
-                      <option value={2023}>2023</option>
-                    </select>
-                  </FiltersBottonItems>
-                  <FiltersBottonItems>
-                    <span>Mês: </span>
-                    <select
-                      defaultValue={month}
-                      onChange={handleSelectDate}
-                      disabled={isTimeSlot}
-                    >
-                      <option value={0}>Todas</option>
-                      <option value={1}>Janeiro</option>
-                      <option value={2}>Fevereiro</option>
-                      <option value={3}>Março</option>
-                      <option value={4}>Abril</option>
-                      <option value={5}>Maio</option>
-                      <option value={6}>Junho</option>
-                      <option value={7}>Julho</option>
-                      <option value={8}>Agosto</option>
-                      <option value={9}>Setembro</option>
-                      <option value={10}>Outubro</option>
-                      <option value={11}>Novembro</option>
-                      <option value={12}>Dezembro</option>
-                    </select>
-                  </FiltersBottonItems>
-                </>
-              ) : (
-                <FiltersBottonItems>
+              <FiltersBottonItems>
                   <Form onSubmit={handleSubmit}>
                     <Input name="date_initial" mask="date" type="date" />
                     <Input name="date_final" mask="date" type="date" />
                     <Button type="submit">Filtrar</Button>
                   </Form>
                 </FiltersBottonItems>
-              )}
-              <FiltersBottonItems>
-                <span>intervalo de tempo: </span>
-                <Switch onChange={toogleIsTimeSlot} checked={isTimeSlot} />
-              </FiltersBottonItems>
             </FilterButtonGroup>
           </FiltersBotton>
         </FiltersContainer>
@@ -727,19 +391,22 @@ const Balance: React.FC = () => {
                 handleSetTab={handleSetTabEntry}
                 title="Entradas"
                 salesEntry={salesEntry}
-                salesEntryTotal={totalSalesEntry}
-                dispatcherEntry={dispatcherEntry}
-                dispatcherEntryTotal={totalDispatcherEntry}
-                creditEntry={creditEntry}
-                creditEntryTotal={totalCreditEntry}
+                salesEntryTotal={formatPrice(installmentsEntry?.totalValueInstallments ? installmentsEntry?.totalValueInstallments : 0)}
+                dispatcherEntry={dispacherEntry}
+                dispatcherEntryTotal={formatPrice(revenueDispacher?.totalValueIntegralRevenues || 0)}
+                creditEntry={entryCredit}
+                creditEntryTotal={formatPrice(revenueCredit?.totalValueIntegralRevenues || 0)}
               />
             ) : (
               <TableBoxFinancesAccount
                 typeTab={typeTabAccount}
                 handleSetTab={handleSetTabAccount}
                 title="Saídas"
-                account={account}
-                accountTotal={totalAccount}
+                account={expenses || []}
+                accountTotal={new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(listExpenses?.totalValue ? listExpenses?.totalValue : 0)}
               />
             )}
           </BalanceContainer>

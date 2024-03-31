@@ -9,6 +9,7 @@ export interface getInstallmentsParams {
   dateTo?: string;
   perPage?: number;
   page?: number;
+  sort?: 'ASC' | 'DESC';
 }
 
 interface Subsidiary {
@@ -23,6 +24,16 @@ interface User {
   id: string;
   name: string;
 }
+
+interface Builder {
+  id: string;
+  name: string;
+}
+
+interface Client {
+  id: string;
+  name: string;
+}
 interface Sale {
   id: string;
   sale_has_sellers: User[];
@@ -30,6 +41,40 @@ interface Sale {
   realty_ammount: string;
   subsidiary: Subsidiary 
   sale_type: 'NOVO' | 'USADO';
+  builder: Builder | null;
+  client_buyer: Client;
+}
+
+interface BankData {
+  id: string;
+  account: string;
+}
+
+interface Participantes {
+  user?: string;
+  participant_type: string;
+  comission_percentage: string;
+  comission_integral: string;
+  tax_percentage?: number;
+  tax_value?: string;
+  comission_liquid: string;
+}
+
+interface Division {
+  division_type: {
+    id: string;
+  };
+  percentage: string;
+  value: string;
+}
+
+interface Calculation {
+  pay_date: string;
+  tax_rate_nf: string;
+  note_value: string;
+  bank_data: BankData
+  participants: Participantes[];
+  divisions: Division[];
 }
 
 export interface Installment {
@@ -40,6 +85,7 @@ export interface Installment {
   status: string;
   value: string;
   sale: Sale;
+  calculation: Calculation
 }
 
 export interface ResponseInstallments {
@@ -49,7 +95,6 @@ export interface ResponseInstallments {
   installments: Installment[];
 }
 export async function getInstallments(params: getInstallmentsParams){
-  console.log({params})
   const response = await api.get<ResponseInstallments>('/installment', {
     params
   }); 

@@ -1,16 +1,9 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
-import { AiOutlinePlus } from 'react-icons/ai';
-import Switch from 'react-switch';
 
-import { Link } from 'react-router-dom';
 import { Form } from '@unform/web';
-import api from '../../../services/api';
-import { DateBRL } from '../../../utils/format';
-import { money } from '../../../utils/masked';
 import FinancesLayout from '../../Layouts/FinancesLayout';
 
-import DetailsInstalments from '../../../components/ReactModal/DetailsInstalments';
 import {
   Container,
   Background,
@@ -18,7 +11,6 @@ import {
   Content,
   AccountContainer,
   TitlePane,
-  Table,
   BalanceAmount,
   FiltersContainer,
   FiltersBotton,
@@ -27,53 +19,20 @@ import {
   LoadingContainer,
 } from './styles';
 import theme from '../../../styles/theme';
-import NotFound from '../../../components/Errors/NotFound';
-import EntryRevenue from '../../../components/ReactModal/EntryRevenue';
-import { filterDay, filterMonth, filterTimeSlot } from '../../../utils/filters';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
-import useSWR from 'swr';
-import { ResponseInstallments, getInstallments, getInstallmentsParams } from '../../../api/get-installments';
+import { getInstallmentsParams } from '../../../api/get-installments';
 import TableInstallmentPending from './TableInstallmentPending';
 import TableInstallmentsPay from './TableInstallmentsPay';
 import { Pagination } from '../../../components/Pagination';
 import Loader from 'react-loader-spinner';
-import { useFetch } from '../../../hooks/useFetch';
 import { TableFowardAgent } from './TableFowardAgent';
-import { TableCredit } from './TableCredit';
 import { useFetchFinances } from '../../../hooks/useFetchFinances';
 
 interface SubsidiaryData {
   id: string;
   name: string;
 }
-type FutureReceiptsType = {
-  id: string;
-  sale_id?: string;
-  pay_date?: string;
-  due_date?: string;
-  description: string;
-  value: number;
-  valueBRL: string;
-  status: string;
-  city: string;
-  realtors: string;
-  sale_type: string;
-};
-type RevenueType = {
-  id: string;
-  revenue_type: string;
-  due_date: string;
-  description: string;
-  value: number;
-  tax_rate: number;
-  invoice_value: number;
-  invoiceValueBRL: string;
-  valueBRL: string;
-  status: string;
-  city: string;
-  cliente_name: string;
-};
 
 interface RevenueParams {
   subsidiary?: string;
