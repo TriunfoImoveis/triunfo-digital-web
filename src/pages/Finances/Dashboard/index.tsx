@@ -66,8 +66,8 @@ interface DashboardParams {
 }
 
 const DashboardFinances: React.FC = () => {
-  const [month, setMonth] = useState(String(new Date().getMonth() + 1));
-  const [year, setYear] = useState(String(new Date().getFullYear()));
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
   const [linkDownloadReportContas, setLinkDownloadReportContas] = useState('');
   const [linkDownloadReportRevenue, setLinkDownloadReportRevenue] = useState(
     '',
@@ -160,9 +160,10 @@ const DashboardFinances: React.FC = () => {
                     <span>Ano: </span>
                     <select
                       disabled={isTimeSlot}
-                      defaultValue={year}
+                      defaultValue={''}
                       onChange={handleSelectYear}
                     >
+                      <option value={''}>Todos</option>
                       <option value={'2020'}>2021</option>
                       <option value={'2021'}>2021</option>
                       <option value={'2022'}>2022</option>
