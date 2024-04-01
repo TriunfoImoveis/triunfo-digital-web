@@ -19,21 +19,8 @@ import api from '../../../services/api';
 import ReactSelect from '../../ReactSelect';
 import { valiateDate } from '../../../utils/validateDate';
 import { useAuth } from '../../../context/AuthContext';
-
-type RevenueType = {
-  id: string;
-  revenue_type: string;
-  due_date: string;
-  description: string;
-  value: number;
-  tax_rate: number;
-  invoice_value: number;
-  invoiceValueBRL: string;
-  valueBRL: string;
-  status: string;
-  city: string;
-  cliente_name: string;
-};
+import { Revenue } from '../../../pages/Finances/FutureReceipts/TableFowardAgent';
+import { format, parseISO } from 'date-fns';
 
 type Cities = {
   id: string;
@@ -43,7 +30,7 @@ type Cities = {
 interface IModalProps {
   isOpen: boolean;
   setIsOpen: () => void;
-  revenue: RevenueType;
+  revenue: Revenue;
 }
 
 const EntryRevenue: React.FC<IModalProps> = ({
@@ -83,7 +70,7 @@ const EntryRevenue: React.FC<IModalProps> = ({
       const cities = data.map(item => {
         return {
           id: item.id,
-          name: item.city,
+          name: item.name,
         };
       });
       setCities(cities);
@@ -170,6 +157,8 @@ const EntryRevenue: React.FC<IModalProps> = ({
     }
   };
 
+  const value = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(revenue?.value_integral ? revenue?.value_integral : 0);
+  const dueDate = revenue?.due_date ? format(parseISO(revenue?.due_date), 'dd/MM/yyyy') : '';
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
       <Container>
@@ -184,30 +173,30 @@ const EntryRevenue: React.FC<IModalProps> = ({
           {!edit ? (
             <>
               <InputGroup>
-                <InputDisabled label="Tipo" data={revenue.revenue_type} />
-                <InputDisabled label="Status" data={revenue.status} />
+                <InputDisabled label="Tipo" data={revenue?.revenue_type} />
+                <InputDisabled label="Status" data={revenue?.status} />
               </InputGroup>
               <InputGroup>
-                <InputDisabled label="Descrição" data={revenue.description} />
-                <InputDisabled label="Cliente" data={revenue.cliente_name} />
+                <InputDisabled label="Descrição" data={revenue?.description} />
+                <InputDisabled label="Cliente" data={revenue?.client} />
               </InputGroup>
 
-              <InputDisabled label="Vencimento" data={revenue.due_date} />
-              <InputDisabled label="Valor" data={revenue.valueBRL} />
-              <InputDisabled label="Filial" data={revenue.city} />
+              <InputDisabled label="Vencimento" data={dueDate} />
+              <InputDisabled label="Valor" data={value} />
+              <InputDisabled label="Filial" data={revenue?.subsidiary?.name} />
               {pay && (
                 <>
                   <InputGroup>
                     <Input
                       name="tax_rate"
                       label="Taxa de Imposto"
-                      defaultValue={String(revenue.tax_rate)}
+                      // defaultValue={String(revenue.tax_rate)}
                     />
                     <Input
                       mask="currency"
                       name="invoice_value"
                       label="Valor da Nota"
-                      defaultValue={revenue.invoiceValueBRL}
+                      // defaultValue={revenue.invoiceValueBRL}
                     />
                   </InputGroup>
                   <InputGroup>
@@ -247,19 +236,19 @@ const EntryRevenue: React.FC<IModalProps> = ({
                 mask="currency"
                 name="value_integral"
                 label="Valor"
-                defaultValue={revenue.valueBRL}
+                // defaultValue={revenue.valueBRL}
               />
               <Input
                 name="client"
                 label="Cliente"
-                defaultValue={revenue.cliente_name}
+                // defaultValue={revenue.cliente_name}
               />
               <ReactSelect
                 label="Filial"
                 name="subsidiary"
                 options={optionsCities}
                 placeholder="Filial"
-                defaultInputValue={revenue.city}
+                // defaultInputValue={revenue.city}
               />
             </>
           )}
