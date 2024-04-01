@@ -3,7 +3,6 @@ import React, {
   useState,
   useEffect,
   ChangeEvent,
-  useMemo,
   useCallback,
 } from 'react';
 
@@ -13,15 +12,6 @@ import Button from '../../../components/Button';
 import Header from '../../../components/Header/SimpleHeader';
 import Input from '../../../components/Input';
 import api from '../../../services/api';
-import {
-  filterMonth,
-  filterTimeSlot,
-  filterYear,
-  generateDivionValue,
-  generateImpostValue,
-  generateValueBrute,
-  generateValueLiquid,
-} from '../../../utils/filters';
 import { formatPrice } from '../../../utils/format';
 import {
   Container,
@@ -34,52 +24,50 @@ import {
   FilterButtonGroup,
   FiltersBottonItems,
 } from './styles';
+import { useFetchFinances } from '../../../hooks/useFetchFinances';
 
-interface Division {
+interface Report {
+  link_url: string;
+}
+interface Subsidiary {
   id: string;
   name: string;
-  value: string;
 }
 
-interface DivisionType {
-  division_type: {
-    id: string;
-  };
-  percentage: string;
-  value: string;
+interface Payment {
+  brute: number;
+  liquid: number;
 }
-interface Participantes {
-  user?: string;
-  participant_type: string;
-  comission_percentage: string;
-  comission_integral: string;
-  tax_percentage?: number;
-  tax_value?: string;
-  comission_liquid: string;
+
+interface Divison {
+  id: string;
+  name: string;
+  value: number;
 }
-interface CalculatorData {
-  calculation: {
-    note_value: string;
-    participants: Participantes[];
-    divisions: DivisionType[];
-  };
+export interface Comercial {
+  seller: Payment,
+  captivator: Payment,
+  coordinator: Payment,
+  director: Payment,
+  subsidiary: Payment,
 }
+export interface DashboardData {
+  comercial: Comercial;
+  tax: number;
+  divisions?: Divison[];
+}
+
+interface DashboardParams {
+  subsidiary?: string;
+  month?: string;
+  year?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+}
+
 const DashboardFinances: React.FC = () => {
-  const [city] = useState('São Luís');
-  const [month, setMonth] = useState(0);
-  const [year, setYear] = useState(2021);
-  const [sallerBrute, setSallerBrute] = useState('R$ 0,00');
-  const [sallerLiquid, setSallerLiquid] = useState('R$ 0,00');
-  const [captvatorBrute, setCaptvatorBrute] = useState('R$ 0,00');
-  const [captvatorLiquid, setsetCaptvatorLiquid] = useState('R$ 0,00');
-  const [coordinatorBrute, setCoordinatorBrute] = useState('R$ 0,00');
-  const [coordinatorLiquid, setCoordinatorLiquid] = useState('R$ 0,00');
-  const [directorBrute, setDirectorBrute] = useState('R$ 0,00');
-  const [directorLiquid, setDirectorLiquid] = useState('R$ 0,00');
-  const [SubsidiaryBrute, setSubsidiaryBrute] = useState('R$ 0,00');
-  const [SubsidiaryLiquid, setSubsidiaryLiquid] = useState('R$ 0,00');
-  const [taxCollected, setTaxCollected] = useState('R$ 0,00');
-  const [divisions, setDivisions] = useState<Division[]>([]);
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1));
+  const [year, setYear] = useState(String(new Date().getFullYear()));
   const [linkDownloadReportContas, setLinkDownloadReportContas] = useState('');
   const [linkDownloadReportRevenue, setLinkDownloadReportRevenue] = useState(
     '',
@@ -88,18 +76,22 @@ const DashboardFinances: React.FC = () => {
     linkDownloadReportComissions,
     setLinkDownloadReportComissions,
   ] = useState('');
-  const [url, setUrl] = useState('/installment');
-  const [salesCalculation, setSalesCalculation] = useState<CalculatorData[]>(
-    [],
-  );
+
   const [isTimeSlot, setIsTimeSlot] = useState(false);
-  const [dateInitial, setDateInitial] = useState('');
-  const [dateFinal, setDateFinal] = useState('');
 
   const toogleIsTimeSlot = useCallback(() => {
     setIsTimeSlot(!isTimeSlot);
   }, [isTimeSlot]);
 
+  const [dashboardParams, setDashboardParams] = useState<DashboardParams>({
+    subsidiary: '',
+    month,
+    year
+  })
+
+  const {data: dashboardFinances} = useFetchFinances<DashboardData>({url: '/dashboard/finances', params: dashboardParams});
+  const {data: subsidiaries} = useFetchFinances<Subsidiary[]>({url: '/subsidiary'});
+ 
   useEffect(() => {
     const LoadingReports = async () => {
       const contas = await api.get('/expense/export/excel');
@@ -111,115 +103,39 @@ const DashboardFinances: React.FC = () => {
     };
     LoadingReports();
   }, []);
-  useEffect(() => {
-    const loadDataSales = async () => {
-      const response = await api.get(url);
-      const salesCalculation = response.data.filter(
-        item => item.calculation && item,
-      );
-      if (isTimeSlot && dateInitial.length !== 0) {
-        setSalesCalculation(
-          salesCalculation.filter(item =>
-            filterTimeSlot(item.calculation.pay_date, dateInitial, dateFinal),
-          ),
-        );
-      } else if (!isTimeSlot && month > 0) {
-        setSalesCalculation(
-          salesCalculation
-            .filter(item => filterYear(item.calculation.pay_date, year))
-            .filter(item => filterMonth(item.calculation.pay_date, month)),
-        );
-      } else if (!isTimeSlot && month === 0) {
-        setSalesCalculation(
-          salesCalculation.filter(item =>
-            filterYear(item.calculation.pay_date, year),
-          ),
-        );
-      } else {
-        setSalesCalculation(salesCalculation);
-      }
-    };
-
-    loadDataSales();
-  }, [url, month, isTimeSlot, year, dateInitial, dateFinal]);
-  useMemo(async () => {
-    const totalSubsidiaryBrute = generateValueBrute(
-      salesCalculation,
-      'EMPRESA',
-    );
-    const totalSubsidiaryLiquid = generateValueLiquid(
-      salesCalculation,
-      'EMPRESA',
-    );
-    const totalSallerBrute = generateValueBrute(salesCalculation, 'VENDEDOR');
-    const totalSallerLiquid = generateValueLiquid(salesCalculation, 'VENDEDOR');
-    const totalCaptvatorBrute = generateValueBrute(
-      salesCalculation,
-      'CAPTADOR',
-    );
-    const totalCaptvatorLiquid = generateValueLiquid(
-      salesCalculation,
-      'CAPTADOR',
-    );
-    const totalDirectorBrute = generateValueBrute(salesCalculation, 'DIRETOR');
-    const totalDirectorLiquid = generateValueLiquid(
-      salesCalculation,
-      'DIRETOR',
-    );
-    const totalCoordinatorBrute = generateValueBrute(
-      salesCalculation,
-      'COORDENADOR',
-    );
-    const totalCoordinatorLiquid = generateValueLiquid(
-      salesCalculation,
-      'COORDENADOR',
-    );
-    setSubsidiaryBrute(formatPrice(totalSubsidiaryBrute));
-    setSubsidiaryLiquid(formatPrice(totalSubsidiaryLiquid));
-    setSallerBrute(formatPrice(totalSallerBrute));
-    setSallerLiquid(formatPrice(totalSallerLiquid));
-    setCaptvatorBrute(formatPrice(totalCaptvatorBrute));
-    setsetCaptvatorLiquid(formatPrice(totalCaptvatorLiquid));
-    setCoordinatorBrute(formatPrice(totalCoordinatorBrute));
-    setCoordinatorLiquid(formatPrice(totalCoordinatorLiquid));
-    setDirectorBrute(formatPrice(totalDirectorBrute));
-    setDirectorLiquid(formatPrice(totalDirectorLiquid));
-  }, [salesCalculation]);
-  useMemo(async () => {
-    const impost = generateImpostValue(salesCalculation);
-    setTaxCollected(formatPrice(impost));
-  }, [salesCalculation]);
-  useMemo(async () => {
-    const responseDivisions = await api.get('/calculator/division_types');
-    const disivionTypes = responseDivisions.data;
-
-    const data = disivionTypes.map(division => {
-      const value = generateDivionValue(salesCalculation, division.id);
-      return {
-        id: division.id,
-        name: division.name,
-        value: formatPrice(value),
-      };
-    });
-
-    setDivisions(data);
-  }, [salesCalculation]);
 
   const handleSubmit = ({ date_initial, date_final }) => {
-    setDateInitial(date_initial);
-    setDateFinal(date_final);
+    setDashboardParams(prevState => ({
+      ...prevState,
+      year: '',
+      month: '',
+      dateFrom: date_initial,
+      dateTo: date_final
+    }))
   };
 
   const handleSelectCity = (event: ChangeEvent<HTMLSelectElement>) => {
-    event.target.value === 'Todas'
-      ? setUrl(`/installment`)
-      : setUrl(`/installment?city=${event.target.value}`);
+    const subsidiary = event.target.value;
+    setDashboardParams(prevState => ({
+      ...prevState,
+     subsidiary
+    }))
   };
   const handleSelectYear = (event: ChangeEvent<HTMLSelectElement>) => {
-    setYear(Number(event.target.value));
+    const year = event.target.value;
+    setYear(year)
+    setDashboardParams(prevState => ({
+      ...prevState,
+     year
+    }))
   };
   const handleSelectDate = (event: ChangeEvent<HTMLSelectElement>) => {
-    setMonth(Number(event.target.value));
+    const month = event.target.value;
+    setMonth(month)
+    setDashboardParams(prevState => ({
+      ...prevState,
+     month
+    }))
   };
 
   return (
@@ -230,12 +146,12 @@ const DashboardFinances: React.FC = () => {
           <FiltersBotton>
             <FilterButtonGroup>
               <FiltersBottonItems>
-                <span>Cidade: </span>
-                <select defaultValue={city} onChange={handleSelectCity}>
-                  <option value="Todas">Todas</option>
-                  <option value="São Luís">São Luís</option>
-                  <option value="Fortaleza">Fortaleza</option>
-                  <option value="Teresina">Teresina</option>
+                <span>Filial: </span>
+                <select defaultValue={''} onChange={handleSelectCity}>
+                  <option value="">Todas</option>
+                  {subsidiaries && subsidiaries?.map(subsidiary => (
+                     <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
+                  ))}
                 </select>
               </FiltersBottonItems>
               {!isTimeSlot ? (
@@ -247,9 +163,18 @@ const DashboardFinances: React.FC = () => {
                       defaultValue={year}
                       onChange={handleSelectYear}
                     >
-                      <option value={2021}>2021</option>
-                      <option value={2022}>2022</option>
-                      <option value={2023}>2023</option>
+                      <option value={'2020'}>2021</option>
+                      <option value={'2021'}>2021</option>
+                      <option value={'2022'}>2022</option>
+                      <option value={'2023'}>2023</option>
+                      <option value={'2024'}>2024</option>
+                      <option value={'2025'}>2025</option>
+                      <option value={'2026'}>2026</option>
+                      <option value={'2027'}>2027</option>
+                      <option value={'2028'}>2028</option>
+                      <option value={'2028'}>2028</option>
+                      <option value={'2029'}>2029</option>
+                      <option value={'2030'}>2030</option>
                     </select>
                   </FiltersBottonItems>
 
@@ -260,19 +185,19 @@ const DashboardFinances: React.FC = () => {
                       onChange={handleSelectDate}
                       disabled={isTimeSlot}
                     >
-                      <option value={0}>Todas</option>
-                      <option value={1}>Janeiro</option>
-                      <option value={2}>Fevereiro</option>
-                      <option value={3}>Março</option>
-                      <option value={4}>Abril</option>
-                      <option value={5}>Maio</option>
-                      <option value={6}>Junho</option>
-                      <option value={7}>Julho</option>
-                      <option value={8}>Agosto</option>
-                      <option value={9}>Setembro</option>
-                      <option value={10}>Outubro</option>
-                      <option value={11}>Novembro</option>
-                      <option value={12}>Dezembro</option>
+                      <option value={''}>Todas</option>
+                      <option value={'1'}>Janeiro</option>
+                      <option value={'2'}>Fevereiro</option>
+                      <option value={'3'}>Março</option>
+                      <option value={'4'}>Abril</option>
+                      <option value={'5'}>Maio</option>
+                      <option value={'6'}>Junho</option>
+                      <option value={'7'}>Julho</option>
+                      <option value={'8'}>Agosto</option>
+                      <option value={'9'}>Setembro</option>
+                      <option value={'10'}>Outubro</option>
+                      <option value={'11'}>Novembro</option>
+                      <option value={'12'}>Dezembro</option>
                     </select>
                   </FiltersBottonItems>
                 </>
@@ -303,51 +228,51 @@ const DashboardFinances: React.FC = () => {
                   <Box>
                     <BoxContent>
                       <strong>Pago ao Vendedor(Bruto)</strong>
-                      <span>{sallerBrute}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.seller.brute || 0)}</span>
                     </BoxContent>
                     <BoxContent>
                       <strong>Pago ao Vendedor(Liquido)</strong>
-                      <span>{sallerLiquid}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.seller.liquid || 0)}</span>
                     </BoxContent>
                   </Box>
                   <Box>
                     <BoxContent>
                       <strong>Pago ao Captador(Bruto)</strong>
-                      <span>{captvatorBrute}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.captivator.brute || 0)}</span>
                     </BoxContent>
                     <BoxContent>
                       <strong>Pago ao Captador(Liquido)</strong>
-                      <span>{captvatorLiquid}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.captivator.liquid || 0)}</span>
                     </BoxContent>
                   </Box>
                   <Box>
                     <BoxContent>
                       <strong>Pago a Coordenação(Bruto)</strong>
-                      <span>{coordinatorBrute}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.coordinator.brute || 0)}</span>
                     </BoxContent>
                     <BoxContent>
                       <strong>Pago a Coordenação(Liquido)</strong>
-                      <span>{coordinatorLiquid}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.coordinator.liquid || 0)}</span>
                     </BoxContent>
                   </Box>
                   <Box>
                     <BoxContent>
                       <strong>Pago a Diretoria(Bruto)</strong>
-                      <span>{directorBrute}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.director.brute || 0)}</span>
                     </BoxContent>
                     <BoxContent>
                       <strong>Pago a Diretoria(Liquido)</strong>
-                      <span>{directorLiquid}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.director.liquid || 0)}</span>
                     </BoxContent>
                   </Box>
                   <Box>
                     <BoxContent>
                       <strong>Pago a Filial (Bruto)</strong>
-                      <span>{SubsidiaryBrute}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.subsidiary.brute || 0)}</span>
                     </BoxContent>
                     <BoxContent>
                       <strong>Pago a Filial (Liquido)</strong>
-                      <span>{SubsidiaryLiquid}</span>
+                      <span>{formatPrice(dashboardFinances?.comercial.subsidiary.liquid || 0)}</span>
                     </BoxContent>
                   </Box>
                 </ContainerCards>
@@ -363,7 +288,7 @@ const DashboardFinances: React.FC = () => {
                 <Box>
                   <BoxContent>
                     <strong>Imposto Recolhido</strong>
-                    <span>{taxCollected}</span>
+                    <span>{formatPrice(dashboardFinances?.tax || 0)}</span>
                   </BoxContent>
                 </Box>
               </Card.Body>
@@ -376,11 +301,11 @@ const DashboardFinances: React.FC = () => {
             <Accordion.Collapse eventKey="2">
               <Card.Body>
                 <ContainerCards>
-                  {divisions.map(division => (
+                  {dashboardFinances?.divisions && dashboardFinances?.divisions.map(division => (
                     <Box key={division.id}>
                       <BoxContent>
                         <strong>{division.name}</strong>
-                        <span>{division.value}</span>
+                        <span>{formatPrice(division.value || 0)}</span>
                       </BoxContent>
                     </Box>
                   ))}
@@ -397,7 +322,7 @@ const DashboardFinances: React.FC = () => {
                 <ContainerCards>
                   <Box>
                     <a
-                      href={linkDownloadReportRevenue}
+                      href={linkDownloadReportContas}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -406,7 +331,7 @@ const DashboardFinances: React.FC = () => {
                   </Box>
                   <Box>
                     <a
-                      href={linkDownloadReportContas}
+                      href={linkDownloadReportRevenue}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
