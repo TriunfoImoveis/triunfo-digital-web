@@ -67,6 +67,8 @@ const CalculatorProvider: React.FC = ({ children }) => {
       const somaDivision = divisonCalculated
         .map(division => currency(division.total))
         .reduce(reduce);
+
+        
       const sald = formatPrice(currency(comissionSubsiary) - somaDivision);
       setSald(sald);
       setDivisionData(divisonCalculated);

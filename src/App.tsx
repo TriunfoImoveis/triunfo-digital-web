@@ -17,21 +17,22 @@ import { FilterProvider } from './context/FilterContext';
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <AuthProvider>
-        <FormProvider>
-          <FilterProvider>
-            <CalculatorProvider>
-              <Router>
-                <Routes />
-              </Router>
-            </CalculatorProvider>
-          </FilterProvider>
-        </FormProvider>
-        <ToastContainer autoClose={3000} />
-      </AuthProvider>
-      <GlobalStyle />
-    </ThemeProvider>
+    
+      <ThemeProvider theme={theme}>
+        <AuthProvider>
+          <FormProvider>
+            <FilterProvider>
+              <CalculatorProvider>
+                <Router>
+                  <Routes />
+                </Router>
+              </CalculatorProvider>
+            </FilterProvider>
+          </FormProvider>
+          <ToastContainer autoClose={3000} />
+        </AuthProvider>
+        <GlobalStyle />
+      </ThemeProvider>
   );
 };
 

@@ -84,20 +84,18 @@ const DashboardSubsidiary: React.FC = () => {
     year,
     selectedSubsidiary,
     handleSetSelectedSubsidiaries,
-    city,
     handleSetCity
   } = useFilter();
 
   const { userAuth } = useAuth();
 
   const currentSubsidiary = userAuth.office.name === 'Diretor' ? userAuth.subsidiary.id : selectedSubsidiary;
-  const currentCity = userAuth.office.name === 'Diretor' ? userAuth.subsidiary.city : city;
 
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiary[]>([]);
   const [isDirector, setIsDirector] = useState(false);
   const [dashboardUrl, setDashboardUrl] = useState(`/dashboard/subsidiaries?subsidiary=${currentSubsidiary}&year=${year}`);
   const { data } = useFetch<IDashboardData>(dashboardUrl);
-  const { data: rankingData } = useFetch<IRealtorData[]>(`/ranking?year=${year}&city=${currentCity}&user=Corretor`);
+  const { data: rankingData } = useFetch<IRealtorData[]>(`/ranking?year=${year}&subsidiary=${currentSubsidiary}&user=Corretor`);
 
   const loadData = useCallback(async () => {
     const { office, subsidiary } = userAuth;

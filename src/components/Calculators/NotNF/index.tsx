@@ -74,7 +74,7 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
   } as Comission);
   const [editDivisionModal, setEditDivisionModal] = useState(true);
   const { divisionData, calcDivision, sald, comission } = useCalculator();
-  const toogleEditDivisionModal = useCallback(() => {
+  const toogleEditDivisionModal = useCallback(() => { 
     setEditDivisionModal(!editDivisionModal);
   }, [editDivisionModal]);
   const toogleOpenModal = () => {

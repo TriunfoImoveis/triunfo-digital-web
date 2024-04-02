@@ -51,15 +51,16 @@ interface IParams {
   typeRanking: 'sales' | 'captivator' | 'coordinator'
 }
 
-const RankingCapture: React.FC = () => {
+const RankingCaptivators: React.FC = () => {
   const { userAuth } = useAuth();
   const currentYear = new Date().getFullYear();
   const [params, setParams] = useState<IParams>({
     subsidiary: userAuth.office.name === 'Corretor' || userAuth.office.name === 'Coordenador' || userAuth.office.name === 'Diretor' ? userAuth.subsidiary.id : '',
     month: '',
     year: currentYear.toString(),
-    office: 'Corretor',
-    typeRanking: 'captivator'
+    office: 'Coordenador',
+    typeRanking: 'coordinator'
+
   });
   const [selectedSubsidiary, setSelectedSubsidiary] = useState(userAuth.subsidiary.id);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
@@ -112,7 +113,6 @@ const RankingCapture: React.FC = () => {
                 defaultValue={selectedSubsidiary}
                 onChange={handleSelectSubsidiary}
               >
-                <option value="">Todas as filiais</option>
                 {subsidiaries && subsidiaries.map(subsidiary => (
                   <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
                 ))}
@@ -126,7 +126,7 @@ const RankingCapture: React.FC = () => {
                 defaultValue={selectedSubsidiary}
                 onChange={handleSelectSubsidiary}
               >
-                <option value="">Todas as filiais</option>
+                <option value={''}>Todas as filiais</option>
                 {subsidiaries && subsidiaries.map(subsidiary => (
                   <option key={subsidiary.id} value={subsidiary.id}>{subsidiary.name}</option>
                 ))}
@@ -149,7 +149,7 @@ const RankingCapture: React.FC = () => {
             <MonthlyFilter>
               <SelectSubsidiary>
                 <select defaultValue={selectedMonth} onChange={handleSelectMonth}>
-                  <option value=''>ANUAL</option>
+                  <option value='all'>ANUAL</option>
                   <optgroup label="MESES">
                     {months.map(month => (
                       <option value={month.value.toString()}>{month.label}</option>
@@ -234,4 +234,4 @@ const RankingCapture: React.FC = () => {
   );
 };
 
-export default RankingCapture;
+export default RankingCaptivators;

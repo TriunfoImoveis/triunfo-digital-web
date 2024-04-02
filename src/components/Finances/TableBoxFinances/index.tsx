@@ -46,33 +46,29 @@ interface CreditEntry {
 }
 
 type EntryData = {
+  bank: string;
+  brute_value: string;
+  description: string;
+  empressBrute: string;
+  empressLiquid: string;
   id: string;
   pay_date: string;
-  city: string;
-  description: string;
   paying_source: string;
-  brute_value: string;
-  brute_valueBRL: string;
+  subsidiary: string;
   tax_rate: string;
   value_note: string;
-  empressBrute: string;
-  empressLiquidBRL: string;
-  empressLiquid: string;
-  bank: string;
 };
 
 type BalanceData = {
   id: string;
-  due_date: string;
+  pay_date: string;
   city: string;
   description: string;
-  client: string;
-  realtors: string;
   brute_value: string;
-  brute_valueBRL: string;
   value_note: string;
   tax_rate: string;
   bank: string;
+  client: string;
 };
 
 type ForwardingAgentData = {
@@ -81,20 +77,19 @@ type ForwardingAgentData = {
   city: string;
   description: string;
   client: string;
-  liquid_value: string;
-  liquid_valueBRL: string;
+  brute_value: string;
   bank: string;
 };
 type TableBoxFinancesProps = {
   typeTab: string;
   handleSetTab: (tabName: string | null) => void;
   title: string;
-  salesEntry: EntryData[];
-  dispatcherEntry: ForwardingAgentData[];
-  creditEntry: BalanceData[];
-  salesEntryTotal: string;
-  dispatcherEntryTotal: string;
-  creditEntryTotal: string;
+  salesEntry?: EntryData[];
+  dispatcherEntry?: ForwardingAgentData[];
+  creditEntry?: BalanceData[];
+  salesEntryTotal?: string;
+  dispatcherEntryTotal?: string;
+  creditEntryTotal?: string;
 };
 
 const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
@@ -102,80 +97,78 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
   handleSetTab,
   title,
   salesEntry,
-  salesEntryTotal,
   dispatcherEntry,
   dispatcherEntryTotal,
   creditEntry,
   creditEntryTotal,
+  salesEntryTotal
 }) => {
   const collumSalesEntry = [
-    { name: 'DATA'},
-    { name: 'FILIAL'},
-    { name: 'DESCRIÇÃO'},
-    { name: 'FONTE PAGADORA'},
-    { name: 'VALOR BRUTO'},
-    { name: 'TAXA DE IMPOSTO'},
-    { name: 'VALOR DA NOTA'},
-    { name: 'PARTE BRUTA DA EMPRESA'},
-    { name: 'PARTE LÍQUIDA DA EMPRESA'},
-    { name: 'CONTA DE ENTRADA'},
+    { name: 'DATA' },
+    { name: 'FILIAL' },
+    { name: 'DESCRIÇÃO' },
+    { name: 'FONTE PAGADORA' },
+    { name: 'VALOR BRUTO' },
+    { name: 'TAXA DE IMPOSTO' },
+    { name: 'VALOR DA NOTA' },
+    { name: 'PARTE BRUTA DA EMPRESA' },
+    { name: 'PARTE LÍQUIDA DA EMPRESA' },
+    { name: 'CONTA DE ENTRADA' },
   ];
   const collumDespachanteEntry = [
-    { name: 'DATA'},
-    { name: 'FILIAL'},
-    { name: 'DESCRIÇÃO'},
-    { name: 'NOME DO CLIENTE'},
-    { name: 'VALOR BRUTO'},
-    { name: 'CONTA DE ENTRADA'},
+    { name: 'DATA' },
+    { name: 'FILIAL' },
+    { name: 'DESCRIÇÃO' },
+    { name: 'NOME DO CLIENTE' },
+    { name: 'VALOR BRUTO' },
+    { name: 'CONTA DE ENTRADA' },
   ];
   const collumCreditEntry = [
-    { name: 'DATA'},
-    { name: 'FILIAL'},
-    { name: 'DESCRIÇÃO'},
-    { name: 'NOME DO CLIENTE'},
+    { name: 'DATA' },
+    { name: 'FILIAL' },
+    { name: 'DESCRIÇÃO' },
+    { name: 'NOME DO CLIENTE' },
     { name: 'VALOR BRUTO' },
     { name: 'VALOR DA NOTA' },
-    { name: 'TAXA DE IMPOSTO'},
-    { name: 'CONTA DE ENTRADA'},
+    { name: 'TAXA DE IMPOSTO' },
+    { name: 'CONTA DE ENTRADA' },
   ];
 
-  const rowSallesEntry: SallesData[] = salesEntry.map(item => ({
+  const rowSallesEntry: SallesData[] = salesEntry ? salesEntry?.map(item => ({
+    id: item?.id,
+    data: item?.pay_date,
+    filial: item?.subsidiary,
+    descricao: item?.description,
+    fontePagadora: item?.paying_source,
+    valorBruto: item?.brute_value,
+    taxaDeImposto: item?.tax_rate,
+    valorDaNota: item?.value_note,
+    parteBrutaDaEmpresa: item?.empressBrute,
+    parteLiquidaDaEmpresa: item?.empressLiquid,
+    contaDeEntrada: item?.bank,
+  })) : [];
+
+  const rowDespachanteEntry: DespachanteEntry[] = dispatcherEntry ? dispatcherEntry?.map(item => ({
+    id: item.id,
+    data: item.due_date,
+    filial: item.city,
+    descricao: item.description,
+    nomeDoCliente: item.client,
+    valorBruto: item.brute_value,
+    contaDeEntrada: item.bank,
+  })) : [];
+
+  const rowCreditEntry: CreditEntry[] = creditEntry ? creditEntry?.map(item => ({
     id: item.id,
     data: item.pay_date,
     filial: item.city,
     descricao: item.description,
-    fontePagadora: item.paying_source,
-    valorBruto: item.brute_valueBRL,
-    taxaDeImposto: item.tax_rate,
-    valorDaNota: item.value_note,
-    parteBrutaDaEmpresa: item.empressBrute,
-    parteLiquidaDaEmpresa: item.empressLiquidBRL,
-    contaDeEntrada: item.bank,
-  }));
-
-  
-
-  const rowDespachanteEntry: DespachanteEntry[] = dispatcherEntry.map(item => ({
-    id: item.id,
-    data: item.due_date,
-    filial: item.city,
-    descricao: item.description,
     nomeDoCliente: item.client,
-    valorBruto: item.liquid_valueBRL,
-    contaDeEntrada: item.bank,
-  }));
-
-  const rowCreditEntry: CreditEntry[]  = creditEntry.map(item => ({
-    id: item.id,
-    data: item.due_date,
-    filial: item.city,
-    descricao: item.description,
-    nomeDoCliente: item.client,
-    valorBruto: item.brute_valueBRL,
+    valorBruto: item.brute_value,
     valorDaNota: item.value_note,
     taxaDeImposto: item.tax_rate,
     contaDeEntrada: item.bank,
-  }));
+  })) : [];
   return (
     <Tabs
       id="tab-container"

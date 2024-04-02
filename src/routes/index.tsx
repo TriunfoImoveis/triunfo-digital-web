@@ -38,6 +38,7 @@ import DashboardSubsidiary from '../pages/Dashboard/Subsidiary';
 import DashboardTime from '../pages/Dashboard/Time';
 import ListSubsidiaries from '../pages/ADM/ListSubsidiaries';
 import NewSubisidiaries from '../pages/ADM/NewSubsidiary';
+import RankingCaptivators from '../pages/RankingCaptivators';
 
 
 
@@ -50,6 +51,7 @@ const Routes: React.FC = () => (
     <Route path="/ranking" component={Ranking} isPrivate />
     <Route path="/ranking-geral-vendas" component={RankingGeneral} isPrivate />
     <Route path="/ranking-captacao" component={RankingCapture} isPrivate />
+    <Route path="/ranking-coordenadores" component={RankingCaptivators} isPrivate />
     <Route path="/vendas-novo" component={RegisterSaleNew} isPrivate />
     <Route path="/vendas-usado" component={RegisterSaleUsed} isPrivate />
     <Route path="/adm/lista-vendas" component={ListSale} isPrivate />
