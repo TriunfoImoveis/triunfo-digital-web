@@ -35,7 +35,7 @@ interface RealtyFormUsedProps {
 const RealtyFormUsed = ({nextStep}: RealtyFormUsedProps) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
-  const { realty: realtyFormData, handleUpdateRealty } = useForm();
+  const { updateFormData } = useForm();
 
   const [propertyTypes, setPropertyTypes] = useState<IOptionsData[]>([]);
   const [selectedUf, setSelectedUf] = useState('');
@@ -84,16 +84,19 @@ const RealtyFormUsed = ({nextStep}: RealtyFormUsedProps) => {
         await schema.validate(data, {
           abortEarly: false,
         });
-        handleUpdateRealty({
-          enterprise: data.realty.enterprise,
-          city: data.realty.city,
-          state: selectedUf,
-          property: data.realty.property,
-          neighborhood: data.realty.neighborhood,
-          zipcode: data.realty.zipcode,
-          unit: data.realty.unit,
-        });
+
+        updateFormData({
+          realty: {
+            enterprise: data.realty.enterprise,
+            city: data.realty.city,
+            state: selectedUf,
+            property: data.realty.property,
+            neighborhood: data.realty.neighborhood,
+            unit: data.realty.unit,
+          },
+        })
       
+        
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -106,15 +109,12 @@ const RealtyFormUsed = ({nextStep}: RealtyFormUsedProps) => {
         setLoading(false);
       }
     },
-    [nextStep, handleUpdateRealty, selectedUf],
+    [nextStep, updateFormData, selectedUf],
   );
 
-  const initialData = {
-    realty: realtyFormData,
-  };
   
   return (
-    <Form ref={formRef} onSubmit={handleSubmit} initialData={initialData}>
+    <Form ref={formRef} onSubmit={handleSubmit}>
         <Scope path="realty">
           <InputForm label="Empreendimento" name="enterprise" />
           <InputForm
@@ -151,7 +151,6 @@ const RealtyFormUsed = ({nextStep}: RealtyFormUsedProps) => {
             label="Tipo de Imóvel"
             placeholder="Selecione o tipo do imovel"
             options={optionsPropertyType}
-            defaultInputValue={realtyFormData.property}
           />
           <InputForm label="Unidade" name="unit" placeholder="Unidade" />
         </Scope>

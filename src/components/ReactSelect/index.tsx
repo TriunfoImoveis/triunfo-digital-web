@@ -33,7 +33,7 @@ const SelectSimple: React.FC<Props> = ({
     if (error !== undefined) {
       setErrorField(true);
     }
-  }, [error]);
+  }, [error, defaultValue, rest.options]);
 
   useEffect(() => {
     registerField({

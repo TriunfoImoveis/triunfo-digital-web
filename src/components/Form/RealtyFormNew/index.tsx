@@ -33,10 +33,10 @@ interface RealtyNewFormData {
 interface RealtyFormNewProps {
   nextStep: () => void;
 }
-const RealtyFormNew = ({nextStep}: RealtyFormNewProps) => {
+const RealtyFormNew = ({ nextStep }: RealtyFormNewProps) => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
-  const { builder: builderFormData, realty: realtyFormData, handleUpdateRealty,handleUpdateBuilder } = useForm();
+  const { updateFormData } = useForm();
 
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<IOptionsData[]>([]);
@@ -53,7 +53,7 @@ const RealtyFormNew = ({nextStep}: RealtyFormNewProps) => {
         });
         setBuilders(response.data);
       }
-      
+
     };
     const loadPropertyType = async () => {
       const response = await api.get('/property-type');
@@ -105,17 +105,19 @@ const RealtyFormNew = ({nextStep}: RealtyFormNewProps) => {
         await schema.validate(data, {
           abortEarly: false,
         });
-        handleUpdateRealty({
-          enterprise: data.realty.enterprise,
-          city: data.realty.city,
-          state: selectedUf,
-          property: data.realty.property,
-          neighborhood: data.realty.neighborhood,
-          zipcode: data.realty.zipcode,
-          unit: data.realty.unit,
+
+        updateFormData({
+          realty: {
+            enterprise: data.realty.enterprise,
+            city: data.realty.city,
+            state: selectedUf,
+            property: data.realty.property,
+            neighborhood: data.realty.neighborhood,
+            unit: data.realty.unit,
+          },
+          builder: data.builder,
         });
-        handleUpdateBuilder(data.builder);
-      
+        
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -128,73 +130,68 @@ const RealtyFormNew = ({nextStep}: RealtyFormNewProps) => {
         setLoading(false);
       }
     },
-    [nextStep, handleUpdateRealty,handleUpdateBuilder, selectedUf],
+    [nextStep, selectedUf, updateFormData],
   );
 
-  const initialData = {
-    builder: builderFormData,
-    realty: realtyFormData,
-  };
-  
   return (
-    <Form ref={formRef} onSubmit={handleSubmit} initialData={initialData}>
-        <Scope path="realty">
-          <InputForm label="Empreendimento" name="enterprise" />
-          <InputForm
-            name='zipcode'
-            mask='zipcode'
-            label='CEP'
-            placeholder='00000-000'
-            maxLength={8}
-            onBlur={handleZipCode}
-          />
-          <InputGroup>
+    <Form ref={formRef} onSubmit={handleSubmit}>
+      <Scope path="realty">
+        <InputForm label="Empreendimento" name="enterprise" />
+        <InputForm
+          name='zipcode'
+          mask='zipcode'
+          label='CEP'
+          placeholder='00000-000'
+          maxLength={8}
+          onBlur={handleZipCode}
+        />
+        <InputGroup>
 
-            <InputForm
-              name="state"
-              placeholder="Informe o estado"
-              label="Estado"
-              disabled
-            />
-            <InputForm
-              name="city"
-              label="Cidade"
-              placeholder="Digite a cidade"
-              disabled
-            />
-          </InputGroup>
           <InputForm
-            label="Bairro"
-            name="neighborhood"
-            placeholder="Bairro"
+            name="state"
+            placeholder="Informe o estado"
+            label="Estado"
             disabled
           />
-          <ReactSelect
-            name="property"
-            label="Tipo de Imóvel"
-            placeholder="Selecione o tipo do imovel"
-            options={optionsPropertyType}
-            defaultInputValue={optionsPropertyType.find(property => property.value === realtyFormData.property)?.label}
+          <InputForm
+            name="city"
+            label="Cidade"
+            placeholder="Digite a cidade"
+            disabled
           />
-          <InputForm label="Unidade" name="unit" placeholder="Unidade" />
-        </Scope>
+        </InputGroup>
+        <InputForm
+          label="Bairro"
+          name="neighborhood"
+          placeholder="Bairro"
+          disabled
+        />
         <ReactSelect
-            placeholder="Selecione a construtora"
-            name="builder"
-            options={optionBuilder}
-            label="Contrutora"
-            defaultInputValueValue={builderFormData}
-          />
-        <ButtonGroup>
-          <Button type="reset" className="cancel">
-            Cancelar
-          </Button>
-          <Button type="submit" className="next" >
-            {loading ? '...' : 'Próximo'}
-          </Button>
-        </ButtonGroup>
-      </Form>
+          name="property"
+          label="Tipo de Imóvel"
+          placeholder="Selecione o tipo do imovel"
+          options={optionsPropertyType}
+        />
+        <InputForm label="Unidade" name="unit" placeholder="Unidade" />
+      </Scope>
+      <ReactSelect
+        placeholder="Selecione a construtora"
+        name="builder"
+        options={optionBuilder}
+        label="Contrutora"
+      />
+      <ButtonGroup>
+        <Button type="reset" className="cancel">
+          Cancelar
+        </Button>
+        <Button type="submit" className="next" >
+          {loading ? '...' : 'Próximo'}
+        </Button>
+      </ButtonGroup>
+    </Form>
   )
 }
 
 export default RealtyFormNew
+
+
