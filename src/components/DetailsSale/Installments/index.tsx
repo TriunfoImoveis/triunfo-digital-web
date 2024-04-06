@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaCheck } from 'react-icons/fa';
+import { FaCalculator, FaCheck } from 'react-icons/fa';
 import { MdDangerous } from 'react-icons/md';
 
 import { useAuth } from '../../../context/AuthContext';
@@ -7,6 +7,7 @@ import { IInstallments } from '..';
 import InputDisable from '../../InputDisabled';
 
 import { PaymentInstallments, Plot, AddButton, AlertDanger } from '../styles';
+import { useHistory } from 'react-router-dom';
 
 interface IInstamentsProps {
   installments: Array<IInstallments>;
@@ -32,6 +33,8 @@ const Installments: React.FC<IInstamentsProps> = ({
 
   const valueTotalInstallments = installments.map(installment => installment.value).reduce(reducer, 0);
   const isDisponible = valueTotalInstallments === Number(comission);
+
+  const navigate = useHistory();
 
   return (
     <>
@@ -115,6 +118,7 @@ const Installments: React.FC<IInstamentsProps> = ({
                         <FaCheck size={20} color="#FCF9F9" />
                       </AddButton>
                     )}
+
                   </Plot>
                 ),
             )}
@@ -139,6 +143,14 @@ const Installments: React.FC<IInstamentsProps> = ({
                     data={installment.status}
                     status={installment.status}
                   />
+
+                  <AddButton 
+                    type="button"
+                    className="valid"
+                    onClick={() => navigate.push(`/financeiro/calculadora/${installment.id}`)}
+                  >
+                    <FaCalculator size={20} color="#FCF9F9" />
+                  </AddButton>
                 </Plot>
               ))
             ) : (

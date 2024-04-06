@@ -1,7 +1,7 @@
 import banks from '../services/Data/banks';
 import { filterOptions } from './filters';
 
-interface OptionsData {
+export interface OptionsData {
   label: string;
   value: string;
 }
@@ -20,19 +20,19 @@ export const opionsBanks = banks.map(bank => ({
 export const months = ['Janeiro'];
 
 export const optionsMonth = [
-  { label: 'TODAS', value: '0'},
-  { label: 'JAN', value: '1'},
-  { label: 'FEV', value: '2'},
-  { label: 'MAR', value: '3'},
-  { label: 'ABR', value: '4'},
-  { label: 'MAI', value: '5'},
-  { label: 'JUN', value: '6'},
-  { label: 'JUL', value: '7'},
-  { label: 'AGO', value: '8'},
-  { label: 'SET', value: '9'},
-  { label: 'OUT', value: '10'},
-  { label: 'NOV', value: '11'},
-  { label: 'DEZ', value: '12'},
+  { label: 'TODAS', value: '0' },
+  { label: 'JAN', value: '1' },
+  { label: 'FEV', value: '2' },
+  { label: 'MAR', value: '3' },
+  { label: 'ABR', value: '4' },
+  { label: 'MAI', value: '5' },
+  { label: 'JUN', value: '6' },
+  { label: 'JUL', value: '7' },
+  { label: 'AGO', value: '8' },
+  { label: 'SET', value: '9' },
+  { label: 'OUT', value: '10' },
+  { label: 'NOV', value: '11' },
+  { label: 'DEZ', value: '12' },
 ]
 
 // TIPO DE CONTA DE BANCO
@@ -119,15 +119,66 @@ export const optionsBonus = [
 ];
 
 export const optionYear = [
-  {label: '2020', value: 2020},
-  {label: '2021', value: 2021},
-  {label: '2022', value: 2022},
-  {label: '2023', value: 2023},
-  {label: '2024', value: 2024},
-  {label: '2025', value: 2025},
-  {label: '2026', value: 2026},
-  {label: '2027', value: 2027},
-  {label: '2028', value: 2028},
-  {label: '2029', value: 2029},
-  {label: '2030', value: 2030},
+  { label: '2020', value: 2020 },
+  { label: '2021', value: 2021 },
+  { label: '2022', value: 2022 },
+  { label: '2023', value: 2023 },
+  { label: '2024', value: 2024 },
+  { label: '2025', value: 2025 },
+  { label: '2026', value: 2026 },
+  { label: '2027', value: 2027 },
+  { label: '2028', value: 2028 },
+  { label: '2029', value: 2029 },
+  { label: '2030', value: 2030 },
+]
+
+export const optionsUFs: OptionsData[] = [
+  { value: 'AC', label: 'Acre' },
+  { value: 'AL', label: 'Alagoas' },
+  { value: 'AP', label: 'Amapá' },
+  { value: 'AM', label: 'Amazonas' },
+  { value: 'BA', label: 'Bahia' },
+  { value: 'CE', label: 'Ceará' },
+  { value: 'DF', label: 'Distrito Federal' },
+  { value: 'ES', label: 'Espírito Santo' },
+  { value: 'GO', label: 'Goiás' },
+  { value: 'MA', label: 'Maranhão' },
+  { value: 'MT', label: 'Mato Grosso' },
+  { value: 'MS', label: 'Mato Grosso do Sul' },
+  { value: 'MG', label: 'Minas Gerais' },
+  { value: 'PA', label: 'Pará' },
+  { value: 'PB', label: 'Paraíba' },
+  { value: 'PR', label: 'Paraná' },
+  { value: 'PE', label: 'Pernanbuco' },
+  { value: 'PI', label: 'Piauí' },
+  { value: 'RJ', label: 'Rio de Janeiro' },
+  { value: 'RN', label: 'Rio Grande do Norte' },
+  { value: 'RS', label: 'Rio Grande do Sul' },
+  { value: 'RO', label: 'Rondônia' },
+  { value: 'RR', label: 'Roraima' },
+  { value: 'SC', label: 'Santa Catarina' },
+  { value: 'SP', label: 'São Paulo' },
+  { value: 'SE', label: 'Sergipe' },
+  { value: 'TO', label: 'Tocantins' }
+]
+
+export const neighborhoods = [
+  {
+    state: 'MA', 
+    city: 'São Luis', 
+    neighborhoods: [
+      {name: "Centro"},
+      {name: "São Raimundo"},
+      {name: "Cohama"},
+      {name: "Peninsula"},
+    ]
+  },
+  {
+    state: 'MA', 
+    city: 'São José de Ribamar', 
+    neighborhoods: [
+      {name: "Araçagy"},
+      {name: "Pindaí"},
+    ]
+  },
 ]

@@ -18,6 +18,26 @@ interface IOptionsData {
   name: string;
 }
 
+interface ICEP {
+  bairro?: string
+  cep: string
+  complemento?: string
+  ddd: string;
+  gia: string;
+  ibge: string;
+  localidade: string;
+  logradouro: string;
+  siafi: string;
+  uf: string;
+}
+
+interface INeighborhoodData {
+  id: string;
+  name: string;
+  uf: string;
+  active: boolean;
+}
+
 interface RealtyNewFormData {
   realty: {
     enterprise: string;
@@ -40,6 +60,9 @@ const RealtyFormNew = ({ nextStep }: RealtyFormNewProps) => {
 
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<IOptionsData[]>([]);
+  const [optionsNeighborhood, setOptionsNeighborhood] = useState<{ label: string, value: string }[]>([]);
+
+  const [isFindingNeighborhood, setIsFindingNeighborhood] = useState(true);
   const [selectedUf, setSelectedUf] = useState('');
 
   useEffect(() => {
@@ -63,6 +86,12 @@ const RealtyFormNew = ({ nextStep }: RealtyFormNewProps) => {
     loadPropertyType();
   }, [selectedUf]);
 
+  const createOptionsneighborhood = (neighborhood: Array<{ name: string }>) => {
+    return neighborhood.map(neighborhood => ({
+      label: neighborhood.name,
+      value: neighborhood.name
+    }))
+  }
 
   const optionBuilder = builders.map(builder => ({
     label: builder.name,
@@ -77,10 +106,27 @@ const RealtyFormNew = ({ nextStep }: RealtyFormNewProps) => {
   const handleZipCode = async (event: ChangeEvent<HTMLInputElement>) => {
     const zipCode = event.target.value;
     if (zipCode.length === 9) {
-      const response = await api.get(`https://viacep.com.br/ws/${zipCode}/json/`);
-      formRef.current?.setFieldValue('realty.city', response.data.localidade);
-      formRef.current?.setFieldValue('realty.neighborhood', response.data.bairro);
-      formRef.current?.setFieldValue('realty.state', states[response.data.uf]);
+      const response = await api.get<ICEP>(`https://viacep.com.br/ws/${zipCode}/json/`);
+      const { uf, localidade, bairro } = response.data
+
+      if (!bairro) {
+        const response = await api.get<INeighborhoodData[]>('/neighborhood', {
+          params: {
+            uf: uf,
+            city: localidade
+          }
+        });
+        const neighborhoods = response.data;
+        setOptionsNeighborhood(createOptionsneighborhood(neighborhoods))
+        setIsFindingNeighborhood(false)
+      }
+      formRef.current?.setData({
+        realty: {
+          state: states[uf],
+          city: localidade,
+          neighborhood: bairro,
+        }
+      })
       setSelectedUf(response.data.uf);
     }
   }
@@ -117,7 +163,7 @@ const RealtyFormNew = ({ nextStep }: RealtyFormNewProps) => {
           },
           builder: data.builder,
         });
-        
+
         nextStep();
         setLoading(false);
       } catch (err) {
@@ -160,12 +206,22 @@ const RealtyFormNew = ({ nextStep }: RealtyFormNewProps) => {
             disabled
           />
         </InputGroup>
-        <InputForm
-          label="Bairro"
-          name="neighborhood"
-          placeholder="Bairro"
-          disabled
-        />
+        {isFindingNeighborhood ? (
+          <InputForm
+            label="Bairro"
+            name="neighborhood"
+            placeholder="Bairro"
+            readOnly
+            disabled={isFindingNeighborhood}
+          />
+        ) : (
+          <ReactSelect
+            name="neighborhood"
+            label="Bairro"
+            placeholder="Informe o bairro"
+            options={optionsNeighborhood}
+          />
+        )}
         <ReactSelect
           name="property"
           label="Tipo de Imóvel"
