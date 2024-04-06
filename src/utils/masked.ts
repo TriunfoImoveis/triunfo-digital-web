@@ -119,6 +119,18 @@ export const cnpj = (value: string): string => {
   return valueMasked;
 };
 
+export const zipCodeMask = (
+  event: ChangeEvent<HTMLInputElement>,
+): ChangeEvent<HTMLInputElement> => {
+  let valueMasked = event.target.value;
+  valueMasked = valueMasked.replace(/\D/g, '');
+  valueMasked = valueMasked.replace(
+    /(\d{5})(\d{3})/,
+    '$1-$2',
+  );
+  event.currentTarget.value = valueMasked;
+  return event;
+};
 export const CNPJMask = (
   event: ChangeEvent<HTMLInputElement>,
 ): ChangeEvent<HTMLInputElement> => {
