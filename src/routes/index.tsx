@@ -41,6 +41,8 @@ import NewSubisidiaries from '../pages/ADM/NewSubsidiary';
 import RankingCaptivators from '../pages/RankingCaptivators';
 import ConfigMenu from '../pages/ADM/ConfigMenu';
 import ListNeighbohood from '../pages/ADM/ListNeighbohood';
+import NewNeighbohood from '../pages/ADM/NewNeighbohood';
+import UpdateNeighbohood from '../pages/ADM/UpdateNeighbohood';
 
 
 
@@ -83,6 +85,8 @@ const Routes: React.FC = () => (
     <Route path="/adm/lista-filiais" component={ListSubsidiaries} isPrivate />
     <Route path="/adm/config-menu" component={ConfigMenu} isPrivate />
     <Route path="/adm/lista-bairros" component={ListNeighbohood} isPrivate />
+    <Route path="/adm/novo-bairro" component={NewNeighbohood} isPrivate />
+    <Route path="/adm/bairros/:id" component={UpdateNeighbohood} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 

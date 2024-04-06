@@ -93,7 +93,7 @@ const ListNeighbohood: React.FC = () => {
             </select>
           </FiltersBottonItems>
           <FiltersBottonItems>
-            <Link to="/adm/nova-filial">Novo Bairro</Link>
+            <Link to="/adm/novo-bairro">Novo Bairro</Link>
           </FiltersBottonItems>
         </FiltersBotton>
       </FiltersContainer>
@@ -119,7 +119,7 @@ const ListNeighbohood: React.FC = () => {
               <SaleItem>{states[neighborhood.uf]}</SaleItem>
               <SaleItem>{active[neighborhood.active.toString()]}</SaleItem>
               <SaleItem>
-                <Link to={`/adm/detalhes-filiais/${neighborhood.id}`}>
+                <Link to={`/adm/bairros/${neighborhood.id}`}>
                   <BsPencil size={15} color={theme.colors.gold} />
                   Editar
                 </Link>
