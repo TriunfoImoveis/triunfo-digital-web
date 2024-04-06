@@ -39,6 +39,8 @@ import DashboardTime from '../pages/Dashboard/Time';
 import ListSubsidiaries from '../pages/ADM/ListSubsidiaries';
 import NewSubisidiaries from '../pages/ADM/NewSubsidiary';
 import RankingCaptivators from '../pages/RankingCaptivators';
+import ConfigMenu from '../pages/ADM/ConfigMenu';
+import ListNeighbohood from '../pages/ADM/ListNeighbohood';
 
 
 
@@ -79,6 +81,8 @@ const Routes: React.FC = () => (
     />
     <Route path="/adm/relatorio-vendas" component={ReportSale} isPrivate />
     <Route path="/adm/lista-filiais" component={ListSubsidiaries} isPrivate />
+    <Route path="/adm/config-menu" component={ConfigMenu} isPrivate />
+    <Route path="/adm/lista-bairros" component={ListNeighbohood} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 
