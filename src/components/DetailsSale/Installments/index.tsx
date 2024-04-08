@@ -28,6 +28,9 @@ const Installments: React.FC<IInstamentsProps> = ({
   const installmentsUnsuccessful = installments.filter(
     installment => installment.status === 'VENCIDO',
   );
+  const installmentsLiquidada = installments.filter(
+    installment => installment.status === 'LIQUIDADA',
+  );
   const { userAuth } = useAuth();
   const reducer = (accumulator, currentValue) => Number(accumulator) + Number(currentValue);
 
@@ -155,6 +158,32 @@ const Installments: React.FC<IInstamentsProps> = ({
               ))
             ) : (
               <strong>Nehuma Parcela paga</strong>
+            )}
+            <span>Parcelas Liquidada</span>
+            {installmentsLiquidada.length > 0 ? (
+              installmentsLiquidada.map(installment => (
+                <Plot key={installment.installment_number}>
+                  <InputDisable
+                    label="Parcela"
+                    data={String(installment.installment_number)}
+                  />
+                  <InputDisable
+                    label="Valor da Liquidado"
+                    data={installment.valueFormatted}
+                  />
+                  <InputDisable
+                    label="Data de Vencimento"
+                    data={installment.due_date}
+                  />
+                  <InputDisable
+                    label="Status"
+                    data={installment.status}
+                    status={installment.status}
+                  />
+                </Plot>
+              ))
+            ) : (
+              <strong>Nehuma Parcela Liquidada</strong>
             )}
           </>
         ) : null}

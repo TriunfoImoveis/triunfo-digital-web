@@ -1,5 +1,5 @@
 /* eslint-disable array-callback-return */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -19,6 +19,7 @@ import StatusSale from './StatusSale';
 import ClientBuyerPJ from './ClientBuyerPJ';
 import ClientSellerPJ from './ClientSellerPJ';
 import SubsidiarySale from './Subsidiary';
+import Select from '../SelectSimple';
 
 interface IParamsData {
   id: string;
@@ -86,7 +87,7 @@ export interface ISaleData {
     name: string;
   }[];
 
-  subsidiary?:{
+  subsidiary?: {
     id: string;
     name: string;
   }
@@ -107,7 +108,7 @@ export interface IInstallments {
   installment_number: number;
   value: string;
   valueFormatted: string;
-  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADO';
+  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADA';
   pay_date?: string;
 }
 
@@ -162,6 +163,8 @@ const DetailsSale: React.FC = () => {
   const [instalmentsPay, setInstalmentPay] = useState<IInstallments[]>([]);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { id } = useParams<IParamsData>();
+  const [selectedTypeClientBuyer, setSelectedTypeClientBuyer] = useState(sale && sale.client_buyer?.cpf !== null && 'PF');
+  const [selectedTypeClientSeller, setSelectedTypeClientSeller] = useState(sale && sale.client_buyer?.cnpj !== null && 'PJ');
 
   useEffect(() => {
     const loadSale = async () => {
@@ -273,6 +276,21 @@ const DetailsSale: React.FC = () => {
     };
     loadSale();
   }, [id, token]);
+
+  const optionsTypeClient = [
+    { label: 'Pessoa Física', value: 'PF' },
+    { label: 'Pessoa Juridica', value: 'PJ' },
+  ];
+
+  const handleSelectTypeClientBuyer = (value: ChangeEvent<HTMLSelectElement>) => {
+    const { value: type } = value.target;
+    setSelectedTypeClientBuyer(type);
+  }
+  const handleSelectTypeClientSeller = (value: ChangeEvent<HTMLSelectElement>) => {
+    const { value: type } = value.target;
+    setSelectedTypeClientSeller(type);
+  }
+
   return (
     <AdmLayout>
       <Container>
@@ -293,7 +311,13 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
-                {client_buyer.cpf !== null ? (
+                <Select
+                  nameLabel='Tipo de Cliente'
+                  options={optionsTypeClient}
+                  defaultValue={'0'}
+                  onChange={handleSelectTypeClientBuyer}
+                />
+                {selectedTypeClientBuyer === 'PF' ? (
                   <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
                 ) : (
                   <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
@@ -317,7 +341,7 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="subsidiaries" title="Filial">
-                  <SubsidiarySale subsbisiary={sale.subsidiary} />
+                <SubsidiarySale subsbisiary={sale.subsidiary} />
               </TabBootstrap>
               <TabBootstrap eventKey="finances" title="Financeiro">
                 <Finances
@@ -329,8 +353,8 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="staus" title="Status">
-                  <StatusSale statusSale={sale.status} />
-                </TabBootstrap>
+                <StatusSale statusSale={sale.status} />
+              </TabBootstrap>
             </Tabs>
           )}
           {sale.sale_type === 'USADO' && (
@@ -348,7 +372,13 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
-                {client_buyer.cpf !== null ? (
+                <Select
+                  nameLabel='Tipo de Cliente'
+                  options={optionsTypeClient}
+                  defaultValue={'0'}
+                  onChange={handleSelectTypeClientSeller}
+                />
+                {selectedTypeClientBuyer === null ? (
                   <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
                 ) : (
                   <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
@@ -356,7 +386,13 @@ const DetailsSale: React.FC = () => {
 
               </TabBootstrap>
               <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
-                {client_seller.cpf !== null ? (
+                <Select
+                  nameLabel='Tipo de Cliente'
+                  options={optionsTypeClient}
+                  defaultValue={'0'}
+                  onChange={handleSelectTypeClientBuyer}
+                />
+                {selectedTypeClientSeller !== null ? (
                   <ClientSeller
                     clientSeller={client_seller}
                     status={sale.status}
