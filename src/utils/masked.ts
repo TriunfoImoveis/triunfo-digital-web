@@ -86,7 +86,7 @@ export const Whats = (
 ): ChangeEvent<HTMLInputElement> => {
   let valueMasked = event.target.value;
   valueMasked = valueMasked.replace(/\D/g, '');
-  valueMasked = valueMasked.replace(/(\d{2})(\d{5})(\d{4})/, '+55 ($1) $2-$3');
+  valueMasked = valueMasked.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, '+$1 ($2) $3-$4');
   event.currentTarget.value = valueMasked;
   return event;
 };

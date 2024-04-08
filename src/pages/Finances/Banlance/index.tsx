@@ -424,8 +424,6 @@ const Balance: React.FC = () => {
                 handlePaginateSeleEntry={handlePaginateSeleEntry}
                 handlePaginateDispacherEntry={handlePaginateDispacherEntry}
                 handlePaginateCreditEntry={handlePaginateCreditEntry}
-
-                // add pagiantion to table
               />
             ) : (
               <TableBoxFinancesAccount
