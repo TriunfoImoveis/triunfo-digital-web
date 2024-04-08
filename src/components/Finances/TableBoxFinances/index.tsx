@@ -8,6 +8,7 @@ import TableEntryCredit from '../../Table/TableEntryCredit';
 
 
 import { TitlePane, BalanceAmount } from './styles';
+import { Pagination } from '../../Pagination';
 
 interface SallesData {
   id: string;
@@ -90,6 +91,15 @@ type TableBoxFinancesProps = {
   salesEntryTotal?: string;
   dispatcherEntryTotal?: string;
   creditEntryTotal?: string;
+  salesTotal?: number;
+  dispatcherTotal?: number;
+  creditTotal?: number;
+  pageSaleEntry?: number;
+  pageCreditEntry?: number;
+  pageDispacherEntry?: number;
+  handlePaginateSeleEntry: (page: number) => void;
+  handlePaginateDispacherEntry: (page: number) => void;
+  handlePaginateCreditEntry: (page: number) => void;
 };
 
 const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
@@ -101,7 +111,17 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
   dispatcherEntryTotal,
   creditEntry,
   creditEntryTotal,
-  salesEntryTotal
+  salesEntryTotal,
+  salesTotal,
+  dispatcherTotal,
+  creditTotal,
+  pageSaleEntry,
+  pageDispacherEntry,
+  pageCreditEntry,
+  handlePaginateCreditEntry,
+  handlePaginateDispacherEntry,
+  handlePaginateSeleEntry
+
 }) => {
   const collumSalesEntry = [
     { name: 'DATA' },
@@ -169,6 +189,7 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
     taxaDeImposto: item.tax_rate,
     contaDeEntrada: item.bank,
   })) : [];
+  
   return (
     <Tabs
       id="tab-container"
@@ -181,6 +202,12 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
         <TitlePane>{title}</TitlePane>
         <TableEntrySales collums={collumSalesEntry} rows={rowSallesEntry} cols={10} />
         <BalanceAmount>
+          <Pagination
+            totalCount={salesTotal || 0}
+            perPage={8}
+            pageIndex={pageSaleEntry || 1}
+            onPageChange={handlePaginateSeleEntry}
+          />
           <p>
             <span>Saldo Total</span>
             <strong>{salesEntryTotal}</strong>
@@ -191,6 +218,12 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
         <TitlePane>{title}</TitlePane>
         <TableEntryFowardAgent collums={collumDespachanteEntry} rows={rowDespachanteEntry} cols={6} />
         <BalanceAmount>
+          <Pagination
+            totalCount={dispatcherTotal || 0}
+            perPage={8}
+            pageIndex={pageDispacherEntry || 1}
+            onPageChange={handlePaginateDispacherEntry}
+          />
           <p>
             <span>Saldo Total</span>
             <strong>{dispatcherEntryTotal}</strong>
@@ -201,6 +234,12 @@ const TableBoxFinances: React.FC<TableBoxFinancesProps> = ({
         <TitlePane>{title}</TitlePane>
         <TableEntryCredit collums={collumCreditEntry} rows={rowCreditEntry} cols={8} />
         <BalanceAmount>
+        <Pagination
+            totalCount={creditTotal || 0}
+            perPage={8}
+            pageIndex={pageCreditEntry || 1}
+            onPageChange={handlePaginateCreditEntry}
+          />
           <p>
             <span>Saldo Total</span>
             <strong>{creditEntryTotal}</strong>

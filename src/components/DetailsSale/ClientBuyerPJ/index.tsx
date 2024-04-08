@@ -112,7 +112,7 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
       <SaleData>
         <fieldset className="login">
           <Legend>
-            <legend>VENDEDOR</legend>
+            <legend>CLIENTE</legend>
             {status !== 'CAIU' ? (
               <button type="button" onClick={() => setEdit(!edit)}>
                 <BiEditAlt size={20} color={theme.colors.primary} />
