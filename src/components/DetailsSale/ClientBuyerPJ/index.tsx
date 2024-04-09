@@ -86,12 +86,9 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
 
       unMaskValue();
       const formData = formRef.current?.getData();
-      await api.put(`/sale/${id}`, formData, {
-        headers: {
-          authorization: `Bearer ${localStorage.getItem(
-            '@TriunfoDigital:token',
-          )}`,
-        },
+      await api.put(`/sale/${id}`, {
+        ...formData?.client_buyer,
+        cpf: null
       });
 
       toast.success('Dados da Venda atualizadas!');
@@ -144,7 +141,8 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
                 <Input
                   label="CNPJ"
                   name="client_buyer.cnpj"
-                  placeholder="CPF"
+                  placeholder="CNPJ"
+                  mask='cnpj'
                   readOnly={edit}
                   defaultValue={clientbuyer.cnpj}
                 />
@@ -154,6 +152,7 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
                   label="Telefone"
                   name="client_buyer.phone"
                   placeholder="Telefone"
+                  mask='fone'
                   readOnly={edit}
                   defaultValue={clientbuyer.phone}
                 />

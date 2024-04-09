@@ -89,7 +89,6 @@ const ListColab: React.FC = () => {
     const { value } = event.target;
     setSelectedOffice(value);
     if (users) {
-      console.log({value})
       const list = filterUserForOffice(users, value);
       setListUsers(list);
     }

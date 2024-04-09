@@ -297,7 +297,7 @@ const NewColab: React.FC = () => {
       toast.success('Colaborardor Removido com sucesso');
       history.push('/adm/lista-colaboradores');
     } catch (error) {
-      console.log(error);
+      toast.error(error);
     }
   }, [user.id, history]);
 

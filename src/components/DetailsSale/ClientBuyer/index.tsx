@@ -123,7 +123,13 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
 
       unMaskValue();
       const formData = formRef.current?.getData();
-      await api.put(`/sale/${id}`, formData);
+      await api.put(`/sale/${id}`, {
+        client_buyer: {
+          ...formData?.client_buyer,
+          cnpj: null
+        }
+
+      });
 
       toast.success('Dados da Venda atualizadas!');
       history.push('/adm/lista-vendas');
@@ -199,6 +205,7 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                   label="Data de Nascimento"
                   name="client_buyer.date_birth"
                   placeholder="Data de Nascimento"
+                  mask='date'
                   readOnly={edit}
                   defaultValue={clientBuyer.date_birth}
                 />

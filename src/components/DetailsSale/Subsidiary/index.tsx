@@ -54,7 +54,6 @@ const SubsidiarySale: React.FC<SubsidiaryProps> = ({ subsbisiary }) => {
 
   const handleUpdateStatus: SubmitHandler<FormData> = async data => {
     formRef.current?.setErrors({});
-    console.log(data)
     try {
       setLoading(true);
       const schema = Yup.object().shape({
