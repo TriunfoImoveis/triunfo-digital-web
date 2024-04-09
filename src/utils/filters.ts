@@ -76,7 +76,7 @@ export interface IInstallments {
   installment_number: number;
   valueFormatted: string;
   value: string;
-  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADO';
+  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADA';
   pay_date?: string;
 }
 
@@ -100,7 +100,6 @@ export const filterUserForSubsidiary = (
   users: IUser[],
   subsidiary: string,
 ): IUser[] => {
-  console.log({subsidiary})
   return users.filter(user => user.subsidiary.id === subsidiary && user);
 };
 export const filterUserForDepartament = (

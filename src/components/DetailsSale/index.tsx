@@ -1,5 +1,5 @@
 /* eslint-disable array-callback-return */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -7,7 +7,7 @@ import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import AdmLayout from '../../pages/Layouts/Adm';
 import { cnpj, CPFMask, FoneMask } from '../../utils/masked';
 import { DateBRL, formatPrice } from '../../utils/format';
-import { Container, Content } from './styles';
+import { Container, Content, InputGroup } from './styles';
 import api from '../../services/api';
 import Property from './Property';
 import ClientBuyer from './ClientBuyer';
@@ -19,6 +19,7 @@ import StatusSale from './StatusSale';
 import ClientBuyerPJ from './ClientBuyerPJ';
 import ClientSellerPJ from './ClientSellerPJ';
 import SubsidiarySale from './Subsidiary';
+import Select from '../SelectSimple';
 
 interface IParamsData {
   id: string;
@@ -86,7 +87,7 @@ export interface ISaleData {
     name: string;
   }[];
 
-  subsidiary?:{
+  subsidiary?: {
     id: string;
     name: string;
   }
@@ -107,7 +108,7 @@ export interface IInstallments {
   installment_number: number;
   value: string;
   valueFormatted: string;
-  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADO';
+  status?: 'PAGO' | 'PENDENTE' | 'VENCIDO' | 'LIQUIDADA';
   pay_date?: string;
 }
 
@@ -162,15 +163,13 @@ const DetailsSale: React.FC = () => {
   const [instalmentsPay, setInstalmentPay] = useState<IInstallments[]>([]);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { id } = useParams<IParamsData>();
+  const [selectedTypeClientBuyer, setSelectedTypeClientBuyer] = useState('PF');
+  const [selectedTypeClientSeller, setSelectedTypeClientSeller] = useState('PJ');
 
   useEffect(() => {
     const loadSale = async () => {
       try {
-        const response = await api.get(`/sale/${id}`, {
-          headers: {
-            auhorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get(`/sale/${id}`);
         const sale = response.data;
         const sallers = sale.sale_has_sellers;
         const coordinator = sale.user_coordinator;
@@ -187,6 +186,7 @@ const DetailsSale: React.FC = () => {
               (sale.client_seller.date_birth = dataSellerFormatted),
               (sale.client_seller.phone = foneSellerFormatted),
             );
+            setSelectedTypeClientSeller('PF');
           } else if (sale.client_seller.cpf === null) {
             const cnpjSellerFormatted = cnpj(sale.client_seller.cnpj);
             const foneSellerFormatted = FoneMask(sale.client_seller.phone);
@@ -195,6 +195,7 @@ const DetailsSale: React.FC = () => {
               (sale.client_seller.cnpj = cnpjSellerFormatted),
               (sale.client_seller.phone = foneSellerFormatted),
             );
+            setSelectedTypeClientSeller('PJ');
           }
         }
         if (sale.client_buyer.cpf !== null) {
@@ -207,6 +208,7 @@ const DetailsSale: React.FC = () => {
             (sale.client_buyer.date_birth = dataSellerFormatted),
             (sale.client_buyer.phone = foneSellerFormatted),
           );
+          setSelectedTypeClientBuyer('PF');
         }
         if (sale.client_buyer.cpf === null) {
           const cnpjSellerFormatted = cnpj(sale.client_buyer.cnpj);
@@ -216,6 +218,7 @@ const DetailsSale: React.FC = () => {
             (sale.client_buyer.cnpj = cnpjSellerFormatted),
             (sale.client_buyer.phone = foneSellerFormatted),
           );
+          setSelectedTypeClientBuyer('PJ');
         }
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = sale.commission;
@@ -268,11 +271,25 @@ const DetailsSale: React.FC = () => {
         toast.error(
           'Não consegui carregar os dados da venda ! entre em contato com o suporte',
         );
-        console.log(error);
       }
     };
     loadSale();
   }, [id, token]);
+
+  const optionsTypeClient = [
+    { label: 'Pessoa Física', value: 'PF' },
+    { label: 'Pessoa Juridica', value: 'PJ' },
+  ];
+
+  const handleSelectTypeClientBuyer = (value: ChangeEvent<HTMLSelectElement>) => {
+    const { value: type } = value.target;
+    setSelectedTypeClientBuyer(type);
+  }
+  const handleSelectTypeClientSeller = (value: ChangeEvent<HTMLSelectElement>) => {
+    const { value: type } = value.target;
+    setSelectedTypeClientSeller(type);
+  }
+
   return (
     <AdmLayout>
       <Container>
@@ -293,7 +310,13 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
-                {client_buyer.cpf !== null ? (
+                <Select
+                  nameLabel='Tipo de Cliente'
+                  options={optionsTypeClient}
+                  defaultValue={selectedTypeClientBuyer}
+                  onChange={handleSelectTypeClientBuyer}
+                />
+                {selectedTypeClientBuyer === 'PF' ? (
                   <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
                 ) : (
                   <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
@@ -317,7 +340,7 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="subsidiaries" title="Filial">
-                  <SubsidiarySale subsbisiary={sale.subsidiary} />
+                <SubsidiarySale subsbisiary={sale.subsidiary} />
               </TabBootstrap>
               <TabBootstrap eventKey="finances" title="Financeiro">
                 <Finances
@@ -329,8 +352,8 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="staus" title="Status">
-                  <StatusSale statusSale={sale.status} />
-                </TabBootstrap>
+                <StatusSale statusSale={sale.status} />
+              </TabBootstrap>
             </Tabs>
           )}
           {sale.sale_type === 'USADO' && (
@@ -348,7 +371,13 @@ const DetailsSale: React.FC = () => {
                 />
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
-                {client_buyer.cpf !== null ? (
+                <Select
+                  nameLabel='Tipo de Cliente'
+                  options={optionsTypeClient}
+                  defaultValue={selectedTypeClientBuyer}
+                  onChange={handleSelectTypeClientBuyer}
+                />
+                {selectedTypeClientBuyer === 'PF' ? (
                   <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
                 ) : (
                   <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
@@ -356,7 +385,16 @@ const DetailsSale: React.FC = () => {
 
               </TabBootstrap>
               <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
-                {client_seller.cpf !== null ? (
+                <InputGroup>
+                  <Select
+                    nameLabel='Tipo de Cliente'
+                    options={optionsTypeClient}
+                    defaultValue={selectedTypeClientSeller}
+                    onChange={handleSelectTypeClientSeller}
+                  />
+                </InputGroup>
+
+                {selectedTypeClientSeller === 'PF' ? (
                   <ClientSeller
                     clientSeller={client_seller}
                     status={sale.status}

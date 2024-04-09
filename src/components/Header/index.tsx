@@ -20,6 +20,7 @@ import MenuResponsive from '../MenuResponsive';
 
 import { Container, NavBarContainer, NavItemContent } from './styles';
 import LogoutModal from '../ReactModal/LogoutModal';
+import { BsGear } from 'react-icons/bs';
 
 interface IHeaderProps {
   type?: string;
@@ -86,10 +87,6 @@ const Header: React.FC<IHeaderProps> = ({ type = 'realtor' }) => {
               ) : (
                 <>
                   <NavItemContent>
-                    <Realter />
-                    <Link to="/adm/lista-corretores">Corretores</Link>
-                  </NavItemContent>
-                  <NavItemContent>
                     <Sale />
                     <Link to="/adm/lista-vendas">Vendas</Link>
                   </NavItemContent>
@@ -98,16 +95,12 @@ const Header: React.FC<IHeaderProps> = ({ type = 'realtor' }) => {
                     <Link to="/adm/lista-colaboradores">RH</Link>
                   </NavItemContent>
                   <NavItemContent>
-                    <Builders />
-                    <Link to="/adm/lista-construtoras">Construtoras</Link>
-                  </NavItemContent>
-                  <NavItemContent>
                     <HiDocumentReport  size={30} />
                     <a href="/adm/relatorio-vendas">Relatórios</a>
                   </NavItemContent>
                   <NavItemContent>
-                    <RegisterSellIcon />
-                    <a href="/adm/lista-filiais">Filiais</a>
+                    <BsGear size={30} />
+                    <a href="/adm/config-menu">Configurações</a>
                   </NavItemContent>
                   <NavItemContent>
                     <IoIosLogOut size={30} color="#fff" />

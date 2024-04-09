@@ -16,6 +16,7 @@ import {
   Whats,
   DateDMY,
   CNPJMask,
+  zipCodeMask,
 } from '../../utils/masked';
 
 import { ContainerWrapper, Container, IconContainer, Error } from './styles';
@@ -31,7 +32,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     | 'fone'
     | 'whats'
     | 'date'
-    | 'cnpj';
+    | 'cnpj'
+    | 'zipcode';
   maxlength?: number;
   label?: string;
   readOnly?: boolean | undefined;
@@ -108,6 +110,9 @@ const Input: React.FC<InputProps> = ({
           break;
         case 'cnpj':
           CNPJMask(e);
+          break;
+        case 'zipcode':
+          zipCodeMask(e);
           break;
         default:
           break;

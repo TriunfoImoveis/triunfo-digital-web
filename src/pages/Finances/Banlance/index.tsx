@@ -345,6 +345,25 @@ const Balance: React.FC = () => {
     }))
   };
 
+  function handlePaginateSeleEntry(pageIndex: number) {
+    setParamsInstalments(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
+  function handlePaginateDispacherEntry(pageIndex: number) {
+    setParamsRevenueDispatcher(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
+  function handlePaginateCreditEntry(pageIndex: number) {
+    setParamsRevenueCredit(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
+
   return (
     <FinancesLayout>
       <Container>
@@ -396,6 +415,15 @@ const Balance: React.FC = () => {
                 dispatcherEntryTotal={formatPrice(revenueDispacher?.totalValueIntegralRevenues || 0)}
                 creditEntry={entryCredit}
                 creditEntryTotal={formatPrice(revenueCredit?.totalValueIntegralRevenues || 0)}
+                salesTotal={installmentsEntry?.totalInstallments}
+                dispatcherTotal={revenueDispacher?.total}
+                creditTotal={revenueCredit?.total}
+                pageSaleEntry={paramsInstalments?.page}
+                pageDispacherEntry={paramsRevenueDispatcher?.page}
+                pageCreditEntry={paramsRevenueCredit?.page}
+                handlePaginateSeleEntry={handlePaginateSeleEntry}
+                handlePaginateDispacherEntry={handlePaginateDispacherEntry}
+                handlePaginateCreditEntry={handlePaginateCreditEntry}
               />
             ) : (
               <TableBoxFinancesAccount

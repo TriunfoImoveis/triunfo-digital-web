@@ -20,7 +20,6 @@ const DetailsInstalments: React.FC<IModalProps> = ({
   setIsOpen,
   installment,
 }) => {
-  console.log({installment});
   const description = `${installment?.installment_number}° Parcela, ${installment?.sale?.realty?.enterprise}`;
   const value = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(installment?.value));
   const realtors = installment?.sale?.sale_has_sellers.map(item => item?.name).toString()

@@ -123,12 +123,12 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
 
       unMaskValue();
       const formData = formRef.current?.getData();
-      await api.put(`/sale/${id}`, formData, {
-        headers: {
-          authorization: `Bearer ${localStorage.getItem(
-            '@TriunfoDigital:token',
-          )}`,
-        },
+      await api.put(`/sale/${id}`, {
+        client_buyer: {
+          ...formData?.client_buyer,
+          cnpj: null
+        }
+
       });
 
       toast.success('Dados da Venda atualizadas!');
@@ -149,7 +149,7 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
       <SaleData>
         <fieldset className="login">
           <Legend>
-            <legend>COMPRADOR</legend>
+            <legend>CLIENTE</legend>
             {status !== 'CAIU' ? (
               <button type="button" onClick={() => setEdit(!edit)}>
                 <BiEditAlt size={20} color={theme.colors.primary} />
@@ -205,6 +205,7 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                   label="Data de Nascimento"
                   name="client_buyer.date_birth"
                   placeholder="Data de Nascimento"
+                  mask='date'
                   readOnly={edit}
                   defaultValue={clientBuyer.date_birth}
                 />

@@ -27,13 +27,13 @@ const SelectSimple: React.FC<Props> = ({
   const [isFocused, setIsFocused] = useState(false);
   const [errorField, setErrorField] = useState(false);
   const selectRef = useRef(null);
-  const { fieldName, defaultValue, registerField, error } = useField(name);
+  const { fieldName, registerField, defaultValue, error } = useField(name);
 
   useEffect(() => {
     if (error !== undefined) {
       setErrorField(true);
     }
-  }, [error]);
+  }, [error, defaultValue, rest.options]);
 
   useEffect(() => {
     registerField({

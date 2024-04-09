@@ -228,7 +228,7 @@ const FutureReceipts: React.FC = () => {
                         />
                         <p>
                           <span>Total</span>
-                          <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(future?.amountInstallmentRecived || 0)}</strong>
+                          <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(future?.totalValueInstallments || 0)}</strong>
                         </p>
                       </BalanceAmount>
                     </>
@@ -255,7 +255,7 @@ const FutureReceipts: React.FC = () => {
                         />
                         <p>
                           <span>Total</span>
-                          <strong>{new Intl.NumberFormat('pt-br', { style: 'currency', currency: 'BRL' }).format(futureReceipts?.amountInstallmentPay || 0)}</strong>
+                          <strong>{new Intl.NumberFormat('pt-br', { style: 'currency', currency: 'BRL' }).format(futureReceipts?.totalValueInstallments || 0)}</strong>
                         </p>
                       </BalanceAmount>
                     </>

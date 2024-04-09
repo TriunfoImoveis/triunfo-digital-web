@@ -24,6 +24,7 @@ import { filterGroup } from '../../../utils/filters';
 import ExportCashFlow from '../../../components/ReactModal/ExportCashFlow';
 import { useFetch } from '../../../hooks/useFetch';
 import { useFilter } from '../../../context/FilterContext';
+import { toast } from 'react-toastify';
 
 interface Params {
   data_inicio: string;
@@ -149,7 +150,7 @@ const CashFlow: React.FC = () => {
       }));
       setFiliais(filiais);
     } catch (error) {
-      console.log(error);
+     toast.error('Falha na conexão com o servidor contate o suporte');
     }
   }, []);
 

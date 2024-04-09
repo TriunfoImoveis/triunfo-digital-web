@@ -88,8 +88,6 @@ const Finances: React.FC<IFinancesProps> = ({
   const history = useHistory();
   const { userAuth } = useAuth();
 
-  
-
   useEffect(() => {
     const loadPaymentType = async () => {
       const response = await api.get(
