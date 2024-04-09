@@ -59,19 +59,19 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
   const { id } = useParams<Params>();
 
   const unMaskValue = () => {
-    const cpf = unMaked(formRef.current?.getFieldValue('client_buyer.cpf'));
-    formRef.current?.setFieldValue('client_buyer.cpf', cpf);
+    const cpf = unMaked(formRef.current?.getFieldValue('client_seller.cpf'));
+    formRef.current?.setFieldValue('client_seller.cpf', cpf);
     const date_birth = DateYMD(
-      formRef.current?.getFieldValue('client_buyer.date_birth'),
+      formRef.current?.getFieldValue('client_seller.date_birth'),
     );
-    formRef.current?.setFieldValue('client_buyer.date_birth', date_birth);
-    const phone = unMaked(formRef.current?.getFieldValue('client_buyer.phone'));
-    formRef.current?.setFieldValue('client_buyer.phone', phone);
+    formRef.current?.setFieldValue('client_seller.date_birth', date_birth);
+    const phone = unMaked(formRef.current?.getFieldValue('client_seller.phone'));
+    formRef.current?.setFieldValue('client_seller.phone', phone);
     const numberChildren = Number(
-      formRef.current?.getFieldValue('client_buyer.number_children'),
+      formRef.current?.getFieldValue('client_seller.number_children'),
     );
     formRef.current?.setFieldValue(
-      'client_buyer.number_children',
+      'client_seller.number_children',
       numberChildren,
     );
   };
@@ -80,7 +80,7 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
     try {
       setLoading(true);
       const schema = Yup.object().shape({
-        client_buyer: Yup.object().shape({
+        client_seller: Yup.object().shape({
           name: Yup.string().required('Nome Obrigatório'),
           cpf: Yup.string()
             .min(
@@ -122,12 +122,11 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
 
       unMaskValue();
       const formData = formRef.current?.getData();
-      await api.put(`/sale/${id}`, formData, {
-        headers: {
-          authorization: `Bearer ${localStorage.getItem(
-            '@TriunfoDigital:token',
-          )}`,
-        },
+      await api.put(`/sale/${id}`, {
+        client_seller: {
+          ...formData?.client_seller,
+          cnpj: null
+        }
       });
 
       toast.success('Dados da Venda atualizadas!');
@@ -186,7 +185,7 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
             <>
               <Input
                 label="Nome Completo"
-                name="client_buyer.name"
+                name="client_seller.name"
                 placeholder="Nome Completo"
                 readOnly={edit}
                 defaultValue={clientSeller.name}
@@ -194,15 +193,17 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
               <InputGroup>
                 <Input
                   label="CPF"
-                  name="client_buyer.cpf"
+                  name="client_seller.cpf"
                   placeholder="CPF"
+                  mask='cpf'
                   readOnly={edit}
                   defaultValue={clientSeller.cpf}
                 />
                 <Input
                   label="Data de Nascimento"
-                  name="client_buyer.date_birth"
+                  name="client_seller.date_birth"
                   placeholder="Data de Nascimento"
+                  mask='date'
                   readOnly={edit}
                   defaultValue={clientSeller.date_birth}
                 />
@@ -210,14 +211,14 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
               <InputGroup>
                 <Input
                   label="Telefone"
-                  name="client_buyer.phone"
+                  name="client_seller.phone"
                   placeholder="Telefone"
                   readOnly={edit}
                   defaultValue={clientSeller.phone}
                 />
                 <Input
                   label="E-mail"
-                  name="client_buyer.email"
+                  name="client_seller.email"
                   type="email"
                   placeholder="E-mail"
                   readOnly={edit}
@@ -227,21 +228,21 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
               <InputGroup>
                 <Select
                   label="Estado Civíl"
-                  name="client_buyer.civil_status"
+                  name="client_seller.civil_status"
                   options={optionsCivilStatus}
                   disabled={edit}
                   defaultInputValue={clientSeller.civil_status}
                 />
                 <Select
                   label="Gênero"
-                  name="client_buyer.gender"
+                  name="client_seller.gender"
                   options={optionsGenero}
                   disabled={edit}
                   defaultInputValue={clientSeller.gender}
                 />
                 <Input
                   label="Numero de Filhos"
-                  name="client_buyer.number_children"
+                  name="client_seller.number_children"
                   placeholder="Número de filhos"
                   readOnly={edit}
                   defaultValue={clientSeller.number_children}

@@ -113,7 +113,6 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   const handleSubmit = useCallback(
     async data => {
       const { users_sellers, users_captivators, users_directors } = data;
-      console.log(data)
       let formData = {};
       formRef.current?.setErrors({});
       const newDirectors = users_directors.map((director: any) => ({

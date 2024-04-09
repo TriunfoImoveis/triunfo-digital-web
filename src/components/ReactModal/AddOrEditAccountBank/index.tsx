@@ -30,7 +30,6 @@ const AddOrEditAccountBank: React.FC<IModalProps> = ({
   const formRef = useRef<FormHandles>(null);
   const handleSubmit = useCallback(
     async data => {
-      console.log(data);
       setIsOpen();
     },
     [setIsOpen],

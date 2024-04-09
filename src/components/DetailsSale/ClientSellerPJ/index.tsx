@@ -63,10 +63,10 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
           name: Yup.string().required('Nome Obrigatório'),
           cnpj: Yup.string()
             .min(
-              15,
+              11,
               'Informe o CNPJ corretamente, CNPJ deve conter 14 digitos, sem traços ou pontos',
             )
-            .max(14, 'Informe o CNPJ corretamente')
+            .max(18, 'Informe o CNPJ corretamente')
             .required('CNPJ obrigatório'),
           phone: Yup.string()
             .min(11, 'O numero precisa ter pelo menos 11 números')
@@ -86,11 +86,10 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
 
       unMaskValue();
       const formData = formRef.current?.getData();
-      await api.put(`/sale/${id}`, formData, {
-        headers: {
-          authorization: `Bearer ${localStorage.getItem(
-            '@TriunfoDigital:token',
-          )}`,
+      await api.put(`/sale/${id}`, {
+        client_seller: {
+          ...formData?.client_seller,
+          cpf: null
         },
       });
 
@@ -144,7 +143,8 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
                 <Input
                   label="CNPJ"
                   name="client_seller.cnpj"
-                  placeholder="CPF"
+                  placeholder="CNPJ"
+                  mask='cnpj'
                   readOnly={edit}
                   defaultValue={clientSeller.cnpj}
                 />
@@ -154,6 +154,7 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
                   label="Telefone"
                   name="client_seller.phone"
                   placeholder="Telefone"
+                  mask='fone'
                   readOnly={edit}
                   defaultValue={clientSeller.phone}
                 />
@@ -172,7 +173,7 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
                 type="text"
                 placeholder="Endereço"
                 readOnly={edit}
-                defaultValue={clientSeller.email}
+                defaultValue={clientSeller.address}
               />
               <ButtonGroup>
                 <button type="submit">

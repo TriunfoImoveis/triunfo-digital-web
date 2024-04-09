@@ -100,7 +100,6 @@ export const filterUserForSubsidiary = (
   users: IUser[],
   subsidiary: string,
 ): IUser[] => {
-  console.log({subsidiary})
   return users.filter(user => user.subsidiary.id === subsidiary && user);
 };
 export const filterUserForDepartament = (

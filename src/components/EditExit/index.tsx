@@ -64,7 +64,6 @@ const EditExit: React.FC<EditExitProps> = ({ accountId }) => {
       await schema.validate(data, {
         abortEarly: false,
       });
-      console.log(data);
       const formData = {
         pay_date: DateYMD(data.pay_date),
         value: Number(unMaked(data.value)),
@@ -73,7 +72,6 @@ const EditExit: React.FC<EditExitProps> = ({ accountId }) => {
       await api.put(`/expense/${accountId}`, formData);
       toast.success('Conta atualizada com sucesso');
     } catch (err) {
-      console.log(err);
       if (err.request) {
         toast.error('Erro no servidor');
       } else if (err.response) {

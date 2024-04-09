@@ -7,7 +7,7 @@ import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import AdmLayout from '../../pages/Layouts/Adm';
 import { cnpj, CPFMask, FoneMask } from '../../utils/masked';
 import { DateBRL, formatPrice } from '../../utils/format';
-import { Container, Content } from './styles';
+import { Container, Content, InputGroup } from './styles';
 import api from '../../services/api';
 import Property from './Property';
 import ClientBuyer from './ClientBuyer';
@@ -163,17 +163,13 @@ const DetailsSale: React.FC = () => {
   const [instalmentsPay, setInstalmentPay] = useState<IInstallments[]>([]);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { id } = useParams<IParamsData>();
-  const [selectedTypeClientBuyer, setSelectedTypeClientBuyer] = useState(sale && sale.client_buyer?.cpf !== null && 'PF');
-  const [selectedTypeClientSeller, setSelectedTypeClientSeller] = useState(sale && sale.client_buyer?.cnpj !== null && 'PJ');
+  const [selectedTypeClientBuyer, setSelectedTypeClientBuyer] = useState('PF');
+  const [selectedTypeClientSeller, setSelectedTypeClientSeller] = useState('PJ');
 
   useEffect(() => {
     const loadSale = async () => {
       try {
-        const response = await api.get(`/sale/${id}`, {
-          headers: {
-            auhorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get(`/sale/${id}`);
         const sale = response.data;
         const sallers = sale.sale_has_sellers;
         const coordinator = sale.user_coordinator;
@@ -190,6 +186,7 @@ const DetailsSale: React.FC = () => {
               (sale.client_seller.date_birth = dataSellerFormatted),
               (sale.client_seller.phone = foneSellerFormatted),
             );
+            setSelectedTypeClientSeller('PF');
           } else if (sale.client_seller.cpf === null) {
             const cnpjSellerFormatted = cnpj(sale.client_seller.cnpj);
             const foneSellerFormatted = FoneMask(sale.client_seller.phone);
@@ -198,6 +195,7 @@ const DetailsSale: React.FC = () => {
               (sale.client_seller.cnpj = cnpjSellerFormatted),
               (sale.client_seller.phone = foneSellerFormatted),
             );
+            setSelectedTypeClientSeller('PJ');
           }
         }
         if (sale.client_buyer.cpf !== null) {
@@ -210,6 +208,7 @@ const DetailsSale: React.FC = () => {
             (sale.client_buyer.date_birth = dataSellerFormatted),
             (sale.client_buyer.phone = foneSellerFormatted),
           );
+          setSelectedTypeClientBuyer('PF');
         }
         if (sale.client_buyer.cpf === null) {
           const cnpjSellerFormatted = cnpj(sale.client_buyer.cnpj);
@@ -219,6 +218,7 @@ const DetailsSale: React.FC = () => {
             (sale.client_buyer.cnpj = cnpjSellerFormatted),
             (sale.client_buyer.phone = foneSellerFormatted),
           );
+          setSelectedTypeClientBuyer('PJ');
         }
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = sale.commission;
@@ -271,7 +271,6 @@ const DetailsSale: React.FC = () => {
         toast.error(
           'Não consegui carregar os dados da venda ! entre em contato com o suporte',
         );
-        console.log(error);
       }
     };
     loadSale();
@@ -314,7 +313,7 @@ const DetailsSale: React.FC = () => {
                 <Select
                   nameLabel='Tipo de Cliente'
                   options={optionsTypeClient}
-                  defaultValue={'0'}
+                  defaultValue={selectedTypeClientBuyer}
                   onChange={handleSelectTypeClientBuyer}
                 />
                 {selectedTypeClientBuyer === 'PF' ? (
@@ -375,10 +374,10 @@ const DetailsSale: React.FC = () => {
                 <Select
                   nameLabel='Tipo de Cliente'
                   options={optionsTypeClient}
-                  defaultValue={'0'}
-                  onChange={handleSelectTypeClientSeller}
+                  defaultValue={selectedTypeClientBuyer}
+                  onChange={handleSelectTypeClientBuyer}
                 />
-                {selectedTypeClientBuyer === null ? (
+                {selectedTypeClientBuyer === 'PF' ? (
                   <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
                 ) : (
                   <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
@@ -386,13 +385,16 @@ const DetailsSale: React.FC = () => {
 
               </TabBootstrap>
               <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
-                <Select
-                  nameLabel='Tipo de Cliente'
-                  options={optionsTypeClient}
-                  defaultValue={'0'}
-                  onChange={handleSelectTypeClientBuyer}
-                />
-                {selectedTypeClientSeller !== null ? (
+                <InputGroup>
+                  <Select
+                    nameLabel='Tipo de Cliente'
+                    options={optionsTypeClient}
+                    defaultValue={selectedTypeClientSeller}
+                    onChange={handleSelectTypeClientSeller}
+                  />
+                </InputGroup>
+
+                {selectedTypeClientSeller === 'PF' ? (
                   <ClientSeller
                     clientSeller={client_seller}
                     status={sale.status}
