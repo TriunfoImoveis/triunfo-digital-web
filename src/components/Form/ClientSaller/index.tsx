@@ -292,7 +292,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                   mask="fone"
                   name="phone"
                   type="text"
-                  maxlength={11}
+                  maxlength={13}
                   readOnly={disabled}
                   defaultValue={client.phone}
                 />
@@ -302,7 +302,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                   mask="whats"
                   name="whatsapp"
                   type="text"
-                  maxlength={11}
+                  maxlength={13}
                   readOnly={disabled}
                   defaultValue={client.whatsapp}
                 />
