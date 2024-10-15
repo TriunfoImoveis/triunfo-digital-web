@@ -29,7 +29,8 @@ import Button from '../../../components/Button';
 import { useFilter } from '../../../context/FilterContext';
 import TableFix from '../../../components/Table/TableAccount';
 import { toast } from 'react-toastify';
-import { useFetchFinances } from '../../../hooks/useFetchFinances'; 
+import { useFetchFinances } from '../../../hooks/useFetchFinances';
+import { Pagination } from '../../../components/Pagination';
 
 interface Expense {
   id: string;
@@ -73,6 +74,7 @@ interface Options {
 }
 type ExpenseStatus = "PENDENTE" | "VENCIDO" | "PAGO" | "CANCELADO";
 type ExpenseType = "FIXA" | "VARIAVEL";
+type SortType = "ASC" | "DESC";
 interface ParamsExpense {
   subsidiary?: string;
   expense_type?: ExpenseType;
@@ -84,7 +86,7 @@ interface ParamsExpense {
   group?: string;
   page?: number;
   perPage?: number;
-  sort?: 'ASC' | 'DESC';
+  sort?: SortType;
 }
 
 const Account: React.FC = () => {
@@ -92,18 +94,24 @@ const Account: React.FC = () => {
   const [optionsGroup, setOptionsGroup] = useState<Options[]>([]);
   const [optionsSubsidiary, setOptionsSubsidiary] = useState<Options[]>([]);
   const [selectedsEntry, setSelectedsEntry] = useState<String[]>([]);
+  const [selectedPageExpenseVariable, setSelectedPageExpenseVariable] = useState(1);
+  const [selectedPageFixed, setSelectedPageExpenseFixed] = useState(1);
 
   const [paramsExpenseFixed, setParamsExpenseFixed] = useState<ParamsExpense>({
-    sort: 'ASC',
+    sort: 'DESC',
     subsidiary: '',
     expense_type: 'FIXA',
-    status: 'PAGO'
+    status: 'PENDENTE',
+    page: selectedPageFixed,
+    perPage: 10
   });
   const [paramsExpenseVariable, setParamsExpenseVariable] = useState<ParamsExpense>({
-    sort: 'ASC',
+    sort: 'DESC',
     subsidiary: '',
     expense_type: 'VARIAVEL',
-    status: 'PAGO'
+    status: 'PENDENTE',
+    page: selectedPageExpenseVariable,
+    perPage: 10
   });
   const { data: expenseFixed } = useFetchFinances<AccountData>({ url: '/expense', params: paramsExpenseFixed, config: { refreshInterval: undefined } });
   const { data: expenseVariable } = useFetchFinances<AccountData>({ url: '/expense', params: paramsExpenseVariable, config: { refreshInterval: undefined } });
@@ -113,6 +121,13 @@ const Account: React.FC = () => {
   } = useFilter();
 
   const [modalAddAccount, setAddAccount] = useState(false);
+
+  const optionsStatus = [
+    { label: 'PENDENTE', value: 'PENDENTE' },
+    { label: 'VENCIDO', value: 'VENCIDO' },
+    { label: 'PAGO', value: 'PAGO' },
+    { label: 'CANCELADO', value: 'CANCELADO' },
+  ];
 
   const toogleAddAccount = useCallback(() => {
     setAddAccount(prevState => !prevState);
@@ -162,6 +177,16 @@ const Account: React.FC = () => {
     const group = event.target.value;
     setParamsExpenseFixed(prevState => ({ ...prevState, group }));
     setParamsExpenseVariable(prevState => ({ ...prevState, group }));
+  };
+  const handleSelectStatus = (event: ChangeEvent<HTMLSelectElement>) => {
+    const status = event.target.value as ExpenseStatus;
+    setParamsExpenseFixed(prevState => ({ ...prevState, status }));
+    setParamsExpenseVariable(prevState => ({ ...prevState, status }));
+  };
+  const handleSelectOrderable = (event: ChangeEvent<HTMLSelectElement>) => {
+    const order = event.target.value as SortType;
+    setParamsExpenseFixed(prevState => ({ ...prevState, sort: order }));
+    setParamsExpenseVariable(prevState => ({ ...prevState, sort: order }));
   };
 
   const handleSelected = (event: ChangeEvent<HTMLInputElement>, id: string) => {
@@ -223,6 +248,15 @@ const Account: React.FC = () => {
     })) : []
   }, [expenseVariable])
 
+  const handleOnChangePageFixed = (page: number) => {
+    setSelectedPageExpenseFixed(page);
+    setParamsExpenseFixed(prevState => ({ ...prevState, page }));
+  }
+  const handleOnChangePageVariable = (page: number) => {
+    setSelectedPageExpenseVariable(page);
+    setParamsExpenseVariable(prevState => ({ ...prevState, page }));
+  }
+
   return (
     <FinancesLayout>
       <Background>
@@ -234,7 +268,7 @@ const Account: React.FC = () => {
             <FiltersBotton>
               <FilterButtonGroup>
                 <FiltersBottonItems>
-                  <span>Cidade: </span>
+                  <span>Filial: </span>
                   <select defaultValue={subsidiary} onChange={handleSelectSubsidiary}>
                     <option value="">Todas</option>
                     {optionsSubsidiary.map(item => (
@@ -254,19 +288,45 @@ const Account: React.FC = () => {
           </FiltersContainer>
           <FiltersContainer>
             <FiltersBotton>
-              <FiltersBottonItems>
-                <span>Grupo: </span>
-                <select
-                  onChange={handleSelectGroup}
-                  defaultValue={group}
-                >
-                  <option value="">Todos</option>
-                  {optionsGroup.map(option => (
-                    <option value={option.value}>{option.label}</option>
-                  ))}
+              <FilterButtonGroup>
+                <FiltersBottonItems>
+                  <span>Grupo: </span>
+                  <select
+                    onChange={handleSelectGroup}
+                    defaultValue={group}
+                  >
+                    <option value="">Todos</option>
+                    {optionsGroup.map(option => (
+                      <option value={option.value}>{option.label}</option>
+                    ))}
 
-                </select>
-              </FiltersBottonItems>
+                  </select>
+                </FiltersBottonItems>
+
+                <FiltersBottonItems>
+                  <span>Status: </span>
+                  <select
+                    onChange={handleSelectStatus}
+                    defaultValue="PENDENTE"
+                  >
+                    <option value="">Todos</option>
+                    {optionsStatus.map(option => (
+                      <option value={option.value}>{option.label}</option>
+                    ))}
+
+                  </select>
+                </FiltersBottonItems>
+                <FiltersBottonItems>
+                  <span>Ordernar por: </span>
+                  <select
+                    onChange={handleSelectOrderable}
+                    defaultValue="DESC"
+                  >
+                    <option value="ASC">Mais antigos</option>
+                    <option value="DESC">Mais novos</option>
+                  </select>
+                </FiltersBottonItems>
+              </FilterButtonGroup>
             </FiltersBotton>
           </FiltersContainer>
           <Content>
@@ -282,6 +342,14 @@ const Account: React.FC = () => {
                   <TitlePane>Contas Fixas</TitlePane>
                   <TableFix cols={8} collums={collumAccount} rows={accoutFixed} handleSelected={handleSelected} />
                   <BalanceAmount>
+                    <Pagination
+                      totalCount={expenseFixed?.totalExpenses || 0}
+                      perPage={10}
+                      pageIndex={selectedPageFixed}
+                      onPageChange={handleOnChangePageFixed}
+                    />
+                  </BalanceAmount>
+                  <BalanceAmount>
                     <p>
                       <span>Total</span>
                       <strong>{new Intl
@@ -294,6 +362,14 @@ const Account: React.FC = () => {
                 <TabBootstrap eventKey="variable" title="Contas Variáveis">
                   <TitlePane>Contas Variáveis</TitlePane>
                   <TableFix cols={8} collums={collumAccount} rows={accoutVariable} handleSelected={handleSelected} />
+                  <BalanceAmount>
+                    <Pagination
+                      totalCount={expenseVariable?.totalExpenses || 0}
+                      perPage={10}
+                      pageIndex={selectedPageExpenseVariable}
+                      onPageChange={handleOnChangePageVariable}
+                    />
+                  </BalanceAmount>
                   <BalanceAmount>
                     <p>
                       <span>Total</span>
