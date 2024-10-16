@@ -4,6 +4,7 @@ import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import Table from '../../Table/TableExits';
 
 import { TitlePane, BalanceAmount } from './styles';
+import { Pagination } from '../../Pagination';
 
 type Account = {
   id: string;
@@ -21,6 +22,9 @@ type TableBoxFinancesAccountProps = {
   title: string;
   account: Account[];
   accountTotal: string;
+  page?: number;
+  handlePaginate: (page: number) => void
+  total?: number;
 };
 
 const TableBoxFinancesAccount: React.FC<TableBoxFinancesAccountProps> = ({
@@ -29,14 +33,17 @@ const TableBoxFinancesAccount: React.FC<TableBoxFinancesAccountProps> = ({
   title,
   account,
   accountTotal,
+  page = 1,
+  handlePaginate,
+  total = 0
 }) => {
   const columns = [
-    { name: 'DATA'},
-    { name: 'FILIAL'},
-    { name: 'DESCRIÇÃO'},
-    { name: 'QUEM PAGOU'},
-    { name: 'VALOR'},
-    { name: 'CONTA DE SAÍDA'},
+    { name: 'DATA' },
+    { name: 'FILIAL' },
+    { name: 'DESCRIÇÃO' },
+    { name: 'QUEM PAGOU' },
+    { name: 'VALOR' },
+    { name: 'CONTA DE SAÍDA' },
   ];
 
   const rows = account.map(item => ({
@@ -58,7 +65,13 @@ const TableBoxFinancesAccount: React.FC<TableBoxFinancesAccountProps> = ({
     >
       <TabBootstrap eventKey="account" title="Despesas">
         <TitlePane>{title}</TitlePane>
-        <Table collums={columns} rows={rows} cols={6}/>
+        <Table collums={columns} rows={rows} cols={6} />
+        <Pagination
+          totalCount={total || 0}
+          perPage={8}
+          pageIndex={page || 1}
+          onPageChange={handlePaginate}
+        />
         <BalanceAmount>
           <p>
             <span>Saldo Total</span>
