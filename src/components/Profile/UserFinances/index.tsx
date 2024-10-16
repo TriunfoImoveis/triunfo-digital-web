@@ -113,7 +113,7 @@ const UserFinances: React.FC = () => {
                 <ReactSelect
                   name="account_type"
                   label="Tipo da Conta"
-                  loadOptions={OptionsTypeAccount}
+                  options={OptionsTypeAccount}
                   placeholder="Informe o tipo da conta"
                 />
               </Scope>
