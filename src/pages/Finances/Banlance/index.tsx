@@ -162,27 +162,28 @@ const Balance: React.FC = () => {
     subsidiary: '',
     page: 1,
     perPage: 10,
-    sort: 'ASC',
+    sort: 'DESC',
   });
   const [paramsExpense, setParamsExpense] = useState<getInstallmentsParams>({
     subsidiary: '',
     status: 'PAGO',
     page: 1,
-    perPage: 10
+    perPage: 10,
+    sort: 'DESC',
   });
   const [paramsRevenueDispatcher, setParamsRevenueDispatcher] = useState<revenueParams>({
     revenue_type: 'DESPACHANTE',
     status: 'PAGO',
     page: 1,
     perPage: 10,
-    sort: 'ASC',
+    sort: 'DESC',
   });
   const [paramsRevenueCredit, setParamsRevenueCredit] = useState<revenueParams>({
     revenue_type: 'CREDITO',
     status: 'PAGO',
     page: 1,
     perPage: 10,
-    sort: 'ASC',
+    sort: 'DESC',
   });
 
   const {data: subsidiaries} = useFetch<Subsidiary[]>('/subsidiary');
@@ -363,6 +364,12 @@ const Balance: React.FC = () => {
       page: pageIndex
     }))
   }
+  function handlePaginateExpense(pageIndex: number) {
+    setParamsExpense(prevState => ({
+      ...prevState,
+      page: pageIndex
+    }))
+  }
 
   return (
     <FinancesLayout>
@@ -431,6 +438,9 @@ const Balance: React.FC = () => {
                 handleSetTab={handleSetTabAccount}
                 title="Saídas"
                 account={expenses || []}
+                page={paramsExpense?.page}
+                total={listExpenses?.totalExpenses || 0}
+                handlePaginate={handlePaginateExpense}
                 accountTotal={new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL',
