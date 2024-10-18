@@ -9,8 +9,9 @@ import FormCreateBankAccount from './FormCreateBankAccount';
 
 const UserFinances: React.FC = () => {
   const { userAuth } = useAuth();
-
   const [createNewBankData, setCreateNewBankData] = useState(false);
+
+  console.log(userAuth)
 
   return (
     <Container>
@@ -25,9 +26,9 @@ const UserFinances: React.FC = () => {
       </Header>
 
       {createNewBankData && (
-        <FormCreateBankAccount />
+        <FormCreateBankAccount type='new' bankDataId='' />
       )}
-
+    
       {!createNewBankData && userAuth.bank_data.map(bank => (
         <BankAccount
           key={bank.id}

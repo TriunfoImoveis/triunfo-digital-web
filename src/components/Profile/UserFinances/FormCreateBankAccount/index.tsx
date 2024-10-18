@@ -25,11 +25,21 @@ interface Bank {
 interface BankData {
   bank_data: Bank;
 }
-const FormCreateBankAccount: React.FC = () => {
+
+interface FormCreateBankAccountProps {
+  type: "new" | "edit"
+  bankDataId?: string
+}
+const FormCreateBankAccount: React.FC<FormCreateBankAccountProps> = ({type = "new", bankDataId =""}) => {
   const [loading, setLoading] = useState(false);
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { userAuth, upadatedUser } = useAuth();
   const formRef = useRef<FormHandles>(null);
+
+  const routesPath = {
+    new: `/users/${userAuth.id}/create-bank-data`,
+    edit: `/users/${userAuth.id}/update-bank-data/${bankDataId}`,
+  };
   const handleSubmit: SubmitHandler<BankData> = useCallback(
     async data => {
       formRef.current?.setErrors({});
@@ -54,13 +64,44 @@ const FormCreateBankAccount: React.FC = () => {
         await schema.validate(data, {
           abortEarly: false,
         });
-        const response = await api.put(`/users/${userAuth.id}`, data, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        });
-        upadatedUser(response.data);
-        setLoading(false);
+
+        if (type === "new") {
+          const response = await api.post(routesPath.new, {...data.bank_data}, {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          });
+          upadatedUser({
+            ...userAuth,
+            bank_data: [
+              ...userAuth.bank_data,
+              response.data
+            ],
+          });
+          setLoading(false);
+          toast.success('Dados bancários criado com sucesso!');
+          return;
+        } else if (type === "edit") {
+          const response = await api.put(routesPath.edit, {...data.bank_data}, {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          });
+
+          const newBankData = userAuth.bank_data.map(bank => {
+            if (bank.id === bankDataId) {
+              return response.data
+            }
+            return bank
+          })
+          upadatedUser({
+            ...userAuth,
+            bank_data: newBankData,
+          });
+          setLoading(false);
+          toast.success('Dados bancários Atualizados com sucesso!');
+          return;
+        }
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const erros = getValidationErros(err);
@@ -80,7 +121,7 @@ const FormCreateBankAccount: React.FC = () => {
         setLoading(false);
       }
     },
-    [token, upadatedUser, userAuth.id],
+    [token, upadatedUser, bankDataId, routesPath.new, routesPath.edit, type, userAuth],
   );
   return (
     <Form ref={formRef} onSubmit={handleSubmit}>

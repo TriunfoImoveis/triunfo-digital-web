@@ -5,6 +5,7 @@ import { BiEditAlt } from 'react-icons/bi';
 import FormCreateBankAccount from '../FormCreateBankAccount';
 
 interface Bank {
+  id: string;
   bank_name: string;
   agency: string;
   account: string;
@@ -31,7 +32,7 @@ const BankAccount: React.FC<BankAccountProps> = ({bank = {}}) => {
         </div>
       </Header>
         {edit ? (
-          <FormCreateBankAccount />
+          <FormCreateBankAccount type='edit' bankDataId={bank.id} />
         ) : (
           <FormContent>
             <InputDisabled
