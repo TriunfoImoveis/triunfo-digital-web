@@ -79,15 +79,23 @@ const Realtors: React.FC<IRealtorsProps> = ({
 
   useEffect(() => {
     const loadAllRealtors = async () => {
-      const response = await api.get('/users?departament=Comercial');
-      setAllRealtors(response.data);
+      const [
+        responseRealtors,
+        responseCoordinators,
+        responseDirectors,
+      ] = await Promise.all([
+        api.get(`/users?departament=Comercial`),
+        api.get(`/users?office=Coordenador`),
+        api.get(`/users?office=Diretor`),
+      ])
+
+      const allrealtors = [...responseRealtors.data, ...responseCoordinators.data, ...responseDirectors.data]
+      setAllRealtors(allrealtors);
     };
     loadAllRealtors();
   }, []);
 
-  const realtors = allRealtors?.filter(
-    realtor => realtor.office?.name === 'Corretor',
-  );
+  const realtors = allRealtors;
 
   const optionsRealtors = realtors?.map(realtor => ({
     label: realtor.name,
