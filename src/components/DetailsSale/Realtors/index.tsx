@@ -119,7 +119,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
       if (!isCoordinatorExist) {
         formData = {
           ...formData,
-          users_coordiantor: null
+          user_coordinator: null
         }
       }
 
@@ -128,7 +128,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
           id: saller,
         }));
         formData = {
-          ...data,
+          ...formData,
           users_sellers: newUsersSellers,
         };
       }
@@ -140,7 +140,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
           id: cap,
         }));
         formData = {
-          ...data,
+          ...formData,
           users_sellers: newUsersSellers,
           users_captivators: newUsersCap,
         };
@@ -157,7 +157,7 @@ const Realtors: React.FC<IRealtorsProps> = ({
                 }),
               )
               .required('Vendedor(es) Obrigatório'),
-            user_coordinator: Yup.string(),
+              user_coordinator: Yup.string().nullable(),
           });
           await schema.validate(formData, {
             abortEarly: false,
