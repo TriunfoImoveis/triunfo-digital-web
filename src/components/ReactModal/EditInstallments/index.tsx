@@ -55,7 +55,10 @@ const EditInstallments: React.FC<IModalProps> = ({
   const formRef = useRef<FormHandles>(null);
   const [newInstallements, setNewInstallments] = useState<IInstallments[]>([]);
 
-  
+  const hasInstallmentsPay = installments.some(
+    installment => installment.status === 'PAGO',
+  );
+
   useEffect(() => {
     setNewInstallments(installments)
   }, [installments]);
@@ -129,12 +132,13 @@ const EditInstallments: React.FC<IModalProps> = ({
           <PaymentInstallments>
             {newInstallements.map((installment, index) => (
               <Plot key={installment.installment_number}>
-                
-                <AddButton type="button" onClick={addPlots}>
-                   <FaPlus size={20} color="#C32925" />
+
+                {!hasInstallmentsPay && (
+                  <AddButton type="button" onClick={addPlots}>
+                    <FaPlus size={20} color="#C32925" />
                   </AddButton>
-            
-     
+                )}
+
                 <Input
                   type="number"
                   name={`installments[${index}].installment_number`}
@@ -149,6 +153,7 @@ const EditInstallments: React.FC<IModalProps> = ({
                   label="Valor da Parcela"
                   placeholder="R$ 0,00"
                   defaultValue={installment.valueFormatted}
+                  readOnly={hasInstallmentsPay}
                 />
                 <Input
                   mask="date"
@@ -157,27 +162,31 @@ const EditInstallments: React.FC<IModalProps> = ({
                   label="Data de Vencimento"
                   placeholder="07/01/2021"
                   defaultValue={installment.due_date}
+                  readOnly={hasInstallmentsPay}
                 />
 
-                {installment.installment_number > 1 ? (
+                {hasInstallmentsPay ? null : installment.installment_number > 1 ? (
                   <AddButton type="button" onClick={removePlots}>
-                  <FaMinus size={20} color="#C32925" />
-                </AddButton>
-                ):(
+                    <FaMinus size={20} color="#C32925" />
+                  </AddButton>
+                ) : (
                   <AddButton type="button" disabled />
                 )}
-                
+
               </Plot>
             ))}
           </PaymentInstallments>
         </Form>
-        <Button
-          className="add-button"
-          onClick={() => formRef.current?.submitForm()}
-        >
-          <CgSync />
-          Atualizar
-        </Button>
+        {!hasInstallmentsPay && (
+           <Button
+           className="add-button"
+           onClick={() => formRef.current?.submitForm()}
+         >
+           <CgSync />
+           Atualizar
+         </Button>
+        )}
+       
       </Container>
     </Modal>
   );
