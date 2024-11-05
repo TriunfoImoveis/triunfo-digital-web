@@ -15,8 +15,7 @@ import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 
 import { ISaleData, IInstallments, IPaymentType, IInstallmentsData } from '..';
-import { currency, unMaked, DateYMD } from '../../../utils/unMasked';
-import { money } from '../../../utils/masked';
+import { unMaked, DateYMD } from '../../../utils/unMasked';
 import getValidationErros from '../../../utils/getValidationErros';
 import { Sync, Garb } from '../../../assets/images';
 
@@ -77,7 +76,6 @@ const Finances: React.FC<IFinancesProps> = ({
 
   const [edit, setEdit] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [comissionValue, setcomissionValue] = useState(sale.commission);
   const [paymentTypes, setPaymentTypes] = useState<IPaymentType[]>([]);
   const [originSales, setOriginSales] = useState<Origin[]>([]);
   const [editInstallments, setEditInstallments] = useState(false);
@@ -103,13 +101,6 @@ const Finances: React.FC<IFinancesProps> = ({
     loadPaymentType();
     loadOriginSale();
   }, [sale.sale_type, installments]);
-
-  const calcComission = useCallback(() => {
-    const valueSale = formRef.current?.getFieldValue('realty_ammount');
-    const portcent = formRef.current?.getFieldValue('percentage_sale');
-    const comission = currency(valueSale) * ((Number(portcent.replace(',', '.'))) / 100);
-    setcomissionValue(money(comission));
-  }, []);
 
   const toogleEditInstallments = useCallback(() => {
     setEditInstallments(!editInstallments);
@@ -364,7 +355,6 @@ const Finances: React.FC<IFinancesProps> = ({
                   <Input
                     name="percentage_sale"
                     label="(%) da Venda"
-                    onChange={calcComission}
                     readOnly={edit}
                     defaultValue={sale.percentage_sale}
                   />
@@ -372,9 +362,8 @@ const Finances: React.FC<IFinancesProps> = ({
                     mask="currency"
                     name="commission"
                     label="Comissão"
-                    value={comissionValue}
                     defaultValue={sale.commissionFormatted}
-                    readOnly
+                    readOnly={edit}
                   />
                 </InputGroup>
                 <InputGroup className="paymment_form_container">
