@@ -8,7 +8,8 @@ import {
 } from '../../../assets/images';
 
 import { Container, Content, Option, OptionsContainer } from './styles';
-import { BsFillPinMapFill } from 'react-icons/bs';
+import { BsFillPinMapFill, BsGear } from 'react-icons/bs';
+
 
 const ConfigMenu: React.FC = () => {
   return (
@@ -31,6 +32,10 @@ const ConfigMenu: React.FC = () => {
           <Option to="/adm/lista-corretores">
             <Realter />
             <span>Corretores</span>
+          </Option>
+          <Option to="/adm/config/origens">
+            <BsGear size={30} />
+            <span>Origens</span>
           </Option>
         </OptionsContainer>
       </Content>
