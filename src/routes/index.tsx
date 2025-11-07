@@ -43,6 +43,8 @@ import ConfigMenu from '../pages/ADM/ConfigMenu';
 import ListNeighbohood from '../pages/ADM/ListNeighbohood';
 import NewNeighbohood from '../pages/ADM/NewNeighbohood';
 import UpdateNeighbohood from '../pages/ADM/UpdateNeighbohood';
+import ListOrigins from '../pages/ADM/ListOrigins';
+import NewOrigins from '../pages/ADM/NewOrigin';
 
 
 
@@ -87,6 +89,9 @@ const Routes: React.FC = () => (
     <Route path="/adm/lista-bairros" component={ListNeighbohood} isPrivate />
     <Route path="/adm/novo-bairro" component={NewNeighbohood} isPrivate />
     <Route path="/adm/bairros/:id" component={UpdateNeighbohood} isPrivate />
+
+    <Route path="/adm/config/origens" component={ListOrigins} isPrivate />
+    <Route path="/adm/config/nova-origem" component={NewOrigins} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 
