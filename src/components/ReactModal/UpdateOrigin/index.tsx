@@ -5,7 +5,6 @@ import Input from '../../Input';
 import React, { useRef, useCallback } from 'react';
 import Modal from '..';
 import { BiCheck } from 'react-icons/bi';
-import { useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Sync, Garb } from '../../../assets/images';
 import api from '../../../services/api';
@@ -26,7 +25,6 @@ interface ModalProps {
 const UpdateOrigins: React.FC<ModalProps> = ({isOpen, originData, setIsOpen}) => {
 
   const formRef = useRef<FormHandles>(null);
-  const history = useHistory();
 
   const { id, active } = originData;
 
@@ -48,7 +46,7 @@ const UpdateOrigins: React.FC<ModalProps> = ({isOpen, originData, setIsOpen}) =>
     } catch (error) {
       toast.error('ERROR! Contate o suporte');
     }
-  }, [history, id]);
+  }, [id]);
   const activateOrigin = useCallback(async () => {
     try {
       await api.put(`/origin-sale/active/${id}`);
@@ -57,7 +55,7 @@ const UpdateOrigins: React.FC<ModalProps> = ({isOpen, originData, setIsOpen}) =>
     } catch (error) {
       toast.error('ERROR! Contate o suporte');
     }
-  }, [history, id]);
+  }, [id]);
 
 
   return (
