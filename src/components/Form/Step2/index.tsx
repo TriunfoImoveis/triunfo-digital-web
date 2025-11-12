@@ -4,6 +4,7 @@ import React, {
   useRef,
   useState,
   useEffect,
+  useMemo,
 } from 'react';
 import { Tabs, Tab as TabBootstrap } from 'react-bootstrap';
 import * as Yup from 'yup';
@@ -23,11 +24,17 @@ import Button from '../../Button';
 import { Container, InputGroup, ButtonGroup, InputForm } from './styles';
 import { valiateDate } from '../../../utils/validateDate';
 import CustomerSellerLealPerson from '../CustomerBuyerLealPerson';
+import { useFetchFinances } from '../../../hooks/useFetchFinances';
 
 interface ISaleNewData {
   nextStep: () => void;
   prevStep: () => void;
   typeClient: 'buyer' | 'salesman';
+}
+
+interface IProfession {
+  id: string;
+  name: string;
 }
 
 interface IClientData {
@@ -36,10 +43,12 @@ interface IClientData {
   email: string;
   phone: string;
   whatsapp: string;
-  occupation: string;
+  occupation?: string;
+  profession_id: string;
   civil_status: string;
   number_children: number;
   gender: string;
+  profession?: IProfession;
 }
 
 interface FormData {
@@ -50,7 +59,7 @@ interface FormData {
     email: string;
     phone: string;
     whatsapp: string;
-    occupation: string;
+    profession: string;
     civil_status: string;
     number_children: number;
     gender: string;
@@ -63,6 +72,9 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
   const [client, setCliente] = useState<IClientData>({} as IClientData);
   const [disabled, setDisable] = useState(true);
   const { updateFormData } = useForm();
+  const { data: professions } = useFetchFinances<IProfession[]>({
+    url: `/professions?active=true`,
+  });
 
   useEffect(() => {
     setDisable(true);
@@ -85,10 +97,11 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
             email,
             phone,
             whatsapp,
-            occupation,
+            profession_id,
             civil_status,
             number_children,
             gender,
+            profession,
           } = response.data;
           setDisable(true);
           setCliente({
@@ -97,10 +110,11 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
             email,
             phone: FoneMask(phone),
             whatsapp: WhatsMask(whatsapp),
-            occupation,
+            profession_id,
             civil_status,
             number_children,
             gender,
+            profession
           } as IClientData);
         } catch (error) {
           setCliente({} as IClientData);
@@ -123,9 +137,21 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
     { label: 'Outros', value: 'OUTROS' },
   ];
 
+  const optionsProfessions = useMemo(() => {
+    if (!professions) {
+      return [];
+    }
+    return professions.map(profession => ({
+      label: profession.name,
+      value: profession.id,
+    }));
+  }, [professions]);
+
   const handleSubmit: SubmitHandler<FormData> = useCallback(
     async data => {
       formRef.current?.setErrors({});
+
+      console.log(data);
 
       try {
         setLoading(true);
@@ -153,7 +179,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
             number_children: Yup.string().required(
               'Quantidade de filhos Obrigatória',
             ),
-            occupation: Yup.string().required('Profissão Obrigatória'),
+            profession: Yup.string().optional(),
             phone: Yup.string()
               .min(11, 'O numero precisa ter pelo menos 11 números')
               .max(15, 'Digite um numero de telefone válido')
@@ -180,12 +206,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
             email: data.client_buyer.email,
             phone: unMaked(data.client_buyer.phone),
             whatsapp: unMaked(data.client_buyer.whatsapp),
-            occupation: data.client_buyer.occupation,
+            profession_id: data.client_buyer.profession,
             civil_status: data.client_buyer.civil_status,
             number_children: Number(data.client_buyer.number_children),
             gender: data.client_buyer.gender,
           },
         };
+
         updateFormData(formData || {});
         nextStep();
         setCliente({} as IClientData);
@@ -283,13 +310,23 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                     readOnly={disabled}
                     defaultValue={client.number_children}
                   />
-                  <InputForm
-                    label="Profissão"
-                    name="occupation"
-                    type="text"
-                    readOnly={disabled}
-                    defaultValue={client.occupation}
-                  />
+                  {disabled ? (
+                    <InputForm
+                      label="Profissão"
+                      name="profession"
+                      readOnly={disabled}
+                     defaultValue={client.profession ? client.profession?.name: client.occupation}
+                    />
+                  ) : (
+                    <Select
+                      name="profession"
+                      placeholder="Infome a Profissão"
+                      options={optionsProfessions}
+                      label="Profissão"
+                      isDisabled={disabled}
+                      defaultInputValue={client.profession?.name}
+                    />
+                  )}
                 </InputGroup>
                 <InputGroup>
                   <InputForm
@@ -371,12 +408,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeClient }) => {
                     readOnly={disabled}
                     defaultValue={client.number_children}
                   />
-                  <InputForm
+                  <Select
+                    name="profession"
+                    placeholder="Infome a Profissão"
+                    options={optionsProfessions}
                     label="Profissão"
-                    name="occupation"
-                    type="text"
-                    readOnly={disabled}
-                    defaultValue={client.occupation}
+                    isDisabled={disabled}
+                    defaultInputValue={client.profession?.name}
                   />
                 </InputGroup>
                 <InputGroup>

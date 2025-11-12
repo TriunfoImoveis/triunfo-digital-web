@@ -45,6 +45,9 @@ import NewNeighbohood from '../pages/ADM/NewNeighbohood';
 import UpdateNeighbohood from '../pages/ADM/UpdateNeighbohood';
 import ListOrigins from '../pages/ADM/ListOrigins';
 import NewOrigins from '../pages/ADM/NewOrigin';
+import ListProfession from '../pages/ADM/ListProfession';
+import NewProfession from '../pages/ADM/NewProfession';
+import UpdateProfession from '../pages/ADM/UpdateProfession';
 
 
 
@@ -92,6 +95,9 @@ const Routes: React.FC = () => (
 
     <Route path="/adm/config/origens" component={ListOrigins} isPrivate />
     <Route path="/adm/config/nova-origem" component={NewOrigins} isPrivate />
+    <Route path="/adm/config/profissoes" component={ListProfession} isPrivate />
+    <Route path="/adm/config/nova-profissao" component={NewProfession} isPrivate />
+    <Route path="/adm/profissoes/:id" component={UpdateProfession} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 
