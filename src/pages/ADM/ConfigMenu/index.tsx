@@ -37,6 +37,10 @@ const ConfigMenu: React.FC = () => {
             <BsGear size={30} />
             <span>Origens</span>
           </Option>
+          <Option to="/adm/config/profissoes">
+            <BsGear size={30} />
+            <span>Profissões</span>
+          </Option>
         </OptionsContainer>
       </Content>
     </Container>
