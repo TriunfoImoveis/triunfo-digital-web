@@ -23,6 +23,8 @@ import api from '../../../services/api';
 import { FoneMask } from '../../../utils/masked';
 import { states } from '../../../utils/loadOptions';
 import { unicItensArray } from '../../../utils/format';
+import { AiOutlineDownload } from 'react-icons/ai';
+import ExportReportBuilder from '../../../components/ReactModal/ExportReportBuilder';
 
 interface ISubsidiary {
   id: string;
@@ -42,6 +44,7 @@ const ListBuilders: React.FC = () => {
   const [selectedUf, setSelectedUf] = useState<string>('MA');
   const [selectedSubsidiary] = useState<ISubsidiary>({} as ISubsidiary);
   const [builders, setBuilders] = useState<IBuilder[]>([]);
+  const [modalCreateReoport, setModalCreateReoport] = useState(false);
 
   useEffect(() => {
     const loadSubsidiaries = async () => {
@@ -96,10 +99,16 @@ const ListBuilders: React.FC = () => {
     [selectedSubsidiary.state],
   );
 
-  const optionsStates = unicItensArray(subsidiaries.map(subsidiary => subsidiary.state)).map(item => ({
+  const optionsStates = unicItensArray(
+    subsidiaries.map(subsidiary => subsidiary.state),
+  ).map(item => ({
     label: states[item],
-    value: item
-  }))
+    value: item,
+  }));
+
+  const toogleCreateReportModal = useCallback(() => {
+    setModalCreateReoport(!modalCreateReoport);
+  }, [modalCreateReoport]);
 
   return (
     <AdmLayout>
@@ -126,9 +135,16 @@ const ListBuilders: React.FC = () => {
             </select>
           </FiltersBottonItems>
 
+          <div style={{ display: "flex", gap: "8px"}}>
           <FiltersBottonItems>
             <Link to="/adm/nova-construtora">Nova Construtora</Link>
           </FiltersBottonItems>
+          <FiltersBottonItems>
+            <button type="button" onClick={toogleCreateReportModal}>
+              <AiOutlineDownload size={30} color="#BAA05C" />
+            </button>
+          </FiltersBottonItems>
+          </div>
         </FiltersBotton>
       </FiltersContainer>
       <Content>
@@ -142,7 +158,12 @@ const ListBuilders: React.FC = () => {
           {builders.map(builder =>
             loading ? (
               <LoadingContainer>
-                <Loader type="Bars" color={theme.colors.gold} height={100} width={100} />
+                <Loader
+                  type="Bars"
+                  color={theme.colors.gold}
+                  height={100}
+                  width={100}
+                />
               </LoadingContainer>
             ) : (
               <SaleBody key={builder.id}>
@@ -161,6 +182,11 @@ const ListBuilders: React.FC = () => {
           )}
         </SaleTableContainer>
       </Content>
+      <ExportReportBuilder
+        params={{ uf: selectedUf }}
+        isOpen={modalCreateReoport}
+        setIsOpen={toogleCreateReportModal}
+      />
     </AdmLayout>
   );
 };
