@@ -107,7 +107,7 @@ export const FiltersBottonItems = styled.div`
     font-style: normal;
     font-weight: 500;
     font-size: 2rem;
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.gold};
   }
   select {
     z-index: 10;
@@ -143,6 +143,19 @@ export const FiltersBottonItems = styled.div`
     &:hover {
       background: ${darken(0.05, `${theme.colors.primary}`)};
     }
+  }
+
+  button {
+    width: 8rem;
+    height: 4.8rem;
+    border: none;
+    background-color: ${({ theme }) => theme.colors.primary};
+
+    > svg {
+      stroke: ${({ theme }) => theme.colors.gold};
+    }
+
+    border-radius: 0.4rem;
   }
 `;
 
