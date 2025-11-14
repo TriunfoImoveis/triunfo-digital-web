@@ -11,8 +11,6 @@ const UserFinances: React.FC = () => {
   const { userAuth } = useAuth();
   const [createNewBankData, setCreateNewBankData] = useState(false);
 
-  console.log(userAuth)
-
   return (
     <Container>
       <Header>

@@ -83,7 +83,6 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
     };
   }, []);
 
-  console.log(client);
   const searchClientoForCPF = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       setCliente({} as IClientData);

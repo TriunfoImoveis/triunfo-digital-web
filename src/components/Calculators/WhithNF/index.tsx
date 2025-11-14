@@ -393,7 +393,7 @@ const WhithNF: React.FC<CalcProps> = ({ id }) => {
           </Form>
         </Asaid>
         <Main>
-          <Form ref={formRealtors} onSubmit={() => console.log('ok')}>
+          <Form ref={formRealtors} onSubmit={() => {}}>
             <Table cols={6}>
               <thead>
                 <tr>
