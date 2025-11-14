@@ -236,7 +236,7 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
         <Asaid>
           <span>Imóveis sem NF</span>
 
-          <Form ref={formRef} onSubmit={() => console.log('ok')}>
+          <Form ref={formRef} onSubmit={() => {}}>
             {comission && comission.type_sale === 'NOVO' && comission.builder && (
               <div>
                 <span>Construtora</span>
@@ -261,7 +261,7 @@ const NotNF: React.FC<CalcProps> = ({ id }) => {
           </Form>
         </Asaid>
         <Main>
-          <Form ref={formRealtors} onSubmit={() => console.log('ok')}>
+          <Form ref={formRealtors} onSubmit={() => {}}>
             <Table cols={6}>
               <thead>
                 <tr>

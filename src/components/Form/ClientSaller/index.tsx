@@ -82,6 +82,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
       setCliente({} as IClientData);
     };
   }, []);
+
   const searchClientoForCPF = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       setCliente({} as IClientData);
@@ -176,7 +177,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
             number_children: Yup.string().required(
               'Quantidade de filhos Obrigatória',
             ),
-            profession: Yup.string().optional(),
+            profession: Yup.string().uuid().required('Profissão Obrigatória'),
             phone: Yup.string()
               .min(11, 'O numero precisa ter pelo menos 11 números')
               .max(15, 'Digite um numero de telefone válido')
@@ -304,23 +305,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                   readOnly={disabled}
                   defaultValue={client.number_children}
                 />
-                {disabled ? (
-                    <InputForm
-                      label="Profissão"
-                      name="profession"
-                      readOnly={disabled}
-                      defaultValue={client.profession ? client.profession?.name: client.occupation}
-                    />
-                  ) : (
-                    <Select
+                <Select
                       name="profession"
                       placeholder="Infome a Profissão"
                       options={optionsProfessions}
                       label="Profissão"
-                      isDisabled={disabled}
                       defaultInputValue={client.profession?.name}
                     />
-                  )}
               </InputGroup>
               <InputGroup>
                 <InputForm
