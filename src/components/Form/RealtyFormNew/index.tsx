@@ -1,17 +1,14 @@
-import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
-import { Form } from '@unform/web';
-import { FormHandles, Scope } from '@unform/core';
+import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useForm } from '../../../context/FormContext';
 import api from '../../../services/api';
-import getValidationErros from '../../../utils/getValidationErros';
-
-import Button from '../../Button';
-import ReactSelect from '../../ReactSelect';
-
-import { InputGroup, ButtonGroup, InputForm } from './styles';
+import { useForm } from '../../../context/FormContext';
 import { states } from '../../../utils/loadOptions';
+import { InputControlled, SelectControlled, FormButtons, FormRow } from '../../FormControls';
+import Button from '../../Button';
+import getValidationErros from '../../../utils/getValidationErros';
+import { Container } from './styles';
 
 interface IOptionsData {
   id: string;
@@ -19,9 +16,9 @@ interface IOptionsData {
 }
 
 interface ICEP {
-  bairro?: string
-  cep: string
-  complemento?: string
+  bairro?: string;
+  cep: string;
+  complemento?: string;
   ddd: string;
   gia: string;
   ibge: string;
@@ -38,7 +35,7 @@ interface INeighborhoodData {
   active: boolean;
 }
 
-interface RealtyNewFormData {
+interface RealtyFormData {
   realty: {
     enterprise: string;
     unit: string;
@@ -50,204 +47,264 @@ interface RealtyNewFormData {
   };
   builder: string;
 }
-interface RealtyFormNewProps {
+
+interface Props {
   nextStep: () => void;
 }
-const RealtyFormNew = ({ nextStep }: RealtyFormNewProps) => {
-  const formRef = useRef<FormHandles>(null);
-  const [loading, setLoading] = useState(false);
-  const { updateFormData } = useForm();
 
+const schema = Yup.object().shape({
+  realty: Yup.object().shape({
+    zipcode: Yup.string().required('CEP obrigatório'),
+    enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
+    state: Yup.string().required('Informe o Estado'),
+    city: Yup.string().required('Informe a Cidade'),
+    neighborhood: Yup.string().required('Informe o bairro'),
+    property: Yup.string().required('Selecione o tipo do imóvel'),
+    unit: Yup.string().required('Informe a unidade'),
+  }),
+  builder: Yup.string().required('Selecione uma construtora'),
+});
+
+const RealtyFormNew: React.FC<Props> = ({ nextStep }) => {
+  const { formData, updateFormData } = useForm();
+
+  const [form, setForm] = useState<RealtyFormData>(() => ({
+    realty: {
+      enterprise: formData.realty?.enterprise || '',
+      zipcode: formData.realty?.zipcode || '',
+      state: formData.realty?.state || '',
+      city: formData.realty?.city || '',
+      neighborhood: formData.realty?.neighborhood || '',
+      property: formData.realty?.property || '',
+      unit: formData.realty?.unit || '',
+    },
+    builder: formData.builder || '',
+  }));
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [builders, setBuilders] = useState<IOptionsData[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<IOptionsData[]>([]);
-  const [optionsNeighborhood, setOptionsNeighborhood] = useState<{ label: string, value: string }[]>([]);
-
+  const [optionsNeighborhood, setOptionsNeighborhood] = useState<
+    { label: string; value: string }[]
+  >([]);
   const [isFindingNeighborhood, setIsFindingNeighborhood] = useState(true);
-  const [selectedUf, setSelectedUf] = useState('');
+  const [selectedUf, setSelectedUf] = useState(formData.realty?.state || '');
 
   useEffect(() => {
-
-    const loadBuilders = async () => {
-      if (selectedUf !== '') {
-        const response = await api.get('/builder', {
-          params: {
-            uf: selectedUf,
-          },
-        });
-        setBuilders(response.data);
-      }
-
-    };
     const loadPropertyType = async () => {
       const response = await api.get('/property-type');
       setPropertyTypes(response.data);
     };
-    loadBuilders();
     loadPropertyType();
+  }, []);
+
+  useEffect(() => {
+    const loadBuilders = async () => {
+      if (!selectedUf) return;
+      const response = await api.get('/builder', {
+        params: { uf: selectedUf },
+      });
+      setBuilders(response.data);
+    };
+    loadBuilders();
   }, [selectedUf]);
 
-  const createOptionsneighborhood = (neighborhood: Array<{ name: string }>) => {
-    return neighborhood.map(neighborhood => ({
-      label: neighborhood.name,
-      value: neighborhood.name
-    }))
-  }
+  const optionBuilder = useMemo(
+    () => builders.map(builder => ({ label: builder.name, value: builder.id })),
+    [builders],
+  );
+  const optionsPropertyType = useMemo(
+    () => propertyTypes.map(property => ({ label: property.name, value: property.id })),
+    [propertyTypes],
+  );
 
-  const optionBuilder = builders.map(builder => ({
-    label: builder.name,
-    value: builder.id,
-  }));
-
-  const optionsPropertyType = propertyTypes.map(property => ({
-    label: property.name,
-    value: property.id,
-  }));
+  const createOptionsneighborhood = (neighborhood: Array<{ name: string }>) =>
+    neighborhood.map(item => ({
+      label: item.name,
+      value: item.name,
+    }));
 
   const handleZipCode = async (event: ChangeEvent<HTMLInputElement>) => {
     const zipCode = event.target.value;
+    setErrors(prev => ({ ...prev, 'realty.zipcode': '' }));
     if (zipCode.length === 9) {
-      const response = await api.get<ICEP>(`https://viacep.com.br/ws/${zipCode}/json/`);
-      const { uf, localidade, bairro } = response.data
+      const response = await axios.get<ICEP>(`https://viacep.com.br/ws/${zipCode}/json/`);
+      const { uf, localidade, bairro } = response.data;
 
       if (!bairro) {
-        const response = await api.get<INeighborhoodData[]>('/neighborhood', {
-          params: {
-            uf: uf,
-            city: localidade
-          }
+        const neighborhoodResponse = await api.get<INeighborhoodData[]>('/neighborhood', {
+          params: { uf, city: localidade },
         });
-        const neighborhoods = response.data;
-        setOptionsNeighborhood(createOptionsneighborhood(neighborhoods))
-        setIsFindingNeighborhood(false)
+        setOptionsNeighborhood(createOptionsneighborhood(neighborhoodResponse.data));
+        setIsFindingNeighborhood(false);
+      } else {
+        setIsFindingNeighborhood(true);
       }
-      formRef.current?.setData({
+
+      setForm(prev => ({
+        ...prev,
         realty: {
+          ...prev.realty,
           state: states[uf],
           city: localidade,
-          neighborhood: bairro,
-        }
-      })
-      setSelectedUf(response.data.uf);
+          neighborhood: bairro || '',
+          zipcode: zipCode,
+        },
+      }));
+      setSelectedUf(uf);
+    } else {
+      setIsFindingNeighborhood(true);
     }
-  }
+  };
+
+  const handleChange = (path: string) => (value: string) => {
+    const [group, field] = path.split('.');
+    if (group === 'realty') {
+      setForm(prev => ({
+        ...prev,
+        realty: { ...prev.realty, [field]: value },
+      }));
+      return;
+    }
+    // para campos de nível raiz (ex.: builder)
+    if (!field) {
+      setForm(prev => ({ ...prev, [group]: value } as RealtyFormData));
+      return;
+    }
+    setForm(prev => ({ ...prev, [field]: value } as RealtyFormData));
+  };
 
   const handleSubmit = useCallback(
-    async (data: RealtyNewFormData) => {
-      formRef.current?.setErrors({});
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+      setErrors({});
       try {
-        setLoading(true);
-        const schema = Yup.object().shape({
-          realty: Yup.object().shape({
-            zipcode: Yup.string().required('CEP obrigatório'),
-            enterprise: Yup.string().required('Nome do Imóvel Obrigatório'),
-            state: Yup.string().required('Informe o Estado'),
-            city: Yup.string().required('Informe o Cidade'),
-            neighborhood: Yup.string().required('Informe o bairrro'),
-            property: Yup.string().required('Selecione o tipo do imóvel'),
-            unit: Yup.string().required('Infome a unidade'),
-          }),
-          builder: Yup.string().required('Selecione um construtora'),
-        });
-        await schema.validate(data, {
-          abortEarly: false,
-        });
-
+        await schema.validate(form, { abortEarly: false });
+        const { zipcode, ...restRealty } = form.realty;
         updateFormData({
           realty: {
-            enterprise: data.realty.enterprise,
-            city: data.realty.city,
+            ...restRealty,
             state: selectedUf,
-            property: data.realty.property,
-            neighborhood: data.realty.neighborhood,
-            unit: data.realty.unit,
           },
-          builder: data.builder,
+          builder: form.builder,
         });
-
         nextStep();
-        setLoading(false);
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
-          const erros = getValidationErros(err);
-          formRef.current?.setErrors(erros);
+          const fieldErrors = getValidationErros(err);
+          setErrors(fieldErrors);
         }
-
         toast.error('ERROR!, verifique as informações e tente novamente');
-        setLoading(false);
       }
     },
-    [nextStep, selectedUf, updateFormData],
+    [form, nextStep, selectedUf, updateFormData],
   );
 
   return (
-    <Form ref={formRef} onSubmit={handleSubmit}>
-      <Scope path="realty">
-        <InputForm label="Empreendimento" name="enterprise" />
-        <InputForm
-          name='zipcode'
-          mask='zipcode'
-          label='CEP'
-          placeholder='00000-000'
-          maxLength={8}
-          onBlur={handleZipCode}
+    <Container>
+      <form onSubmit={handleSubmit}>
+        <InputControlled
+          label="Empreendimento"
+          name="enterprise"
+          value={form.realty.enterprise}
+          onChange={handleChange('realty.enterprise')}
+          error={errors['realty.enterprise']}
         />
-        <InputGroup>
-
-          <InputForm
+        <InputControlled
+          name="zipcode"
+          mask="zipcode"
+          label="CEP"
+          placeholder="00000-000"
+          maxLength={9}
+          value={form.realty.zipcode}
+          onChange={value => {
+            handleChange('realty.zipcode')(value);
+            handleZipCode({ target: { value } } as any);
+          }}
+          error={errors['realty.zipcode']}
+        />
+        <FormRow>
+          <InputControlled
             name="state"
             placeholder="Informe o estado"
             label="Estado"
-            disabled
+            value={form.realty.state}
+            readOnly
+            error={errors['realty.state']}
           />
-          <InputForm
+          <InputControlled
             name="city"
             label="Cidade"
             placeholder="Digite a cidade"
-            disabled
+            value={form.realty.city}
+            readOnly
+            error={errors['realty.city']}
           />
-        </InputGroup>
+        </FormRow>
         {isFindingNeighborhood ? (
-          <InputForm
+          <InputControlled
             label="Bairro"
             name="neighborhood"
             placeholder="Bairro"
+            value={form.realty.neighborhood}
             readOnly
             disabled={isFindingNeighborhood}
+            error={errors['realty.neighborhood']}
           />
         ) : (
-          <ReactSelect
+          <SelectControlled
             name="neighborhood"
             label="Bairro"
             placeholder="Informe o bairro"
             options={optionsNeighborhood}
+            value={optionsNeighborhood.find(
+              option => option.value === form.realty.neighborhood,
+            )}
+            onChange={option =>
+              handleChange('realty.neighborhood')((option as any)?.value || '')
+            }
+            error={errors['realty.neighborhood']}
           />
         )}
-        <ReactSelect
+        <SelectControlled
           name="property"
           label="Tipo de Imóvel"
-          placeholder="Selecione o tipo do imovel"
+          placeholder="Selecione o tipo do imóvel"
           options={optionsPropertyType}
+          value={optionsPropertyType.find(option => option.value === form.realty.property)}
+          onChange={option =>
+            handleChange('realty.property')((option as any)?.value || '')
+          }
+          error={errors['realty.property']}
         />
-        <InputForm label="Unidade" name="unit" placeholder="Unidade" />
-      </Scope>
-      <ReactSelect
-        placeholder="Selecione a construtora"
-        name="builder"
-        options={optionBuilder}
-        label="Contrutora"
-      />
-      <ButtonGroup>
-        <Button type="reset" className="cancel">
-          Cancelar
-        </Button>
-        <Button type="submit" className="next" >
-          {loading ? '...' : 'Próximo'}
-        </Button>
-      </ButtonGroup>
-    </Form>
-  )
-}
+        <InputControlled
+          label="Unidade"
+          name="unit"
+          placeholder="Unidade"
+          value={form.realty.unit}
+          onChange={handleChange('realty.unit')}
+          error={errors['realty.unit']}
+        />
+        <SelectControlled
+          placeholder="Selecione a construtora"
+          name="builder"
+          options={optionBuilder}
+          label="Construtora"
+          value={optionBuilder.find(option => option.value === form.builder)}
+          onChange={option => handleChange('builder')((option as any)?.value || '')}
+          error={errors.builder}
+        />
+        <FormButtons>
+          <Button type="reset" className="cancel">
+            Cancelar
+          </Button>
+          <Button type="submit" className="next">
+            Próximo
+          </Button>
+        </FormButtons>
+      </form>
+    </Container>
+  );
+};
 
-export default RealtyFormNew
-
-
+export default RealtyFormNew;

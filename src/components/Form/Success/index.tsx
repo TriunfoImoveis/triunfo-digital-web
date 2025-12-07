@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
@@ -7,17 +7,22 @@ import { useForm } from '../../../context/FormContext';
 import { SuccesImage, ErrorRegisterSale } from '../../../assets/images';
 import { SuccessContainer, ButtonGroup, FailedRegisterSale } from './styles';
 import api from '../../../services/api';
+import Button from '../../Button';
 
 interface ISuccessProps {
   typeSale: 'new' | 'used';
 }
 
 const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
-  const { formData } = useForm();
+  const { formData, setStepIndex, clearAll } = useForm();
+  const hasSubmitted = React.useRef(false);
   const [loading, setLoading] = useState(false);
   const [statusError, setStatusError] = useState(false);
+  const history = useHistory();
 
   useEffect(() => {
+    if (hasSubmitted.current) return;
+    hasSubmitted.current = true;
     const submitFom = async () => {
       if (typeSale === 'new') {
         try {
@@ -29,9 +34,9 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           toast.success('Venda cadastrada');
         } catch (err) {
           setStatusError(true);
-          if (err.response) {
-            toast.error(`${err.response.data.message}`);
-          } else if (err.request) {
+          if ((err as any).response) {
+            toast.error(`${(err as any).response.data.message}`);
+          } else if ((err as any).request) {
             toast.error('Error de Rede, verifique sua conexão');
           } else {
             toast.error('Erro interno do servidor, contate o suporte');
@@ -50,9 +55,9 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           toast.success('Venda cadastrada');
         } catch (err) {
           setStatusError(true);
-          if (err.response) {
-            toast.error(`${err.response.data.message}`);
-          } else if (err.request) {
+          if ((err as any).response) {
+            toast.error(`${(err as any).response.data.message}`);
+          } else if ((err as any).request) {
             toast.error('Error de Rede, verifique sua conexão');
           } else {
             toast.error('Erro interno do servidor, contate o suporte');
@@ -63,7 +68,7 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
       }
     };
     submitFom();
-  }, [typeSale, formData]);
+  }, [typeSale, formData, clearAll, setStepIndex]);
   return (
     <SuccessContainer>
       {loading ? (
@@ -75,25 +80,53 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
               <h1>Falhou! Tente Novamente</h1>
               <ErrorRegisterSale />
               <ButtonGroup>
-                <Link to="/actions" className="next">
+                <Button
+                  type="button"
+                  className="next"
+                  onClick={() => {
+                    clearAll();
+                    setStepIndex(0);
+                    hasSubmitted.current = false;
+                  }}
+                >
                   Tentar novamente
-                </Link>
+                </Button>
               </ButtonGroup>
             </FailedRegisterSale>
           ) : (
             <>
               <h1>Cadastro concluído</h1>
               <SuccesImage />
-              <strong>Agora é so aguardar!</strong>
-              <p>O nosso financeiro veficar as informções e validar a venda!</p>
+              <strong>Agora é só aguardar!</strong>
+              <p>
+                O nosso financeiro veficar as informações e validar a venda!
+              </p>
               <p>Aguarde em ate 48h úteis, para a confirmação!</p>
               <ButtonGroup>
-                <Link to="/actions" className="cancel">
-                  cadastrar nova venda
-                </Link>
-                <Link to="/menu" className="next">
+                <Button
+                  type="button"
+                  className="cancel"
+                  onClick={() => {
+                    clearAll();
+                    setStepIndex(0);
+                    hasSubmitted.current = false;
+                    history.push('/actions');
+                  }}
+                >
+                  Cadastrar nova venda
+                </Button>
+                <Button
+                  type="button"
+                  className="next"
+                  onClick={() => {
+                    clearAll();
+                    setStepIndex(0);
+                    hasSubmitted.current = false;
+                    history.push('/menu');
+                  }}
+                >
                   Sair
-                </Link>
+                </Button>
               </ButtonGroup>
             </>
           )}

@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import Input from '../../Input';
 
 export const Container = styled.div`
   padding-bottom: 1.6rem;
@@ -41,10 +40,6 @@ export const SelectedCity = styled.div`
     }
   }
 `;
-export const InputForm = styled(Input)`
-  padding: 0 0.8rem;
-`;
-
 export const InputGroup = styled.div`
   display: flex;
   align-items: center;

@@ -65,6 +65,10 @@ export const ButtonGroup = styled.div`
     margin-left: 0.8rem;
   }
 
+  button + button {
+    margin-left: 0.8rem;
+  }
+
   .cancel,
   .next {
     height: 4.5rem;
