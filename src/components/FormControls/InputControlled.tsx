@@ -10,6 +10,7 @@ import {
   DateDMY,
   CNPJMask,
   zipCodeMask,
+  DocumentMask,
 } from '../../utils/masked';
 import {
   ContainerWrapper,
@@ -27,7 +28,8 @@ type Mask =
   | 'whats'
   | 'date'
   | 'cnpj'
-  | 'zipcode';
+  | 'zipcode'
+  | 'document';
 
 interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -53,6 +55,7 @@ const maskFns: Record<Mask, (e: React.ChangeEvent<HTMLInputElement>) => void> = 
   date: DateDMY,
   cnpj: CNPJMask,
   zipcode: zipCodeMask,
+  document: DocumentMask,
 };
 
 const InputControlled: React.FC<InputProps> = ({

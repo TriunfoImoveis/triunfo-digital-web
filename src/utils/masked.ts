@@ -143,3 +143,27 @@ export const CNPJMask = (
   event.currentTarget.value = valueMasked;
   return event;
 };
+
+export const DocumentMask = (
+  event: ChangeEvent<HTMLInputElement>,
+): ChangeEvent<HTMLInputElement> => {
+  const digits = event.target.value.replace(/\D/g, '').slice(0, 14);
+
+  let valueMasked = digits;
+
+  if (digits.length <= 11) {
+    valueMasked = digits
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  } else {
+    valueMasked = digits
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+  }
+
+  event.currentTarget.value = valueMasked;
+  return event;
+};
