@@ -23,7 +23,10 @@ interface IClientData {
 
 const schema = Yup.object().shape({
   cnpj: Yup.string()
-    .min(14, 'Informe o cnpj corretamente, cnpj deve conter 14 digitos, sem traços ou pontos')
+    .min(
+      14,
+      'Informe o cnpj corretamente, cnpj deve conter 14 digitos, sem traços ou pontos',
+    )
     .max(18, 'Informe o cnpj corretamente')
     .required('CNPJ obrigatório'),
   name: Yup.string().required('Nome Obrigatório'),
@@ -32,7 +35,9 @@ const schema = Yup.object().shape({
     .max(15, 'Digite um numero de telefone válido')
     .required('Telefone obrigatório'),
   address: Yup.string(),
-  email: Yup.string().email('Infome um email válido').required('E-mail obrigatório'),
+  email: Yup.string()
+    .email('Infome um email válido')
+    .required('E-mail obrigatório'),
 });
 
 const CustomerSellerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
@@ -46,7 +51,6 @@ const CustomerSellerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [client, setCliente] = useState<IClientData>({} as IClientData);
   const [disabled, setDisable] = useState(true);
 
   useEffect(() => {
@@ -61,19 +65,12 @@ const CustomerSellerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
     async (event: ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setForm(prev => ({ ...prev, cnpj: value }));
-      setCliente({} as IClientData);
       const cnpj = unMaked(value);
       if (cnpj.length === 14) {
         try {
           const response = await api.get(`/client?cnpj=${cnpj}`);
           const { name, phone, address, email } = response.data;
           setDisable(true);
-          setCliente({
-            name,
-            phone: FoneMask(phone),
-            address,
-            email,
-          } as IClientData);
           setForm({
             cnpj: value,
             name,
@@ -82,7 +79,6 @@ const CustomerSellerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
             email,
           });
         } catch (error) {
-          setCliente({} as IClientData);
           setDisable(false);
         }
       }
@@ -108,7 +104,6 @@ const CustomerSellerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
           },
         });
         nextStep();
-        setCliente({} as IClientData);
         setLoading(false);
       } catch (err) {
         if (err instanceof Yup.ValidationError) {

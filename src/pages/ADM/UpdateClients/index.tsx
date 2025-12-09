@@ -117,23 +117,10 @@ const civilStatusToCode: Record<string, string> = {
   VIUVO: 'V',
 };
 
-const civilStatusFromCode: Record<string, string> = {
-  C: 'CASADO(A)',
-  S: 'SOLTEIRO(A)',
-  D: 'DIVORCIADO(A)',
-  V: 'VIUVO(A)',
-};
-
 const genderToCode: Record<string, string> = {
   MASCULINO: 'M',
   FEMININO: 'F',
   OUTROS: 'O',
-};
-
-const genderFromCode: Record<string, string> = {
-  M: 'MASCULINO',
-  F: 'FEMININO',
-  O: 'OUTROS',
 };
 
 const UpdateClients: React.FC = () => {
@@ -321,7 +308,7 @@ const UpdateClients: React.FC = () => {
         setLoadingPF(false);
       }
     },
-    [formPF, history, id, loadClient],
+    [formPF, id, loadClient, initialCivilStatus, initialGender],
   );
 
   const handleSubmitPJ = useCallback(
@@ -361,7 +348,7 @@ const UpdateClients: React.FC = () => {
         setLoadingPJ(false);
       }
     },
-    [formPJ, history, id, loadClient],
+    [formPJ, id, loadClient],
   );
 
   return (

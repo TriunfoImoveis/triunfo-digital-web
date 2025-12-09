@@ -408,18 +408,20 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                 />
               )}
             </FormRow>
-            <SelectControlled
-              name="origin_id"
-              placeholder="Informe a Origem"
-              options={optionsOrigins}
-              label="Origem"
-              isDisabled={disableOrigin}
-              value={optionsOrigins.find(opt => opt.value === form.origin_id)}
-              onChange={option =>
-                handleChange('origin_id')((option as any)?.value || '')
-              }
-              error={errors.origin_id}
-            />
+            <FormRow>
+              <SelectControlled
+                name="origin_id"
+                placeholder="Informe a Origem"
+                options={optionsOrigins}
+                label="Origem"
+                isDisabled={disableOrigin}
+                value={optionsOrigins.find(opt => opt.value === form.origin_id)}
+                onChange={option =>
+                  handleChange('origin_id')((option as any)?.value || '')
+                }
+                error={errors.origin_id}
+              />
+            </FormRow>
             <FormRow>
               <InputControlled
                 label="Telefone"

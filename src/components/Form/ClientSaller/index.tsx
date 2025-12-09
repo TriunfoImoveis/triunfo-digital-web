@@ -36,7 +36,13 @@ interface IProfession {
   name: string;
 }
 
+interface IOrigin {
+  id: string;
+  name: string;
+}
+
 interface IClientData {
+  id?: string;
   cpf?: string;
   name: string;
   date_birth: string;
@@ -49,6 +55,7 @@ interface IClientData {
   gender: string;
   profession: string;
   profession_id?: string;
+  origin_id?: string;
 }
 
 const schema = Yup.object().shape({
@@ -67,6 +74,7 @@ const schema = Yup.object().shape({
   gender: Yup.string().required('Genero Obrigatório'),
   number_children: Yup.string().required('Quantidade de filhos Obrigatória'),
   profession: Yup.string().required('Profissão Obrigatória'),
+  origin_id: Yup.string().required('Origem obrigatória'),
   phone: Yup.string()
     .min(11, 'O numero precisa ter pelo menos 11 números')
     .max(15, 'Digite um numero de telefone válido')
@@ -85,12 +93,17 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   const { data: professions } = useFetchFinances<IProfession[]>({
     url: `/professions?active=true`,
   });
+  const { data: origins } = useFetchFinances<IOrigin[]>({
+    url: `/origin-sale`,
+  });
 
   const [loading, setLoading] = useState(false);
   const [client, setCliente] = useState<IClientData>({} as IClientData);
   const [disabled, setDisable] = useState(true);
+  const [disableOrigin, setDisableOrigin] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState<IClientData>(() => ({
+    id: formData.client_seller?.id || '',
     cpf: formData.client_seller?.cpf || '',
     name: formData.client_seller?.name || '',
     date_birth: formData.client_seller?.date_birth || '',
@@ -99,17 +112,20 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
     whatsapp: formData.client_seller?.whatsapp || '',
     occupation: formData.client_seller?.occupation || '',
     civil_status: formData.client_seller?.civil_status || '',
-    number_children: formData.client_seller?.number_children || '',
+    number_children: formData.client_seller?.number_children ?? '',
     gender: formData.client_seller?.gender || '',
     profession: formData.client_seller?.profession_id || '',
+    origin_id: formData.client_seller?.origin_id || '',
   }));
 
   useEffect(() => {
     setDisable(true);
     setCliente({} as IClientData);
+    setDisableOrigin(false);
     return () => {
       setDisable(true);
       setCliente({} as IClientData);
+      setDisableOrigin(false);
     };
   }, []);
 
@@ -142,6 +158,14 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
     }));
   }, [professions]);
 
+  const optionsOrigins = useMemo(() => {
+    if (!origins) return [];
+    return origins.map(origin => ({
+      label: origin.name,
+      value: origin.id,
+    }));
+  }, [origins]);
+
   const handleChange = (field: keyof IClientData) => (value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
@@ -157,6 +181,7 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
           const response = await api.get(`/client?cpf=${cpf}`);
           const {
             name,
+            id,
             date_birth,
             email,
             phone,
@@ -167,9 +192,12 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
             gender,
             profession_id,
             profession,
+            origin_id,
           } = response.data;
           setDisable(true);
+          setDisableOrigin(!!origin_id);
           const data: IClientData = {
+            id,
             name,
             date_birth: DateBRL(date_birth),
             email,
@@ -179,14 +207,16 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
             civil_status,
             number_children,
             gender,
-            profession: profession_id,
+            profession: profession || profession_id,
             profession_id,
+            origin_id,
           } as IClientData;
           setCliente(data);
           setForm(prev => ({ ...prev, ...data, cpf: value }));
         } catch (error) {
           setCliente({} as IClientData);
           setDisable(false);
+          setDisableOrigin(false);
         }
       }
     },
@@ -200,20 +230,31 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
       try {
         setLoading(true);
         await schema.validate(form, { abortEarly: false });
+        const payload = {
+          name: form.name,
+          cpf: form.cpf ? unMaked(form.cpf) : '',
+          email: form.email,
+          phone: unMaked(form.phone),
+          date_birth: DateYMD(form.date_birth),
+          profession_id: form.profession,
+          civil_status: form.civil_status,
+          number_children: Number(form.number_children),
+          gender: form.gender,
+          origin_id: form.origin_id,
+          whatsapp: unMaked(form.whatsapp),
+        };
+
+        let clientId = client.id || form.id;
+
+        if (!clientId) {
+          const created = await api.post('/client', payload);
+          clientId = created.data.id;
+        } else if (!client.origin_id && form.origin_id) {
+          await api.put(`/client/${clientId}`, { origin_id: form.origin_id });
+        }
+
         updateFormData({
-          client_seller: {
-            client_type: 'FISICA',
-            cpf: form.cpf ? unMaked(form.cpf) : '',
-            name: form.name,
-            date_birth: DateYMD(form.date_birth),
-            email: form.email,
-            phone: unMaked(form.phone),
-            whatsapp: unMaked(form.whatsapp),
-            civil_status: form.civil_status,
-            number_children: Number(form.number_children),
-            gender: form.gender,
-            profession_id: form.profession,
-          },
+          client_seller: clientId,
         });
         nextStep();
         setCliente({} as IClientData);
@@ -248,7 +289,10 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                 name="cpf"
                 maxlength={11}
                 value={form.cpf}
-                onChange={handleChange('cpf')}
+                onChange={value => {
+                  handleChange('cpf')(value);
+                  searchClientoForCPF({ target: { value } } as any);
+                }}
                 onBlur={searchClientoForCPF}
                 error={errors.cpf}
               />
@@ -325,7 +369,7 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                 name="number_children"
                 type="number"
                 maxlength={2}
-                value={String(form.number_children || '')}
+                value={String(form.number_children ?? '')}
                 readOnly={disabled}
                 onChange={handleChange('number_children')}
                 error={errors.number_children}
@@ -335,7 +379,11 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                   label="Profissão"
                   name="profession"
                   readOnly
-                  value={(client as any).profession?.name || ''}
+                  value={
+                    typeof (client as any).profession === 'object'
+                      ? (client as any).profession?.name || ''
+                      : (client as any).profession || ''
+                  }
                   error={errors.profession}
                 />
               ) : (
@@ -356,13 +404,27 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
               )}
             </FormRow>
             <FormRow>
+              <SelectControlled
+                name="origin_id"
+                placeholder="Informe a Origem"
+                options={optionsOrigins}
+                label="Origem"
+                isDisabled={disableOrigin}
+                value={optionsOrigins.find(opt => opt.value === form.origin_id)}
+                onChange={option =>
+                  handleChange('origin_id')((option as any)?.value || '')
+                }
+                error={errors.origin_id}
+              />
+            </FormRow>
+            <FormRow>
               <InputControlled
                 label="Telefone"
                 id="phone"
                 mask="fone"
                 name="phone"
                 type="text"
-                maxlength={13}
+                maxlength={11}
                 value={form.phone}
                 readOnly={disabled}
                 onChange={handleChange('phone')}
@@ -376,7 +438,7 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                 type="text"
                 maxlength={13}
                 value={form.whatsapp}
-                readOnly={disabled}
+                readOnly={false}
                 onChange={handleChange('whatsapp')}
                 error={errors.whatsapp}
               />
@@ -399,12 +461,12 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                 Voltar
               </Button>
               <Button type="submit" className="next">
-                {loading ? '...' : 'Próximo'}
+                {loading ? '...' : 'Proximo'}
               </Button>
             </FormButtons>
           </form>
         </TabBootstrap>
-        <TabBootstrap eventKey="pj" title="Pessoa Jurídica">
+        <TabBootstrap eventKey="pj" title="Pessoa Juridica">
           <CustomerSellerLealPerson nextStep={nextStep} prevStep={prevStep} />
         </TabBootstrap>
       </Tabs>

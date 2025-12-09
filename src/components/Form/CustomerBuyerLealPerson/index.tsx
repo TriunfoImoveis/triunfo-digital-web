@@ -46,7 +46,6 @@ const CustomerBuyerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [client, setCliente] = useState<IClientData>({} as IClientData);
   const [disabled, setDisable] = useState(true);
 
   useEffect(() => {
@@ -61,19 +60,12 @@ const CustomerBuyerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
     async (event: ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setForm(prev => ({ ...prev, cnpj: value }));
-      setCliente({} as IClientData);
       const cnpj = unMaked(value);
       if (cnpj.length === 14) {
         try {
           const response = await api.get(`/client?cnpj=${cnpj}`);
           const { name, phone, address, email } = response.data;
           setDisable(true);
-          setCliente({
-            name,
-            phone: FoneMask(phone),
-            address,
-            email,
-          } as IClientData);
           setForm({
             cnpj: value,
             name,
@@ -82,7 +74,6 @@ const CustomerBuyerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
             email,
           });
         } catch (error) {
-          setCliente({} as IClientData);
           setDisable(false);
         }
       }
