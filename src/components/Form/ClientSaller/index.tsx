@@ -269,7 +269,7 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
         setLoading(false);
       }
     },
-    [form, nextStep, updateFormData],
+    [client.id, client.origin_id, form, nextStep, updateFormData],
   );
 
   return (
