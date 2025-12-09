@@ -49,6 +49,8 @@ import ListProfession from '../pages/ADM/ListProfession';
 import NewProfession from '../pages/ADM/NewProfession';
 import UpdateProfession from '../pages/ADM/UpdateProfession';
 import ListClients from '../pages/ADM/ListClients';
+import NewClients from '../pages/ADM/NewClients';
+import UpdateClients from '../pages/ADM/UpdateClients';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -106,12 +108,8 @@ const Routes: React.FC = () => (
     />
     <Route path="/adm/profissoes/:id" component={UpdateProfession} isPrivate />
     <Route path="/adm/config/clientes" component={ListClients} isPrivate />
-    <Route
-      path="/adm/config/novo-cliente"
-      component={NewProfession}
-      isPrivate
-    />
-    <Route path="/adm/clientes/:id" component={UpdateProfession} isPrivate />
+    <Route path="/adm/config/novo-cliente" component={NewClients} isPrivate />
+    <Route path="/adm/clientes/:id" component={UpdateClients} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 

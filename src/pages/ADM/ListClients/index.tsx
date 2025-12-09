@@ -105,9 +105,9 @@ const ListClients: React.FC = () => {
             <FaSearch size={16} />
           </Button>
           <IconLink
-            to="/adm/config/nova-profissao"
-            aria-label="Nova Profissao"
-            title="Nova Profissao"
+            to="/adm/config/novo-cliente"
+            aria-label="Novo Cliente"
+            title="Novo Cliente"
           >
             <FiPlus size={16} />
           </IconLink>
