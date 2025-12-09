@@ -48,8 +48,9 @@ import NewOrigins from '../pages/ADM/NewOrigin';
 import ListProfession from '../pages/ADM/ListProfession';
 import NewProfession from '../pages/ADM/NewProfession';
 import UpdateProfession from '../pages/ADM/UpdateProfession';
-
-
+import ListClients from '../pages/ADM/ListClients';
+import NewClients from '../pages/ADM/NewClients';
+import UpdateClients from '../pages/ADM/UpdateClients';
 
 const Routes: React.FC = () => (
   <Switch>
@@ -60,7 +61,11 @@ const Routes: React.FC = () => (
     <Route path="/ranking" component={Ranking} isPrivate />
     <Route path="/ranking-geral-vendas" component={RankingGeneral} isPrivate />
     <Route path="/ranking-captacao" component={RankingCapture} isPrivate />
-    <Route path="/ranking-coordenadores" component={RankingCaptivators} isPrivate />
+    <Route
+      path="/ranking-coordenadores"
+      component={RankingCaptivators}
+      isPrivate
+    />
     <Route path="/vendas-novo" component={RegisterSaleNew} isPrivate />
     <Route path="/vendas-usado" component={RegisterSaleUsed} isPrivate />
     <Route path="/adm/lista-vendas" component={ListSale} isPrivate />
@@ -96,8 +101,15 @@ const Routes: React.FC = () => (
     <Route path="/adm/config/origens" component={ListOrigins} isPrivate />
     <Route path="/adm/config/nova-origem" component={NewOrigins} isPrivate />
     <Route path="/adm/config/profissoes" component={ListProfession} isPrivate />
-    <Route path="/adm/config/nova-profissao" component={NewProfession} isPrivate />
+    <Route
+      path="/adm/config/nova-profissao"
+      component={NewProfession}
+      isPrivate
+    />
     <Route path="/adm/profissoes/:id" component={UpdateProfession} isPrivate />
+    <Route path="/adm/config/clientes" component={ListClients} isPrivate />
+    <Route path="/adm/config/novo-cliente" component={NewClients} isPrivate />
+    <Route path="/adm/clientes/:id" component={UpdateClients} isPrivate />
     <Route path="/recuperar-senha" component={ForgotPassword} />
     <Route path="/password/reset/:id" component={ResetPassword} />
 
@@ -126,7 +138,6 @@ const Routes: React.FC = () => (
       component={Calculator}
       isPrivate
     />
-
 
     <Route path="/dashboard/vendas" component={DashboardVendas} isPrivate />
     <Route path="/dashboard/persona" component={DashboardPersona} isPrivate />

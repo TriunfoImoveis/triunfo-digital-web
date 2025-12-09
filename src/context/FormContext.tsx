@@ -1,56 +1,76 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface Realty {
-  enterprise: string;
-  zipcode: string;
-  state: string;
-  city: string;
-  neighborhood: string;
-  property: string;
-  unit: string;
-}
+type FormData = Record<string, any>;
 
 interface FormContextData {
-  formData: Object;
-  updateFormData(data: Object): void;
-  initialFormData(): void;
-  handleUpdateRealty(realty: Realty): void;
-  handleUpdateBuilder(builder: string): void;
-  realty: Realty;
-  builder: string;
+  formData: FormData;
+  stepIndex: number;
+  saleType: 'new' | 'used' | '';
+  updateFormData(data: FormData): void;
+  setStepIndex: React.Dispatch<React.SetStateAction<number>>;
+  setSaleType: React.Dispatch<React.SetStateAction<'new' | 'used' | ''>>;
+  clearAll(): void;
 }
+
+const STORAGE_KEY = 'registerSale:data';
+const STEP_KEY = 'registerSale:step';
+const TYPE_KEY = 'registerSale:type';
 
 const FormContext = createContext({} as FormContextData);
 
 const FormProvider: React.FC = ({ children }) => {
-  const [formData, setFormData] = useState({});
-  const [realty, setRealty] = useState({} as Realty);
-  const [builder, setBuilder] = useState('');
-  const initialFormData = () => {
-    setFormData({});
-  };
-  const updateFormData = (data: Object) => {
-    const newData = Object.assign(formData, data);
-    setFormData(newData);
+  const [formData, setFormData] = useState<FormData>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [stepIndex, setStepIndex] = useState<number>(() => {
+    const saved = localStorage.getItem(STEP_KEY);
+    return saved ? Number(saved) : 0;
+  });
+  const [saleType, setSaleType] = useState<'new' | 'used' | ''>(() => {
+    const saved = localStorage.getItem(TYPE_KEY) as 'new' | 'used' | '';
+    return saved || '';
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
+
+  useEffect(() => {
+    localStorage.setItem(STEP_KEY, String(stepIndex));
+  }, [stepIndex]);
+
+  useEffect(() => {
+    if (saleType) {
+      localStorage.setItem(TYPE_KEY, saleType);
+    }
+  }, [saleType]);
+
+  const updateFormData = (data: FormData) => {
+    setFormData(prev => ({ ...prev, ...data }));
   };
 
-  const handleUpdateRealty = (realty: Realty) => {
-    setRealty(realty);
-  };
-  const handleUpdateBuilder = (builder: string) => {
-    setBuilder(builder);
+  const clearAll = () => {
+    setFormData({});
+    setStepIndex(0);
+    setSaleType('');
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STEP_KEY);
+    localStorage.removeItem(TYPE_KEY);
   };
 
   return (
-    <FormContext.Provider value={{ 
-      formData,
-      realty,
-      builder,
-      updateFormData, 
-      initialFormData, 
-      handleUpdateRealty, 
-      handleUpdateBuilder 
-    }}>
+    <FormContext.Provider
+      value={{
+        formData,
+        stepIndex,
+        saleType,
+        updateFormData,
+        setStepIndex,
+        setSaleType,
+        clearAll,
+      }}
+    >
       {children}
     </FormContext.Provider>
   );

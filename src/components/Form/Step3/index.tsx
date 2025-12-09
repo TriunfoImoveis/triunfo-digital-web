@@ -1,19 +1,10 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
-import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
 import getValidationErros from '../../../utils/getValidationErros';
-
-import Select from '../../ReactSelect';
+import Select from '../../FormControls/SelectControlled';
 import Button from '../../Button';
-
 import {
   Container,
   InputGroup,
@@ -21,7 +12,7 @@ import {
   UserSallersContainer,
   UserCaptivators,
   Directors,
-  Coordinator
+  Coordinator,
 } from './styles';
 import api from '../../../services/api';
 import InputDisabled from '../../InputDisabled';
@@ -30,11 +21,6 @@ interface ISaleNewData {
   nextStep: () => void;
   prevStep: () => void;
   typeSale: 'new' | 'used';
-}
-
-interface IDirectores {
-  id: string;
-  name: string;
 }
 
 interface IOptions {
@@ -48,15 +34,22 @@ interface ISubsidiaries {
 }
 
 const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
-  const formRef = useRef<FormHandles>(null);
+  const { updateFormData, formData } = useForm();
   const [loading, setLoading] = useState(false);
   const [allRealtors, setAllRealtors] = useState<IOptions[]>([]);
   const [cordinators, setCoordinators] = useState<IOptions[]>([]);
-  const [directors, setDirectors] = useState<IDirectores[]>([]);
+  const [directors, setDirectors] = useState<IOptions[]>([]);
   const [subsidiaries, setSubsidiaries] = useState<ISubsidiaries[]>([]);
   const [isCoordinatorExist, setIsCoordinatorExist] = useState(true);
 
-  const { updateFormData } = useForm();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [form, setForm] = useState(() => ({
+    subsidiary: formData.subsidiary || '',
+    users_sellers: formData.users_sellers?.map((u: any) => u.id) || [],
+    users_captivators: formData.users_captivators?.map((u: any) => u.id) || [],
+    users_directors: formData.users_directors?.map((u: any) => u.id) || [],
+    user_coordinator: formData.user_coordinator || '',
+  }));
 
   useEffect(() => {
     const loadAllOptions = async () => {
@@ -64,152 +57,149 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         responseRealtors,
         responseCoordinators,
         responseDirectors,
-        responseSubsidiary
+        responseSubsidiary,
       ] = await Promise.all([
         api.get(`/users?departament=Comercial`),
         api.get(`/users?office=Coordenador`),
         api.get(`/users?office=Diretor`),
-        api.get(`/subsidiary`)
-      ])
+        api.get(`/subsidiary`),
+      ]);
       setAllRealtors(responseRealtors.data);
       setCoordinators(responseCoordinators.data);
-      setDirectors(responseDirectors.data)
-      setSubsidiaries(responseSubsidiary.data)
+      setDirectors(responseDirectors.data);
+      setSubsidiaries(responseSubsidiary.data);
     };
     loadAllOptions();
   }, []);
 
-  const optionsCoordenador = cordinators.map(coordinator => ({
-    label: coordinator.name,
-    value: coordinator.id,
-  }));
+  const optionsCoordenador = useMemo(
+    () =>
+      cordinators.map(coordinator => ({
+        label: coordinator.name,
+        value: coordinator.id,
+      })),
+    [cordinators],
+  );
 
-  const optionsCaptvators = allRealtors.map(cap => ({
-    label: cap.name,
-    value: cap.id,
-  }));
-  const optionsAllRealtors = allRealtors.map(all => ({
-    label: all.name,
-    value: all.id,
-  }));
+  const optionsCaptvators = useMemo(
+    () => allRealtors.map(cap => ({ label: cap.name, value: cap.id })),
+    [allRealtors],
+  );
+  const optionsAllRealtors = useMemo(
+    () => allRealtors.map(all => ({ label: all.name, value: all.id })),
+    [allRealtors],
+  );
 
-  const optionsAllDirectores = directors.map(director => {
-    return {
-      label: director.name,
-      value: director.id
-    }
-  })
-  const optionsSubsidiaries = subsidiaries.map(subsidiary => {
-    return {
-      label: subsidiary.name,
-      value: subsidiary.id
-    }
-  })
+  const optionsAllDirectores = useMemo(
+    () =>
+      directors.map(director => ({ label: director.name, value: director.id })),
+    [directors],
+  );
+
+  const optionsSubsidiaries = useMemo(
+    () =>
+      subsidiaries.map(subsidiary => ({
+        label: subsidiary.name,
+        value: subsidiary.id,
+      })),
+    [subsidiaries],
+  );
 
   const handleNotCoordinator = () => {
-    setIsCoordinatorExist(!isCoordinatorExist);
+    setIsCoordinatorExist(prev => !prev);
+    if (isCoordinatorExist) {
+      setForm(prev => ({ ...prev, user_coordinator: '' }));
+    }
+  };
+
+  const handleChange = (field: string) => (value: any) => {
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = useCallback(
-    async data => {
-      const { users_sellers, users_captivators, users_directors } = data;
-      let formData = {};
-      formRef.current?.setErrors({});
-      const newDirectors = users_directors.map((director: any) => ({
-        id: director,
-      }));
-      const newUsersSellers = users_sellers.map((saller: any) => ({
-        id: saller,
-      }));
-      if (users_captivators) {
-        const newUsersCap = users_captivators.map((cap: any) => ({
-          id: cap,
-        }));
-        formData = {
-          users_captivators: newUsersCap,
-        };
-      }
-
-      formData = {
+    async (data: typeof form) => {
+      const payload = {
         ...data,
-        ...formData,
-        users_sellers: newUsersSellers,
-        users_directors: newDirectors
-      }
+      };
+
+      const validationSchema =
+        typeSale === 'new'
+          ? Yup.object().shape({
+              subsidiary: Yup.string().required('Filial obrigatória'),
+              users_sellers: Yup.array()
+                .of(Yup.string().required())
+                .min(1, 'Vendedor(es) Obrigatório'),
+              user_coordinator: Yup.string().nullable(),
+              users_directors: Yup.array()
+                .of(Yup.string().required())
+                .min(1, 'Diretor obrigatório')
+                .max(2, 'No máximo dois diretores'),
+            })
+          : Yup.object().shape({
+              subsidiary: Yup.string().required('Filial obrigatória'),
+              users_sellers: Yup.array()
+                .of(Yup.string().required())
+                .min(1, 'Vendedor Obrigatório'),
+              users_captivators: Yup.array()
+                .of(Yup.string().required())
+                .min(1, 'Captador Obrigatório'),
+              user_coordinator: Yup.string().nullable(),
+              users_directors: Yup.array()
+                .of(Yup.string().required())
+                .min(1, 'Diretor obrigatório')
+                .max(2, 'No máximo dois diretores'),
+            });
 
       try {
         setLoading(true);
-        if (typeSale === 'new') {
-          const schema = Yup.object().shape({
-            users_sellers: Yup.array()
-              .of(
-                Yup.object().shape({
-                  id: Yup.string().required('Vendedor Obrigatório'),
-                }),
-              )
-              .required('Vendedor(es) Obrigatório'),
-            user_coordinator: Yup.string(),
-            users_directors: Yup.array()
-              .of(
-                Yup.object().shape({
-                  id: Yup.string().required('Diretor Obrigatório'),
-                }),
-              ).max(2, 'No máximo dois diretores')
-              .required('Diretor(es) Obrigatório'),
-          });
-          await schema.validate(formData, {
-            abortEarly: false,
-          });
-        } else if (typeSale === 'used') {
-          const schema = Yup.object().shape({
-            users_sellers: Yup.array()
-              .of(
-                Yup.object().shape({
-                  id: Yup.string().required('Vendedor Obrigatório'),
-                }),
-              )
-              .required('Vendedor Obrigatório'),
-            users_captivators: Yup.array()
-              .of(
-                Yup.object().shape({
-                  id: Yup.string().required('Captador Obrigatório'),
-                }),
-              )
-              .required('Captador Obrigatório'),
-            users_directors: Yup.array()
-              .of(
-                Yup.object().shape({
-                  id: Yup.string().required('Diretor Obrigatório'),
-                }),
-              ).max(2, 'No máximo dois diretores')
-              .required('Diretor(es) Obrigatório'),
-          });
-          await schema.validate(formData, {
-            abortEarly: false,
-          });
+        await validationSchema.validate(payload, { abortEarly: false });
+        const formatted: any = {
+          subsidiary: payload.subsidiary,
+          users_sellers: payload.users_sellers.map((id: string) => ({ id })),
+          users_directors: payload.users_directors.map((id: string) => ({
+            id,
+          })),
+          user_coordinator:
+            payload.user_coordinator !== '' ? payload.user_coordinator : null,
+        };
+        if (typeSale === 'used' && Array.isArray(payload.users_captivators)) {
+          formatted.users_captivators = payload.users_captivators.map(
+            (id: string) => ({ id }),
+          );
         }
-        updateFormData(formData);
+        updateFormData(formatted);
         nextStep();
         setLoading(false);
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const erros = getValidationErros(err);
-          formRef.current?.setErrors(erros);
+          setErrors(erros);
         }
         toast.error('ERROR!, verifique as informações e tente novamente');
         setLoading(false);
       }
     },
-    [nextStep, typeSale, updateFormData],
+    [form, nextStep, typeSale, updateFormData],
   );
+
   return (
     <Container>
-      <Form ref={formRef} onSubmit={handleSubmit}>
+      <form
+        onSubmit={event => {
+          event.preventDefault();
+          handleSubmit(form);
+        }}
+      >
         <Select
           name="subsidiary"
           options={optionsSubsidiaries}
           label="Filial da Venda"
           placeholder="Filial Maranhão"
+          value={optionsSubsidiaries.find(opt => opt.value === form.subsidiary)}
+          onChange={option =>
+            handleChange('subsidiary')((option as any)?.value || '')
+          }
+          error={errors.subsidiary}
         />
         {typeSale === 'new' && (
           <>
@@ -217,16 +207,38 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               name="users_sellers"
               options={optionsAllRealtors}
               label="Corretor Vendedor"
-              placeholder="Infome o corretor(es)"
+              placeholder="Informe o(s) corretor(es)"
               isMulti
+              value={optionsAllRealtors.filter(opt =>
+                Array.isArray(form.users_sellers)
+                  ? form.users_sellers.includes(opt.value)
+                  : false,
+              )}
+              onChange={option =>
+                handleChange('users_sellers')(
+                  Array.isArray(option)
+                    ? option.map(o => (o as any).value)
+                    : [],
+                )
+              }
+              error={errors.users_sellers}
             />
             <Coordinator>
               {isCoordinatorExist ? (
                 <Select
                   name="user_coordinator"
-                  placeholder="Selecione o coordernador"
+                  placeholder="Selecione o coordenador"
                   options={optionsCoordenador}
                   label="Coordenador"
+                  value={optionsCoordenador.find(
+                    opt => opt.value === form.user_coordinator,
+                  )}
+                  onChange={option =>
+                    handleChange('user_coordinator')(
+                      (option as any)?.value || '',
+                    )
+                  }
+                  error={errors.user_coordinator}
                 />
               ) : (
                 <InputDisabled label="Coordenador" data="Nenhum" />
@@ -238,8 +250,9 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                   name="not-coordinators"
                   id="not-coordinators"
                   onChange={handleNotCoordinator}
+                  checked={!isCoordinatorExist}
                 />
-                <label htmlFor="not-coordinators">Não Possuí Coordenação</label>
+                <label htmlFor="not-coordinators">Não Possui Coordenação</label>
               </div>
             </Coordinator>
             <Directors>
@@ -249,6 +262,19 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 options={optionsAllDirectores}
                 label="Diretor(es)"
                 isMulti
+                value={optionsAllDirectores.filter(opt =>
+                  Array.isArray(form.users_directors)
+                    ? form.users_directors.includes(opt.value)
+                    : false,
+                )}
+                onChange={option =>
+                  handleChange('users_directors')(
+                    Array.isArray(option)
+                      ? option.map(o => (o as any).value)
+                      : [],
+                  )
+                }
+                error={errors.users_directors}
               />
             </Directors>
           </>
@@ -261,8 +287,21 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                   name="users_sellers"
                   options={optionsAllRealtors}
                   label="Corretor Vendedor"
-                  placeholder="Infome o corretor(es)"
+                  placeholder="Informe o corretor(es)"
                   isMulti
+                  value={optionsAllRealtors.filter(opt =>
+                    Array.isArray(form.users_sellers)
+                      ? form.users_sellers.includes(opt.value)
+                      : false,
+                  )}
+                  onChange={option =>
+                    handleChange('users_sellers')(
+                      Array.isArray(option)
+                        ? option.map(o => (o as any).value)
+                        : [],
+                    )
+                  }
+                  error={errors.users_sellers}
                 />
               </UserSallersContainer>
 
@@ -273,6 +312,19 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                   label="Corretor Captador"
                   isMulti
                   placeholder="Informe o(s) Captador(es)"
+                  value={optionsCaptvators.filter(opt =>
+                    Array.isArray(form.users_captivators)
+                      ? form.users_captivators.includes(opt.value)
+                      : false,
+                  )}
+                  onChange={option =>
+                    handleChange('users_captivators')(
+                      Array.isArray(option)
+                        ? option.map(o => (o as any).value)
+                        : [],
+                    )
+                  }
+                  error={errors.users_captivators}
                 />
               </UserCaptivators>
             </InputGroup>
@@ -281,9 +333,18 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 {isCoordinatorExist ? (
                   <Select
                     name="user_coordinator"
-                    placeholder="Selecione o coordernador"
+                    placeholder="Selecione o coordenador"
                     options={optionsCoordenador}
                     label="Coordenador"
+                    value={optionsCoordenador.find(
+                      opt => opt.value === form.user_coordinator,
+                    )}
+                    onChange={option =>
+                      handleChange('user_coordinator')(
+                        (option as any)?.value || '',
+                      )
+                    }
+                    error={errors.user_coordinator}
                   />
                 ) : (
                   <InputDisabled label="Coordenador" data="Nenhum" />
@@ -295,9 +356,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                     name="not-coordinators"
                     id="not-coordinators"
                     onChange={handleNotCoordinator}
+                    checked={!isCoordinatorExist}
                   />
                   <label htmlFor="not-coordinators">
-                    Não Possuí Coordenação
+                    Não Possui Coordenação
                   </label>
                 </div>
               </Coordinator>
@@ -309,6 +371,19 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
                 options={optionsAllDirectores}
                 label="Diretores"
                 isMulti
+                value={optionsAllDirectores.filter(opt =>
+                  Array.isArray(form.users_directors)
+                    ? form.users_directors.includes(opt.value)
+                    : false,
+                )}
+                onChange={option =>
+                  handleChange('users_directors')(
+                    Array.isArray(option)
+                      ? option.map(o => (o as any).value)
+                      : [],
+                  )
+                }
+                error={errors.users_directors}
               />
             </Directors>
           </>
@@ -322,7 +397,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
             {loading ? '...' : 'Próximo'}
           </Button>
         </ButtonGroup>
-      </Form>
+      </form>
     </Container>
   );
 };

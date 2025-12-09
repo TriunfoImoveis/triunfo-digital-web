@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import * as Yup from 'yup';
-import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useForm } from '../../../context/FormContext';
@@ -11,7 +9,7 @@ import { money } from '../../../utils/masked';
 
 import api from '../../../services/api';
 
-import Select from '../../ReactSelect';
+import Select from '../../FormControls/SelectControlled';
 import Button from '../../Button';
 import CheckBox from '../../CheckBox';
 
@@ -25,9 +23,9 @@ import {
   AddButton,
   PaymentInstallments,
 } from './styles';
-import Input from '../../Input';
+import Input from '../../FormControls/InputControlled';
 import { valiateDate } from '../../../utils/validateDate';
-import TextArea from '../../TextArea';
+import TextArea from '../../FormControls/TextAreaControlled';
 
 interface ISaleNewData {
   prevStep: () => void;
@@ -50,17 +48,62 @@ interface IInstallments {
   pay_date?: string;
 }
 
+const schema = Yup.object().shape({
+  realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
+  sale_date: Yup.string()
+    .test('validateDate', 'Data Invalida', value => valiateDate(value || ''))
+    .required('Data da Venda Obrigatória'),
+  company: Yup.string(),
+  payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
+  percentage_sale: Yup.string().required('Porcentagem Total da venda Obrigatória'),
+  commission: Yup.string().required('Comissão obrigatória'),
+  origin: Yup.string().required('Origem da venda obrigatória'),
+  value_signal: Yup.string().required('Valor do Ato Obrigatório'),
+  pay_date_signal: Yup.string()
+    .test('validateDate', 'Data Invalida', value => valiateDate(value || ''))
+    .required('Data do pagamento do Ato Obrigatório'),
+  installments: Yup.array().of(
+    Yup.object().shape({
+      value: Yup.string().required('Valor da parcela obrigatória'),
+      due_date: Yup.string()
+        .test('validateDate', 'Data Invalida', value => valiateDate(value || ''))
+        .required('Data do pagamento da parcela obrigatória'),
+    }),
+  ),
+  bonus: Yup.string(),
+  observation: Yup.string().required(
+    'Informe uma observação, se não houver digite nenhuma observação',
+  ),
+});
+
 const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
-  const formRef = useRef<FormHandles>(null);
+  const { updateFormData, formData } = useForm();
   const [loading, setLoading] = useState(false);
   const [origins, setOrigins] = useState<IOptionsData[]>([]);
   const [paymentTypes, setpaymentTypes] = useState<IOptionsData[]>([]);
-  const [comissionValue, setcomissionValue] = useState('');
-  const [isExistBonus, setisExistBonus] = useState(false);
-  const [installments, setInstallments] = useState<IInstallments[]>([
-    { installment_number: 1, value: '', due_date: '' },
-  ]);
-  const { updateFormData } = useForm();
+  const [comissionValue, setcomissionValue] = useState(
+    formData.commission ? money(formData.commission) : '',
+  );
+  const [isExistBonus, setisExistBonus] = useState(Boolean(formData.bonus));
+  const [installments, setInstallments] = useState<IInstallments[]>(
+    formData.installments?.length
+      ? formData.installments
+      : [{ installment_number: 1, value: '', due_date: '' }],
+  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [form, setForm] = useState(() => ({
+    realty_ammount: String(formData.realty_ammount || ''),
+    sale_date: String(formData.sale_date || ''),
+    payment_type: String(formData.payment_type || ''),
+    percentage_sale: String(formData.percentage_sale || ''),
+    commission: String(formData.commission || ''),
+    value_signal: String(formData.value_signal || ''),
+    pay_date_signal: String(formData.pay_date_signal || ''),
+    origin: String(formData.origin || ''),
+    bonus: String(formData.bonus || ''),
+    observation: String(formData.observation || ''),
+  }));
 
   useEffect(() => {
     const loadOrigins = async () => {
@@ -98,125 +141,29 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     value: pt.id,
   }));
 
-  const calcComission = useCallback(() => {
-    const valueSale = formRef.current?.getFieldValue('realty_ammount');
-    const portcent = formRef.current?.getFieldValue('percentage_sale');
-    const comission = currency(valueSale) * (Number(portcent.replace(',','.')) / 100);
-    setcomissionValue(money(comission));
-  }, []);
-
-  const unMaskedPlotsValues = (installments: IInstallments[]) => {
-    const unMaskedInstallments = installments.map(installment => ({
-      installment_number: installment.installment_number,
-      due_date: DateYMD(installment.due_date),
-      value: String(currency(installment.value)),
-    }));
-    return unMaskedInstallments;
-  };
-  const unMaskValue = useCallback(() => {
-    formRef.current?.setFieldValue(
-      'realty_ammount',
-      currency(formRef.current?.getFieldValue('realty_ammount')),
-    );
-    formRef.current?.setFieldValue(
-      'sale_date',
-      DateYMD(formRef.current?.getFieldValue('sale_date')),
-    );
-    formRef.current?.setFieldValue(
-      'pay_date_signal',
-      DateYMD(formRef.current?.getFieldValue('pay_date_signal')),
-    );
-    formRef.current?.setFieldValue(
-      'percentage_sale',
-      Number(formRef.current?.getFieldValue('percentage_sale').replace(',','.')),
-    );
-    formRef.current?.setFieldValue(
-      'commission',
-      currency(formRef.current?.getFieldValue('commission')),
-    );
-    formRef.current?.setFieldValue(
-      'value_signal',
-      currency(formRef.current.getFieldValue('value_signal')),
-    );
-
-    if (formRef.current?.getFieldValue('bonus')) {
-      formRef.current?.setFieldValue(
-        'bonus',
-        currency(formRef.current.getFieldValue('bonus')),
-      );
-    }
-  }, []);
-
-  const handleSubmit = useCallback(
-    async data => {
-      formRef.current?.setErrors({});
-      try {
-        setLoading(true);
-        const schema = Yup.object().shape({
-          realty_ammount: Yup.string().required('Valor da Venda Obrigatória'),
-          sale_date: Yup.string()
-            .test('validateDate', 'Data Invalida', function valid(value) {
-              const { path, createError } = this;
-              const isValid = valiateDate(value);
-              return isValid || createError({ path, message: 'Data Invalida' });
-            })
-            .required('Data da Venda Obrigatória'),
-          company: Yup.string(),
-          payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
-          percentage_sale: Yup.string().required(
-            'Porcetagem Total da venda Obrigatória',
-          ),
-          origin: Yup.string().required('Origem da venda obrigatória'),
-          value_signal: Yup.string().required('Valor do Ato Obrigatório'),
-          pay_date_signal: Yup.string()
-            .test('validateDate', 'Data Invalida', function valid(value) {
-              const { path, createError } = this;
-              const isValid = valiateDate(value);
-              return isValid || createError({ path, message: 'Data Invalida' });
-            })
-            .required('Data do pagamento do Ato Obrigatório'),
-          installments: Yup.array().of(
-            Yup.object().shape({
-              value: Yup.string().required('Valor da parcela obrigatória'),
-              due_date: Yup.string()
-                .test('validateDate', 'Data Invalida', function valid(value) {
-                  const { path, createError } = this;
-                  const isValid = valiateDate(value);
-                  return (
-                    isValid || createError({ path, message: 'Data Invalida' })
-                  );
-                })
-                .required('Data do pagamento da parcela obrigatória'),
-            }),
-          ),
-          bonus: Yup.string(),
-          observation: Yup.string().required(
-            'Informe uma obrservação, se não houver digite nenhuma observação',
-          ),
-        });
-
-        await schema.validate(data, {
-          abortEarly: false,
-        });
-        const installments = unMaskedPlotsValues(data.installments);
-        unMaskValue();
-        const newdata = formRef.current?.getData();
-        const financesData = { ...newdata, installments };
-        updateFormData(financesData || {});
-        nextStep();
-        setLoading(false);
-      } catch (err) {
-        if (err instanceof Yup.ValidationError) {
-          const erros = getValidationErros(err);
-          formRef.current?.setErrors(erros);
-        }
-
-        toast.error('ERROR!, verifique as informações e tente novamente');
-        setLoading(false);
+  const calcComission = useCallback(
+    (value?: string) => {
+      const saleValue = String(value ?? form.realty_ammount ?? '');
+      const percent = String(form.percentage_sale ?? '');
+      if (!saleValue || !percent) {
+        setcomissionValue('');
+        setForm(prev => ({ ...prev, commission: '' }));
+        return;
       }
+      const comission =
+        currency(saleValue) * (Number(percent.replace(',', '.')) / 100);
+      const formatted = money(comission);
+      setcomissionValue(formatted);
+      setForm(prev => ({ ...prev, commission: formatted }));
     },
-    [unMaskValue, nextStep, updateFormData],
+    [form.percentage_sale, form.realty_ammount],
   );
+
+  useEffect(() => {
+    if (form.realty_ammount && form.percentage_sale) {
+      calcComission();
+    }
+  }, [calcComission, form.percentage_sale, form.realty_ammount]);
 
   const handleValue = useCallback((value: string) => {
     switch (value) {
@@ -234,12 +181,17 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
     }
   }, []);
 
+  const handleChange = (field: string) => (value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+    if (field === 'realty_ammount' || field === 'percentage_sale') {
+      calcComission(field === 'realty_ammount' ? value : undefined);
+    }
+  };
+
   const addPlots = useCallback(() => {
     const listPlots = installments.slice();
     const numberPlot = Number(
-      formRef.current?.getFieldValue(
-        `installments[${installments.length - 1}].installment_number`,
-      ),
+      listPlots[listPlots.length - 1]?.installment_number || listPlots.length,
     );
 
     listPlots.push({
@@ -251,26 +203,85 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
   }, [installments]);
   const removePlots = useCallback(() => {
     const listPlots = installments.slice();
-    listPlots.pop();
-
-    setInstallments(listPlots);
+    if (listPlots.length > 1) {
+      listPlots.pop();
+      setInstallments(listPlots);
+    }
   }, [installments]);
+
+  const handleInstallmentChange =
+    (index: number, field: keyof IInstallments) => (value: string) => {
+      const list = installments.slice();
+      list[index] = { ...list[index], [field]: value };
+      setInstallments(list);
+    };
+
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+      setErrors({});
+      try {
+        setLoading(true);
+        await schema.validate(
+          { ...form, installments },
+          {
+            abortEarly: false,
+          },
+        );
+        const installmentsFormatted = installments.map(installment => ({
+          installment_number: installment.installment_number,
+          due_date: DateYMD(installment.due_date),
+          value: String(currency(installment.value)),
+        }));
+
+        const financesData = {
+          ...form,
+          realty_ammount: currency(form.realty_ammount),
+          sale_date: DateYMD(form.sale_date),
+          pay_date_signal: DateYMD(form.pay_date_signal),
+          percentage_sale: Number(String(form.percentage_sale).replace(',', '.')),
+          commission: currency(comissionValue || form.commission),
+          value_signal: currency(form.value_signal),
+          bonus: isExistBonus ? currency(form.bonus) : undefined,
+          installments: installmentsFormatted,
+        };
+        updateFormData(financesData || {});
+        nextStep();
+        setLoading(false);
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const erros = getValidationErros(err);
+          setErrors(erros);
+        }
+
+        toast.error('ERROR!, verifique as informações e tente novamente');
+        setLoading(false);
+      }
+    },
+    [comissionValue, form, installments, isExistBonus, nextStep, updateFormData],
+  );
 
   return (
     <Container>
-      <Form ref={formRef} onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <InputGroup>
           <InputForm
             label="Valor da Venda"
             name="realty_ammount"
             mask="currency"
             placeholder="R$ 1.000.000,00"
+            value={form.realty_ammount}
+            onChange={handleChange('realty_ammount')}
+            error={errors.realty_ammount}
           />
           <InputForm
             mask="date"
             label="Data da Venda"
             name="sale_date"
             placeholder="DD/MM/AAAA"
+            value={form.sale_date}
+            onChange={handleChange('sale_date')}
+            error={errors.sale_date}
           />
         </InputGroup>
         <Plot>
@@ -279,12 +290,18 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             name="value_signal"
             label="Ato"
             placeholder="R$ 0,00"
+            value={form.value_signal}
+            onChange={handleChange('value_signal')}
+            error={errors.value_signal}
           />
           <Input
             mask="date"
             name="pay_date_signal"
             label="Data de Pagamento do Ato"
             placeholder="07/01/2021"
+            value={form.pay_date_signal}
+            onChange={handleChange('pay_date_signal')}
+            error={errors.pay_date_signal}
           />
         </Plot>
         <InputGroup>
@@ -292,7 +309,9 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             label="% da Venda"
             name="percentage_sale"
             placeholder="4,3%"
-            onChange={calcComission}
+            value={form.percentage_sale}
+            onChange={handleChange('percentage_sale')}
+            error={errors.percentage_sale}
           />
           <InputForm
             label="Comissão"
@@ -301,6 +320,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             placeholder="R$ 50.000,00"
             value={comissionValue}
             readOnly
+            error={errors.commission}
           />
         </InputGroup>
         <InputGroup>
@@ -309,6 +329,11 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             options={optionsFormaPagamento}
             label="Forma de pagamento dos honorários"
             placeholder="Selecione a forma de pagamento dos honorários"
+            value={optionsFormaPagamento.find(opt => opt.value === form.payment_type)}
+            onChange={option =>
+              handleChange('payment_type')((option as any)?.value || '')
+            }
+            error={errors.payment_type}
           />
         </InputGroup>
         {installments.length !== 0 ? (
@@ -322,21 +347,26 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
                     label="Parcela"
                     min={1}
                     readOnly
-                    defaultValue={installment.installment_number}
+                    value={String(installment.installment_number)}
+                    onChange={() => {}}
                   />
                   <Input
                     mask="currency"
                     name={`installments[${index}].value`}
                     label="Valor da Parcela"
                     placeholder="R$ 0,00"
-                    defaultValue={installment.value}
+                    value={installment.value}
+                    onChange={handleInstallmentChange(index, 'value')}
+                    error={errors[`installments[${index}].value`]}
                   />
                   <Input
                     mask="date"
                     name={`installments[${index}].due_date`}
                     label="Data de Vencimento"
                     placeholder="07/01/2021"
-                    defaultValue={installment.due_date}
+                    value={installment.due_date}
+                    onChange={handleInstallmentChange(index, 'due_date')}
+                    error={errors[`installments[${index}].due_date`]}
                   />
 
                   <AddButton type="button" onClick={addPlots}>
@@ -351,21 +381,26 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
                     label="Parcela"
                     min={1}
                     readOnly
-                    defaultValue={index + 1}
+                    value={String(index + 1)}
+                    onChange={() => {}}
                   />
                   <Input
                     mask="currency"
                     name={`installments[${index}].value`}
                     label="Valor da Parcela"
                     placeholder="R$ 0,00"
-                    defaultValue={installment.value}
+                    value={installment.value}
+                    onChange={handleInstallmentChange(index, 'value')}
+                    error={errors[`installments[${index}].value`]}
                   />
                   <Input
                     mask="date"
                     name={`installments[${index}].due_date`}
                     label="Data de Vencimento"
                     placeholder="07/01/2021"
-                    defaultValue={installment.due_date}
+                    value={installment.due_date}
+                    onChange={handleInstallmentChange(index, 'due_date')}
+                    error={errors[`installments[${index}].due_date`]}
                   />
 
                   <AddButton type="button" onClick={removePlots}>
@@ -377,8 +412,8 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           </PaymentInstallments>
         ) : null}
         <span className="help">
-          Caso o pagamento for integral, coloque no campo parcela, o mesmo valor
-          do comissionamento!
+          Caso o pagamento for integral, coloque no campo parcela, o mesmo valor do
+          comissionamento!
         </span>
 
         <Select
@@ -386,6 +421,9 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           options={optionsOptions}
           label="Origem"
           placeholder="Selecione a origem"
+          value={optionsOptions.find(opt => opt.value === form.origin)}
+          onChange={option => handleChange('origin')((option as any)?.value || '')}
+          error={errors.origin}
         />
         <BonusConatainer>
           <span>Bonus da Venda ?</span>
@@ -397,12 +435,18 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             name="bonus"
             mask="currency"
             placeholder="Bônus"
+            value={form.bonus}
+            onChange={handleChange('bonus')}
+            error={errors.bonus}
           />
         )}
         <TextArea
           name="observation"
           label="Observação"
-          placeholder="Coloque infomações extras sobre a venda!"
+          placeholder="Coloque informações extras sobre a venda!"
+          value={form.observation}
+          onChange={value => handleChange('observation')(value)}
+          error={errors.observation}
         />
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>
@@ -412,7 +456,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             {loading ? '...' : 'Concluir cadastro'}
           </Button>
         </ButtonGroup>
-      </Form>
+      </form>
     </Container>
   );
 };
