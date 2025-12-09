@@ -10,6 +10,8 @@ interface ContainerProps {
 export const ContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  width: 100%;
+  flex: 1;
   /* position: relative; */
 
   > span.label {
@@ -28,6 +30,7 @@ export const ContainerWrapper = styled.div`
 `;
 export const Container = styled.div<ContainerProps>`
   display: flex;
+  width: 100%;
 
   cursor: pointer;
   border: 0.1rem solid ${({ theme }) => theme.colors.textColorAlpha};
@@ -48,6 +51,10 @@ export const Container = styled.div<ContainerProps>`
   }
 
   .css-2b097c-container {
+    width: 100%;
+  }
+
+  .select--is-disabled {
     width: 100%;
   }
 

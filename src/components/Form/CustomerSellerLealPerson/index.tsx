@@ -1,25 +1,15 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  ChangeEvent,
-  useCallback,
-} from 'react';
-
-import { FormHandles, Scope } from '@unform/core';
-import { Form } from '@unform/web';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import api from '../../../services/api';
 import { FoneMask } from '../../../utils/masked';
 import { unMaked, unMaskedCNPJ } from '../../../utils/unMasked';
 import Button from '../../Button';
-
-import { InputForm, ButtonGroup } from './styles';
+import { InputControlled, FormButtons } from '../../FormControls';
 import getValidationErros from '../../../utils/getValidationErros';
 import { useForm } from '../../../context/FormContext';
 
-interface ISaleNewData {
+interface Props {
   nextStep: () => void;
   prevStep: () => void;
 }
@@ -31,164 +21,161 @@ interface IClientData {
   email: string;
 }
 
-interface FormData {
-  client_seller: {
-    cnpj: string;
-    name: string;
-    phone: string;
-    address?: string;
-    email: string;
-  };
-}
+const schema = Yup.object().shape({
+  cnpj: Yup.string()
+    .min(
+      14,
+      'Informe o cnpj corretamente, cnpj deve conter 14 digitos, sem traços ou pontos',
+    )
+    .max(18, 'Informe o cnpj corretamente')
+    .required('CNPJ obrigatório'),
+  name: Yup.string().required('Nome Obrigatório'),
+  phone: Yup.string()
+    .min(11, 'O numero precisa ter pelo menos 11 números')
+    .max(15, 'Digite um numero de telefone válido')
+    .required('Telefone obrigatório'),
+  address: Yup.string(),
+  email: Yup.string()
+    .email('Infome um email válido')
+    .required('E-mail obrigatório'),
+});
 
-const CustomerSellerLealPerson: React.FC<ISaleNewData> = ({
-  nextStep,
-  prevStep,
-}) => {
-  const formRef = useRef<FormHandles>(null);
+const CustomerSellerLealPerson: React.FC<Props> = ({ nextStep, prevStep }) => {
+  const { updateFormData, formData } = useForm();
+  const [form, setForm] = useState(() => ({
+    cnpj: formData.client_seller?.cnpj || '',
+    name: formData.client_seller?.name || '',
+    phone: formData.client_seller?.phone || '',
+    address: formData.client_seller?.address || '',
+    email: formData.client_seller?.email || '',
+  }));
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [client, setCliente] = useState<IClientData>({} as IClientData);
   const [disabled, setDisable] = useState(true);
-  const { updateFormData } = useForm();
 
   useEffect(() => {
-    setDisable(true);
-    setCliente({} as IClientData);
-    return () => {
-      setDisable(true);
-      setCliente({} as IClientData);
-    };
-  }, []);
+    setDisable(!form.cnpj || form.cnpj.length < 14);
+  }, [form.cnpj]);
 
-  const searchClientoForCNPJ = async (event: ChangeEvent<HTMLInputElement>) => {
-    setCliente({} as IClientData);
-    const cnpj = unMaked(event.target.value);
-    if (cnpj.length === 14) {
-      try {
-        const response = await api.get(`/client?cnpj=${cnpj}`);
-        const { name, phone, address, email } = response.data;
-        setDisable(true);
-        setCliente({
-          name,
-          phone: FoneMask(phone),
-          address,
-          email,
-        } as IClientData);
-      } catch (error) {
-        setCliente({} as IClientData);
-        setDisable(false);
-      }
-    }
+  const handleChange = (field: string) => (value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const searchClientoForCNPJ = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setForm(prev => ({ ...prev, cnpj: value }));
+      const cnpj = unMaked(value);
+      if (cnpj.length === 14) {
+        try {
+          const response = await api.get(`/client?cnpj=${cnpj}`);
+          const { name, phone, address, email } = response.data;
+          setDisable(true);
+          setForm({
+            cnpj: value,
+            name,
+            phone: FoneMask(phone),
+            address: address || '',
+            email,
+          });
+        } catch (error) {
+          setDisable(false);
+        }
+      }
+    },
+    [],
+  );
+
   const handleSubmit = useCallback(
-    async (data: FormData) => {
-      formRef.current?.setErrors({});
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setErrors({});
       try {
         setLoading(true);
-        const schema = Yup.object().shape({
-          client_seller: Yup.object().shape({
-            name: Yup.string().required('Nome Obrigatório'),
-            cnpj: Yup.string()
-              .min(
-                14,
-                'Informe o cnpj corretamente, cnpj deve conter 14 digitos, sem traços ou pontos',
-              )
-              .max(18, 'Informe o cnpj corretamente')
-              .required('CNPJ obrigatório'),
-            phone: Yup.string()
-              .min(11, 'O numero precisa ter pelo menos 11 números')
-              .max(15, 'Digite um numero de telefone válido')
-              .required('Telefone obrigatório'),
-            address: Yup.string(),
-            email: Yup.string()
-              .email('Infome um email válido')
-              .required('E-mail obrigatório'),
-          }),
-        });
-        await schema.validate(data, {
-          abortEarly: false,
-        });
-
-        const formData = {
+        await schema.validate(form, { abortEarly: false });
+        updateFormData({
           client_seller: {
             client_type: 'JURIDICA',
-            cnpj: unMaskedCNPJ(data.client_seller.cnpj),
-            name: data.client_seller.name,
-            phone: unMaked(data.client_seller.phone),
-            address: data.client_seller.address
-              ? data.client_seller.address
-              : '',
-            email: data.client_seller.email,
+            cnpj: unMaskedCNPJ(form.cnpj),
+            name: form.name,
+            phone: unMaked(form.phone),
+            address: form.address || '',
+            email: form.email,
           },
-        };
-
-        updateFormData(formData || {});
+        });
         nextStep();
-        setCliente({} as IClientData);
         setLoading(false);
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
-          const erros = getValidationErros(err);
-          formRef.current?.setErrors(erros);
+          const fieldErrors = getValidationErros(err);
+          setErrors(fieldErrors);
         }
 
         toast.error('ERROR!, verifique as informações e tente novamente');
         setLoading(false);
       }
     },
-    [nextStep, updateFormData],
+    [form, nextStep, updateFormData],
   );
 
   return (
-    <Form ref={formRef} onSubmit={handleSubmit}>
-      <Scope path="client_seller">
-        <InputForm
-          label="CNPJ"
-          mask="cnpj"
-          name="cnpj"
-          maxlength={14}
-          onChange={searchClientoForCNPJ}
-        />
-        <InputForm
-          label="Nome da Empresa"
-          name="name"
-          readOnly={disabled}
-          defaultValue={client.name}
-        />
-        <InputForm
-          label="Telefone"
-          id="phone"
-          mask="fone"
-          name="phone"
-          type="text"
-          maxlength={11}
-          readOnly={disabled}
-          defaultValue={client.phone}
-        />
-        <InputForm
-          label="Endereço"
-          name="address"
-          readOnly={disabled}
-          defaultValue={client.address}
-        />
-        <InputForm
-          label="E-mail"
-          name="email"
-          readOnly={disabled}
-          defaultValue={client.email}
-        />
-      </Scope>
+    <form onSubmit={handleSubmit}>
+      <InputControlled
+        label="CNPJ"
+        mask="cnpj"
+        name="cnpj"
+        maxlength={14}
+        value={form.cnpj}
+        onChange={handleChange('cnpj')}
+        onBlur={searchClientoForCNPJ}
+        error={errors.cnpj}
+      />
+      <InputControlled
+        label="Nome da Empresa"
+        name="name"
+        readOnly={disabled}
+        value={form.name}
+        onChange={handleChange('name')}
+        error={errors.name}
+      />
+      <InputControlled
+        label="Telefone"
+        id="phone"
+        mask="fone"
+        name="phone"
+        type="text"
+        maxlength={11}
+        readOnly={disabled}
+        value={form.phone}
+        onChange={handleChange('phone')}
+        error={errors.phone}
+      />
+      <InputControlled
+        label="Endereço"
+        name="address"
+        readOnly={disabled}
+        value={form.address}
+        onChange={handleChange('address')}
+        error={errors.address}
+      />
+      <InputControlled
+        label="E-mail"
+        name="email"
+        readOnly={disabled}
+        value={form.email}
+        onChange={handleChange('email')}
+        error={errors.email}
+      />
 
-      <ButtonGroup>
+      <FormButtons>
         <Button type="button" className="cancel" onClick={() => prevStep()}>
           Voltar
         </Button>
         <Button type="submit" className="next">
           {loading ? '...' : 'Próximo'}
         </Button>
-      </ButtonGroup>
-    </Form>
+      </FormButtons>
+    </form>
   );
 };
 

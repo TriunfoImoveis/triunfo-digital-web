@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import Input from '../../Input';
+import Input from '../../FormControls/InputControlled';
 
 export const Container = styled.div`
   padding-bottom: 1.6rem;
