@@ -910,7 +910,7 @@ const DetailsSale: React.FC = () => {
                       <Input
                         label="E-mail"
                         name="client_buyer.email"
-                        type="email"
+                        type="email" autoComplete="off"
                         placeholder="E-mail"
                         readOnly={edits.buyer}
                         defaultValue={clientBuyer.email}
@@ -1051,7 +1051,7 @@ const DetailsSale: React.FC = () => {
                         <Input
                           label="E-mail"
                           name="client_seller.email"
-                          type="email"
+                          type="email" autoComplete="off"
                           placeholder="E-mail"
                           readOnly={edits.seller}
                         />

@@ -88,7 +88,7 @@ const ForgotPassword: React.FC = () => {
             </ForgotDescrption>
             <Form ref={formRef} onSubmit={handleSubmit}>
               <Input
-                type="email"
+                type="email" autoComplete="off"
                 name="email"
                 icon={FaUser}
                 placeholder="email@exmplo.com"

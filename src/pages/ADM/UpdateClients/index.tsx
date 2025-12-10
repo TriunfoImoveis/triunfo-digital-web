@@ -486,7 +486,7 @@ const UpdateClients: React.FC = () => {
               <InputControlled
                 label="E-mail"
                 name="email"
-                type="email"
+                type="email" autoComplete="off"
                 value={formPF.email}
                 onChange={handleChangePF('email')}
                 error={errorsPF.email}

@@ -443,6 +443,7 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
               label="E-mail"
               name="email"
               type="email"
+              autoComplete="off"
               value={form.email}
               readOnly={disabled}
               onChange={handleChange('email')}

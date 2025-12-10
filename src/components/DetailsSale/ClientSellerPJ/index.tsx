@@ -161,7 +161,7 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
                 <Input
                   label="E-mail"
                   name="client_seller.email"
-                  type="email"
+                  type="email" autoComplete="off"
                   placeholder="E-mail"
                   readOnly={edit}
                   defaultValue={clientSeller.email}

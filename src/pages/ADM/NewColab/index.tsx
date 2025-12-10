@@ -321,12 +321,12 @@ const NewColab: React.FC = () => {
               <fieldset className="login">
                 <legend>INFORMAÇÕES DE LOGIN</legend>
                 <Input label="Nome Completo" name="name" />
-                <Input label="E-mail" name="email" type="email" />
-                <Input label="Nova Senha" name="password" type="password" />
+                <Input label="E-mail" name="email" type="email" autoComplete="off" />
+                <Input label="Nova Senha" name="password" type="password" autoComplete="off" />
                 <Input
                   label="Confirmar Nova Senha"
                   name="password_confirmation"
-                  type="password"
+                  type="password" autoComplete="off"
                 />
               </fieldset>
               <Avatar>
@@ -398,12 +398,12 @@ const NewColab: React.FC = () => {
               <fieldset className="login">
                 <legend>INFORMAÇÕES DE LOGIN</legend>
                 <Input label="Nome Completo" name="name" />
-                <Input label="E-mail" name="email" type="email" />
-                <Input label="Nova Senha" name="password" type="password" />
+                <Input label="E-mail" name="email" type="email" autoComplete="off" />
+                <Input label="Nova Senha" name="password" type="password" autoComplete="off" />
                 <Input
                   label="Confirmar Nova Senha"
                   name="password_confirmation"
-                  type="password"
+                  type="password" autoComplete="off"
                 />
               </fieldset>
               <Avatar>
