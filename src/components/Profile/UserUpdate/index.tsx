@@ -106,17 +106,17 @@ const UserUpdate: React.FC = () => {
             <InputForm
               label="Senha Antiga"
               name="oldPassword"
-              type="password"
+              type="password" autoComplete="off"
             />
           </Input>
           <Input>
-            <InputForm label="Nova Senha" name="newPassword" type="password" />
+            <InputForm label="Nova Senha" name="newPassword" type="password" autoComplete="off" />
           </Input>
           <Input>
             <InputForm
               label="Repetetir Nova Senha"
               name="confirmNewPassword"
-              type="password"
+              type="password" autoComplete="off"
             />
           </Input>
           <Input>

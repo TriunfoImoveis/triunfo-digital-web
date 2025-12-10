@@ -193,7 +193,7 @@ const NewBuilders: React.FC = () => {
                 <legend>INFORMAÇÕES DA CONSTRUTORA</legend>
                 <Input label="Nome" name="name" />
                 <Input label="CNPJ" name="cnpj" maxlength={14} mask="cnpj" />
-                <Input label="E-mail" name="email" type="email" />
+                <Input label="E-mail" name="email" type="email" autoComplete="off" />
                 <Input
                   label="Telefone"
                   name="phone"
@@ -250,7 +250,7 @@ const NewBuilders: React.FC = () => {
                 <Input
                   label="E-mail"
                   name="email"
-                  type="email"
+                  type="email" autoComplete="off"
                   placeholder="triunfocontrutora@gmail.com"
                 />
                 <Input

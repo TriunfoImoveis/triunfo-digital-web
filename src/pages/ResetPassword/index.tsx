@@ -83,14 +83,14 @@ const ResetPassword: React.FC = () => {
         <Form ref={formRef} onSubmit={handleSubmit}>
           <Input
             label="Nova senha"
-            type="password"
+            type="password" autoComplete="off"
             name="new_password"
             icon={RiLockPasswordFill}
             placeholder="************"
           />
           <Input
             label="Repita a nova senha"
-            type="password"
+            type="password" autoComplete="off"
             name="password_confirmation"
             icon={RiLockPasswordFill}
             placeholder="************"

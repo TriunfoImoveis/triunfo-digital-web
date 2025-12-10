@@ -222,7 +222,7 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                 <Input
                   label="E-mail"
                   name="client_buyer.email"
-                  type="email"
+                  type="email" autoComplete="off"
                   placeholder="E-mail"
                   readOnly={edit}
                   defaultValue={clientBuyer.email}
