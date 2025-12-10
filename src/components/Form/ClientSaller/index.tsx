@@ -207,7 +207,7 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
         }
       }
     },
-    [],
+    [normalizeClientData],
   );
 
   const professionValue = useMemo(() => {
