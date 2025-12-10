@@ -105,6 +105,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     [subsidiaries],
   );
 
+  const clearError = useCallback((field: string) => {
+    setErrors(prev => ({ ...prev, [field]: '' }));
+  }, []);
+
   const handleNotCoordinator = () => {
     setIsCoordinatorExist(prev => !prev);
     if (isCoordinatorExist) {
@@ -113,6 +117,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
   };
 
   const handleChange = (field: string) => (value: any) => {
+    clearError(field);
     setForm(prev => ({ ...prev, [field]: value }));
   };
 

@@ -67,6 +67,8 @@ const InputControlled: React.FC<InputProps> = ({
   error,
   value,
   onChange,
+  onFocus,
+  onBlur,
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -100,10 +102,14 @@ const InputControlled: React.FC<InputProps> = ({
           {...rest}
           value={value}
           maxLength={maxlength}
-          onFocus={() => setIsFocused(true)}
+          onFocus={event => {
+            setIsFocused(true);
+            onFocus?.(event);
+          }}
           onBlur={e => {
             setIsFocused(false);
             setIsFilled(!!e.target.value);
+            onBlur?.(e);
           }}
           onChange={handleChange}
         />

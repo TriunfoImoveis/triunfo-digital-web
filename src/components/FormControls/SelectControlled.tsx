@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { FocusEvent, useCallback, useState } from 'react';
 import Select, {
   OptionTypeBase,
   Props as SelectProps,
@@ -34,6 +34,8 @@ const SelectControlled: React.FC<Props> = ({
   error,
   value,
   onChange,
+  onFocus,
+  onBlur,
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -45,6 +47,22 @@ const SelectControlled: React.FC<Props> = ({
     [onChange],
   );
 
+  const handleFocus = useCallback(
+    (event: FocusEvent<any>) => {
+      setIsFocused(true);
+      onFocus?.(event);
+    },
+    [onFocus],
+  );
+
+  const handleBlur = useCallback(
+    (event: FocusEvent<any>) => {
+      setIsFocused(false);
+      onBlur?.(event);
+    },
+    [onBlur],
+  );
+
   return (
     <ContainerWrapper>
       {label && <span className="label">{label}</span>}
@@ -53,8 +71,8 @@ const SelectControlled: React.FC<Props> = ({
           {...rest}
           value={value}
           onChange={handleChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           classNamePrefix="select"
         />
         {add && (

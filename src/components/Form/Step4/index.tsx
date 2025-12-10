@@ -55,7 +55,9 @@ const schema = Yup.object().shape({
     .required('Data da Venda Obrigatória'),
   company: Yup.string(),
   payment_type: Yup.string().required('Forma de Pagamento Obrigatório'),
-  percentage_sale: Yup.string().required('Porcentagem Total da venda Obrigatória'),
+  percentage_sale: Yup.string().required(
+    'Porcentagem Total da venda Obrigatória',
+  ),
   commission: Yup.string().required('Comissão obrigatória'),
   origin: Yup.string().required('Origem da venda obrigatória'),
   value_signal: Yup.string().required('Valor do Ato Obrigatório'),
@@ -66,7 +68,9 @@ const schema = Yup.object().shape({
     Yup.object().shape({
       value: Yup.string().required('Valor da parcela obrigatória'),
       due_date: Yup.string()
-        .test('validateDate', 'Data Invalida', value => valiateDate(value || ''))
+        .test('validateDate', 'Data Invalida', value =>
+          valiateDate(value || ''),
+        )
         .required('Data do pagamento da parcela obrigatória'),
     }),
   ),
@@ -239,7 +243,9 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           realty_ammount: currency(form.realty_ammount),
           sale_date: DateYMD(form.sale_date),
           pay_date_signal: DateYMD(form.pay_date_signal),
-          percentage_sale: Number(String(form.percentage_sale).replace(',', '.')),
+          percentage_sale: Number(
+            String(form.percentage_sale).replace(',', '.'),
+          ),
           commission: currency(comissionValue || form.commission),
           value_signal: currency(form.value_signal),
           bonus: isExistBonus ? currency(form.bonus) : undefined,
@@ -258,7 +264,14 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [comissionValue, form, installments, isExistBonus, nextStep, updateFormData],
+    [
+      comissionValue,
+      form,
+      installments,
+      isExistBonus,
+      nextStep,
+      updateFormData,
+    ],
   );
 
   return (
@@ -329,7 +342,9 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
             options={optionsFormaPagamento}
             label="Forma de pagamento dos honorários"
             placeholder="Selecione a forma de pagamento dos honorários"
-            value={optionsFormaPagamento.find(opt => opt.value === form.payment_type)}
+            value={optionsFormaPagamento.find(
+              opt => opt.value === form.payment_type,
+            )}
             onChange={option =>
               handleChange('payment_type')((option as any)?.value || '')
             }
@@ -412,17 +427,19 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
           </PaymentInstallments>
         ) : null}
         <span className="help">
-          Caso o pagamento for integral, coloque no campo parcela, o mesmo valor do
-          comissionamento!
+          Caso o pagamento for integral, coloque no campo parcela, o mesmo valor
+          do comissionamento!
         </span>
 
         <Select
           name="origin"
           options={optionsOptions}
-          label="Origem"
-          placeholder="Selecione a origem"
+          label="Canal"
+          placeholder="Selecione o canal de onde veio a venda"
           value={optionsOptions.find(opt => opt.value === form.origin)}
-          onChange={option => handleChange('origin')((option as any)?.value || '')}
+          onChange={option =>
+            handleChange('origin')((option as any)?.value || '')
+          }
           error={errors.origin}
         />
         <BonusConatainer>

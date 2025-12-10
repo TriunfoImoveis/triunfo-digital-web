@@ -59,6 +59,23 @@ interface IClientData {
   profession?: IProfession | string;
 }
 
+const civilStatusToCode: Record<string, string> = {
+  'CASADO(A)': 'C',
+  CASADO: 'C',
+  'SOLTEIRO(A)': 'S',
+  SOLTEIRO: 'S',
+  'DIVORCIADO(A)': 'D',
+  DIVORCIADO: 'D',
+  'VIUVO(A)': 'V',
+  VIUVO: 'V',
+};
+
+const genderToCode: Record<string, string> = {
+  MASCULINO: 'M',
+  FEMININO: 'F',
+  OUTROS: 'O',
+};
+
 const schema = Yup.object().shape({
   cpf: Yup.string()
     .min(
@@ -103,30 +120,42 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
   const [disabled, setDisable] = useState(true);
   const [disableOrigin, setDisableOrigin] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [form, setForm] = useState<IClientData>(() => ({
-    id: formData.client_buyer?.id || '',
-    cpf: '',
-    name: '',
-    date_birth: '',
-    email: '',
-    phone: '',
-    whatsapp: '',
-    occupation: '',
-    profession_id: '',
-    civil_status: '',
-    number_children: '',
-    gender: '',
-    profession: undefined,
-    origin_id: '',
-    ...(formData.client_buyer || {}),
-  }));
+  const normalizeClientData = useCallback(
+    (client: Partial<IClientData> = {}): IClientData => ({
+      id: client.id || '',
+      cpf: client.cpf || '',
+      name: client.name || '',
+      date_birth: client.date_birth || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      whatsapp: client.whatsapp || '',
+      occupation: client.occupation || '',
+      profession_id: client.profession_id || '',
+      civil_status: client.civil_status || '',
+      number_children: client.number_children ?? '',
+      gender: client.gender || '',
+      profession: client.profession || client.profession_id || '',
+      origin_id: client.origin_id || '',
+    }),
+    [],
+  );
+
+  const [form, setForm] = useState<IClientData>(() =>
+    normalizeClientData((formData.client_buyer as IClientData) || {}),
+  );
+  const [initialCivilStatus, setInitialCivilStatus] = useState<string>('');
+  const [initialGender, setInitialGender] = useState<string>('');
 
   useEffect(() => {
     setDisable(true);
     setCliente({} as IClientData);
+    setInitialCivilStatus('');
+    setInitialGender('');
     return () => {
       setDisable(true);
       setCliente({} as IClientData);
+      setInitialCivilStatus('');
+      setInitialGender('');
     };
   }, []);
 
@@ -167,8 +196,13 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
     }));
   }, [origins]);
 
+  const clearError = useCallback((field: keyof IClientData | string) => {
+    setErrors(prev => ({ ...prev, [field]: '' }));
+  }, []);
+
   const handleChange = (field: keyof IClientData) => (value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    clearError(field);
+    setForm(prev => ({ ...prev, [field]: value ?? '' }));
   };
 
   const searchClientoForCPF = useCallback(
@@ -196,34 +230,58 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
           } = response.data;
           setDisable(true);
           setDisableOrigin(!!origin_id);
-          const data: IClientData = {
+          const data: IClientData = normalizeClientData({
             id,
-            name,
-            date_birth: DateBRL(date_birth),
-            email,
-            phone: FoneMask(phone),
-            whatsapp: WhatsMask(whatsapp || ''),
-            profession_id,
-            civil_status,
-            number_children,
-            gender,
-            profession,
-            origin_id,
-          } as IClientData;
+            name: name || '',
+            date_birth: date_birth ? DateBRL(date_birth) : '',
+            email: email || '',
+            phone: phone ? FoneMask(phone) : '',
+            whatsapp: whatsapp ? WhatsMask(whatsapp || '') : '',
+            profession_id: profession_id || '',
+            civil_status: civil_status || '',
+            number_children: number_children ?? '',
+            gender: gender || '',
+            profession: profession || profession_id || '',
+            origin_id: origin_id || '',
+          });
+          setInitialCivilStatus(civil_status || '');
+          setInitialGender(gender || '');
           setCliente(data);
           setForm(prev => ({ ...prev, ...data, cpf: value }));
         } catch (error) {
           setCliente({} as IClientData);
           setDisable(false);
           setDisableOrigin(false);
+          setInitialCivilStatus('');
+          setInitialGender('');
         }
       }
     },
     [],
   );
 
-  const professionValue =
-    typeof form.profession === 'object' ? form.profession?.id : form.profession;
+  const professionValue = useMemo(() => {
+    if (typeof form.profession === 'object') {
+      return form.profession?.id || '';
+    }
+    if (form.profession) {
+      return form.profession;
+    }
+    return form.profession_id || '';
+  }, [form.profession, form.profession_id]);
+
+  const professionDisabled = disabled && !!client.profession;
+  const handleProfessionChange = useCallback(
+    (value: string) => {
+      clearError('profession');
+      setForm(prev => ({
+        ...prev,
+        profession: value,
+        profession_id: value,
+      }));
+    },
+    [clearError],
+  );
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -238,25 +296,44 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
             ? form.profession?.id || form.profession_id
             : form.profession || form.profession_id;
 
+        const toNumeric = (value?: string) => (value || '').replace(/\D/g, '');
+
+        const payload: Record<string, any> = {
+          name: form.name,
+          cpf: toNumeric(form.cpf),
+          email: form.email,
+          phone: toNumeric(form.phone),
+          date_birth: DateYMD(form.date_birth),
+          profession_id: professionId,
+          number_children: Number(form.number_children),
+          origin_id: form.origin_id,
+          whatsapp: toNumeric(form.whatsapp),
+        };
+        const civilCode =
+          civilStatusToCode[form.civil_status] || form.civil_status;
+        const genderCode = genderToCode[form.gender] || form.gender;
+
         let clientId = form.id || client.id;
 
         if (!clientId) {
-          const payload = {
-            name: form.name,
-            cpf: unMaked(form.cpf || ''),
-            email: form.email,
-            phone: unMaked(form.phone),
-            date_birth: DateYMD(form.date_birth),
-            profession_id: professionId,
-            civil_status: form.civil_status,
-            number_children: Number(form.number_children),
-            gender: form.gender,
-            origin_id: form.origin_id,
-          };
+          payload.civil_status = civilCode;
+          payload.gender = genderCode;
           const created = await api.post('/client', payload);
           clientId = created.data.id;
-        } else if (!client.origin_id && form.origin_id) {
-          await api.put(`/client/${clientId}`, { origin_id: form.origin_id });
+        } else {
+          const initialCivilIsCode = ['C', 'D', 'S', 'V'].includes(
+            initialCivilStatus,
+          );
+          const initialGenderIsCode = ['M', 'F', 'O'].includes(initialGender);
+
+          if (['C', 'D', 'S', 'V'].includes(civilCode) && initialCivilIsCode) {
+            payload.civil_status = civilCode;
+          }
+          if (['M', 'F', 'O'].includes(genderCode) && initialGenderIsCode) {
+            payload.gender = genderCode;
+          }
+
+          await api.put(`/client/${clientId}`, payload);
         }
 
         updateFormData({
@@ -275,7 +352,14 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
         setLoading(false);
       }
     },
-    [client.id, client.origin_id, form, nextStep, updateFormData],
+    [
+      client.id,
+      form,
+      initialCivilStatus,
+      initialGender,
+      nextStep,
+      updateFormData,
+    ],
   );
 
   return (
@@ -385,6 +469,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                   label="Profissão"
                   name="profession"
                   readOnly
+                  onFocus={() => clearError('profession')}
                   value={
                     typeof client.profession === 'object'
                       ? (client.profession as IProfession).name
@@ -397,13 +482,15 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
                   name="profession"
                   placeholder="Informe a Profissão"
                   options={optionsProfessions}
+                  isDisabled={professionDisabled}
                   label="Profissão"
                   value={optionsProfessions.find(
                     opt => opt.value === professionValue,
                   )}
                   onChange={option =>
-                    handleChange('profession')((option as any)?.value || '')
+                    handleProfessionChange((option as any)?.value || '')
                   }
+                  onFocus={() => clearError('profession')}
                   error={errors.profession}
                 />
               )}
@@ -411,7 +498,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
             <FormRow>
               <SelectControlled
                 name="origin_id"
-                placeholder="Informe a Origem"
+                placeholder="Informe onde esse cliente foi prospectado"
                 options={optionsOrigins}
                 label="Origem"
                 isDisabled={disableOrigin}
