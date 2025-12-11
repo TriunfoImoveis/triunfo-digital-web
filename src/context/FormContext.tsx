@@ -9,7 +9,7 @@ interface FormContextData {
   updateFormData(data: FormData): void;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setSaleType: React.Dispatch<React.SetStateAction<'new' | 'used' | ''>>;
-  clearAll(): void;
+  clearAll(options?: { resetStep?: boolean }): void;
 }
 
 const STORAGE_KEY = 'registerSale:data';
@@ -50,9 +50,11 @@ const FormProvider: React.FC = ({ children }) => {
     setFormData(prev => ({ ...prev, ...data }));
   };
 
-  const clearAll = () => {
+  const clearAll = (options?: { resetStep?: boolean }) => {
     setFormData({});
-    setStepIndex(0);
+    if (options?.resetStep ?? true) {
+      setStepIndex(0);
+    }
     setSaleType('');
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(STEP_KEY);

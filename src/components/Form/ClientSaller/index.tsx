@@ -16,7 +16,7 @@ import {
 } from '../../FormControls';
 import Button from '../../Button';
 import getValidationErros from '../../../utils/getValidationErros';
-import { unMaked, DateYMD } from '../../../utils/unMasked';
+import { unMaked, DateYMD, sanitizePhone } from '../../../utils/unMasked';
 import { FoneMask, WhatsMask } from '../../../utils/masked';
 import { DateBRL } from '../../../utils/format';
 import { useForm } from '../../../context/FormContext';
@@ -251,7 +251,7 @@ const ClientSaller: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
           civil_status: form.civil_status,
           number_children: Number(form.number_children),
           gender: form.gender,
-          whatsapp: unMaked(form.whatsapp || ''),
+          whatsapp: sanitizePhone(form.whatsapp || ''),
         };
 
         let clientId = client.id || form.id;

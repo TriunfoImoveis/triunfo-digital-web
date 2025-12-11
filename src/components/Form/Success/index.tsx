@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { toast } from 'react-toastify';
 import { useForm } from '../../../context/FormContext';
@@ -18,7 +17,10 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
   const hasSubmitted = React.useRef(false);
   const [loading, setLoading] = useState(false);
   const [statusError, setStatusError] = useState(false);
-  const history = useHistory();
+
+  const handleClearLocalData = useCallback(() => {
+    clearAll({ resetStep: false });
+  }, [clearAll]);
 
   useEffect(() => {
     if (hasSubmitted.current) return;
@@ -43,6 +45,7 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           }
         } finally {
           setLoading(false);
+          handleClearLocalData();
         }
       }
       if (typeSale === 'used') {
@@ -64,11 +67,13 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
           }
         } finally {
           setLoading(false);
+          handleClearLocalData();
         }
       }
     };
     submitFom();
-  }, [typeSale, formData, clearAll, setStepIndex]);
+  }, [typeSale, formData, handleClearLocalData]);
+
   return (
     <SuccessContainer>
       {loading ? (
@@ -110,7 +115,6 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
                     clearAll();
                     setStepIndex(0);
                     hasSubmitted.current = false;
-                    history.push('/actions');
                   }}
                 >
                   Cadastrar nova venda
@@ -122,7 +126,6 @@ const SuccesForm: React.FC<ISuccessProps> = ({ typeSale }) => {
                     clearAll();
                     setStepIndex(0);
                     hasSubmitted.current = false;
-                    history.push('/menu');
                   }}
                 >
                   Sair

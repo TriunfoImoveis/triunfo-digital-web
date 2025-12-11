@@ -39,15 +39,22 @@ const RegisterSale: React.FC<Props> = ({ typeSale }) => {
     ];
   }, [typeSale]);
 
-  const safeStepIndex = Math.min(stepIndex, steps.length - 1);
+  const resetOnLoad = React.useRef(false);
+
+  const safeStepIndex = resetOnLoad.current ? Math.min(stepIndex, steps.length - 1) : 0;
 
   // Se mudar o tipo de venda, limpa dados anteriores e reseta etapa
   React.useEffect(() => {
-    if (saleType && saleType !== typeSale) {
+    if (!resetOnLoad.current) {
       clearAll();
+      setStepIndex(0);
+      resetOnLoad.current = true;
+    } else if (saleType && saleType !== typeSale) {
+      clearAll();
+      setStepIndex(0);
     }
     setSaleType(typeSale);
-  }, [clearAll, saleType, setSaleType, typeSale]);
+  }, [clearAll, saleType, setSaleType, setStepIndex, typeSale]);
 
   const nextStep = useCallback(() => {
     setStepIndex(prev => Math.min(prev + 1, steps.length - 1));
