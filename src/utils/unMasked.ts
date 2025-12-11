@@ -16,3 +16,8 @@ export const DateYMD = (dateSale: string): string => {
   const [D, M, Y] = dateSale.split('/');
   return `${Y}-${M}-${D}`;
 };
+
+export function sanitizePhone(phone: string): string {
+  if (!phone) return '';
+  return phone.replace(/\D+/g, '');
+}

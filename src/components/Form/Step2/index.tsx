@@ -316,8 +316,8 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
         let clientId = form.id || client.id;
 
         if (!clientId) {
-          payload.civil_status = civilCode;
-          payload.gender = genderCode;
+          payload.civil_status = form.civil_status;
+          payload.gender = form.gender;
           const created = await api.post('/client', payload);
           clientId = created.data.id;
         } else {
