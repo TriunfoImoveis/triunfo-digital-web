@@ -226,7 +226,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [nextStep, typeSale, updateFormData],
+    [nextStep, typeSale, updateFormData, form],
   );
 
   return (
