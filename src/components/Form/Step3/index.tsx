@@ -154,42 +154,42 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
 
       const partnershipSchema = {
         has_partnership: Yup.boolean().default(false),
-        partnership_type: Yup.string()
-          .oneOf(['PROPERTY', 'CLIENT', 'BOTH'])
-          .when('has_partnership', {
-            is: true,
-            then: Yup.string().required('Tipo de parceria obrigatória'),
-            otherwise: Yup.string().nullable(),
-          }),
+        partnership_type: Yup.mixed().when('has_partnership', {
+          is: true,
+          then: Yup.string()
+            .oneOf(['PROPERTY', 'CLIENT', 'BOTH'])
+            .required('Tipo de parceria obrigatoria'),
+          otherwise: Yup.mixed().nullable().notRequired(),
+        }),
       };
 
       const validationSchema =
         typeSale === 'new'
           ? Yup.object().shape({
-              subsidiary: Yup.string().required('Filial obrigatória'),
+              subsidiary: Yup.string().required('Filial obrigatoria'),
               users_sellers: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Vendedor(es) obrigatório'),
+                .min(1, 'Vendedor(es) obrigatorio'),
               user_coordinator: Yup.string().nullable(),
               users_directors: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Diretor obrigatório')
-                .max(2, 'No máximo dois diretores'),
+                .min(1, 'Diretor obrigatorio')
+                .max(2, 'No maximo dois diretores'),
               ...partnershipSchema,
             })
           : Yup.object().shape({
-              subsidiary: Yup.string().required('Filial obrigatória'),
+              subsidiary: Yup.string().required('Filial obrigatoria'),
               users_sellers: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Vendedor obrigatório'),
+                .min(1, 'Vendedor obrigatorio'),
               users_captivators: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Captador obrigatório'),
+                .min(1, 'Captador obrigatorio'),
               user_coordinator: Yup.string().nullable(),
               users_directors: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Diretor obrigatório')
-                .max(2, 'No máximo dois diretores'),
+                .min(1, 'Diretor obrigatorio')
+                .max(2, 'No maximo dois diretores'),
               ...partnershipSchema,
             });
 
@@ -204,7 +204,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
           })),
           user_coordinator:
             payload.user_coordinator !== '' ? payload.user_coordinator : null,
-          has_partnership: payload.has_partnership || false,
+          has_partnership: !!payload.has_partnership,
           partnership_type: payload.has_partnership
             ? payload.partnership_type
             : null,
@@ -226,7 +226,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [nextStep, typeSale, updateFormData, form],
+    [nextStep, typeSale, updateFormData],
   );
 
   return (
