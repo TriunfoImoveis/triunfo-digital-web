@@ -13,6 +13,7 @@ import {
   UserCaptivators,
   Directors,
   Coordinator,
+  Partnership,
 } from './styles';
 import api from '../../../services/api';
 import InputDisabled from '../../InputDisabled';
@@ -49,6 +50,11 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     users_captivators: formData.users_captivators?.map((u: any) => u.id) || [],
     users_directors: formData.users_directors?.map((u: any) => u.id) || [],
     user_coordinator: formData.user_coordinator || '',
+    has_partnership:
+      typeof formData.has_partnership === 'boolean'
+        ? formData.has_partnership
+        : false,
+    partnership_type: formData.partnership_type || '',
   }));
 
   useEffect(() => {
@@ -105,6 +111,15 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     [subsidiaries],
   );
 
+  const partnershipOptions = useMemo(
+    () => [
+      { label: 'Imóvel', value: 'PROPERTY' },
+      { label: 'Cliente', value: 'CLIENT' },
+      { label: 'AMBOS', value: 'BOTH' },
+    ],
+    [],
+  );
+
   const clearError = useCallback((field: string) => {
     setErrors(prev => ({ ...prev, [field]: '' }));
   }, []);
@@ -121,10 +136,31 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePartnershipToggle = () => {
+    clearError('partnership_type');
+    setForm(prev => ({
+      ...prev,
+      has_partnership: !prev.has_partnership,
+      partnership_type: prev.has_partnership ? '' : prev.partnership_type,
+    }));
+  };
+
   const handleSubmit = useCallback(
     async (data: typeof form) => {
       const payload = {
         ...data,
+        partnership_type: data.has_partnership ? data.partnership_type : null,
+      };
+
+      const partnershipSchema = {
+        has_partnership: Yup.boolean().default(false),
+        partnership_type: Yup.string()
+          .oneOf(['PROPERTY', 'CLIENT', 'BOTH'])
+          .when('has_partnership', {
+            is: true,
+            then: Yup.string().required('Tipo de parceria obrigatória'),
+            otherwise: Yup.string().nullable(),
+          }),
       };
 
       const validationSchema =
@@ -133,26 +169,28 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               subsidiary: Yup.string().required('Filial obrigatória'),
               users_sellers: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Vendedor(es) Obrigatório'),
+                .min(1, 'Vendedor(es) obrigatório'),
               user_coordinator: Yup.string().nullable(),
               users_directors: Yup.array()
                 .of(Yup.string().required())
                 .min(1, 'Diretor obrigatório')
                 .max(2, 'No máximo dois diretores'),
+              ...partnershipSchema,
             })
           : Yup.object().shape({
               subsidiary: Yup.string().required('Filial obrigatória'),
               users_sellers: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Vendedor Obrigatório'),
+                .min(1, 'Vendedor obrigatório'),
               users_captivators: Yup.array()
                 .of(Yup.string().required())
-                .min(1, 'Captador Obrigatório'),
+                .min(1, 'Captador obrigatório'),
               user_coordinator: Yup.string().nullable(),
               users_directors: Yup.array()
                 .of(Yup.string().required())
                 .min(1, 'Diretor obrigatório')
                 .max(2, 'No máximo dois diretores'),
+              ...partnershipSchema,
             });
 
       try {
@@ -166,6 +204,10 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
           })),
           user_coordinator:
             payload.user_coordinator !== '' ? payload.user_coordinator : null,
+          has_partnership: payload.has_partnership || false,
+          partnership_type: payload.has_partnership
+            ? payload.partnership_type
+            : null,
         };
         if (typeSale === 'used' && Array.isArray(payload.users_captivators)) {
           formatted.users_captivators = payload.users_captivators.map(
@@ -184,7 +226,7 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
         setLoading(false);
       }
     },
-    [form, nextStep, typeSale, updateFormData],
+    [nextStep, typeSale, updateFormData],
   );
 
   return (
@@ -393,6 +435,33 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
             </Directors>
           </>
         )}
+
+        <Partnership>
+          <div className="partnership-checkbox">
+            <input
+              id="has-partnership"
+              type="checkbox"
+              checked={form.has_partnership}
+              onChange={handlePartnershipToggle}
+            />
+            <label htmlFor="has-partnership">Venda possui parceria?</label>
+          </div>
+          {form.has_partnership && (
+            <Select
+              name="partnership_type"
+              options={partnershipOptions}
+              label="Tipo de parceria"
+              placeholder="Selecione o tipo de parceria"
+              value={partnershipOptions.find(
+                opt => opt.value === form.partnership_type,
+              )}
+              onChange={option =>
+                handleChange('partnership_type')((option as any)?.value || '')
+              }
+              error={errors.partnership_type}
+            />
+          )}
+        </Partnership>
 
         <ButtonGroup>
           <Button type="button" className="cancel" onClick={() => prevStep()}>

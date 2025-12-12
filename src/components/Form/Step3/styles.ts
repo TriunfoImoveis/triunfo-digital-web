@@ -213,3 +213,27 @@ export const Coordinator = styled.div`
     }
   }
 `;
+
+export const Partnership = styled.div`
+  margin-top: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  .partnership-checkbox {
+    display: flex;
+    align-items: center;
+
+    input[type='checkbox'] {
+      width: 2rem;
+      height: 2rem;
+      margin-left: 0;
+    }
+
+    label {
+      margin-left: 0.8rem;
+      font-size: 1.4rem;
+      color: ${({ theme }) => theme.colors.textColor};
+    }
+  }
+`;
