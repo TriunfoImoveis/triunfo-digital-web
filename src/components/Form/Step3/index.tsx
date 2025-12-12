@@ -444,14 +444,16 @@ const Step3: React.FC<ISaleNewData> = ({ nextStep, prevStep, typeSale }) => {
               checked={form.has_partnership}
               onChange={handlePartnershipToggle}
             />
-            <label htmlFor="has-partnership">Venda possui parceria?</label>
+            <label htmlFor="has-partnership">
+              Venda possui parceria externa?
+            </label>
           </div>
           {form.has_partnership && (
             <Select
               name="partnership_type"
               options={partnershipOptions}
-              label="Tipo de parceria"
-              placeholder="Selecione o tipo de parceria"
+              label="Tipo da parceria externa"
+              placeholder="Selecione o tipo da parceria externa"
               value={partnershipOptions.find(
                 opt => opt.value === form.partnership_type,
               )}
