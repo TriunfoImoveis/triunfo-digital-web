@@ -1,8 +1,4 @@
-import React, {
-  useRef,
-  useCallback,
-  useState,
-} from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import * as Yup from 'yup';
 import { AxiosError } from 'axios';
@@ -19,11 +15,13 @@ import getValidationErros from '../../../utils/getValidationErros';
 const NewOrigins: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
+  const [isOriginClient, setIsOriginClient] = useState(true);
+  const [isOriginChannel, setIsOriginChannel] = useState(true);
   const history = useHistory();
 
   const handleSubmit = useCallback(async () => {
     formRef.current?.setErrors({});
-    const data = formRef.current?.getData();
+    const data = formRef.current?.getData() || {};
     try {
       setLoading(true);
 
@@ -37,29 +35,30 @@ const NewOrigins: React.FC = () => {
 
       const paylaod = {
         ...data,
-      }
+        isOriginClient,
+        isOriginChannel,
+      };
       await api.post('/origin-sale', paylaod);
 
       toast.success('Bairro com sucesso');
       history.push('/adm/config/origens');
-
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
       }
-      const errors = err as AxiosError
+      const errors = err as AxiosError;
       if (errors.response?.status === 400) {
         toast.error(errors.response?.data.message);
       } else if (errors.response?.status === 500) {
         toast.error('Erro no servidor! contate o suporte');
       } else {
-        toast.error('ERROR!, verifique as informações e tente novamente');
+        toast.error('ERROR!, verifique as informaÇõÇæes e tente novamente');
       }
 
       setLoading(false);
     }
-  }, [history]);
+  }, [history, isOriginChannel, isOriginClient]);
 
   return (
     <AdmLayout>
@@ -74,6 +73,27 @@ const NewOrigins: React.FC = () => {
                 name="name"
                 placeholder="Nome da Origem da venda"
               />
+              <div className="origin-types">
+                <p>Qual o tipo da origem?</p>
+                <label htmlFor="origin-client">
+                  <input
+                    id="origin-client"
+                    type="checkbox"
+                    checked={isOriginClient}
+                    onChange={() => setIsOriginClient(prev => !prev)}
+                  />
+                  Cliente
+                </label>
+                <label htmlFor="origin-channel">
+                  <input
+                    id="origin-channel"
+                    type="checkbox"
+                    checked={isOriginChannel}
+                    onChange={() => setIsOriginChannel(prev => !prev)}
+                  />
+                  Canal
+                </label>
+              </div>
             </fieldset>
           </InfoLogin>
           <button type="submit" className="submit">

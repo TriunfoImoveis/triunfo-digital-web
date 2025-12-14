@@ -61,6 +61,34 @@ export const InfoLogin = styled.div`
     > div + div {
       margin-bottom: 0.8rem;
     }
+
+    .origin-types {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 0 2rem 0.8rem 2rem;
+
+      p {
+        margin: 0;
+        font-weight: bold;
+        color: ${({ theme }) => theme.colors.primary};
+        font-size: 16px;
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      input {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
   }
 `;
 
