@@ -23,17 +23,14 @@ interface IOriginsData {
   id: string;
   name: string;
   active: boolean;
+  isOriginClient: boolean;
+  isOriginChannel: boolean;
 }
 
 const ListOrigins: React.FC = () => {
   const [url, setURL] = useState('/origin-sale');
   const [isOpenModal, setIsOpenModal] = useState(false);
   const { data: orgins } = useFetchFinances<IOriginsData[]>({ url });
-
-  const active = {
-    'true': 'SIM',
-    'false': 'NÂO',
-  }
 
   const handleSetFilterActive = (value: string) => {
     if (value === 'all') {
@@ -42,21 +39,21 @@ const ListOrigins: React.FC = () => {
     if (value === 'active') {
       setURL('/origin-sale');
     }
-  }
+  };
 
-  const [selectedOrigin, setSelectedOrigin] = useState<IOriginsData | null>(null);
+  const [selectedOrigin, setSelectedOrigin] = useState<IOriginsData | null>(
+    null,
+  );
 
   const openModalWithOrigin = (origin: IOriginsData) => {
     setSelectedOrigin(origin);
     setIsOpenModal(true);
-  }
+  };
 
   const closeModal = () => {
     setIsOpenModal(false);
     setSelectedOrigin(null);
-  }
-
- 
+  };
 
   return (
     <AdmLayout>
@@ -64,7 +61,10 @@ const ListOrigins: React.FC = () => {
         <FiltersBotton>
           <FiltersBottonItems>
             <span>Origens: </span>
-            <select onChange={(e) => handleSetFilterActive(e.target.value)} defaultValue="active">
+            <select
+              onChange={e => handleSetFilterActive(e.target.value)}
+              defaultValue="active"
+            >
               <option value="all">Todos</option>
               <option value="active">Ativas</option>
             </select>
@@ -79,31 +79,42 @@ const ListOrigins: React.FC = () => {
           <SaleHeader>
             <HeaderItem></HeaderItem>
             <HeaderItem>Nome</HeaderItem>
-            <HeaderItem>Ativo</HeaderItem>
+            <HeaderItem>Orgem Cliente</HeaderItem>
+            <HeaderItem>Origem Canal</HeaderItem>
             <HeaderItem />
           </SaleHeader>
           {!orgins ? (
             <LoadingContainer>
-              <Loader type="Bars" color={theme.colors.gold} height={100} width={100} />
+              <Loader
+                type="Bars"
+                color={theme.colors.gold}
+                height={100}
+                width={100}
+              />
             </LoadingContainer>
-          ) : orgins && orgins.map(origin =>
-          (
-            <SaleBody key={origin.id}>
-              <HeaderItem></HeaderItem>
-              <SaleItem>{origin.name}</SaleItem>
-              <SaleItem>{active[origin.active.toString()]}</SaleItem>
-          <SaleItem>
-          <Button onClick={() => openModalWithOrigin(origin)}>
-
-            Editar
-          </Button>
-          </SaleItem>
-            </SaleBody>
-          ),
+          ) : (
+            orgins &&
+            orgins.map(origin => (
+              <SaleBody key={origin.id}>
+                <HeaderItem></HeaderItem>
+                <SaleItem>{origin.name}</SaleItem>
+                <SaleItem>{origin.isOriginClient ? 'SIM' : 'NÃO'}</SaleItem>
+                <SaleItem>{origin.isOriginChannel ? 'SIM' : 'NÃO'}</SaleItem>
+                <SaleItem>
+                  <Button onClick={() => openModalWithOrigin(origin)}>
+                    Editar
+                  </Button>
+                </SaleItem>
+              </SaleBody>
+            ))
           )}
         </SaleTableContainer>
         {selectedOrigin && (
-          <UpdateOrigins isOpen={isOpenModal} setIsOpen={closeModal} originData={selectedOrigin} />
+          <UpdateOrigins
+            isOpen={isOpenModal}
+            setIsOpen={closeModal}
+            originData={selectedOrigin}
+          />
         )}
       </Content>
     </AdmLayout>

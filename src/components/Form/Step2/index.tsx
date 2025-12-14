@@ -112,7 +112,7 @@ const Step2: React.FC<ISaleNewData> = ({ nextStep, prevStep }) => {
     url: `/professions?active=true`,
   });
   const { data: origins } = useFetchFinances<IOrigin[]>({
-    url: `/origin-sale`,
+    url: `/origin-sale?client=true`,
   });
 
   const [loading, setLoading] = useState(false);

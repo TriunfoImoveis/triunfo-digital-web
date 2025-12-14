@@ -13,6 +13,32 @@ export const Container = styled.div`
       line-height: 2.2rem;
       color: ${({ theme }) => theme.colors.primary};
     }
+
+    .origin-types {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.8rem;
+      margin: 0 0 1.6rem 0;
+
+      p {
+        margin: 0;
+        font-weight: bold;
+        color: ${({ theme }) => theme.colors.primary};
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-weight: 500;
+      }
+
+      input {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
   }
   .add-button {
     display: flex;
