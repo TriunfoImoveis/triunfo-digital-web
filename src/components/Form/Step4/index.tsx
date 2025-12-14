@@ -111,7 +111,7 @@ const Step4: React.FC<ISaleNewData> = ({ prevStep, nextStep, typeSale }) => {
 
   useEffect(() => {
     const loadOrigins = async () => {
-      const response = await api.get('/origin-sale');
+      const response = await api.get('/origin-sale?channel=true');
       setOrigins(response.data);
     };
     loadOrigins();
