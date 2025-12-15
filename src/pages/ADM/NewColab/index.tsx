@@ -8,8 +8,9 @@ import React, {
 import { useHistory, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
-import { FormHandles } from '@unform/core'; 
+import { FormHandles } from '@unform/core';
 import { toast } from 'react-toastify';
+import type { AxiosError } from 'axios';
 import AdmLayout from '../../Layouts/Adm';
 import Input from '../../../components/Input';
 
@@ -83,6 +84,11 @@ interface IUpdateUser {
   creci: string;
 }
 
+const isAxiosError = (error: unknown): error is AxiosError =>
+  typeof error === 'object' &&
+  error !== null &&
+  (error as { isAxiosError?: boolean }).isAxiosError === true;
+
 const NewColab: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const [loading, setLoading] = useState(false);
@@ -97,6 +103,29 @@ const NewColab: React.FC = () => {
   const history = useHistory();
 
   const { id } = useParams<IRoteparams>();
+
+  const showRequestError = useCallback(
+    (error: unknown, defaultMessage: string) => {
+      if (isAxiosError(error)) {
+        const validationMessage =
+          error.response?.data?.validation?.body?.message ||
+          error.response?.data?.message;
+
+        if (validationMessage) {
+          toast.error(validationMessage);
+          return;
+        }
+
+        if (error.message) {
+          toast.error(error.message);
+          return;
+        }
+      }
+
+      toast.error(defaultMessage);
+    },
+    [],
+  );
 
   const loadUser = useCallback(async () => {
     const response = await api.get(`/users/${id}`, {
@@ -114,23 +143,24 @@ const NewColab: React.FC = () => {
     setUser(userFormatted);
   }, [id, token]);
 
-  const loadSubsidiary = async () => {
+  const loadSubsidiary = useCallback(async () => {
     try {
       const response = await api.get('/subsidiary');
       setSubsidiary(response.data);
-      setSelectedSubsidiary(response.data?.id)
+      setSelectedSubsidiary(response.data?.id);
     } catch (error) {
-      toast.error('falha na conexão do servidor!');
+      showRequestError(error, 'Falha na conexao do servidor.');
     }
-  };
-  const loadOfficies = async () => {
+  }, [showRequestError]);
+
+  const loadOfficies = useCallback(async () => {
     try {
       const response = await api.get('/office');
       setOfficies(response.data);
     } catch (error) {
-      toast.error('falha na conexão do servidor!');
+      showRequestError(error, 'Falha na conexao do servidor.');
     }
-  };
+  }, [showRequestError]);
 
   useEffect(() => {
     if (id) {
@@ -140,14 +170,14 @@ const NewColab: React.FC = () => {
   }, [id, loadUser]);
 
   useEffect(() => {
-    Promise.all([loadSubsidiary(),  loadOfficies()])
-  }, []);
+    Promise.all([loadSubsidiary(), loadOfficies()]);
+  }, [loadOfficies, loadSubsidiary]);
 
   useEffect(() => {
     api
       .get(`/departament`, {
         params: {
-          subsidiary: selectedSubsidiary || user?.subsidiary?.id
+          subsidiary: selectedSubsidiary || user?.subsidiary?.id,
         },
       })
       .then(response => setDepartament(response.data));
@@ -206,17 +236,18 @@ const NewColab: React.FC = () => {
         },
       });
       toast.success('Novo Corretor Cadastrado');
-      setLoading(false);
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
+        return;
       }
 
-      toast.error('ERROR!, verifique as informações e tente novamente');
+      showRequestError(err, 'Erro ao cadastrar colaborador.');
+    } finally {
       setLoading(false);
     }
-  }, [unMasked, token]);
+  }, [showRequestError, unMasked, token]);
 
   const updateRealtor = useCallback(
     async (data: IUpdateUser) => {
@@ -245,7 +276,7 @@ const NewColab: React.FC = () => {
           subsidiary,
           departament,
           office,
-          creci
+          creci,
         } = data;
 
         const formData = {
@@ -283,12 +314,13 @@ const NewColab: React.FC = () => {
         if (err instanceof Yup.ValidationError) {
           const erros = getValidationErros(err);
           formRef.current?.setErrors(erros);
+          return;
         }
 
-        toast.error('Error ao atualizar');
+        showRequestError(err, 'Erro ao atualizar');
       }
     },
-    [id, token],
+    [id, showRequestError, token],
   );
 
   const removeRealtor = useCallback(async () => {
@@ -297,36 +329,51 @@ const NewColab: React.FC = () => {
       toast.success('Colaborardor Removido com sucesso');
       history.push('/adm/lista-colaboradores');
     } catch (error) {
-      toast.error(error);
+      showRequestError(error, 'Erro ao remover colaborador.');
     }
-  }, [user.id, history]);
+  }, [user.id, history, showRequestError]);
 
   return (
     <AdmLayout>
       <Container>
         <h1>NOVO COLABORADOR</h1>
         {pageDetails ? (
-          <Form ref={formRef} onSubmit={updateRealtor} initialData={{
-            name: user?.name,
-            email: user?.email,
-            phone: user?.phone,
-            goal: user?.goal,
-            subsidiary: user?.subsidiary?.id,
-            departament: user?.departament?.id,
-            admission_date: user?.admission_date,
-            office: user?.office?.id,
-            creci: user?.creci
-          }}>
+          <Form
+            ref={formRef}
+            onSubmit={updateRealtor}
+            initialData={{
+              name: user?.name,
+              email: user?.email,
+              phone: user?.phone,
+              goal: user?.goal,
+              subsidiary: user?.subsidiary?.id,
+              departament: user?.departament?.id,
+              admission_date: user?.admission_date,
+              office: user?.office?.id,
+              creci: user?.creci,
+            }}
+          >
             <InfoLogin>
               <fieldset className="login">
                 <legend>INFORMAÇÕES DE LOGIN</legend>
                 <Input label="Nome Completo" name="name" />
-                <Input label="E-mail" name="email" type="email" autoComplete="off" />
-                <Input label="Nova Senha" name="password" type="password" autoComplete="off" />
+                <Input
+                  label="E-mail"
+                  name="email"
+                  type="email"
+                  autoComplete="off"
+                />
+                <Input
+                  label="Nova Senha"
+                  name="password"
+                  type="password"
+                  autoComplete="off"
+                />
                 <Input
                   label="Confirmar Nova Senha"
                   name="password_confirmation"
-                  type="password" autoComplete="off"
+                  type="password"
+                  autoComplete="off"
                 />
               </fieldset>
               <Avatar>
@@ -398,12 +445,23 @@ const NewColab: React.FC = () => {
               <fieldset className="login">
                 <legend>INFORMAÇÕES DE LOGIN</legend>
                 <Input label="Nome Completo" name="name" />
-                <Input label="E-mail" name="email" type="email" autoComplete="off" />
-                <Input label="Nova Senha" name="password" type="password" autoComplete="off" />
+                <Input
+                  label="E-mail"
+                  name="email"
+                  type="email"
+                  autoComplete="off"
+                />
+                <Input
+                  label="Nova Senha"
+                  name="password"
+                  type="password"
+                  autoComplete="off"
+                />
                 <Input
                   label="Confirmar Nova Senha"
                   name="password_confirmation"
-                  type="password" autoComplete="off"
+                  type="password"
+                  autoComplete="off"
                 />
               </fieldset>
               <Avatar>
