@@ -90,7 +90,7 @@ export interface ISaleData {
   subsidiary?: {
     id: string;
     name: string;
-  }
+  };
 
   value_signal: string;
   payment_signal: boolean;
@@ -164,61 +164,88 @@ const DetailsSale: React.FC = () => {
   const [token] = useState(localStorage.getItem('@TriunfoDigital:token'));
   const { id } = useParams<IParamsData>();
   const [selectedTypeClientBuyer, setSelectedTypeClientBuyer] = useState('PF');
-  const [selectedTypeClientSeller, setSelectedTypeClientSeller] = useState('PJ');
+  const [selectedTypeClientSeller, setSelectedTypeClientSeller] =
+    useState('PJ');
 
   useEffect(() => {
     const loadSale = async () => {
       try {
         const response = await api.get(`/sale/${id}`);
+        console.log(response.data);
         const sale = response.data;
         const sallers = sale.sale_has_sellers;
         const coordinator = sale.user_coordinator;
         const captavators = sale.sale_has_captivators;
         const directors = sale.users_directors;
         if (sale.client_seller) {
-          if (sale.client_seller.cpf !== null) {
+          if (sale.client_seller.cpf) {
             const cpfSellerFormatted = CPFMask(sale.client_seller.cpf);
-            const dataSellerFormatted = DateBRL(sale.client_seller.date_birth);
-            const foneSellerFormatted = FoneMask(sale.client_seller.phone);
-            Object.assign(
-              sale,
-              (sale.client_seller.cpf = cpfSellerFormatted),
-              (sale.client_seller.date_birth = dataSellerFormatted),
-              (sale.client_seller.phone = foneSellerFormatted),
-            );
+            const dataSellerFormatted = sale.client_seller.date_birth
+              ? DateBRL(sale.client_seller.date_birth)
+              : sale.client_seller.date_birth;
+            const foneSellerFormatted = sale.client_seller.phone
+              ? FoneMask(sale.client_seller.phone)
+              : sale.client_seller.phone;
+            sale.client_seller = {
+              ...sale.client_seller,
+              cpf: cpfSellerFormatted,
+              date_birth: dataSellerFormatted,
+              phone: foneSellerFormatted,
+            };
             setSelectedTypeClientSeller('PF');
-          } else if (sale.client_seller.cpf === null) {
+          } else if (sale.client_seller.cnpj) {
             const cnpjSellerFormatted = cnpj(sale.client_seller.cnpj);
-            const foneSellerFormatted = FoneMask(sale.client_seller.phone);
-            Object.assign(
-              sale,
-              (sale.client_seller.cnpj = cnpjSellerFormatted),
-              (sale.client_seller.phone = foneSellerFormatted),
-            );
+            const foneSellerFormatted = sale.client_seller.phone
+              ? FoneMask(sale.client_seller.phone)
+              : sale.client_seller.phone;
+            sale.client_seller = {
+              ...sale.client_seller,
+              cnpj: cnpjSellerFormatted,
+              phone: foneSellerFormatted,
+            };
             setSelectedTypeClientSeller('PJ');
+          } else {
+            sale.client_seller = {
+              ...sale.client_seller,
+              phone: sale.client_seller.phone
+                ? FoneMask(sale.client_seller.phone)
+                : sale.client_seller.phone,
+            };
           }
         }
-        if (sale.client_buyer.cpf !== null) {
-          const cpfSellerFormatted = CPFMask(sale.client_buyer.cpf);
-          const dataSellerFormatted = DateBRL(sale.client_buyer.date_birth);
-          const foneSellerFormatted = FoneMask(sale.client_buyer.phone);
-          Object.assign(
-            sale,
-            (sale.client_buyer.cpf = cpfSellerFormatted),
-            (sale.client_buyer.date_birth = dataSellerFormatted),
-            (sale.client_buyer.phone = foneSellerFormatted),
-          );
+        if (sale.client_buyer?.cpf) {
+          const cpfBuyerFormatted = CPFMask(sale.client_buyer.cpf);
+          const dataBuyerFormatted = sale.client_buyer.date_birth
+            ? DateBRL(sale.client_buyer.date_birth)
+            : sale.client_buyer.date_birth;
+          const foneBuyerFormatted = sale.client_buyer.phone
+            ? FoneMask(sale.client_buyer.phone)
+            : sale.client_buyer.phone;
+          sale.client_buyer = {
+            ...sale.client_buyer,
+            cpf: cpfBuyerFormatted,
+            date_birth: dataBuyerFormatted,
+            phone: foneBuyerFormatted,
+          };
           setSelectedTypeClientBuyer('PF');
-        }
-        if (sale.client_buyer.cpf === null) {
-          const cnpjSellerFormatted = cnpj(sale.client_buyer.cnpj);
-          const foneSellerFormatted = FoneMask(sale.client_buyer.phone);
-          Object.assign(
-            sale,
-            (sale.client_buyer.cnpj = cnpjSellerFormatted),
-            (sale.client_buyer.phone = foneSellerFormatted),
-          );
+        } else if (sale.client_buyer?.cnpj) {
+          const cnpjBuyerFormatted = cnpj(sale.client_buyer.cnpj);
+          const foneBuyerFormatted = sale.client_buyer.phone
+            ? FoneMask(sale.client_buyer.phone)
+            : sale.client_buyer.phone;
+          sale.client_buyer = {
+            ...sale.client_buyer,
+            cnpj: cnpjBuyerFormatted,
+            phone: foneBuyerFormatted,
+          };
           setSelectedTypeClientBuyer('PJ');
+        } else if (sale.client_buyer) {
+          sale.client_buyer = {
+            ...sale.client_buyer,
+            phone: sale.client_buyer.phone
+              ? FoneMask(sale.client_buyer.phone)
+              : sale.client_buyer.phone,
+          };
         }
         const realtyAmmount = formatPrice(sale.realty_ammount);
         const commission = sale.commission;
@@ -241,15 +268,15 @@ const DetailsSale: React.FC = () => {
           pay_date: i.pay_date ? DateBRL(i.pay_date) : null,
         }));
 
-        const saleFormatted = Object.assign(
-          sale,
-          (sale.realty_ammount = realtyAmmount),
-          (sale.commission = commission),
-          (sale.commissionFormatted = commissionFormatted),
-          (sale.sale_date = saleDate),
-          (sale.pay_date_signal = PayDateSignal),
-          (sale.value_signal = valueSignal),
-        );
+        const saleFormatted = {
+          ...sale,
+          realty_ammount: realtyAmmount,
+          commission,
+          commissionFormatted,
+          sale_date: saleDate,
+          pay_date_signal: PayDateSignal,
+          value_signal: valueSignal,
+        };
         const newSaleFormatted: ISaleData = {
           ...saleFormatted,
           installments: newInstallments,
@@ -281,14 +308,18 @@ const DetailsSale: React.FC = () => {
     { label: 'Pessoa Juridica', value: 'PJ' },
   ];
 
-  const handleSelectTypeClientBuyer = (value: ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectTypeClientBuyer = (
+    value: ChangeEvent<HTMLSelectElement>,
+  ) => {
     const { value: type } = value.target;
     setSelectedTypeClientBuyer(type);
-  }
-  const handleSelectTypeClientSeller = (value: ChangeEvent<HTMLSelectElement>) => {
+  };
+  const handleSelectTypeClientSeller = (
+    value: ChangeEvent<HTMLSelectElement>,
+  ) => {
     const { value: type } = value.target;
     setSelectedTypeClientSeller(type);
-  }
+  };
 
   return (
     <AdmLayout>
@@ -311,15 +342,21 @@ const DetailsSale: React.FC = () => {
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
                 <Select
-                  nameLabel='Tipo de Cliente'
+                  nameLabel="Tipo de Cliente"
                   options={optionsTypeClient}
                   defaultValue={selectedTypeClientBuyer}
                   onChange={handleSelectTypeClientBuyer}
                 />
                 {selectedTypeClientBuyer === 'PF' ? (
-                  <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+                  <ClientBuyer
+                    clientBuyer={client_buyer}
+                    status={sale.status}
+                  />
                 ) : (
-                  <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
+                  <ClientBuyerPJ
+                    clientbuyer={client_buyer}
+                    status={sale.status}
+                  />
                 )}
               </TabBootstrap>
               <TabBootstrap eventKey="builder" title="Construtora">
@@ -372,22 +409,27 @@ const DetailsSale: React.FC = () => {
               </TabBootstrap>
               <TabBootstrap eventKey="clientBuyer" title="Cliente Comprador">
                 <Select
-                  nameLabel='Tipo de Cliente'
+                  nameLabel="Tipo de Cliente"
                   options={optionsTypeClient}
                   defaultValue={selectedTypeClientBuyer}
                   onChange={handleSelectTypeClientBuyer}
                 />
                 {selectedTypeClientBuyer === 'PF' ? (
-                  <ClientBuyer clientBuyer={client_buyer} status={sale.status} />
+                  <ClientBuyer
+                    clientBuyer={client_buyer}
+                    status={sale.status}
+                  />
                 ) : (
-                  <ClientBuyerPJ clientbuyer={client_buyer} status={sale.status} />
+                  <ClientBuyerPJ
+                    clientbuyer={client_buyer}
+                    status={sale.status}
+                  />
                 )}
-
               </TabBootstrap>
               <TabBootstrap eventKey="clientSeller" title="Cliente Vendedor">
                 <InputGroup>
                   <Select
-                    nameLabel='Tipo de Cliente'
+                    nameLabel="Tipo de Cliente"
                     options={optionsTypeClient}
                     defaultValue={selectedTypeClientSeller}
                     onChange={handleSelectTypeClientSeller}
@@ -400,9 +442,11 @@ const DetailsSale: React.FC = () => {
                     status={sale.status}
                   />
                 ) : (
-                  <ClientSellerPJ clientSeller={client_seller} status={sale.status} />
+                  <ClientSellerPJ
+                    clientSeller={client_seller}
+                    status={sale.status}
+                  />
                 )}
-
               </TabBootstrap>
               <TabBootstrap eventKey="realtors" title="Corretores">
                 <Realtors
