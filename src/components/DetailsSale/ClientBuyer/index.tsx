@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles, SubmitHandler } from '@unform/core';
@@ -10,6 +10,7 @@ import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
 import Select from '../../ReactSelect';
+import SelectSimple from '../../SelectSimple';
 import { optionsCivilStatus, optionsGenero } from '../../../utils/loadOptions';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import api from '../../../services/api';
@@ -19,6 +20,12 @@ import { DateYMD, unMaked } from '../../../utils/unMasked';
 
 import theme from '../../../styles/theme';
 
+
+interface IOrigin {
+  id: string;
+  name: string;
+  active: boolean;
+}
 
 interface IPropertyProps {
   status: string;
@@ -32,6 +39,7 @@ interface IPropertyProps {
     civil_status: string;
     gender: string;
     number_children: string;
+    origin?: { id: string; name: string };
   };
 }
 
@@ -55,9 +63,30 @@ interface Params {
 const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
   const [edit, setEdit] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [origins, setOrigins] = useState<IOrigin[]>([]);
+  const [loadingOrigins, setLoadingOrigins] = useState(false);
+  const [selectedOriginId, setSelectedOriginId] = useState(clientBuyer.origin?.id || '');
   const formRef = useRef<FormHandles>(null);
   const history = useHistory();
   const { id } = useParams<Params>();
+
+  useEffect(() => {
+    if (edit === false) {
+      setLoadingOrigins(true);
+      api.get<IOrigin[]>('/origin-sale')
+        .then(response => {
+          const active = response.data.filter(o => o.active);
+          setOrigins(active);
+          const currentId = clientBuyer.origin?.id || '';
+          setSelectedOriginId(active.some(o => o.id === currentId) ? currentId : '');
+        })
+        .catch(() => {
+          toast.error('Não foi possível carregar as origens');
+          setOrigins([]);
+        })
+        .finally(() => setLoadingOrigins(false));
+    }
+  }, [edit, clientBuyer.origin]);
 
   const unMaskValue = () => {
     const cpf = unMaked(formRef.current?.getFieldValue('client_buyer.cpf'));
@@ -126,9 +155,9 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
       await api.put(`/sale/${id}`, {
         client_buyer: {
           ...formData?.client_buyer,
-          cnpj: null
+          cnpj: null,
+          origin_id: selectedOriginId,
         }
-
       });
 
       toast.success('Dados da Venda atualizadas!');
@@ -182,6 +211,7 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                   data={clientBuyer.number_children}
                 />
               </InputGroup>
+              <InputDisable label="Origem" data={clientBuyer.origin?.name || ''} />
             </>
           ) : (
             <>
@@ -251,7 +281,13 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                   defaultValue={clientBuyer.number_children}
                 />
               </InputGroup>
-
+              <SelectSimple
+                nameLabel="Origem"
+                disabled={loadingOrigins}
+                value={selectedOriginId}
+                onChange={e => setSelectedOriginId((e.target as HTMLSelectElement).value)}
+                options={origins.map(o => ({ value: o.id, label: o.name }))}
+              />
               <ButtonGroup>
                 <button type="submit">
                   <Sync />
