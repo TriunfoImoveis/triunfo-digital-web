@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles, SubmitHandler } from '@unform/core';
@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
+import SelectSimple from '../../SelectSimple';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import { unMaked } from '../../../utils/unMasked';
 import api from '../../../services/api';
@@ -15,6 +16,14 @@ import getValidationErros from '../../../utils/getValidationErros';
 
 import theme from '../../../styles/theme';
 
+
+interface IOrigin {
+  id: string;
+  name: string;
+  active: boolean;
+  isOriginClient: boolean;
+  isOriginChannel: boolean;
+}
 
 interface IPropertyProps {
   status: string;
@@ -24,6 +33,7 @@ interface IPropertyProps {
     phone: string;
     email: string;
     address: string;
+    origin?: { id: string; name: string };
   };
 }
 
@@ -34,6 +44,7 @@ interface FormData {
     phone: string;
     email: string;
     address: string;
+    origin_id: string;
   };
 }
 
@@ -44,9 +55,34 @@ interface Params {
 const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
   const [edit, setEdit] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [origins, setOrigins] = useState<IOrigin[]>([]);
+  const [loadingOrigins, setLoadingOrigins] = useState(false);
+  const [selectedOriginId, setSelectedOriginId] = useState(clientSeller.origin?.id || '');
   const formRef = useRef<FormHandles>(null);
   const history = useHistory();
   const { id } = useParams<Params>();
+
+  useEffect(() => {
+    if (edit === false) {
+      setLoadingOrigins(true);
+      api
+        .get<IOrigin[]>('/origin-sale')
+        .then(response => {
+          const activeOrigins = response.data.filter(o => o.active);
+          setOrigins(activeOrigins);
+          const currentId = clientSeller.origin?.id || '';
+          const exists = activeOrigins.some(o => o.id === currentId);
+          setSelectedOriginId(exists ? currentId : '');
+        })
+        .catch(() => {
+          toast.error('Não foi possível carregar as origens');
+          setOrigins([]);
+        })
+        .finally(() => {
+          setLoadingOrigins(false);
+        });
+    }
+  }, [edit, clientSeller.origin]);
 
   const unMaskValue = () => {
     const cnpj = unMaked(formRef.current?.getFieldValue('client_seller.cnpj'));
@@ -77,6 +113,7 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
             .required('E-mail Obrigatório'),
           address: Yup.string()
             .required('Endereço Obrigatório'),
+          origin_id: Yup.string().required('Origem obrigatória'),
         }),
       });
 
@@ -89,7 +126,8 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
       await api.put(`/sale/${id}`, {
         client_seller: {
           ...formData?.client_seller,
-          cpf: null
+          cpf: null,
+          origin_id: selectedOriginId,
         },
       });
 
@@ -129,6 +167,7 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
                 label="Endereço"
                 data={clientSeller.address}
               />
+              <InputDisable label="Origem" data={clientSeller.origin?.name || ''} />
             </>
           ) : (
             <>
@@ -174,6 +213,13 @@ const ClientSellerPJ: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
                 placeholder="Endereço"
                 readOnly={edit}
                 defaultValue={clientSeller.address}
+              />
+              <SelectSimple
+                nameLabel="Origem"
+                disabled={loadingOrigins}
+                value={selectedOriginId}
+                onChange={e => setSelectedOriginId((e.target as HTMLSelectElement).value)}
+                options={origins.map(o => ({ value: o.id, label: o.name }))}
               />
               <ButtonGroup>
                 <button type="submit">

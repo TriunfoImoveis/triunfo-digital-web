@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles, SubmitHandler } from '@unform/core';
@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
+import SelectSimple from '../../SelectSimple';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import { unMaked } from '../../../utils/unMasked';
 import api from '../../../services/api';
@@ -24,6 +25,7 @@ interface IPropertyProps {
     phone: string;
     email: string;
     address: string;
+    origin?: { id: string; name: string };
   };
 }
 
@@ -34,7 +36,16 @@ interface FormData {
     phone: string;
     email: string;
     address: string;
+    origin_id: string;
   };
+}
+
+interface IOrigin {
+  id: string;
+  name: string;
+  active: boolean;
+  isOriginClient: boolean;
+  isOriginChannel: boolean;
 }
 
 interface Params {
@@ -44,9 +55,32 @@ interface Params {
 const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
   const [edit, setEdit] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [origins, setOrigins] = useState<IOrigin[]>([]);
+  const [loadingOrigins, setLoadingOrigins] = useState(false);
+  const [selectedOriginId, setSelectedOriginId] = useState(clientbuyer.origin?.id || '');
   const formRef = useRef<FormHandles>(null);
   const history = useHistory();
   const { id } = useParams<Params>();
+
+  useEffect(() => {
+    if (edit === false) {
+      setLoadingOrigins(true);
+      api.get<IOrigin[]>('/origin-sale')
+        .then(response => {
+          const active = response.data.filter(o => o.active);
+          setOrigins(active);
+          const currentId = clientbuyer.origin?.id || '';
+          setSelectedOriginId(active.some(o => o.id === currentId) ? currentId : '');
+        })
+        .catch(() => {
+          toast.error('Não foi possível carregar as origens');
+          setOrigins([]);
+        })
+        .finally(() => {
+          setLoadingOrigins(false);
+        });
+    }
+  }, [edit, clientbuyer.origin]);
 
   const unMaskValue = () => {
     const cnpj = unMaked(formRef.current?.getFieldValue('client_buyer.cnpj'));
@@ -77,6 +111,7 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
             .required('E-mail Obrigatório'),
           address: Yup.string()
             .required('Endereço Obrigatório'),
+          origin_id: Yup.string().required('Origem obrigatória'),
         }),
       });
 
@@ -87,8 +122,11 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
       unMaskValue();
       const formData = formRef.current?.getData();
       await api.put(`/sale/${id}`, {
-        ...formData?.client_buyer,
-        cpf: null
+        client_buyer: {
+          ...formData?.client_buyer,
+          cpf: null,
+          origin_id: selectedOriginId,
+        },
       });
 
       toast.success('Dados da Venda atualizadas!');
@@ -127,6 +165,7 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
                 label="Endereço"
                 data={clientbuyer.address}
               />
+              <InputDisable label="Origem" data={clientbuyer.origin?.name || ''} />
             </>
           ) : (
             <>
@@ -172,6 +211,13 @@ const ClientBuyerPJ: React.FC<IPropertyProps> = ({ clientbuyer, status }) => {
                 placeholder="Endereço"
                 readOnly={edit}
                 defaultValue={clientbuyer.email}
+              />
+              <SelectSimple
+                nameLabel="Origem"
+                disabled={loadingOrigins}
+                value={selectedOriginId}
+                onChange={e => setSelectedOriginId((e.target as HTMLSelectElement).value)}
+                options={origins.map(o => ({ value: o.id, label: o.name }))}
               />
               <ButtonGroup>
                 <button type="submit">
