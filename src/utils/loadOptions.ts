@@ -94,8 +94,8 @@ export const loadStates = async (inputValue: string, callback: any) => {
 
 export const optionsGenero: OptionsData[] = [
   { label: 'Masculino', value: 'MASCULINO' },
-  { label: 'Femenino', value: 'FEMENINO' },
-  { label: 'Outros', value: 'OUTROS' },
+  { label: 'Feminino', value: 'FEMININO' },
+  { label: 'Outro', value: 'OUTRO' },
 ];
 
 // Estado Civíl
