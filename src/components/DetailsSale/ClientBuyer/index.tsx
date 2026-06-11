@@ -14,6 +14,7 @@ import { optionsCivilStatus, optionsGenero } from '../../../utils/loadOptions';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
+import { getErrorMessage } from '../../../utils/getErrorMessage';
 import { valiateDate } from '../../../utils/validateDate';
 import { DateYMD, unMaked } from '../../../utils/unMasked';
 
@@ -179,8 +180,10 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
+        toast.error('Verifique os campos obrigatórios');
+      } else {
+        toast.error(getErrorMessage(err, 'Erro ao atualizar cliente comprador'));
       }
-      toast.error('ERROR!, verifique as informações e tente novamente');
     } finally {
       setLoading(false);
     }
