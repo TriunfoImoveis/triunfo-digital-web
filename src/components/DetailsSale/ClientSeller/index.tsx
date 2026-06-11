@@ -8,7 +8,6 @@ import { toast } from 'react-toastify';
 import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
-import Select from '../../ReactSelect';
 import SelectSimple from '../../SelectSimple';
 import { optionsCivilStatus, optionsGenero } from '../../../utils/loadOptions';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
@@ -65,9 +64,17 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
   const [origins, setOrigins] = useState<IOrigin[]>([]);
   const [loadingOrigins, setLoadingOrigins] = useState(false);
   const [selectedOriginId, setSelectedOriginId] = useState(clientSeller.origin?.id || '');
+  const [selectedCivilStatus, setSelectedCivilStatus] = useState(clientSeller.civil_status || '');
+  const [selectedGender, setSelectedGender] = useState(clientSeller.gender || '');
   const formRef = useRef<FormHandles>(null);
   const history = useHistory();
   const { id } = useParams<Params>();
+
+  // Sincroniza quando os dados do cliente chegam do fetch do pai
+  useEffect(() => {
+    if (clientSeller.civil_status) setSelectedCivilStatus(clientSeller.civil_status);
+    if (clientSeller.gender) setSelectedGender(clientSeller.gender);
+  }, [clientSeller.civil_status, clientSeller.gender]);
 
   useEffect(() => {
     if (edit === false) {
@@ -125,25 +132,29 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
               return isValid || createError({ path, message: 'Data Invalida' });
             })
             .required('Data de nascimento obrigatória'),
-          civil_status: Yup.string().required('Estado Civil Obrigatório'),
-          gender: Yup.string().required('Genero Obrigatório'),
           number_children: Yup.string().required(
             'Quantidade de filhos Obrigatória',
           ),
-          // occupation: Yup.string().required('Profissão Obrigatória'),
           phone: Yup.string()
             .min(11, 'O numero precisa ter pelo menos 11 números')
             .max(18, 'Digite um numero de telefone válido')
             .required('Telefone obrigatório'),
-          // whatsapp: Yup.string()
-          //   .min(11, 'O numero precisa ter pelo menos 11 digitos')
-          //   .max(14, 'Digite um numero de telefone válido')
-          //   .required('Whatsapp obrigatório'),
           email: Yup.string()
             .email('informe um email Válido')
             .required('E-mail Obrigatório'),
         }),
       });
+
+      if (!selectedCivilStatus) {
+        toast.error('Estado Civil Obrigatório');
+        setLoading(false);
+        return;
+      }
+      if (!selectedGender) {
+        toast.error('Gênero Obrigatório');
+        setLoading(false);
+        return;
+      }
 
       await schema.validate(data, {
         abortEarly: false,
@@ -154,6 +165,8 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
       await api.put(`/sale/${id}`, {
         client_seller: {
           ...formData?.client_seller,
+          civil_status: selectedCivilStatus,
+          gender: selectedGender,
           cnpj: null,
           origin_id: selectedOriginId,
         }
@@ -257,19 +270,17 @@ const ClientSeller: React.FC<IPropertyProps> = ({ clientSeller, status }) => {
                 />
               </InputGroup>
               <InputGroup>
-                <Select
-                  label="Estado Civíl"
-                  name="client_seller.civil_status"
+                <SelectSimple
+                  nameLabel="Estado Civíl"
+                  value={selectedCivilStatus}
+                  onChange={e => setSelectedCivilStatus((e.target as HTMLSelectElement).value)}
                   options={optionsCivilStatus}
-                  disabled={edit}
-                  defaultInputValue={clientSeller.civil_status}
                 />
-                <Select
-                  label="Gênero"
-                  name="client_seller.gender"
+                <SelectSimple
+                  nameLabel="Gênero"
+                  value={selectedGender}
+                  onChange={e => setSelectedGender((e.target as HTMLSelectElement).value)}
                   options={optionsGenero}
-                  disabled={edit}
-                  defaultInputValue={clientSeller.gender}
                 />
                 <Input
                   label="Numero de Filhos"
