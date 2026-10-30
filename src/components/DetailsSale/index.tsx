@@ -141,6 +141,7 @@ interface IClient {
   occupation: string;
   phone: string;
   whatsapp: string;
+  origin?: { id: string; name: string };
 }
 export interface IInstallmentsData {
   installments: {

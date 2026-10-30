@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as Yup from 'yup';
 import { Form } from '@unform/web';
 import { FormHandles, SubmitHandler } from '@unform/core';
@@ -9,16 +9,23 @@ import { toast } from 'react-toastify';
 import { Sync } from '../../../assets/images';
 import InputDisable from '../../InputDisabled';
 import Input from '../../Input';
-import Select from '../../ReactSelect';
+import SelectSimple from '../../SelectSimple';
 import { optionsCivilStatus, optionsGenero } from '../../../utils/loadOptions';
 import { SaleData, Legend, InputGroup, ButtonGroup } from '../styles';
 import api from '../../../services/api';
 import getValidationErros from '../../../utils/getValidationErros';
+import { getErrorMessage } from '../../../utils/getErrorMessage';
 import { valiateDate } from '../../../utils/validateDate';
 import { DateYMD, unMaked } from '../../../utils/unMasked';
 
 import theme from '../../../styles/theme';
 
+
+interface IOrigin {
+  id: string;
+  name: string;
+  active: boolean;
+}
 
 interface IPropertyProps {
   status: string;
@@ -32,6 +39,7 @@ interface IPropertyProps {
     civil_status: string;
     gender: string;
     number_children: string;
+    origin?: { id: string; name: string };
   };
 }
 
@@ -55,9 +63,38 @@ interface Params {
 const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
   const [edit, setEdit] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [origins, setOrigins] = useState<IOrigin[]>([]);
+  const [loadingOrigins, setLoadingOrigins] = useState(false);
+  const [selectedOriginId, setSelectedOriginId] = useState(clientBuyer.origin?.id || '');
+  const [selectedCivilStatus, setSelectedCivilStatus] = useState(clientBuyer.civil_status || '');
+  const [selectedGender, setSelectedGender] = useState(clientBuyer.gender || '');
   const formRef = useRef<FormHandles>(null);
   const history = useHistory();
   const { id } = useParams<Params>();
+
+  // Sincroniza quando os dados do cliente chegam do fetch do pai
+  useEffect(() => {
+    if (clientBuyer.civil_status) setSelectedCivilStatus(clientBuyer.civil_status);
+    if (clientBuyer.gender) setSelectedGender(clientBuyer.gender);
+  }, [clientBuyer.civil_status, clientBuyer.gender]);
+
+  useEffect(() => {
+    if (edit === false) {
+      setLoadingOrigins(true);
+      api.get<IOrigin[]>('/origin-sale')
+        .then(response => {
+          const active = response.data.filter(o => o.active);
+          setOrigins(active);
+          const currentId = clientBuyer.origin?.id || '';
+          setSelectedOriginId(active.some(o => o.id === currentId) ? currentId : '');
+        })
+        .catch(() => {
+          toast.error('Não foi possível carregar as origens');
+          setOrigins([]);
+        })
+        .finally(() => setLoadingOrigins(false));
+    }
+  }, [edit, clientBuyer.origin]);
 
   const unMaskValue = () => {
     const cpf = unMaked(formRef.current?.getFieldValue('client_buyer.cpf'));
@@ -97,25 +134,29 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
               return isValid || createError({ path, message: 'Data Invalida' });
             })
             .required('Data de nascimento obrigatória'),
-          civil_status: Yup.string().required('Estado Civil Obrigatório'),
-          gender: Yup.string().required('Genero Obrigatório'),
           number_children: Yup.string().required(
             'Quantidade de filhos Obrigatória',
           ),
-          // occupation: Yup.string().required('Profissão Obrigatória'),
           phone: Yup.string()
             .min(11, 'O numero precisa ter pelo menos 11 números')
             .max(18, 'Digite um numero de telefone válido')
             .required('Telefone obrigatório'),
-          // whatsapp: Yup.string()
-          //   .min(11, 'O numero precisa ter pelo menos 11 digitos')
-          //   .max(14, 'Digite um numero de telefone válido')
-          //   .required('Whatsapp obrigatório'),
           email: Yup.string()
             .email('informe um email Válido')
             .required('E-mail Obrigatório'),
         }),
       });
+
+      if (!selectedCivilStatus) {
+        toast.error('Estado Civil Obrigatório');
+        setLoading(false);
+        return;
+      }
+      if (!selectedGender) {
+        toast.error('Gênero Obrigatório');
+        setLoading(false);
+        return;
+      }
 
       await schema.validate(data, {
         abortEarly: false,
@@ -126,9 +167,11 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
       await api.put(`/sale/${id}`, {
         client_buyer: {
           ...formData?.client_buyer,
-          cnpj: null
+          civil_status: selectedCivilStatus,
+          gender: selectedGender,
+          cnpj: null,
+          origin_id: selectedOriginId,
         }
-
       });
 
       toast.success('Dados da Venda atualizadas!');
@@ -137,8 +180,10 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
       if (err instanceof Yup.ValidationError) {
         const erros = getValidationErros(err);
         formRef.current?.setErrors(erros);
+        toast.error('Verifique os campos obrigatórios');
+      } else {
+        toast.error(getErrorMessage(err, 'Erro ao atualizar cliente comprador'));
       }
-      toast.error('ERROR!, verifique as informações e tente novamente');
     } finally {
       setLoading(false);
     }
@@ -182,6 +227,7 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                   data={clientBuyer.number_children}
                 />
               </InputGroup>
+              <InputDisable label="Origem" data={clientBuyer.origin?.name || ''} />
             </>
           ) : (
             <>
@@ -229,19 +275,17 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                 />
               </InputGroup>
               <InputGroup>
-                <Select
-                  label="Estado Civíl"
-                  name="client_buyer.civil_status"
+                <SelectSimple
+                  nameLabel="Estado Civíl"
+                  value={selectedCivilStatus}
+                  onChange={e => setSelectedCivilStatus((e.target as HTMLSelectElement).value)}
                   options={optionsCivilStatus}
-                  disabled={edit}
-                  defaultInputValue={clientBuyer.civil_status}
                 />
-                <Select
-                  label="Gênero"
-                  name="client_buyer.gender"
+                <SelectSimple
+                  nameLabel="Gênero"
+                  value={selectedGender}
+                  onChange={e => setSelectedGender((e.target as HTMLSelectElement).value)}
                   options={optionsGenero}
-                  disabled={edit}
-                  defaultInputValue={clientBuyer.gender}
                 />
                 <Input
                   label="Numero de Filhos"
@@ -251,7 +295,13 @@ const ClientBuyer: React.FC<IPropertyProps> = ({ clientBuyer, status }) => {
                   defaultValue={clientBuyer.number_children}
                 />
               </InputGroup>
-
+              <SelectSimple
+                nameLabel="Origem"
+                disabled={loadingOrigins}
+                value={selectedOriginId}
+                onChange={e => setSelectedOriginId((e.target as HTMLSelectElement).value)}
+                options={origins.map(o => ({ value: o.id, label: o.name }))}
+              />
               <ButtonGroup>
                 <button type="submit">
                   <Sync />

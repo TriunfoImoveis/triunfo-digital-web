@@ -8,6 +8,7 @@ import InputDisable from '../../InputDisabled';
 
 import { PaymentInstallments, Plot, AddButton, AlertDanger } from '../styles';
 import { useHistory } from 'react-router-dom';
+import toCents from '../../../utils/toCents';
 
 interface IInstamentsProps {
   installments: Array<IInstallments>;
@@ -32,10 +33,11 @@ const Installments: React.FC<IInstamentsProps> = ({
     installment => installment.status === 'LIQUIDADA',
   );
   const { userAuth } = useAuth();
-  const reducer = (accumulator, currentValue) => Number(accumulator) + Number(currentValue);
-
-  const valueTotalInstallments = installments.map(installment => installment.value).reduce(reducer, 0);
-  const isDisponible = valueTotalInstallments === Number(comission);
+  const valueTotalInstallments = installments.reduce(
+    (total, installment) => total + toCents(installment.value),
+    0,
+  );
+  const isDisponible = valueTotalInstallments === toCents(comission);
 
   const navigate = useHistory();
 
